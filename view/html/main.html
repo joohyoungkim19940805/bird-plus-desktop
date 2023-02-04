@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+		<link rel="stylesheet" type="text/css" href="./../static/css/header.css">
+		<link rel="stylesheet" type="text/css" href="./../static/css/main.css">
+		<script type="text/javascript" src="./../static/js/component/header/HeaderDefault.js"></script>
+		<script type="text/javascript" src="./../static/js/component/ResizePanel.js"></script>
+		<script type="text/javascript" src="./../static/js/component/MainLayout.js"></script>
+		<script type="text/javascript" src="./../static/js/component/ContentBlockLayout.js"></script>
+	</head>
+	<body>
+		<header-default></header-default>
+		<main-layout id="container">
+			<div class="content_wrapper test1">
+				<div is="content-block" class="content" data-is_no_resize="">aaaaaaa</div>
+			</div>
+			<div class="content_wrapper test2">
+				<div is="content-block" class="content"></div>
+			</div>
+			<div class="content_wrapper test3">
+				<div is="content-block" class="content"></div>
+			</div>
+			<div class="content_wrapper test4" >
+				<div is="content-block" class="content" data-is_no_resize=""></div>
+			</div>
+		</main-layout>
+	</body>
+</html>

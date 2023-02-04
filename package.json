@@ -1,0 +1,80 @@
+{
+	"name": "bird-plus-desktop",
+	"version": "1.0.0",
+	"description": "bird-plus-desktop",
+	"main": "main.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "webpack && electron .",
+		"//start": "electron-forge start",
+		"package": "electron-forge package",
+		"make": "electron-forge make",
+		"deploy": "electron-builder --windows nsis:ia32",
+		"build": "webpack"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/joohyoungkim19940805/word2vec_javascript.git"
+	},
+	"author": "mozu123",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/joohyoungkim19940805/word2vec_javascript/issues"
+	},
+	"homepage": "https://github.com/joohyoungkim19940805/word2vec_javascript#readme",
+	"devDependencies": {
+		"@electron-forge/cli": "^6.0.4",
+		"@electron-forge/maker-deb": "^6.0.4",
+		"@electron-forge/maker-rpm": "^6.0.4",
+		"@electron-forge/maker-squirrel": "^6.0.4",
+		"@electron-forge/maker-zip": "^6.0.4",
+		"electron": "^22.0.0",
+		"electron-builder": "^23.6.0",
+		"webpack": "^5.75.0",
+		"webpack-cli": "^5.0.1"
+	},
+	"dependencies": {
+		"@tensorflow-models/mobilenet": "^2.0.4",
+		"@tensorflow/tfjs": "^4.2.0",
+		"sqlite3": "^5.1.4"
+	},
+	"keywords": [
+		"bird",
+		"plus",
+		"bird plus",
+		"RADCNS",
+		"RAD",
+		"버드",
+		"플러스",
+		"버드 플러스",
+		"라드씨엔에스",
+		"라드"
+	],
+	"build": {
+		"productName": "bird-plus-desktop",
+		"appId": "com.radcns.bird-plus.desktop",
+		"asar": true,
+		"protocols": {
+			"name": "bird-plus-desktop",
+			"schemes": [
+				"bird plus"
+			]
+		},
+		"win": {
+			"target": [
+				"zip",
+				"nsis"
+			],
+			"icon": "./view/static/image/icon.png"
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true
+		},
+		"directories": {
+			"buildResources": "./view/static/image/",
+			"output": "./dist/",
+			"app": "."
+		}
+	}
+}

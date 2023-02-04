@@ -1,0 +1,17 @@
+header-default #header_content{
+    height: 50px;
+    background: linear-gradient(to bottom, #EAEAEA -274%, #2B2B2B 96%, #7c0000 99%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.6vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+}
+
+header-default #left_wrapper img{
+	width: 30px;
+    height: 30px;
+}
+
+
