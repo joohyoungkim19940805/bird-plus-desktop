@@ -25,12 +25,12 @@ class MainLayout extends HTMLElement {
 	addMainEvent(){
 		let header = document.querySelector('header-default > #header_content');
 		this.style.height = (window.outerHeight - header.clientHeight) + 'px'
+		this.style.width = window.outerWidth + 'px'; 
 		window.myAPI.electronEventTrigger.addElectronWindowEventListener('resized', ( [width, height] ) => {
 			let mathHeight =  (window.outerHeight - header.clientHeight);
 			//mathHeight = mathHeight - (mathHeight * 0.02)
 			this.style.height = mathHeight + 'px'
-			this.style.width = window.outerWidth; 
-
+			this.style.width = window.outerWidth + 'px'; 
 		});
 		/*
 		[...this.children].forEach(e=>{

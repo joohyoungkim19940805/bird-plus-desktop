@@ -25,7 +25,9 @@ new class OpeningRenderer{
 			new Promise(resolve => {
 				// 디벨로퍼보다 빨리 실행되어 디버깅이 안되기 때문에 지연을 넣는다.
 				setTimeout(()=>{
-					resolve('done');
+					document.querySelector('#login_btn').onclick = () => {
+						resolve('done');
+					}
 				}, 1500)
 			})
 			.then(() => {

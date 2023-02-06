@@ -16,7 +16,6 @@ const electronEventTrigger = {
 		}
 	}
 };
-console.log(electronEventTrigger)
 
 contextBridge.exposeInMainWorld('myAPI', {
 	setTitle1 : (title) => {

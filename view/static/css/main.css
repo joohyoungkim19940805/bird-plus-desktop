@@ -17,6 +17,11 @@ body::-webkit-scrollbar {
     height: 90%;
     width: 100vw;
 	overflow: auto;
+	-ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#container::-webkit-scrollbar{
+	display: none;
 }
 .content_wrapper{
 	position: relative;
@@ -74,6 +79,14 @@ resize-drag-panel:not(.no_resize):hover > div.hover{
 	animation-iteration-count: 1;
 	animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
 	width: 5px;
+}
+resize-drag-panel > div.im_here{
+	position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+	right: 0;
+	padding-right: 2vw;
 }
 @keyframes drag-panel-hover {
 	0%{

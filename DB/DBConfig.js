@@ -1,4 +1,7 @@
 
+/**
+ * sql Lite3 관련 코드
+ */
 class DBConfig{
 	static #columnInfo;
 	static #columnRegex = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
@@ -24,7 +27,6 @@ class DBConfig{
 		}
 	};
 	static{
-		console.log('test')
 		this.#columnInfo = {
 			PATH_TABLE : {
 				clone : JSON.stringify({
