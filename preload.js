@@ -37,7 +37,9 @@ contextBridge.exposeInMainWorld('myAPI', {
 	//openFile : () => ipcRenderer.invoke('dialog:openFile'),
 	
 	scanningUserDirectory : () => ipcRenderer.invoke('scanningUserDirectory'),
-	setMainPageDesign : () => ipcRenderer.invoke('setMainPageDesign'),
+	
+	changeLoginPage : () => ipcRenderer.invoke('changeLoginPage'),
+	changeMainPage : () => ipcRenderer.invoke('changeMainPage'),
 	
 	electronEventTrigger : electronEventTrigger,
 })
@@ -45,11 +47,12 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 
 ipcRenderer.on('resized', (event, message) => {
+	//console.log(event);
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('resized')){
 		electronEventTrigger.objectEventListener['resized'].forEach(callBack=>{
 			/**
-			 * event 객체에 메인 프로세스에 접근할 수 있는 내용이 포함되어 있기에 
-			 * 보안을 위해 절대 랜더러 프로세스로 이벤트 객체를 전송하지 말 것
+			 * event 객체에 메인 프로세스에 접근할 수 있는 내용이 포함되어 있는 것 처럼 보이는데
+			 * 렌더러 프로세스로 이벤트 객체를 전송해도 되는지?
 			 */
 			callBack(message);
 		})

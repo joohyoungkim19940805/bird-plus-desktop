@@ -1,0 +1,34 @@
+.wrap_3d{
+	display: block; 
+	z-index: 1; 
+	width: 100%; 
+	height: 60vh;
+}
+
+#renderCanvas{
+	touch-action: none;
+	outline: none;
+	width: 100%;
+	height: 100%;
+}
+#container.posision_center{
+	display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.login_wrap{
+	display: grid;
+	row-gap: 1.5vh;
+}
+
+.login_input_wrap{
+	display: grid;
+	row-gap: 2vh;
+}
+
+.login_btn_wrap{
+	display: flex;
+    justify-content: space-between;
+}

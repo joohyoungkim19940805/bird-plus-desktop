@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+		"moduleResolution": "Node",
+    	"noImplicitAny": true,
+		"sourceMap": true,
+		"esModuleInterop": true,
+    	"outDir": "view/static/js/ts",
+		"baseUrl": ".",
+    	"paths": {
+    		"*": ["node_modules/*"]
+    	},
+		"skipLibCheck": true,
+		"lib": ["DOM", "DOM.Iterable"],
+		"typeRoots": ["./node_modules/@types", "./types"]
+    },
+    "include": [
+    	"view/static/js/handler/**/*"
+    ]
+}

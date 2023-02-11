@@ -1,12 +1,19 @@
 /**
- * global에 무분별하게 네임스페이스를 추가하는 나쁜 패턴은 남용하지 말 것
- * global에 네임스페이스를 추가하는 경우는 Custom Error을 새롭게 정의할 때 또는 전역적으로 반드시 필요한 경우에만 사용 할 것
- * global에 새로운 네임스페이스를 추가하는 것은 한 파일에 전부 모아놓고 사용 할 것
+ * global에 무분별하게 네임스페이스를 추가하지 말 것
+ * global에 네임스페이스를 추가하는 경우는 반드시 필요한 경우에만 사용 할 것
+ * global에 네임스페이스를 추가하는 것은 한 파일에서 전부 모아놓고 사용 할 것
  */
 global.__project_path = require.main.paths[0].split('node_modules')[0];
+global.__serverApi = (()=>{
+	if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
+		return 'http://localhost:8079';
+	}
+})();
 
 // 일렉트론 모듈 호출
-const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
+const { protocol, app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
+app.commandLine.appendSwitch('enable-features', "SharedArrayBuffer")
+app.commandLine.appendSwitch('enable-unsafe-webgpu')
 // path 모듈 호출
 const path = require('path');
 
@@ -14,6 +21,24 @@ const fs = require('fs');
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
+	protocol.registerFileProtocol('file', (request, callback) => {
+		//const pathname = decodeURI(request.url.replace('file:///', ''));
+		console.log(1111111111111111111111111111111111111111111)
+		console.log(request)
+		callback(request.url);
+	});
+	protocol.registerBufferProtocol('file', (request, callback) => {
+		//const pathname = decodeURI(request.url.replace('file:///', ''));
+		console.log(2222222222222222222222222222222222222222)
+		console.log(request)
+		callback(request.url);
+	});
+	protocol.registerStreamProtocol('file', (request, callback) => {
+		//const pathname = decodeURI(request.url.replace('file:///', ''));
+		console.log(33333333333333333333333333333333333333)
+		console.log(request)
+		callback(request.url);
+	});
 	const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 	
 	const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))

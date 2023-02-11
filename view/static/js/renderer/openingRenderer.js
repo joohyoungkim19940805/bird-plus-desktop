@@ -25,13 +25,11 @@ new class OpeningRenderer{
 			new Promise(resolve => {
 				// 디벨로퍼보다 빨리 실행되어 디버깅이 안되기 때문에 지연을 넣는다.
 				setTimeout(()=>{
-					document.querySelector('#login_btn').onclick = () => {
-						resolve('done');
-					}
+					resolve('done');
 				}, 1500)
 			})
 			.then(() => {
-				return window.myAPI.setMainPageDesign();
+				return window.myAPI.changeLoginPage();
 			}).then((e)=>{
 				console.log(e)
 			});

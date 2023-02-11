@@ -9,10 +9,20 @@ module.exports = {
 	mode: 'development',
 	devtool: 'cheap-module-source-map',
 	entry: {
-		openingRenderer: "./view/static/js/renderer/openingRenderer.js"
+		openingRenderer: "./view/static/js/renderer/openingRenderer.js",
+		temp3DHandler : "./view/static/js/handler/Temp3DHandler.ts"
 	},
 	output: {
 		filename: "[name].bundle.js",
 		path: path.resolve(__dirname, './view/static/js/dist')
+	},
+	module: {
+		rules: [
+		  	{
+				test: /\.ts$/,
+				use: 'ts-loader',
+				exclude: /node_modules/,
+			},
+		],
 	}
 }

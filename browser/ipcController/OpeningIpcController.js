@@ -32,7 +32,23 @@ class OpeningIpcController {
 			});
 		})
 
-		ipcMain.handle('setMainPageDesign', async (event) => {
+		ipcMain.handle('changeLoginPage', async (event) => {
+			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+			mainWindow.center();
+			mainWindow.resizable = true;
+			mainWindow.movable = true;
+			mainWindow.autoHideMenuBar = false;
+			mainWindow.menuBarVisible = true;
+
+			return await mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+				mainWindow.titleBarStyle = 'visibble'
+				mainWindow.show();
+				//mainWindow.webContents.openDevTools();
+				return 'done';
+			})
+		});
+
+		ipcMain.handle('changeMainPage', async (event) => {
 			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
 			mainWindow.center();
 			mainWindow.resizable = true;
@@ -49,6 +65,9 @@ class OpeningIpcController {
 		});
 
 		//this.addIpcMainEvents()
+	}
+	test(){
+		new EventSource()
 	}
 	/*
 	addIpcMainEvents(){

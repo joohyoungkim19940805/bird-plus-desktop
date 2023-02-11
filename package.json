@@ -5,12 +5,12 @@
 	"main": "main.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "webpack && electron .",
+		"start": "tsc && webpack && electron .",
 		"//start": "electron-forge start",
 		"package": "electron-forge package",
 		"make": "electron-forge make",
 		"deploy": "electron-builder --windows nsis:ia32",
-		"build": "webpack"
+		"build": "tsc && webpack "
 	},
 	"repository": {
 		"type": "git",
@@ -28,14 +28,19 @@
 		"@electron-forge/maker-rpm": "^6.0.4",
 		"@electron-forge/maker-squirrel": "^6.0.4",
 		"@electron-forge/maker-zip": "^6.0.4",
+		"@types/cannon": "^0.1.8",
+		"babylonjs": "^5.46.0",
 		"electron": "^22.0.0",
-		"electron-builder": "^22.10.3",
+		"electron-builder": "^23.6.0",
+		"ts-loader": "^9.4.2",
+		"typescript": "^4.9.5",
 		"webpack": "^5.75.0",
 		"webpack-cli": "^5.0.1"
 	},
 	"dependencies": {
 		"@tensorflow-models/mobilenet": "^2.0.4",
 		"@tensorflow/tfjs": "^4.2.0",
+		"@types/webgl2": "^0.0.7",
 		"sqlite3": "^5.1.4"
 	},
 	"keywords": [
