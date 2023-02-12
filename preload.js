@@ -18,21 +18,17 @@ const electronEventTrigger = {
 };
 
 contextBridge.exposeInMainWorld('myAPI', {
-	setTitle1 : (title) => {
-		console.log('bridge <<< ', title)
-		/**
-		 * 단방향 ipc 통신
-		 * 보안상의 이유로ipcRenderer.send 전체 API를 직접 노출하지 않습니다. 
-		 * Electron API에 대한 렌더러의 액세스를 가능한 한 많이 제한해야 합니다.
-		 */
-		ipcRenderer.send('test', title)
-	},
+	/**
+	 * 단방향 ipc 통신
+	 * 보안상의 이유로ipcRenderer.send 전체 API를 직접 노출하지 않습니다. 
+	 * Electron API에 대한 렌더러의 액세스를 가능한 한 많이 제한해야 합니다.
+	 */
+	setTitle1 : (title) => ipcRenderer.send('test', title),
 	/**
 	 * dialog:IPC 채널 이름 의 접두사는 코드에 영향을 미치지 않습니다. 
 	 * 코드 가독성에 도움이 되는 네임스페이스 역할만 합니다.
 	 * 보안상의 이유로ipcRenderer.invoke 전체 API를 직접 노출하지 않습니다. 
-	 * Electron API에 대한 렌더러의 액세스를 가능한 한 많이 제한해야 합니다.
-	 * @returns 
+	 * Electron API에 대한 렌더러의 액세스를 가능한 한 많이 제한해야 합니다. 
 	 */
 	//openFile : () => ipcRenderer.invoke('dialog:openFile'),
 	
@@ -40,6 +36,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	changeLoginPage : () => ipcRenderer.invoke('changeLoginPage'),
 	changeMainPage : () => ipcRenderer.invoke('changeMainPage'),
+
+	loginProc : (param) => ipcRenderer.invoke('loginProc', param),
 	
 	electronEventTrigger : electronEventTrigger,
 })

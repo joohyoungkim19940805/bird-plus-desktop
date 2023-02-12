@@ -6,7 +6,7 @@
 global.__project_path = require.main.paths[0].split('node_modules')[0];
 global.__serverApi = (()=>{
 	if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
-		return 'http://localhost:8079';
+		return 'http://localhost:8079/';
 	}
 })();
 
@@ -21,30 +21,13 @@ const fs = require('fs');
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	protocol.registerFileProtocol('file', (request, callback) => {
-		//const pathname = decodeURI(request.url.replace('file:///', ''));
-		console.log(1111111111111111111111111111111111111111111)
-		console.log(request)
-		callback(request.url);
-	});
-	protocol.registerBufferProtocol('file', (request, callback) => {
-		//const pathname = decodeURI(request.url.replace('file:///', ''));
-		console.log(2222222222222222222222222222222222222222)
-		console.log(request)
-		callback(request.url);
-	});
-	protocol.registerStreamProtocol('file', (request, callback) => {
-		//const pathname = decodeURI(request.url.replace('file:///', ''));
-		console.log(33333333333333333333333333333333333333)
-		console.log(request)
-		callback(request.url);
-	});
 	const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 	
 	const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
 	const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
-	const mainIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
+	const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
+	const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
 /*
     let icons = new BrowserWindow({
         show: false, webPreferences: {offscreen: true}});

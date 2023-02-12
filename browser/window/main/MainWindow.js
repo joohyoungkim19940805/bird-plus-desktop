@@ -9,7 +9,7 @@ const path = require('path');
 const {BrowserWindow} = require('electron');
 
 /**
- * 메인화면에서 사용 할 윈도우를 정의한다.
+ * 메인 윈도우를 정의한다.
  * @author mozu123
  * @constructor
  * @extends BrowserWindow

@@ -32,6 +32,11 @@ class MainLayout extends HTMLElement {
 			this.style.height = mathHeight + 'px'
 			this.style.width = window.outerWidth + 'px'; 
 		});
+		/*window.addEventListener('load',()=>{
+			let mathHeight =  (window.outerHeight - header.clientHeight);
+			this.style.height = mathHeight + 'px'
+			this.style.width = window.outerWidth + 'px';
+		})*/
 		/*
 		[...this.children].forEach(e=>{
 			let originWidth = window.getComputedStyle(e).width;
