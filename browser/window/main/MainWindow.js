@@ -25,7 +25,7 @@ class MainWindow extends BrowserWindow{
 			width : 800,
 			height : 300,
 			webPreferences : {
-				preload : path.join(__project_path, 'preload.js'),
+				preload : path.join(__project_path, 'browser/preload/preload.js'),
 				protocol: "file",
       			slashes: true
 			},

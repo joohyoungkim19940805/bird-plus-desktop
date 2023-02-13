@@ -13,7 +13,7 @@ const { app, Menu, Tray } = require('electron');
 class MainTray extends Tray{
 	mainWindow =  require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 	constructor() {
-		super( path.join(__project_path, 'view/static/image/icon.png') );
+		super( path.join(__project_path, 'view/image/icon.ico') );
 		this.setToolTip('This is my application.');
 		const menu = Menu.buildFromTemplate([
 			{ label: 'Item1', type: 'normal' },

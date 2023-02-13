@@ -11,9 +11,7 @@ global.__serverApi = (()=>{
 })();
 
 // 일렉트론 모듈 호출
-const { protocol, app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
-app.commandLine.appendSwitch('enable-features', "SharedArrayBuffer")
-app.commandLine.appendSwitch('enable-unsafe-webgpu')
+const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
 // path 모듈 호출
 const path = require('path');
 
@@ -28,6 +26,7 @@ app.whenReady().then(()=>{
 	const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
 	const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
 	const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
+	
 /*
     let icons = new BrowserWindow({
         show: false, webPreferences: {offscreen: true}});
@@ -41,7 +40,7 @@ app.whenReady().then(()=>{
 	//앱이 활성화 되었을 때의 이벤트를 정의한다.
 	//mac os 의 경우 창이 열려있지 않아도 백그라운드에서 계속 실행 상태이다.
 	app.on('activate', ()=>{
-	// 가용 가능한 창이 없을 경우..
+		// 가용 가능한 창이 없을 경우..
 		if(BrowserWindow.getAllWindows().length === 0){
 			// 창을 띄운다.
 			createWindow();

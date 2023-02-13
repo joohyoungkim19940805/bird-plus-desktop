@@ -9,12 +9,12 @@ module.exports = {
 	mode: 'development',
 	devtool: 'cheap-module-source-map',
 	entry: {
-		openingRenderer: "./view/static/js/renderer/openingRenderer.js",
-		temp3DHandler : "./view/static/js/handler/Temp3DHandler.ts"
+		openingRenderer: "./view/js/renderer/openingRenderer.js",
+		temp3DHandler : "./view/js/handler/Temp3DHandler.ts"
 	},
 	output: {
 		filename: "[name].bundle.js",
-		path: path.resolve(__dirname, './view/static/js/dist')
+		path: path.resolve(__dirname, './view/js/dist')
 	},
 	module: {
 		rules: [

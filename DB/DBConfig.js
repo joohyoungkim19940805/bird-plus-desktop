@@ -1,4 +1,5 @@
-
+const fs = require('fs');
+const { app } = require('electron');
 /**
  * sql Lite3 관련 코드
  */
@@ -6,6 +7,8 @@ class DBConfig{
 	static #columnInfo;
 	static #columnRegex = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
 	static sqlite3 =  require('sqlite3').verbose();
+	static #dbDir = app.getPath('home') + '\\.bird-plus\\DB\\';
+	static #dbName = 'a-simple-desktop.db'
 	static #type = {
 		NULL : {name : 'NULL'},
 		INTEGER : {name : 'INTEGER'},
@@ -27,6 +30,7 @@ class DBConfig{
 		}
 	};
 	static{
+		console.log('test<<<<<<<<<<<<<<<<<')
 		this.#columnInfo = {
 			PATH_TABLE : {
 				clone : JSON.stringify({
@@ -64,6 +68,20 @@ class DBConfig{
 				name : 'PATH_INFO_TABLE'
 			}
 		}
+		
+		if(!fs.existsSync(this.#dbDir)){
+			fs.mkdirSync(this.#dbDir, {recursive: true})
+		}
+
+		try{
+			fs.writeFileSync(this.#dbDir + this.#dbName, '', {flag:'wx'});
+		}catch(err){
+			if(err.code !=='EEXIST'){
+				console.error('db open error', err);
+			} 
+		}
+		
+
 		//CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (${COLUMN_NAME_1} ${COLUMN_TYPE_1}, ${COLUMN_NAME_2} ${COLUMN_TYPE_2})
 		let db = this.getDB();
 		db.serialize(() => {
@@ -125,8 +143,11 @@ class DBConfig{
 		return columnName.match(this.#columnRegex).join('_');
 	}
 
-	static getDB(mode = this.#sqlite3.OPEN_READWRITE | this.#sqlite3.OPEN_CREATE){
-		let db = new this.#sqlite3.Database(path.join(__project_path, 'DB/a-simple-desktop.db'), mode, (err) => {
+	static getDB(mode){
+		if(! mode){
+			mode = this.sqlite3.OPEN_READWRITE | this.sqlite3.OPEN_CREATE;
+		}
+		let db = new this.sqlite3.Database(this.#dbDir + this.#dbName, mode, (err) => {
             if(err){
                 console.error(err.message);
             }

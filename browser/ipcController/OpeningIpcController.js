@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
+//const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 
 class OpeningIpcController {

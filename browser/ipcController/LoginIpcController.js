@@ -1,7 +1,7 @@
 const path = require('path');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 class LoginIpcController {
 	constructor() {
@@ -18,8 +18,9 @@ class LoginIpcController {
 					'Content-Type': 'application/json'
 				}
 			}).then(response=>{
-				if(response.status == '200'){
-
+				if(response.status == '200' || response.status == '201'){
+					let db = dbConfig.getDB();
+					
 				}
 				return response.data;
 			}).catch(e=>{
