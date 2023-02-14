@@ -20,7 +20,16 @@ class LoginIpcController {
 			}).then(response=>{
 				if(response.status == '200' || response.status == '201'){
 					let db = dbConfig.getDB();
-					
+					console.log(response.data)
+					db.serialize(function() {
+						/*
+						db.run("INSERT INTO Foo (name) VALUES ('bar')");
+
+						db.each("SELECT id, name FROM Foo", function(err, row) {
+						  console.log(row.id + ": " + row.name);
+						});
+						*/
+					})
 				}
 				return response.data;
 			}).catch(e=>{

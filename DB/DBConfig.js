@@ -30,13 +30,12 @@ class DBConfig{
 		}
 	};
 	static{
-		console.log('test<<<<<<<<<<<<<<<<<')
 		this.#columnInfo = {
 			PATH_TABLE : {
 				clone : JSON.stringify({
 					DIR_PATH : {default : '', type : this.#type.TEXT.name},
-					IS_DRI : {default : this.#type.BOOLEAN[false], type : this.#type.BOOLEAN.name},
-					IS_FILE : {default : this.#type.BOOLEAN[false], type : this.#type.BOOLEAN.name},
+					IS_DRI : {default : this.#type.BOOLEAN.false, type : this.#type.BOOLEAN.name},
+					IS_FILE : {default : this.#type.BOOLEAN.false, type : this.#type.BOOLEAN.name},
 					LAST_NAME : {default : '', type : this.#type.TEXT.name},
 					EXTENSION : {default : '', type : this.#type.TEXT.name},
 					ERROR_NO : {default : '', type : this.#type.TEXT.name},
@@ -66,6 +65,15 @@ class DBConfig{
 					CTIME : {default : '', type : this.#type.TEXT.name}
 				}), 
 				name : 'PATH_INFO_TABLE'
+			},
+			ACCOUNT : {
+				clone : JSON.stringify({
+					USER_ID : {default : '', type : this.#type.TEXT.name},
+					TOKEN : {default : '', type : this.#type.TEXT.name},
+					ISSUED_AT : {default : 0, type : this.#type.TEXT.name},
+					EXPIRES_AT : {default : 0, type : this.#type.INTEGER.name}
+				}),
+				name : 'ACCOUNT_LOG'
 			}
 		}
 		
@@ -153,6 +161,14 @@ class DBConfig{
             }
         });
 		return db;
+	}
+
+	static closeDB(db){
+		db.close((err) => {
+			if(err){
+				console.error(err.message)
+			}
+		})
 	}
 }
 
