@@ -18,19 +18,28 @@ class LoginIpcController {
 					'Content-Type': 'application/json'
 				}
 			}).then(response=>{
-				if(response.status == '200' || response.status == '201'){
+				if((response.status == '200' || response.status == '201') && response.data.code == '00'){
 					let db = dbConfig.getDB();
 					console.log(response.data)
-					db.serialize(function() {
-						/*
-						db.run("INSERT INTO Foo (name) VALUES ('bar')");
-
-						db.each("SELECT id, name FROM Foo", function(err, row) {
-						  console.log(row.id + ": " + row.name);
-						});
-						*/
+					db.serialize(() => {
+						let {userId, token, issuedAt, expiresAt} = response.data;
+						db.run(`
+							INSERT INTO ACCOUNT_LOG (
+								USER_ID,
+								TOKEN,
+								ISSUED_AT,
+								EXPIRES_AT
+							)
+							VALUES (
+								'${userId}', 
+								'${token}', 
+								'${issuedAt}', 
+								'${expiresAt}'
+							)
+						`);
 					})
 				}
+				console.log(response.data)
 				return response.data;
 			}).catch(e=>{
 				return e.response.data;

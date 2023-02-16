@@ -3,6 +3,10 @@ const { app } = require('electron');
 /**
  * sql Lite3 관련 코드
  */
+//db.run("INSERT INTO Foo (name) VALUES ('bar')");
+/*db.each("SELECT id, name FROM Foo", function(err, row) {
+	console.log(row.id + ": " + row.name);
+});*/
 class DBConfig{
 	static #columnInfo;
 	static #columnRegex = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
@@ -42,7 +46,6 @@ class DBConfig{
 					ERROR_CODE : {default : '', type : this.#type.TEXT.name},
 					ERROR_NAME : {default : '', type : this.#type.TEXT.name}
 				}), 
-				name : 'PATH_TABLE'
 			},
 			PATH_INFO_TABLE : {
 				clone : JSON.stringify({
@@ -64,16 +67,14 @@ class DBConfig{
 					MTIME : {default : '', type : this.#type.TEXT.name},
 					CTIME : {default : '', type : this.#type.TEXT.name}
 				}), 
-				name : 'PATH_INFO_TABLE'
 			},
-			ACCOUNT : {
+			ACCOUNT_LOG : {
 				clone : JSON.stringify({
 					USER_ID : {default : '', type : this.#type.TEXT.name},
 					TOKEN : {default : '', type : this.#type.TEXT.name},
 					ISSUED_AT : {default : 0, type : this.#type.TEXT.name},
-					EXPIRES_AT : {default : 0, type : this.#type.INTEGER.name}
+					EXPIRES_AT : {default : 0, type : this.#type.TEXT.name}
 				}),
-				name : 'ACCOUNT_LOG'
 			}
 		}
 		
