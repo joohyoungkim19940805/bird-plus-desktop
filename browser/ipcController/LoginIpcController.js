@@ -18,7 +18,7 @@ class LoginIpcController {
 					'Content-Type': 'application/json'
 				}
 			}).then(response=>{
-				if((response.status == '200' || response.status == '201') && response.data.code == '00'){
+				if((response.status == '200' || response.status == '201') && response.code == '00'){
 					let db = dbConfig.getDB();
 					console.log(response.data)
 					db.serialize(() => {
