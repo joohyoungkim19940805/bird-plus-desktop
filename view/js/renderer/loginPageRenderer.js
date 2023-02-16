@@ -34,7 +34,8 @@ new class LoginPageRenderer{
 		}
 		document.querySelector('.login_wrap').onkeyup = (event) =>{
 			statusText.textContent = '';
-			if(event.code == 'Enter'){
+			console.log(event.key);
+			if(event.key == 'Enter'){
 				loginBtn.onclick(event);
 			}
 		}

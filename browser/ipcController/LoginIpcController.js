@@ -18,11 +18,13 @@ class LoginIpcController {
 					'Content-Type': 'application/json'
 				}
 			}).then(response=>{
-				if((response.status == '200' || response.status == '201') && response.code == '00'){
+				let status = response.status;
+				let {code, data} = response.data;
+
+				if((status == '200' || status == '201') && code == '00'){
 					let db = dbConfig.getDB();
-					console.log(response.data)
-					db.serialize(() => {
-						let {userId, token, issuedAt, expiresAt} = response.data;
+					db.serialize( () => {
+						let {userId, token, issuedAt, expiresAt} = data;
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
 								USER_ID,
@@ -30,16 +32,14 @@ class LoginIpcController {
 								ISSUED_AT,
 								EXPIRES_AT
 							)
-							VALUES (
-								'${userId}', 
-								'${token}', 
-								'${issuedAt}', 
-								'${expiresAt}'
-							)
-						`);
+							VALUES (?,?,?,?)
+						`,[userId, token, issuedAt, expiresAt], (err) => {
+							if(err){
+								console.error('login account log insert error', err);
+							}
+						});
 					})
 				}
-				console.log(response.data)
 				return response.data;
 			}).catch(e=>{
 				return e.response.data;
