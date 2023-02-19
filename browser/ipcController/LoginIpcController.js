@@ -20,11 +20,12 @@ class LoginIpcController {
 			}).then(response=>{
 				let status = response.status;
 				let {code, data} = response.data;
-
 				if((status == '200' || status == '201') && code == '00'){
 					let db = dbConfig.getDB();
 					db.serialize( () => {
+						//console.log(data)
 						let {userId, token, issuedAt, expiresAt} = data;
+						global.__apiToken = token; 
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
 								USER_ID,
@@ -39,10 +40,12 @@ class LoginIpcController {
 							}
 						});
 					})
+					
 				}
 				return response.data;
-			}).catch(e=>{
-				return e.response.data;
+			}).catch(err=>{
+				console.log(err.response)
+				return err.response.data;
 			})
 		})
 

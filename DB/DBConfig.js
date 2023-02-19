@@ -94,21 +94,82 @@ class DBConfig{
 		//CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (${COLUMN_NAME_1} ${COLUMN_TYPE_1}, ${COLUMN_NAME_2} ${COLUMN_TYPE_2})
 		let db = this.getDB();
 		db.serialize(() => {
+
 			Object.entries(this.#columnInfo).forEach( ([tableName, value]) => {
+				/**
+				 * 존재하지 않는 테이블이라면 신규 테이블 추가
+				 */
 				db.run(`CREATE TABLE IF NOT EXISTS ${tableName} (
 					${
 						Object.entries(JSON.parse(value.clone)).map( ([colName, value]) => {
-							return colName + ' ' + value.type
+							return `${colName} ${value.type} DEFAULT '${value.default ? value.default : ''}'`
 						}).join(', ')
 					}
 				)`)
+				let column = this.getColumnInfo(tableName);
+				let dbAllPromise = new Promise(resolve => {
+					db.all(`PRAGMA table_info(${tableName})`, (err, dataList) => {
+						if(err){
+							console.error(err);
+						}
+						resolve(dataList);
+					})
+				})
+				let promise = new Promise(resolve => {
+					let dbColumnMapper = {};
+					dbAllPromise.then(dataList => {
+						dataList.forEach(data=>{
+							dbColumnMapper[data.name] = data.name;
+							//해당하는 컬럼이 columnInfo에 정의되지 않았다면 제거
+							if( ! column.info[data.name]){
+								db.run(`ALTER TABLE ${tableName} DROP COLUMN ${data.name}`, (err)=>{
+									if(err){
+										console.error('column delete trying but failed', err)
+									}
+								})
+							}
+						})
+						resolve(dbColumnMapper)
+					})
+
+				});
+				
+				promise.then(dbColumnMapper => {
+					/**
+					 * columnInfo로 정의되었으나 테이블에는 없는 컬럼은 추가
+					 */
+					return new Promise(resolve=>{
+						return Promise.all(Object.entries(column.info).map(([key,value])=>{
+							let pormise = new Promise(res=>{
+								if( ! dbColumnMapper[key]){
+									console.log(value.type)
+									console.log(value.default)
+									db.run(`ALTER TABLE ${tableName} ADD COLUMN ${key} ${value.type} DEFAULT '${value.default}'`, (err)=>{
+										if(err){
+											console.error('add column trying but failed', err)
+										}
+										res();
+									})
+								}
+							})
+							//console.log(dbColumnMapper)
+							//console.log('dbColumnMapper >>> 222', dbColumnMapper);
+							
+							return pormise;
+						}))
+					})
+				}).then(()=>{
+					db.close((err) => {
+						if(err){
+							console.error(err.message)
+						}
+					})
+				})
+				
+				
 			});
 		})
-		db.close((err) => {
-			if(err){
-				console.error(err.message)
-			}
-		})
+		
 	}
 
 	static getColumnInfo(tableName){

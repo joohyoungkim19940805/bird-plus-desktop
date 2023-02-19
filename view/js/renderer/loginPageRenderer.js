@@ -15,17 +15,17 @@ new class LoginPageRenderer{
 				console.log('????????????????????????????????????');
 				console.log(response);
 				let {code} = response;
-				if(false){
-
-				}else if(code === 101){
+				if(code == '00'){
+					window.myAPI.changeMainPage();
+				}else if(code == 101){
 					statusText.textContent = '해당 기능에 권한이 없습니다.'
-				}else if(code === 102){
+				}else if(code == 102){
 					statusText.textContent = '유효하지 않은 비밀번호입니다.'
-				}else if(code === 103){
+				}else if(code == 103){
 					statusText.textContent = '존재하지 않는 계정입니다.'
-				}else if(code === 104){
+				}else if(code == 104){
 					statusText.textContent = '비활성화 된 계정입니다.'
-				}else if(code === 999){
+				}else if(code == 999){
 					statusText.textContent = '알 수 없는 오류입니다. 관리자에게 문의하십시오.';
 				}
 			});
