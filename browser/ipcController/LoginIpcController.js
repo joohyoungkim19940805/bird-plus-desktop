@@ -28,13 +28,12 @@ class LoginIpcController {
 						global.__apiToken = token; 
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
-								USER_ID,
 								TOKEN,
 								ISSUED_AT,
 								EXPIRES_AT
 							)
-							VALUES (?,?,?,?)
-						`,[userId, token, issuedAt, expiresAt], (err) => {
+							VALUES (?,?,?)
+						`,[token, issuedAt, expiresAt], (err) => {
 							if(err){
 								console.error('login account log insert error', err);
 							}

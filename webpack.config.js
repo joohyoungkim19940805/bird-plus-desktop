@@ -10,6 +10,7 @@ module.exports = {
 	devtool: 'cheap-module-source-map',
 	entry: {
 		openingRenderer: "./view/js/renderer/openingRenderer.js",
+		mainPageRenderer: "./view/js/renderer/mainPageRenderer.js",
 		temp3DHandler : "./view/js/handler/Temp3DHandler.ts"
 	},
 	output: {

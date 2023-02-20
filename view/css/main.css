@@ -13,10 +13,11 @@ body::-webkit-scrollbar {
 }
 
 #container{
-	display: flex;
+	display: inline-flex;
     height: 90%;
     width: 100vw;
 	overflow: auto;
+	overflow-wrap: revert-layer;
 	-ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -138,12 +139,10 @@ resize-drag-panel > div.im_here{
 }
 
 div.test1{
-    width: 150px;
     background-color: aliceblue;
     height: 100%;
 }
 .test2{
-	width: 40vw;
     background-color: antiquewhite;
 }
 .test3{

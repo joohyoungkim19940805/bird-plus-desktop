@@ -39,10 +39,11 @@
 		"@tensorflow-models/mobilenet": "^2.0.4",
 		"@tensorflow/tfjs": "^4.2.0",
 		"axios": "^1.3.2",
-		"sqlite3": "^5.1.4",
 		"babylonjs": "^5.46.0",
 		"babylonjs-gui": "^5.46.0",
-		"babylonjs-loaders": "^5.46.0"
+		"babylonjs-loaders": "^5.46.0",
+		"quill": "^1.3.7",
+		"sqlite3": "^5.1.4"
 	},
 	"keywords": [
 		"bird",

@@ -78,7 +78,7 @@ class ResizeDragPanel extends HTMLElement {
 							moveX : moveX
 						},event))
 					)
-				})
+				});
 			})
 			window.addEventListener('mouseup', (event) => {
 				if( this.hasAttribute('data-is_mouse_down')) {

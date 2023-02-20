@@ -70,7 +70,6 @@ class DBConfig{
 			},
 			ACCOUNT_LOG : {
 				clone : JSON.stringify({
-					USER_ID : {default : '', type : this.#type.TEXT.name},
 					TOKEN : {default : '', type : this.#type.TEXT.name},
 					ISSUED_AT : {default : 0, type : this.#type.TEXT.name},
 					EXPIRES_AT : {default : 0, type : this.#type.TEXT.name}
