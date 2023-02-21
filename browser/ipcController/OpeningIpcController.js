@@ -3,7 +3,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 //const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
-
+const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 class OpeningIpcController {
 	constructor() {
 		/**
@@ -47,6 +47,40 @@ class OpeningIpcController {
 				return 'done';
 			})
 		});
+
+		ipcMain.handle('getLastToken', async (event) => {
+			//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
+			return new Promise( (resolve, reject) => {
+				let db = dbConfig.getDB(dbConfig.sqlite3.OPEN_READONLY);
+				db.serialize( () => {
+					db.all(`
+					SELECT 
+						TOKEN, 
+						ISSUED_AT, 
+						EXPIRES_AT 
+					FROM 
+						ACCOUNT_LOG 
+					WHERE 
+						EXPIRES_AT > datetime('now','localtime') 
+					LIMIT 1`,[], (err, rows) => {
+						if(err){
+							console.log(err);
+							reject(err);
+						}
+						if(rows[0]){
+							console.log(rows[0])
+							global.__apiToken = rows[0].TOKEN
+							mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+								mainWindow.titleBarStyle = 'visibble'
+								mainWindow.show();
+								//mainWindow.webContents.openDevTools();
+								resolve('done');
+							})
+						}
+					})
+				});
+			});
+		})
 
 		//this.addIpcMainEvents()
 	}

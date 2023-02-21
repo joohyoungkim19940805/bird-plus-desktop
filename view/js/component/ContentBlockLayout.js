@@ -60,6 +60,7 @@ class ContentBlockLayout extends HTMLDivElement {
 				if ( ! entry.isIntersecting && ! entry.target.resizePanel.hasAttribute('data-is_hiding')) {
 
 					entry.target.resizePanel.setAttribute('data-is_hiding', '');
+					entry.target.resizePanel.classList.add('no_resize');
 					let imHere = Object.assign(document.createElement('div'),{
 						className:'im_here',
 						textContent:'≪≫'
@@ -76,6 +77,7 @@ class ContentBlockLayout extends HTMLDivElement {
 						document.querySelectorAll('div[is="content-block"]').forEach((element,idx)=>{
 							if(element.hasAttribute('data-is_over')){
 								element.removeAttribute('data-is_over');
+								entry.target.resizePanel.classList.remove('no_resize');
 							}
 							if(element.hasAttribute('data-is_last_move')){
 								lastMoveEle = element;
@@ -110,6 +112,7 @@ class ContentBlockLayout extends HTMLDivElement {
 						imHere.remove();
 					}
 					entry.target.resizePanel.removeAttribute('data-is_hiding')
+					entry.target.resizePanel.classList.remove('no_resize');
 				}
 			})
 		},{
