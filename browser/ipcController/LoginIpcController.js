@@ -5,10 +5,6 @@ const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 class LoginIpcController {
 	constructor() {
-		/**
-		 * dialog:IPC 채널 이름 의 접두사는 코드에 영향을 미치지 않습니다. 
-		 * 코드 가독성에 도움이 되는 네임스페이스 역할만 합니다.
-		 */
 		ipcMain.handle('loginProc', async (event, param) => {
 			console.log('test>>>')
 			console.log(param);
@@ -24,7 +20,7 @@ class LoginIpcController {
 					let db = dbConfig.getDB();
 					db.serialize( () => {
 						//console.log(data)
-						let {userId, token, issuedAt, expiresAt} = data;
+						let {token, issuedAt, expiresAt} = data;
 						global.__apiToken = token; 
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
@@ -37,6 +33,7 @@ class LoginIpcController {
 							if(err){
 								console.error('login account log insert error', err);
 							}
+							global.__apiToken = token
 						});
 					})
 					

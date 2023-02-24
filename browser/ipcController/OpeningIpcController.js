@@ -61,20 +61,29 @@ class OpeningIpcController {
 					FROM 
 						ACCOUNT_LOG 
 					WHERE 
-						EXPIRES_AT > datetime('now','localtime') 
+						EXPIRES_AT >= datetime('now','localtime') 
 					LIMIT 1`,[], (err, rows) => {
 						if(err){
 							console.log(err);
 							reject(err);
 						}
+						mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+						mainWindow.center();
+						mainWindow.resizable = true;
+						mainWindow.movable = true;
+						mainWindow.autoHideMenuBar = false;
+						mainWindow.menuBarVisible = true;
 						if(rows[0]){
-							console.log(rows[0])
 							global.__apiToken = rows[0].TOKEN
 							mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
 								mainWindow.titleBarStyle = 'visibble'
 								mainWindow.show();
-								//mainWindow.webContents.openDevTools();
-								resolve('done');
+							})
+						}else{
+							mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+								mainWindow.titleBarStyle = 'visibble'
+								mainWindow.show();
+								return 'done';
 							})
 						}
 					})
