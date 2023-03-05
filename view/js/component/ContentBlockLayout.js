@@ -116,6 +116,7 @@ class ContentBlockLayout extends HTMLDivElement {
 						this.style.display = 'none';
 					}
 				}else{
+					//imHere이 옆으로 밀리면서 사라짐(앞에있는 걸 누를시)포지션을 fiexd로 변경 후 리사이즈 패널 기준으로 변경 필요
 					let imHere = this.resizePanel.querySelector('div.im_here');
 					if(imHere){
 						imHere.remove();
