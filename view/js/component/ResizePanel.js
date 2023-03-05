@@ -36,11 +36,19 @@ class ResizeDragPanel extends HTMLElement {
 				let originWidth = this.resizeTarget.getBoundingClientRect().width;
 				let originWidthRatio = originWidth / window.outerWidth
 				this.resizeTarget.style.width = (originWidthRatio*100) + 'vw';
-				let {right}= this.resizeTarget.getBoundingClientRect(); 
+				let {right} = this.resizeTarget.getBoundingClientRect();
+				// 화면 비율에 맞게 리사이즈
 				if((window.outerWidth- right) < 5 || this.resizeTarget.hasAttribute('data-is_over')){
 					let newRatio = (window.outerWidth - this.resizeTarget.getBoundingClientRect().x) / window.outerWidth
-					this.resizeTarget.style.width = (newRatio*100) + 'vw';
+					this.resizeTarget.style.width = (newRatio*100) + 'vw';	
 				}
+				// 리사이즈 - 최대화면 -> 원래 화면으로 전환시(타이틀바 두번누르는 걸로) width가 화면비율에 의해 더 작아지는 현상
+				// 원래 리사이즈 후 width보다 작을 경우 원래 width로 복원
+				let resizeAfterWidth = this.resizeTarget.getBoundingClientRect().width;
+				if(Number(this.resizeTarget.dataset.origin_width) > resizeAfterWidth){
+					this.resizeTarget.style.width = this.resizeTarget.dataset.origin_width + 'px';
+				}
+				//this.resizeTarget.dataset.origin_width = resizeAfterWidth;
 			});
 
 			this.onmousedown = (event) => {
