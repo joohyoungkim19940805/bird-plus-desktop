@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
 		<link rel="stylesheet" type="text/css" href="./../css/header.css">
 		<link rel="stylesheet" type="text/css" href="./../css/main.css">
 		<script type="text/javascript" src="./../js/component/header/HeaderDefault.js"></script>
@@ -18,22 +18,25 @@
 				<div is="content-block" class="content" data-is_no_resize="">aaaaaaa</div>
 			</div>
 			<div class="content_wrapper test2" data-info="채널과 방 등">
-				<div is="content-block" class="content">abcdddddddd</div>
+				<div is="content-block" data-min_width="100" class="content">abcdddddddd</div>
 			</div>
 			<div class="content_wrapper test3" data-info="채팅 관련">
-				<div is="content-block" class="content">
-					<div>
+				<div is="content-block" data-min_width="100" class="content">
+					<div class="chating_block">
 						<div data-info="상단(참여인원 화상채팅 등등 탑쪽 메뉴 wrap)">
 						</div>
 						<div data-info="중단(채팅 내용 관련 내용 wrap)">
 						</div>
-						<div data-info="">
+						<div data-info="채팅 내용 wrap">
+							<div id="editor">
+								
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="content_wrapper test4" data-info="스레드 같은 거">
-				<div is="content-block" class="content" data-is_no_resize="" data-is_last_child="">abcdefghijk</div>
+				<div is="content-block" data-min_width="100" class="content" data-is_no_resize="" data-is_last_child="">abcdefghijk</div>
 			</div>
 		</main-layout>
 		<script type="text/javascript" src="./../js/dist/mainPageRenderer.bundle.js"></script>

@@ -75,7 +75,7 @@ class ResizeDragPanel extends HTMLElement {
 				let width = this.resizeTarget.clientWidth - moveX// + weight;
 				let maxSize =  window.outerWidth - this.resizeTarget.parentElement.getBoundingClientRect().x
 				if(width > maxSize){
-					width = maxSize;
+					width = maxSize
 				}
 				this.resizeTarget.style.width = width + 'px';
 				new Promise(resolve=>{
@@ -84,7 +84,7 @@ class ResizeDragPanel extends HTMLElement {
 							target : this.resizeTarget,
 							panel : this,
 							moveX : moveX
-						},event))
+						}, event))
 					)
 				});
 			})
