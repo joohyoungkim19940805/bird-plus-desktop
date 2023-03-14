@@ -31,9 +31,9 @@ class OpeningIpcController {
 				return allDirectoryPathScanning.userDirtoryList.length;
 			});
 		})
-
+		/*
 		ipcMain.handle('changeLoginPage', async (event) => {
-			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+			mainWindow.setSize(1024, 768, true );
 			mainWindow.center();
 			mainWindow.resizable = true;
 			mainWindow.movable = true;
@@ -47,8 +47,8 @@ class OpeningIpcController {
 				return 'done';
 			})
 		});
-
-		ipcMain.handle('getLastToken', async (event) => {
+		*/
+		ipcMain.handle('changeLoginPage', async (event) => {
 			//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
 			return new Promise( (resolve, reject) => {
 				let db = dbConfig.getDB(dbConfig.sqlite3.OPEN_READONLY);
@@ -86,6 +86,7 @@ class OpeningIpcController {
 								return 'done';
 							})
 						}
+						resolve(rows[0])
 					})
 				});
 			});

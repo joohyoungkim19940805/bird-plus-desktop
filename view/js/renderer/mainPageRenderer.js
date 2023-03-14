@@ -1,11 +1,13 @@
-import Quill from "quill"
+import FreedomPlusEditor from "../handler/editor/FreedomPlusEditor"
 
-const quill = new Quill('#editor', {
-	debug: 'info',
-	modules: {
-	  toolbar: true
-	},
-	placeholder: 'Compose an epic...',
-	readOnly: true,
-	theme: 'snow'
-  });
+class Editor extends FreedomPlusEditor{
+	constructor(){
+		let component = {
+			'freedom-line' : FreedomPlusEditor.Component.Line
+		};
+
+		super(component,{});
+	}
+}
+
+window.customElements.define('freedom-editor-plus', Editor, {extends : 'div'});

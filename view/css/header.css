@@ -1,5 +1,5 @@
 header-default #header_content{
-    height: 50px;
+    height: inherit;
     background: linear-gradient(to bottom, #EAEAEA -274%, #2B2B2B 96%, #7c0000 99%);
     display: flex;
     justify-content: space-between;

@@ -24,132 +24,65 @@ body::-webkit-scrollbar {
 #container::-webkit-scrollbar{
 	display: none;
 }
-.content_wrapper{
-	position: relative;
-	display: flex;
-}
+
 div[is="content-block"]{
     height:100%;
 	min-width: 100%;
 }
-resize-drag-panel{
-	width: 2.5px;
-    height: 100%;
-    background-color: #b1b1b1;
-	z-index: 9999;
-	position: absolute;
+
+/*content wrapper 크기 조절*/
+.content_wrapper{
+	position: relative;
 	display: flex;
-    justify-content: center;
-
-	-moz-user-select: -moz-none;
-	-khtml-user-select: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	right: 0;
 }
-resize-drag-panel > panel_width{
-	height:100%;
-}
-resize-drag-panel:not(.no_resize){
-    cursor: ew-resize;
-}
-resize-drag-panel > div.hover{
-	display: none;
-}
-resize-drag-panel:not(.no_resize):hover{
-	animation-name: drag-panel-hover;
-	animation-fill-mode: forwards;
-    animation-direction: normal;
-    animation-duration: 0.3s;
-	animation-iteration-count: 1;
-	animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
-}
-resize-drag-panel:not(.no_resize):hover > div.hover{
-	top:0;
-    height: inherit;
-    cursor: ew-resize;
-	background-color: #0066ffb5;
-	z-index: 9999;
-	position: absolute;
-	display: block;
-	animation-name: drag-panel-hover-highlight;
-	animation-fill-mode: forwards;
-    animation-direction: normal;
-    animation-duration: 0.3s;
-	animation-iteration-count: 1;
-	animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
-	width: 5px;
-}
-resize-drag-panel > div.im_here{
-	position: absolute;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-	right: 0;
-	padding-right: 2vw;
-}
-@keyframes drag-panel-hover {
-	0%{
-		background-color: #b1b1b1d6;
-	}
-	10%{
-		background-color: #b1b1b1ba;
-	}
-	20%{
-		background-color: #b1b1b194;
-	}
-	40%{
-		background-color: #b1b1b17d;
-	}
-	60%{
-		background-color: #b1b1b152;
-	}
-	80%{
-		background-color: #b1b1b130;
-	}
-	100%{
-		background-color: #b1b1b100;
-		animation-play-state: paused;
-	}
-}
-@keyframes drag-panel-hover-highlight {
-	0%{
-		opacity: 0;
-	}
-	10%{
-		opacity: 0.1;
-	}
-	20%{
-		opacity: 0.2;
-	}
-	40%{
-		opacity: 0.4;
-	}
-	60%{
-		opacity: 0.6;
-	}
-	80%{
-		opacity: 0.8;
-	}
-	100%{
-		opacity: 1;
-		animation-play-state: paused;
-	}
-}
-
-div.test1{
+.content_wrapper.options_wrapper{
     background-color: aliceblue;
-    height: 100%;
 }
-.test2{
+.content_wrapper.rooms_wrapper{
     background-color: antiquewhite;
 }
-.test3{
+.content_wrapper.chating_wrapper{
 	width: 100vw;
     background-color: aqua;
 }
-.test4{
+.content_wrapper.thread_wrapper{
 	width: 100vw;
     background-color: aquamarine;
+}
+
+/* chating_wrapper 크기 조절*/
+div.chating_block{
+    display: inline-flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+	overflow-y: auto;
+	overflow-wrap: revert-layer;
+	width: 100%;
+}
+.chating_content_wrapper{
+    position: relative;
+    display: flex;
+}
+.chating_content_wrapper.chat_tools{
+	background-color: burlywood;
+	height:5vh;
+}
+.chating_content_wrapper.chat_view{
+	background-color: skyblue;
+	height: 100vh;
+}
+.chating_content_wrapper.chat_editor{
+    background-color: darksalmon;
+	height: 100vh;
+}
+
+
+
+div[is="freedom-editor-plus"]{
+	height: 100%;
+    overflow: auto;
+    overflow-wrap: anywhere;
+	padding-left: 0.5%;
+
 }

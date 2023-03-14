@@ -18,9 +18,9 @@ class ContentBlockLayout extends HTMLDivElement {
 					this.resizePanel.className = "no_resize"
 				}
 				this.after(this.resizePanel);
+				this.parentElement.classList.add('content_block_parent')
+				this.parentElement.dataset.direction = this.dataset.direction;
 			}
-			console.log(this.parentElement.classList)
-			console.log(this.clientWidth)
 			this.addContentBlockEvent();
         }
 		document.addEventListener("DOMContentLoaded", () => {

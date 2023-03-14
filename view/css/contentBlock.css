@@ -1,0 +1,125 @@
+div[is="content-block"]{
+    height:100%;
+	min-width: 100%;
+}
+resize-drag-panel{
+    background-color: #b1b1b1;
+	z-index: 9999;
+	position: absolute;
+	display: flex;
+    justify-content: center;
+
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	right: 0;
+	bottom: 0;
+}
+resize-drag-panel > panel_width{
+	height:100%;
+}
+resize-drag-panel > div.hover{
+	display: none;
+}
+.content_block_parent[data-direction="x"] resize-drag-panel{
+	width: 2.5px;
+    height: 100%;
+}
+.content_block_parent[data-direction="y"] resize-drag-panel{
+	height: 2.5px;
+	width:100%;
+}
+.content_block_parent[data-direction="x"] resize-drag-panel:not(.no_resize):hover > div.hover{
+	width: 5px;
+	height: inherit;
+}
+.content_block_parent[data-direction="y"] resize-drag-panel:not(.no_resize):hover > div.hover{
+	height: 5px;
+	width: inherit;
+}
+.content_block_parent[data-direction="x"] resize-drag-panel:not(.no_resize){
+    cursor: ew-resize;
+}
+.content_block_parent[data-direction="y"] resize-drag-panel:not(.no_resize){
+    cursor: ns-resize;
+}
+
+resize-drag-panel:not(.no_resize):hover{
+	animation-name: drag-panel-hover;
+	animation-fill-mode: forwards;
+    animation-direction: normal;
+    animation-duration: 0.3s;
+	animation-iteration-count: 1;
+	animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
+}
+
+resize-drag-panel:not(.no_resize):hover > div.hover{
+	background-color: #0066ffb5;
+	z-index: 9999;
+	position: absolute;
+	display: block;
+	animation-name: drag-panel-hover-highlight;
+	animation-fill-mode: forwards;
+    animation-direction: normal;
+    animation-duration: 0.3s;
+	animation-iteration-count: 1;
+	animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
+}
+resize-drag-panel > div.im_here{
+	position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+	right: 0;
+	padding-right: 2vw;
+}
+@keyframes drag-panel-hover {
+	0%{
+		background-color: #b1b1b1d6;
+	}
+	10%{
+		background-color: #b1b1b1ba;
+	}
+	20%{
+		background-color: #b1b1b194;
+	}
+	40%{
+		background-color: #b1b1b17d;
+	}
+	60%{
+		background-color: #b1b1b152;
+	}
+	80%{
+		background-color: #b1b1b130;
+	}
+	100%{
+		background-color: #b1b1b100;
+		animation-play-state: paused;
+	}
+}
+@keyframes drag-panel-hover-highlight {
+	0%{
+		opacity: 0;
+	}
+	10%{
+		opacity: 0.1;
+	}
+	20%{
+		opacity: 0.2;
+	}
+	40%{
+		opacity: 0.4;
+	}
+	60%{
+		opacity: 0.6;
+	}
+	80%{
+		opacity: 0.8;
+	}
+	100%{
+		opacity: 1;
+		animation-play-state: paused;
+	}
+}
