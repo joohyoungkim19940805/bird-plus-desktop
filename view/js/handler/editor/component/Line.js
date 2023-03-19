@@ -19,10 +19,10 @@ export default class Line extends HTMLDivElement {
 			//this.onselect = (event) => console.log(event);
 			//this.onbeforexrselect = (event) => console.log(event)
 			//this.onmouseup = (event) => console.log(window.getSelection())
-			let testDiv = document.createElement('div');
-			testDiv.className = 'testAAAA'
-			testDiv.textContent = 'testaaa';
-			this.append(testDiv);
+			//let testDiv = document.createElement('div');
+			//testDiv.className = 'testAAAA'
+			//testDiv.textContent = 'testaaa';
+			//this.append(testDiv);
 			//자기 자신 호출로 아웃오브메모리
 			//this.parentElement.append(new Line());
 		}

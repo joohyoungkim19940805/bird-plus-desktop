@@ -7,6 +7,7 @@ class Editor extends FreedomPlusEditor{
 		};
 
 		super(component,{});
+		super.onkeyup = (e)=>console.log(111)
 	}
 }
 
