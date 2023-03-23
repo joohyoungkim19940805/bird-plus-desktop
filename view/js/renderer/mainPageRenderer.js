@@ -5,7 +5,9 @@ class Editor extends FreedomPlusEditor{
 		let component = {
 			'freedom-line' : FreedomPlusEditor.Component.Line
 		};
-
+		let tools = {
+			'freedom-bold' : FreedomPlusEditor.Tools
+		}
 		super(component,{});
 		super.onkeyup = (e)=>console.log(111)
 	}

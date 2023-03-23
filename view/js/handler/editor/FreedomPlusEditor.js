@@ -1,17 +1,19 @@
+import ProcessModule from "./module/ProcessModule";
 import Line from "./component/Line"
+import Bold from "./tools/bold"
 
 export default class FreedomEditorPlus extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
 	onActCallback = (event) => {};
-	static Component = class Component{
+	static Component = class Component {
 		static #Line = Line;
 
 		/**
 		 * @param {Line} newLine
 		 */
 		static set Line(newLine){
-			this.#checkSuperClass(this.#Line, newLine);
+			ProcessModule.checkSuperClass(this.#Line, newLine);
 			this.#Line = newLine; 
 		}
 		/**
@@ -21,23 +23,29 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			return this.#Line; 
 		}
 		
-		static #checkSuperClass(originClazz, newClazz){
-			let check = Object.getPrototypeOf(newClazz);
-			while(check != undefined){
-				if(originClazz == undefined){
-					throw new Error(`${newClazz.prototype.constructor.name} is not extends in${originClazz.prototype.constructor.name}`)
-				}else if(check == originClazz){
-					break;
-				}else{
-					check = Object.getPrototypeOf(originClazz);
-				}
-			}
-		}
+		
 	}
 	/**
 	 * HTMLElement을 상속 받고 extendsElement를 아래 중 하나로 하면 적용 가능 할 것입니다.
 	 */
-	static Tools = class Tools{
+	static Tools = class Tools {		
+		static #Bold = Bold;
+
+		/**
+		 * @param {Bold} newBold
+		 */
+		static set Bold(newBold){
+			ProcessModule.checkSuperClass(this.#Bold, newBold);
+			this.#Bold = newBold; 
+		}
+		/**
+		 * @param {Bold} newBold
+		 */
+		static get Bold(){
+			return this.#Bold; 
+		}
+
+
 		// 사용 할 거 각각 class로 만들기
 		// 차후 과제 - 중첩 인 경우 어떻게 대응할 것인지?
 		/**
@@ -45,6 +53,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		 * %% 쓴다. %%
 		 */
 		static strongTag = document.createElement('strong');
+		
 		/**
 		 * 하이퍼링크 표시
 		 * %% 쓴다. %%
@@ -186,13 +195,11 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	 */
 	constructor(component={
 		'freedom-line' : FreedomEditorPlus.Component.Line
-	},option={}){
+	},tools={}){
 		super();
 		Object.entries(component).forEach( ([k,v]) => {
-			console.log(v.extendsElement);
 			window.customElements.define(k, v, {extends:v.extendsElement});
 		})
-
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){

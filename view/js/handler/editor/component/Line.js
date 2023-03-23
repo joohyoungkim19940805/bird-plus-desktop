@@ -8,7 +8,7 @@ export default class Line extends HTMLDivElement {
 	 * 즉 엔터시 무조건 div로 됩니다.
 	 * 추후 엔터 이벤트를 막고 알트 엔터로 트리거 할 수 있도록 바꾸어야합니다.
 	 */
-	static #extendsElement = 'div'
+	static extendsElement = 'div'
 	constructor(option={}){
 		super();
 		console.log(option);
