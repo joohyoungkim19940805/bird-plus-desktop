@@ -9,17 +9,16 @@ export default class Line extends HTMLDivElement {
 	 * 추후 엔터 이벤트를 막고 알트 엔터로 트리거 할 수 있도록 바꾸어야합니다.
 	 */
 	static extendsElement = 'div'
+	static defaultClass = 'line';
 	constructor(option={}){
 		super();
 		console.log(option);
 	}
 	connectedCallback(){
-		console.log(this.dataset.test_abc)
 		if( ! this.#isLoaded){
 			this.draggable="true"
             this.#isLoaded = true;
-			this.classList.add('freedom-line')
-			this.dataset.test = 'test';
+			this.classList.add(Line.defaultClass)
 			//this.onselectstart  = (event) => console.log(event)
 			//this.onselectionchange = (event) => this.selectionchangeEventFunction(event);
 			//this.onselect = (event) => console.log(event);
@@ -37,6 +36,19 @@ export default class Line extends HTMLDivElement {
         this.#isLoaded = false;
     }
 
+	startOffsetInsertTool(startOffset, TargetTool, range, selection){
+		let tool = new TargetTool();
+		//let text = this.textContent;
+		//tool.append(text.substring(0, startOffset))
+		range.surroundContents(tool);
+		let text = document.createTextNode('\u200B')
+		tool.append(text);
+		tool.tabIndex = 1;
+		tool.focus();
+		//this.replaceChildren(document.createTextNode(text.substring(0, startOffset)), tool, document.createTextNode(text.substring(startOffset)))
+		//this.innerHTML = document.createTextNode(text.substring(0, startOffset)).data + tool.n
+		//this.innerHTML = tool.innerHTML + text.substring(startOffset); 
+	}
 	selectstartEventFunction(event){
 		console.log(event)
 		console.log(window.getSelection())

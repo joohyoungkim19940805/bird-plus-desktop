@@ -56,7 +56,7 @@ div.chating_block{
     height: 100%;
     flex-direction: column;
     justify-content: space-between;
-	overflow-y: auto;
+	overflow-y: clip;
 	overflow-wrap: revert-layer;
 	width: 100%;
 }
@@ -85,4 +85,8 @@ div[is="freedom-editor-plus"]{
     overflow-wrap: anywhere;
 	padding-left: 0.5%;
 
+}
+
+[active_tool]{
+	background-color:blue;
 }
