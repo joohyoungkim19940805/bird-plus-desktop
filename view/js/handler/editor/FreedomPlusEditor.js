@@ -31,11 +31,17 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		super();
 		this.components = components;
 		this.tools = tools;
-		Object.entries(this.components).forEach( ([className, component]) => {
-			component.defaultClass = className;
-			window.customElements.define(className, component, {extends:component.extendsElement});
+		Object.entries(this.components).forEach( ([className, Component]) => {
+			if(className.includes(' ')){
+				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
+			}
+			Component.defaultClass = className;
+			window.customElements.define(className, Component, {extends:Component.extendsElement});
 		})
 		Object.entries(this.tools).forEach( ([className, Tool]) => {
+			if(className.includes(' ')){
+				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
+			}
 			Tool.defaultClass = className;
 			this.toolsElement[className] = Tool.showTools
 			Tool.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
@@ -67,7 +73,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			*/
 			
 			this.#showTools(this.showToolsWrap);
-
+			/*
 			// 온키업인 경우 엔터로 얻는 엘레멘탈을 이어받나? = 아니었음
 			this.onkeyup = Object.freeze( (event) => {
 				console.log(event)
@@ -86,6 +92,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 				console.log(window.getSelection())
 				console.log(window.getSelection().toString())
 			});
+			*/
 			// getSelection - isCollapsed이 true인 경우 선택 된 텍스트가 없음, false = 있음
 		}
 	}
@@ -100,11 +107,36 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 
 		let emptyElement = document.createTextNode('\u200B')
 		targetElement.append(emptyElement)
+		targetElement.tabIndex = 1;
+		targetElement.focus();
+		
+		console.log(targetElement);
+		let observer = new MutationObserver( (mutationList, observer) => {
+			mutationList.forEach((mutation) => {
+				if(mutation.target.textContent.charAt(0) == '\u200B' || mutation.target.textContent.charAt(mutation.target.textContent.length -1) == '\u200B'){
+					mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
+					range.setStartAfter(targetElement)
+					selection.removeAllRanges()
+					selection.addRange(range) 
+					observer.disconnect();
+				}else{
+					observer.disconnect();
+				}
+			});
+		})
 
+		observer.observe(targetElement, {
+			characterData: true,
+			characterDataOldValue: true,
+			childList:true,
+			subtree: true
+		})
+
+		/*
 		range.setStartAfter(emptyElement)
-
 		selection.removeAllRanges()
-		selection.addRange(range) 
+		selection.addRange(range)
+		*/
 	}
 
 	#showTools(wrap){
@@ -135,21 +167,26 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		if(isCollapsed){
-			let line = undefined;
-			if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.defaultClass)){
-				line = anchorNode.parentElement
-			}else{
-				line = anchorNode.parentElement.closest(`.${FreedomEditorPlus.Components.Line.defaultClass}`);
-			}
+		let line = undefined;
+		if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.defaultClass)){
+			line = anchorNode.parentElement
+		}else{
+			line = anchorNode.parentElement.closest(`.${FreedomEditorPlus.Components.Line.defaultClass}`);
+		}
+
+		if( ! line){
+			return;
+		}
+		//if(isCollapsed){
+			
 			//let line = anchorNode.closest(`.${FreedomEditorPlus.Components.Line.defaultClass}`)
 			// line element를 찾지 못하였을 경우 함수 중지
-			if( ! line){
-				return;
-			}
-			line.startOffsetInsertTool(anchorOffset, TargetTool, selection.getRangeAt(0), selection);
-		}else{
 			
-		}
+			line.applyTool(TargetTool, selection.getRangeAt(0)).then(tool=>{
+				this.#selectionMove(tool);
+			});
+		//}else{
+			
+		//}
 	}
 }

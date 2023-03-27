@@ -36,15 +36,24 @@ export default class Line extends HTMLDivElement {
         this.#isLoaded = false;
     }
 
-	startOffsetInsertTool(startOffset, TargetTool, range, selection){
-		let tool = new TargetTool();
-		//let text = this.textContent;
-		//tool.append(text.substring(0, startOffset))
-		range.surroundContents(tool);
+	applyTool(TargetTool, range){
+		return new Promise(resolve => {
+			let tool = new TargetTool();
+			//let text = this.textContent;
+			//tool.append(text.substring(0, startOffset))
+			range.surroundContents(tool);
+			let str = range.toString();
+			if(str != ''){
+				tool.textContent = str;
+			}
+			resolve(tool);
+		})
+		/*
 		let text = document.createTextNode('\u200B')
 		tool.append(text);
 		tool.tabIndex = 1;
 		tool.focus();
+		*/
 		//this.replaceChildren(document.createTextNode(text.substring(0, startOffset)), tool, document.createTextNode(text.substring(startOffset)))
 		//this.innerHTML = document.createTextNode(text.substring(0, startOffset)).data + tool.n
 		//this.innerHTML = tool.innerHTML + text.substring(startOffset); 
