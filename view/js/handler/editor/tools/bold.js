@@ -20,6 +20,22 @@ export default class Bold extends HTMLElement {
 			this.#isLoaded = true;
 			this.draggable="true"
 			this.classList.add(Bold.defaultClass)
+			/*
+			this.addEventListener("focus", (event) => {
+				this.focusCustomEventFunction(event);
+			});
+			this.addEventListener("blur", (event) => {
+				this.blurCustomEventFunction(event);
+			});
+			*/
+			document.addEventListener("selectionchange", () => {
+				console.log(document.getSelection().focusNode);
+				if(document.getSelection().focusNode.parentElement == this){
+					Bold.showTools.setAttribute('active_tool','');
+				}else{
+					Bold.showTools.removeAttribute('active_tool');
+				}
+			});
 		}
 	}
 	disconnectedCallback(){

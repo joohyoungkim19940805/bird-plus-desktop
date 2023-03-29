@@ -102,15 +102,16 @@ export default class FreedomEditorPlus extends HTMLDivElement {
     }
 
 	#selectionMove(targetElement){
-		let selection = window.getSelection()
+		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
 
 		let emptyElement = document.createTextNode('\u200B')
 		targetElement.append(emptyElement)
 		targetElement.tabIndex = 1;
+		range.setStartAfter(targetElement)
+		selection.removeAllRanges()
+		selection.addRange(range) 
 		targetElement.focus();
-		
-		console.log(targetElement);
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.charAt(0) == '\u200B' || mutation.target.textContent.charAt(mutation.target.textContent.length -1) == '\u200B'){
@@ -118,6 +119,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 					range.setStartAfter(targetElement)
 					selection.removeAllRanges()
 					selection.addRange(range) 
+					targetElement.focus();
 					observer.disconnect();
 				}else{
 					observer.disconnect();
@@ -151,6 +153,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 
 	#toolsClickEvent(event, TargetTool){
 		let target = event.target;
+		/*
 		if(target.hasAttribute('active_tool')){
 			target.toggleAttribute('active_tool');
 			// delete this.#activeTools[TargetTool.prototype.constructor.name]
@@ -161,6 +164,9 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			// 중복 제거
 			this.#activeTools = [...new Set(this.#activeTools)]
 			// this.#activeTools[TargetTool.prototype.constructor.name] = TargetTool;
+		}
+		*/
+		if(target.hasAttribute('active_tool') == false){
 			this.#renderingTools(TargetTool);
 		}
 	}

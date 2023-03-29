@@ -35,7 +35,6 @@ export default class Line extends HTMLDivElement {
 	disconnectedCallback(){
         this.#isLoaded = false;
     }
-
 	applyTool(TargetTool, range){
 		return new Promise(resolve => {
 			let tool = new TargetTool();
