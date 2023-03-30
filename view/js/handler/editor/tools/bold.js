@@ -22,7 +22,9 @@ export default class Bold extends HTMLElement {
 			this.classList.add(Bold.defaultClass)
 			let isKeyPress = false;
 			this.addEventListener('keyup', (event) => {
-				isKeyPress = true;
+				if(isKeyPress == false){
+					isKeyPress = true;
+				}
 			})
 			document.addEventListener("selectstart", (event) => {
 				console.log('selectstart', event.composedPath());
