@@ -166,8 +166,11 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			// this.#activeTools[TargetTool.prototype.constructor.name] = TargetTool;
 		}
 		*/
-		if(target.hasAttribute('active_tool') == false){
+		if(target.hasAttribute('active_tool')){
+			target.toggleAttribute('active_tool');
+		}else{
 			this.#renderingTools(TargetTool);
+			target.toggleAttribute('active_tool');
 		}
 	}
 	#renderingTools(TargetTool){
