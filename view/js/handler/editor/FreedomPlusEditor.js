@@ -8,7 +8,6 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	tools;
 	toolsElement = {};
 	showToolsWrap = undefined;
-	#activeTools = [];
 	onActCallback = (event) => {};
 	static Components = Components
 	/**
@@ -35,17 +34,17 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
-			Component.defaultClass = className;
-			window.customElements.define(className, Component, {extends:Component.extendsElement});
+			Component.options.defaultClass = className;
+			window.customElements.define(className, Component, {extends:Component.options.extendsElement});
 		})
 		Object.entries(this.tools).forEach( ([className, Tool]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
-			Tool.defaultClass = className;
+			Tool.options.defaultClass = className;
 			this.toolsElement[className] = Tool.showTools
-			Tool.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
-			window.customElements.define(className, Tool, {extends:Tool.extendsElement});
+			Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
+			window.customElements.define(className, Tool, {extends:Tool.options.extendsElement});
 		})
 	}
 	connectedCallback(){

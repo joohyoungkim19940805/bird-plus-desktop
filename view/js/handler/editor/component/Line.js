@@ -1,4 +1,4 @@
-
+import Options from "../module/Options"
 export default class Line extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
@@ -8,17 +8,19 @@ export default class Line extends HTMLDivElement {
 	 * 즉 엔터시 무조건 div로 됩니다.
 	 * 추후 엔터 이벤트를 막고 알트 엔터로 트리거 할 수 있도록 바꾸어야합니다.
 	 */
-	static extendsElement = 'div'
-	static defaultClass = 'line';
-	constructor(option={}){
+	static options = new Options();
+	static{
+		this.options.extendsElement = 'div';
+		this.options.defaultClass = 'line';
+	}
+	constructor(){
 		super();
-		console.log(option);
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){
 			this.draggable="true"
             this.#isLoaded = true;
-			this.classList.add(Line.defaultClass)
+			this.classList.add(Line.options.defaultClass)
 			//this.onselectstart  = (event) => console.log(event)
 			//this.onselectionchange = (event) => this.selectionchangeEventFunction(event);
 			//this.onselect = (event) => console.log(event);
