@@ -14,6 +14,11 @@ export default class Bold extends FreedomInterface {
 		button.textContent = 'B'
 		// default tools icon
 		this.options.showTools = button;
+		console.log(this.options)
+		console.log(this.options.showTools)
+		this.options.showTools.onclick = ()=>{
+			this.options.showTools.toggleAttribute('active_tool');
+		}
 	}
 	#isLoaded = false;
 	constructor(){

@@ -42,8 +42,28 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Tool.options.defaultClass = className;
-			this.toolsElement[className] = Tool.showTools
-			Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
+			this.toolsElement[className] = Tool.options.showTools
+			
+			let observer = new MutationObserver( (mutationList, observer) => {
+				mutationList.forEach((mutation) => {
+					//console.log(mutation);
+					//console.log(mutation.target.hasAttribute('active_tool'));
+					if(mutation.target.hasAttribute('active_tool')){
+						this.#renderingTools(Tool);
+					}else{
+						
+					}
+					//mutation.target.toggleAttribute('active_tool');
+				});
+			});
+			// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
+			// oldvalue로 구분할 수 있게 합시다.
+			observer.observe(Tool.options.showTools, {
+				attributeFilter:['active_tool'],
+				attributeOldValue:true
+			})
+			
+			//Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
 			window.customElements.define(className, Tool, {extends:Tool.options.extendsElement});
 		})
 	}
@@ -176,12 +196,14 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
 		let line = undefined;
-		if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.defaultClass)){
+		console.log(anchorNode)
+		console.log(anchorNode.parentElement)
+		if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.options.defaultClass)){
 			line = anchorNode.parentElement
 		}else{
-			line = anchorNode.parentElement.closest(`.${FreedomEditorPlus.Components.Line.defaultClass}`);
+			line = anchorNode.parentElement.closest(`.${FreedomEditorPlus.Components.Line.options.defaultClass}`);
 		}
-
+		console.log(line);
 		if( ! line){
 			return;
 		}

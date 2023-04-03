@@ -10,7 +10,7 @@ export default class Options{
 	}
 	
 	get extendsElement(){
-		return this.extendsElement;
+		return this.#extendsElement;
 	}
 	
 	set defaultClass(defaultClass){
@@ -18,7 +18,7 @@ export default class Options{
 	}
 
 	get defaultClass(){
-		this.#defaultClass;
+		return this.#defaultClass;
 	}
 
 	set showTools(showTools){
@@ -26,6 +26,6 @@ export default class Options{
 	}
 	
 	get showTools(){
-		this.#showTools;
+		return this.#showTools;
 	}
 }

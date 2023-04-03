@@ -23,6 +23,7 @@ export default class FreedomInterface extends HTMLElement {
 				if( ! this.Tool.options.showTools){
 					return;
 				}
+				console.log(event.composedPath());
 				if(event.composedPath().some(e=>e==this)){
 					this.Tool.options.showTools.setAttribute('active_tool','');
 				}else{
@@ -34,6 +35,7 @@ export default class FreedomInterface extends HTMLElement {
 					return;
 				}
 				let target = window.getSelection().focusNode.parentElement;
+				console.log(target);
 				if(isKeyPress == false){
 					return;
 				}else if(target == this){
