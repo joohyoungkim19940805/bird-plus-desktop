@@ -17,7 +17,11 @@ export default class Bold extends FreedomInterface {
 		console.log(this.options)
 		console.log(this.options.showTools)
 		this.options.showTools.onclick = ()=>{
-			this.options.showTools.toggleAttribute('active_tool');
+			if(this.options.showTools.dataset.tool_status == 'active'){
+				this.options.showTools.dataset.tool_status = '';
+			}else{
+				this.options.showTools.dataset.tool_status = 'active';
+			}
 		}
 	}
 	#isLoaded = false;

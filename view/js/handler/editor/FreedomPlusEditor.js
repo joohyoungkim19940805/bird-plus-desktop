@@ -43,15 +43,26 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			}
 			Tool.options.defaultClass = className;
 			this.toolsElement[className] = Tool.options.showTools
-			
+			let tt = true;
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
-					//console.log(mutation);
+					console.log(mutation);
+					let focusNode = window.getSelection().focusNode;
+					console.log(focusNode);
+					console.log(focusNode.parentElement);
+					console.log(focusNode.parentElement instanceof Tool);
+					console.log(Tool.prototype.isPrototypeOf(focusNode.parentElement));
+					//console.log(window.getSelection());
+					//console.log(window.getSelection().getRangeAt(0))
 					//console.log(mutation.target.hasAttribute('active_tool'));
-					if(mutation.target.hasAttribute('active_tool')){
-						this.#renderingTools(Tool);
+					if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
+						//if(tt){
+							console.log(Tool.prototype.isPrototypeOf(focusNode.parentElement))
+							this.#renderingTools(Tool);
+							tt = false;
+						//}
 					}else{
-						
+
 					}
 					//mutation.target.toggleAttribute('active_tool');
 				});
@@ -59,7 +70,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
 			// oldvalue로 구분할 수 있게 합시다.
 			observer.observe(Tool.options.showTools, {
-				attributeFilter:['active_tool'],
+				attributeFilter:['data-tool_status'],
 				attributeOldValue:true
 			})
 			

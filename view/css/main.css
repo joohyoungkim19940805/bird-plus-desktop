@@ -87,6 +87,6 @@ div[is="freedom-editor-plus"]{
 
 }
 
-[active_tool]{
+[data-tool_status="active"]{
 	background-color:blue;
 }
