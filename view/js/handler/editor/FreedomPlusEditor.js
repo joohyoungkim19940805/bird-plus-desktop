@@ -46,12 +46,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			let tt = true;
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
-					console.log(mutation);
 					let focusNode = window.getSelection().focusNode;
-					console.log(focusNode);
-					console.log(focusNode.parentElement);
-					console.log(focusNode.parentElement instanceof Tool);
-					console.log(Tool.prototype.isPrototypeOf(focusNode.parentElement));
 					//console.log(window.getSelection());
 					//console.log(window.getSelection().getRangeAt(0))
 					//console.log(mutation.target.hasAttribute('active_tool'));
@@ -163,12 +158,6 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			childList:true,
 			subtree: true
 		})
-
-		/*
-		range.setStartAfter(emptyElement)
-		selection.removeAllRanges()
-		selection.addRange(range)
-		*/
 	}
 
 	#showTools(wrap){
@@ -207,8 +196,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
 		let line = undefined;
-		console.log(anchorNode)
-		console.log(anchorNode.parentElement)
+
 		if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.options.defaultClass)){
 			line = anchorNode.parentElement
 		}else{
