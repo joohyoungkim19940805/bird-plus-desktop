@@ -126,10 +126,12 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		this.contentEditable = false;
     }
 
-	#selectionMove(targetElement){
+	#selectionMove(targetElement, isCollapsed){
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
 
+		//드래그로 텍스트를 긁은 상태가 아닌 경우 isCollapsed == true
+		
 		let emptyElement = document.createTextNode('\u200B')
 		targetElement.append(emptyElement)
 		targetElement.tabIndex = 1;
@@ -137,6 +139,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		selection.removeAllRanges()
 		selection.addRange(range) 
 		targetElement.focus();
+
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.charAt(0) == '\u200B' || mutation.target.textContent.charAt(mutation.target.textContent.length -1) == '\u200B'){
@@ -170,28 +173,6 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		this.insertAdjacentElement('beforebegin', wrap);
 	}
 
-	#toolsClickEvent(event, TargetTool){
-		let target = event.target;
-		/*
-		if(target.hasAttribute('active_tool')){
-			target.toggleAttribute('active_tool');
-			// delete this.#activeTools[TargetTool.prototype.constructor.name]
-			this.#activeTools.splice(this.#activeTools.findIndex(e => e == TargetTool), 1);
-		}else{
-			target.toggleAttribute('active_tool');
-			this.#activeTools.push(TargetTool);
-			// 중복 제거
-			this.#activeTools = [...new Set(this.#activeTools)]
-			// this.#activeTools[TargetTool.prototype.constructor.name] = TargetTool;
-		}
-		*/
-		if(target.hasAttribute('active_tool')){
-			target.toggleAttribute('active_tool');
-		}else{
-			this.#renderingTools(TargetTool);
-			target.toggleAttribute('active_tool');
-		}
-	}
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
@@ -212,7 +193,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			// line element를 찾지 못하였을 경우 함수 중지
 			
 			line.applyTool(TargetTool, selection.getRangeAt(0)).then(tool=>{
-				this.#selectionMove(tool);
+				this.#selectionMove(tool,isCollapsed);
 			});
 		//}else{
 			
