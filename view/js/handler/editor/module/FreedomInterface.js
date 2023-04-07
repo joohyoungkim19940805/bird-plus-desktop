@@ -7,7 +7,6 @@ export default class FreedomInterface extends HTMLElement {
 		super();
 		this.Tool = Tool;
 		this.options = Tool.options;
-		let isKeyPress = false;
 		this.draggable = true;
 		// keyup을 옵저버로 대신 써보기
 		/*
@@ -56,11 +55,11 @@ export default class FreedomInterface extends HTMLElement {
 				return;
 			}
 			let target = window.getSelection().focusNode.parentElement;
-
 			// u200B를 제거하는 로직으로 인해 오류 발생하여 추가 20230405
-			if(this.textContent.includes('\u200B') || this.textContent.length <= 2){
+			if(( this.textContent.includes('\u200B') || this.Tool.options.showTools.hasAttribute('data-is_alive') ) && target != this){
 				return;
 			}else if(target == this){
+				this.Tool.options.showTools.removeAttribute('data-is_alive');
 				this.Tool.options.showTools.dataset.tool_status = 'active';
 			}else{
 				this.Tool.options.showTools.dataset.tool_status = '';

@@ -126,12 +126,10 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		this.contentEditable = false;
     }
 
-	#selectionMove(targetElement, isCollapsed){
+	#selectionMove(targetElement){
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
 
-		//드래그로 텍스트를 긁은 상태가 아닌 경우 isCollapsed == true
-		
 		let emptyElement = document.createTextNode('\u200B')
 		targetElement.append(emptyElement)
 		targetElement.tabIndex = 1;
@@ -143,6 +141,9 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.charAt(0) == '\u200B' || mutation.target.textContent.charAt(mutation.target.textContent.length -1) == '\u200B'){
+					if(targetElement.options && targetElement.options.showTools ? true: false){
+						targetElement.options.showTools.setAttribute('data-is_alive', '');
+					}
 					mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
 					range.setStartAfter(targetElement)
 					selection.removeAllRanges()
@@ -193,7 +194,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			// line element를 찾지 못하였을 경우 함수 중지
 			
 			line.applyTool(TargetTool, selection.getRangeAt(0)).then(tool=>{
-				this.#selectionMove(tool,isCollapsed);
+				this.#selectionMove(tool);
 			});
 		//}else{
 			
