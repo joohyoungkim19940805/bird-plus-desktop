@@ -1,6 +1,9 @@
 import Components from "./module/Components"
 import Tools from "./module/Tools"
 
+/**
+ * 전부 다 지우면 line 객체가 사라지는 문제 해결 필요 20230409
+ */
 export default class FreedomEditorPlus extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
@@ -43,23 +46,14 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 			}
 			Tool.options.defaultClass = className;
 			this.toolsElement[className] = Tool.options.showTools
-			let tt = true;
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
 					let focusNode = window.getSelection().focusNode;
-					//console.log(window.getSelection());
-					//console.log(window.getSelection().getRangeAt(0))
-					//console.log(mutation.target.hasAttribute('active_tool'));
 					if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
-						//if(tt){
-							console.log(Tool.prototype.isPrototypeOf(focusNode.parentElement))
 							this.#renderingTools(Tool);
-							tt = false;
-						//}
 					}else{
-
+						
 					}
-					//mutation.target.toggleAttribute('active_tool');
 				});
 			});
 			// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
@@ -132,12 +126,13 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 
 		let emptyElement = document.createTextNode('\u200B')
 		targetElement.append(emptyElement)
-		targetElement.tabIndex = 1;
+		//targetElement.tabIndex = 1;
 		range.setStartAfter(targetElement)
 		selection.removeAllRanges()
 		selection.addRange(range) 
 		targetElement.focus();
-
+		//cursor
+		
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.charAt(0) == '\u200B' || mutation.target.textContent.charAt(mutation.target.textContent.length -1) == '\u200B'){
@@ -177,14 +172,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		let line = undefined;
-
-		if(anchorNode.parentElement.className.includes(FreedomEditorPlus.Components.Line.options.defaultClass)){
-			line = anchorNode.parentElement
-		}else{
-			line = anchorNode.parentElement.closest(`.${FreedomEditorPlus.Components.Line.options.defaultClass}`);
-		}
-		console.log(line);
+		let line = FreedomEditorPlus.Components.Line.getLine(anchorNode);
 		if( ! line){
 			return;
 		}
