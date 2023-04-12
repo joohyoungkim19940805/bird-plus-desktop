@@ -20,9 +20,24 @@ export default class Line extends HTMLDivElement {
 		}else if(element.parentElement.classList.contains(this.options.defaultClass)){
 			line = element.parentElement;
 		}else{
-			line = element.parentElement.closest(`,${this.options.defaultClass}`);
+			line = element.parentElement.closest(`${this.options.defaultClass}`);
 		}
 		return line;
+	}
+	static getTool(element, TargetTool){
+		let tool = undefined;
+		if( ! element.parentElement){
+			return tool;
+		}else if(element.parentElement.classList.contains(TargetTool.options.defaultClass)){
+			tool = element.parentElement;
+		}else{
+			tool = element.parentElement.closest(`,${TargetTool.options.defaultClass}`);
+		}
+		return tool;
+	}
+	static findTool(element, TargetTool){
+		let tool = undefined;
+		return element.querySelector(`,${TargetTool.options.defaultClass}`);
 	}
 	constructor(){
 		super();
@@ -48,10 +63,10 @@ export default class Line extends HTMLDivElement {
 	disconnectedCallback(){
         this.#isLoaded = false;
     }
-	applyTool(TargetTool, range, s){
-		return new Promise(resolve => {
+	async applyTool(TargetTool, range){
+		return await new Promise(resolve => {
 			let tool = new TargetTool();
-			let {startOffset, endOffset,startContainer,endContainer} = range;
+			let {startOffset, endOffset, startContainer,endContainer} = range;
 			if(startContainer === endContainer){
 				range.surroundContents(tool);
 				resolve(tool);
@@ -61,8 +76,7 @@ export default class Line extends HTMLDivElement {
 				range.setEnd(range.startContainer, range.startContainer.textContent.length);
 				range.surroundContents(tool);
 				let targetLine = this.nextElementSibling; 
-				console.log(targetLine)
-				while( targetLine){
+				while(targetLine){
 					// 아래 주석 지우지 말 것, 중첩 자식 요소에서 미동작 또는 오류 발생시 아래 로직 주석 풀고 테스트 해볼 것
 					// let middleTool = new TargetTool();
 					// middleTool.append(...targetLine.childNodes);
@@ -81,15 +95,66 @@ export default class Line extends HTMLDivElement {
 				resolve(endTool);
 			}
 		})
-		/*
-		let text = document.createTextNode('\u200B')
-		tool.append(text);
-		tool.tabIndex = 1;
-		tool.focus();
-		*/
-		//this.replaceChildren(document.createTextNode(text.substring(0, startOffset)), tool, document.createTextNode(text.substring(startOffset)))
-		//this.innerHTML = document.createTextNode(text.substring(0, startOffset)).data + tool.n
-		//this.innerHTML = tool.innerHTML + text.substring(startOffset); 
+	}
+	async cancelTool(TargetTool, range, selection){
+		return await new Promise(resolve => {
+			let {isCollapsed, anchorNode, anchorOffset} = selection; 
+			let tool = Line.getTool(anchorNode);
+			if( ! tool){
+				resolve(tool)
+			}
+			console.log(anchorNode.previousSibling);
+			let {startOffset, endOffset, startContainer,endContainer} = range;
+			let endLine = Line.getLine(endContainer);
+			let endTool = Line.getTool(endContainer);
+			let startTextNode = document.createTextNode();
+			range.setStart(range.startContainer, startOffset);
+			range.setEnd(range.startContainer, range.startContainer.textContent.length);
+			range.surroundContents(startTextNode);
+			if(anchorNode.previousSibling){
+				anchorNode.previousSibling.insertAdjacentElement('afterend', startTextNode)
+			}else {
+				this.append(startTextNode);
+			}
+			tool.remove();
+
+			if(startContainer !== endContainer){
+				let targetLine = this.nextElementSibling; 
+				while(targetLine){
+					let targetToolList = element.querySelectorAll(`,${TargetTool.options.defaultClass}`);
+					if(targetToolList.length == 0){
+						continue;
+					}
+					let textNodeList = targetToolList.map(targetTool=>{
+						let targetTextNode = document.createTextNode();
+						range.selectNodeContents(targetTool);
+						range.surroundContents(targetTextNode);
+						targetTool.remove();
+						return targetTextNode;
+					});
+					targetLine.append(...textNodeList);
+
+					targetLine = targetLine.nextElementSibling;
+					if(targetLine === endLine){
+						break;
+					}
+				}
+				let endTextNode = document.createTextNode();
+				range.setStart(endContainer, 0);
+				range.setEnd(endContainer, endOffset)
+				range.surroundContents(endTextNode);
+				if(endContainer.previousSibling){
+					endContainer.previousSibling.insertAdjacentElement('beforebegin', endTextNode);
+				}else{
+					this.append(endTextNode);
+				}
+				endTool.remove();
+				resolve(endTextNode);
+			}else{
+				resolve(startTextNode);
+			}
+
+		});
 	}
 	selectstartEventFunction(event){
 		console.log(event)

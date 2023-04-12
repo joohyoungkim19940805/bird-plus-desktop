@@ -11,7 +11,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	tools;
 	toolsElement = {};
 	showToolsWrap = undefined;
-	onActCallback = (event) => {};
+
 	static Components = Components
 	/**
 	 * HTMLElement을 상속 받고 extendsElement를 아래 중 하나로 하면 적용 가능 할 것입니다.
@@ -50,9 +50,10 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 				mutationList.forEach((mutation) => {
 					let focusNode = window.getSelection().focusNode;
 					if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
-							this.#renderingTools(Tool);
-					}else{
-						
+						this.#renderingTools(Tool);
+					}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){
+						console.log('check')
+						this.#removerToos(Tool);
 					}
 				});
 			});
@@ -187,5 +188,18 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		//}else{
 			
 		//}
+	}
+
+	#removerToos(TargetTool){
+		let selection = window.getSelection();
+		let {isCollapsed, anchorNode, anchorOffset} = selection; 
+		let line = FreedomEditorPlus.Components.Line.getLine(anchorNode);
+		if( ! line ){
+			return;
+		}
+		
+		line.cancelTool(TargetTool, selection).then(textNode => {
+			this.#selectionMove(textNode);
+		});
 	}
 }

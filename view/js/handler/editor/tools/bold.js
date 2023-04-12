@@ -18,7 +18,7 @@ export default class Bold extends FreedomInterface {
 		console.log(this.options.showTools)
 		this.options.showTools.onclick = ()=>{
 			if(this.options.showTools.dataset.tool_status == 'active'){
-				this.options.showTools.dataset.tool_status = '';
+				this.options.showTools.dataset.tool_status = 'cancel';
 			}else{
 				this.options.showTools.dataset.tool_status = 'active';
 			}
