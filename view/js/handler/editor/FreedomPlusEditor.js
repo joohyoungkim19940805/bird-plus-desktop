@@ -124,7 +124,7 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
 		let targetLine = FreedomEditorPlus.Components.Line.getLine(targetElement);
-		range.setStart(targetLine, targetElement.textContent.length - 1)
+		range.setStartAfter(targetLine)
 		range.setEnd(targetLine, targetElement.textContent.length - 1);
 		selection.removeAllRanges()
 		selection.addRange(range) 
