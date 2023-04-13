@@ -20,7 +20,7 @@ export default class Line extends HTMLDivElement {
 		}else if(element.parentElement.classList.contains(this.options.defaultClass)){
 			line = element.parentElement;
 		}else{
-			line = element.parentElement.closest(`${this.options.defaultClass}`);
+			line = element.parentElement.closest(`.${this.options.defaultClass}`);
 		}
 		return line;
 	}
@@ -31,7 +31,7 @@ export default class Line extends HTMLDivElement {
 		}else if(element.parentElement.classList.contains(TargetTool.options.defaultClass)){
 			tool = element.parentElement;
 		}else{
-			tool = element.parentElement.closest(`,${TargetTool.options.defaultClass}`);
+			tool = element.parentElement.closest(`.${TargetTool.options.defaultClass}`);
 		}
 		return tool;
 	}
@@ -96,23 +96,26 @@ export default class Line extends HTMLDivElement {
 			}
 		})
 	}
-	async cancelTool(TargetTool, range, selection){
+	async cancelTool(TargetTool, selection){
 		return await new Promise(resolve => {
+			console.log(selection);
 			let {isCollapsed, anchorNode, anchorOffset} = selection; 
-			let tool = Line.getTool(anchorNode);
+			let tool = Line.getTool(anchorNode, TargetTool);
 			if( ! tool){
 				resolve(tool)
 			}
-			console.log(anchorNode.previousSibling);
-			let {startOffset, endOffset, startContainer,endContainer} = range;
+			
+			let range = selection.getRangeAt(0)
+			let {startOffset, endOffset, startContainer, endContainer} = range;
 			let endLine = Line.getLine(endContainer);
-			let endTool = Line.getTool(endContainer);
-			let startTextNode = document.createTextNode();
+			let endTool = Line.getTool(endContainer, TargetTool);
+			let startTextSpan = document.createElement('span');
 			range.setStart(range.startContainer, startOffset);
 			range.setEnd(range.startContainer, range.startContainer.textContent.length);
-			range.surroundContents(startTextNode);
-			if(anchorNode.previousSibling){
-				anchorNode.previousSibling.insertAdjacentElement('afterend', startTextNode)
+			range.surroundContents(startTextSpan);
+			let startTextNode = document.createTextNode(startTextSpan.textContent);
+			if(anchorNode.previousSibling && anchorNode.previousSibling.nodeType == Node.TEXT_NODE){
+				anchorNode.previousSibling.appendData(startTextNode.textContent);
 			}else {
 				this.append(startTextNode);
 			}
@@ -121,14 +124,15 @@ export default class Line extends HTMLDivElement {
 			if(startContainer !== endContainer){
 				let targetLine = this.nextElementSibling; 
 				while(targetLine){
-					let targetToolList = element.querySelectorAll(`,${TargetTool.options.defaultClass}`);
+					let targetToolList = targetLine.querySelectorAll(`.${TargetTool.options.defaultClass}`);
 					if(targetToolList.length == 0){
 						continue;
 					}
-					let textNodeList = targetToolList.map(targetTool=>{
-						let targetTextNode = document.createTextNode();
+					let textNodeList = [...targetToolList].map(targetTool=>{
+						let targetTextSpan = document.createElement('span');
 						range.selectNodeContents(targetTool);
-						range.surroundContents(targetTextNode);
+						range.surroundContents(targetTextSpan);
+						let targetTextNode = document.createTextNode(targetTextSpan.textContent);
 						targetTool.remove();
 						return targetTextNode;
 					});
@@ -139,14 +143,16 @@ export default class Line extends HTMLDivElement {
 						break;
 					}
 				}
-				let endTextNode = document.createTextNode();
+				let endTextSpan = document.createElement('span');
+				
 				range.setStart(endContainer, 0);
 				range.setEnd(endContainer, endOffset)
-				range.surroundContents(endTextNode);
-				if(endContainer.previousSibling){
-					endContainer.previousSibling.insertAdjacentElement('beforebegin', endTextNode);
+				range.surroundContents(endTextSpan);
+				let endTextNode = document.createTextNode(endTextSpan.textContent);
+				if(endContainer.nextSibling && endContainer.nextSibling.nodeType == Node.TEXT_NODE){
+					endContainer.nextSibling.appendData(endTextNode.textContent);
 				}else{
-					this.append(endTextNode);
+					endLine.prepend(endTextNode);
 				}
 				endTool.remove();
 				resolve(endTextNode);
