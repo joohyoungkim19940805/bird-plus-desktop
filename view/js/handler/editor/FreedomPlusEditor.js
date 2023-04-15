@@ -4,7 +4,7 @@ import Tools from "./module/Tools"
 /**
  * 전부 다 지우면 line 객체가 사라지는 문제 해결 필요 20230409
  */
-export default class FreedomEditorPlus extends HTMLDivElement {
+export default class FreedomPlusEditor extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
 	components;
@@ -24,10 +24,10 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	 */
 	constructor(
 		components={
-			'freedom-line' : FreedomEditorPlus.Components.Line
+			'freedom-line' : FreedomPlusEditor.Components.Line
 		},
 		tools={
-			'freedom-blod' : FreedomEditorPlus.Tools.Bold
+			'freedom-blod' : FreedomPlusEditor.Tools.Bold
 		}
 	){
 		super();
@@ -71,7 +71,8 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
 			this.contentEditable = true;
-			let line = new FreedomEditorPlus.Components.Line();
+			//this.tabIndex = '';
+			let line = new FreedomPlusEditor.Components.Line();
 			this.append(line);
 			// 최초에 첫번째 추가 된 line에 빈 element를 삽입하여 포커싱 되도록 한다.
 			this.#addAfterSelectionMove(line); 
@@ -121,9 +122,10 @@ export default class FreedomEditorPlus extends HTMLDivElement {
     }
 
 	#removeAfterSelectionMove(targetElement){
+		console.log(targetElement);
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
-		let targetLine = FreedomEditorPlus.Components.Line.getLine(targetElement);
+		let targetLine = FreedomPlusEditor.Components.Line.getLine(targetElement);
 		range.setStartAfter(targetLine)
 		range.setEnd(targetLine, targetElement.textContent.length - 1);
 		selection.removeAllRanges()
@@ -133,15 +135,20 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	#addAfterSelectionMove(targetElement){
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
-		let emptyElement = document.createTextNode('\u200B')
-		targetElement.append(emptyElement)
-		//targetElement.tabIndex = 1;
-		range.setStartAfter(targetElement)
+		if(targetElement.textContent.length == 0){
+			let emptyElement = document.createTextNode('\u200B')
+			targetElement.append(emptyElement)
+		}
+		targetElement.tabIndex = 1;
+		range.selectNodeContents(targetElement)
+		range.setStart(targetElement, targetElement.length);
+		range.setEnd(targetElement, targetElement.length);
 		selection.removeAllRanges()
-		selection.addRange(range) 
-		targetElement.focus();
+		selection.addRange(range)
+		selection.modify('move', 'forward', 'character')
+		selection.setPosition(targetElement, 1)
+		targetElement.removeAttribute('tabIndex');
 		//cursor
-		
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.includes('\u200B')){
@@ -149,16 +156,30 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 						targetElement.options.showTools.setAttribute('data-is_alive', '');
 					}
 					mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
-					console.log(targetElement.isConnected);
-					console.log(targetElement);
+					console.log('146 :: targetElement.isConnected',targetElement.isConnected);
+					console.log('147 :: targetElement',targetElement);
 					if(targetElement.isConnected){
-						range.setStartAfter(targetElement)
-						selection.removeAllRanges()
-						selection.addRange(range) 
-						targetElement.focus();
+						//window.getSelection().modify('move', 'forward', 'line')
+						try{
+							//firefox는 paragraphboundary 지원 X
+							selection.modify('move', 'forward', 'paragraphboundary')
+						}catch{
+							selection.modify('move', 'forward', 'line')
+						}finally{
+							//range.selectNodeContents(targetElement)
+							//range.setStart(targetElement, targetElement.length);
+							//range.setEnd(targetElement, targetElement.length);
+						}
+						//window.getSelection().setPosition(targetElement, targetElement.length + 1)
+						//range.selectNodeContents(targetElement)
+						//selection.removeAllRanges()
+						//selection.addRange(range) 
+						//argetElement.focus();
 					}
+					targetElement.removeAttribute('tabIndex');
 					observer.disconnect();
 				}else{
+					targetElement.removeAttribute('tabIndex');
 					observer.disconnect();
 				}
 			});
@@ -185,13 +206,13 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		let line = FreedomEditorPlus.Components.Line.getLine(anchorNode);
+		let line = FreedomPlusEditor.Components.Line.getLine(anchorNode);
 		if( ! line){
 			return;
 		}
 		//if(isCollapsed){
 			
-			//let line = anchorNode.closest(`.${FreedomEditorPlus.Components.Line.defaultClass}`)
+			//let line = anchorNode.closest(`.${FreedomPlusEditor.Components.Line.defaultClass}`)
 			// line element를 찾지 못하였을 경우 함수 중지
 			
 			line.applyTool(TargetTool, selection.getRangeAt(0)).then(tool=>{
@@ -205,12 +226,14 @@ export default class FreedomEditorPlus extends HTMLDivElement {
 	#removerToos(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		let line = FreedomEditorPlus.Components.Line.getLine(anchorNode);
+		let line = FreedomPlusEditor.Components.Line.getLine(anchorNode);
 		if( ! line ){
 			return;
 		}
 		line.cancelTool(TargetTool, selection).then(textNode => {
-			this.#removeAfterSelectionMove(textNode);
-		});
+			console.log(textNode);
+			//console.log(textNode)
+			//this.#removeAfterSelectionMove(textNode);
+		}).catch(e=>console.error(e));
 	}
 }

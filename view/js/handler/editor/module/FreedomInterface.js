@@ -27,7 +27,7 @@ export default class FreedomInterface extends HTMLElement {
 		this.Tool = Tool;
 		this.options = Tool.options;
 		this.classList.add(this.options.defaultClass)
-		this.tabIndex = 1;
+		//this.tabIndex = 1;
 		//this.draggable = true;
 		// keyup을 옵저버로 대신 써보기
 		/*

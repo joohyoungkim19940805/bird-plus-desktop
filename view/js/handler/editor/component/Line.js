@@ -46,6 +46,7 @@ export default class Line extends HTMLDivElement {
 	connectedCallback(){
 		if( ! this.#isLoaded){
 			//this.draggable="true"
+			//this.tabIndex = 1;
             this.#isLoaded = true;
 			//this.onselectstart  = (event) => console.log(event)
 			//this.onselectionchange = (event) => this.selectionchangeEventFunction(event);
@@ -72,8 +73,8 @@ export default class Line extends HTMLDivElement {
 				resolve(tool);
 			}else{
 				let endLine = Line.getLine(endContainer);
-				range.setStart(range.startContainer, startOffset);
-				range.setEnd(range.startContainer, range.startContainer.textContent.length);
+				range.setStart(startContainer, startOffset);
+				range.setEnd(startContainer, startContainer.textContent.length);
 				range.surroundContents(tool);
 				let targetLine = this.nextElementSibling; 
 				while(targetLine){
@@ -98,29 +99,57 @@ export default class Line extends HTMLDivElement {
 	}
 	async cancelTool(TargetTool, selection){
 		return await new Promise(resolve => {
-			console.log(selection);
+			console.log('selection', selection);
 			let {isCollapsed, anchorNode, anchorOffset} = selection; 
 			let tool = Line.getTool(anchorNode, TargetTool);
 			if( ! tool){
 				resolve(tool)
 			}
 			
-			let range = selection.getRangeAt(0)
+			let range = selection.getRangeAt(0);
+			console.log('range', range);
+			let startTextFragment = range.extractContents();
+			console.log(document.querySelector('[is="freedom-editor-plus"]').textContent.includes('\u200B'));
+			console.log(tool);
 			let {startOffset, endOffset, startContainer, endContainer} = range;
+			let startNextSibling = (tool?.nextSibling || anchorNode.nextSibling || endContainer.nextSibling);
+			let startPrevSibling = (tool?.previousSibling || anchorNode.previousSibling || startContainer.previousSibling);
+
+			console.log('startContainer ::: ', startContainer);
+			console.log('startNextSibling ::: ', startNextSibling);
+			console.log('startNextSibling data ::: ', startNextSibling?.textContent);
+			console.log('startPrevSibling ::: ', startPrevSibling);
+			console.log('startPrevSibling data ::: ', startPrevSibling?.textContent);
+			//throw new Error();
+			//range.setStart(startContainer, startOffset);
+			//range.setEnd(startContainer, startContainer.textContent.length);
+			//range.insertNode(startTextSpan);
+
+			let node = [...startTextFragment.childNodes].filter(e=> e.nodeType == Node.TEXT_NODE && e.textContent != undefined).map(e=>{
+				return e.textContent
+			}).join('');
+			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+				//startPrevSibling.replaceData(startPrevSibling.textContent + startTextSpan.textContent);
+				//range.setStart(startPrevSibling, startPrevSibling.textContent.length);
+				//range.insertNode(startText)
+				startPrevSibling.appendData(node);
+			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
+				//startNextSibling.replaceData(startTextSpan.textContent + startNextSibling.textContent);
+				//range.setStart(startNextSibling, 0);
+				//range.insertNode(startText)
+				startNextSibling.appendData(node);
+			}else{
+				//this.append(document.createTextNode(startTextSpan.textContent));
+			}
+			
+			//range.insertNode(document.createTextNode(node));
+
+			console.log('130 ::: startContainer',startContainer)
+
 			let endLine = Line.getLine(endContainer);
 			let endTool = Line.getTool(endContainer, TargetTool);
-			let startTextSpan = document.createElement('span');
-			range.setStart(range.startContainer, startOffset);
-			range.setEnd(range.startContainer, range.startContainer.textContent.length);
-			range.surroundContents(startTextSpan);
-			let startTextNode = document.createTextNode(startTextSpan.textContent);
-			if(anchorNode.previousSibling && anchorNode.previousSibling.nodeType == Node.TEXT_NODE){
-				anchorNode.previousSibling.appendData(startTextNode.textContent);
-			}else {
-				this.append(startTextNode);
-			}
-			tool.remove();
-
+			resolve(startContainer)
+			/*
 			if(startContainer !== endContainer){
 				let targetLine = this.nextElementSibling; 
 				while(targetLine){
@@ -159,7 +188,7 @@ export default class Line extends HTMLDivElement {
 			}else{
 				resolve(startTextNode);
 			}
-
+			*/
 		});
 	}
 	selectstartEventFunction(event){
