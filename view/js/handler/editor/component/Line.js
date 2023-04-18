@@ -36,7 +36,6 @@ export default class Line extends HTMLDivElement {
 		return tool;
 	}
 	static findTool(element, TargetTool){
-		let tool = undefined;
 		return element.querySelector(`,${TargetTool.options.defaultClass}`);
 	}
 	constructor(){
@@ -64,6 +63,24 @@ export default class Line extends HTMLDivElement {
 	disconnectedCallback(){
         this.#isLoaded = false;
     }
+	/**
+	 * applyTool, cancelTool에서 3가지 경우의 수로 함수를 분기시킬 것 apply mng와 cancel mng class를 새로 만들것, line이 할 일이 아니니 freedomPlusEditor로 옮길 것
+	 * --applyTool
+	 * 1. 범위 전체
+	 * 2. 범위이되 line이 같을 때 (textNode별로 처리 필요)
+	 * 3. start와 end가 다를 때(멀티라인)
+	 * --cancelTool
+	 * 1. 범위
+	 * 2. 범위 중 일부
+	 * 3. 멀티라인
+	 */
+
+	/**
+	 * 
+	 * @param {*} TargetTool 
+	 * @param {*} range 
+	 * @returns 
+	 */
 	async applyTool(TargetTool, range){
 		return await new Promise(resolve => {
 			let tool = new TargetTool();
@@ -97,7 +114,91 @@ export default class Line extends HTMLDivElement {
 			}
 		})
 	}
+
 	async cancelTool(TargetTool, selection){
+		return await new Promise(resolve => {
+			let {isCollapsed, anchorNode, anchorOffset} = selection;
+			console.log(anchorNode) 
+
+			
+			let range = selection.getRangeAt(0);
+			console.log('range', range);
+			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
+			let tool = Line.getTool(startContainer, TargetTool);
+			if( ! tool){
+				resolve(tool)
+			}
+			console.log(startContainer);
+			let node;
+			console.log(commonAncestorContainer )
+			console.log(tool);
+			console.log('true test >>>', commonAncestorContainer == tool );
+			let leftText = undefined;
+			let rightText = undefined;
+			if(commonAncestorContainer == tool){
+				// tool 범위 전체 선택인 경우
+				node = document.createTextNode(startContainer.textContent);
+			}else{
+				// tool 범위 중 일부 선택인 경우
+				node = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
+				leftText = startContainer.textContent.substring(0, startOffset);
+				rightText = startContainer.textContent.substring(startOffset+1, endOffset+1);
+			}
+			console.log('node', node);
+			console.log('leftText', leftText);
+			console.log('rightText', rightText);
+			let startNextSibling = (tool?.nextSibling || anchorNode.nextSibling || endContainer.nextSibling);
+			let startPrevSibling = (tool?.previousSibling || anchorNode.previousSibling || startContainer.previousSibling);
+			console.log(anchorNode.nextElementSibling);
+			console.log(anchorNode.previousElementSibling);
+
+			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+				//startPrevSibling.replaceData(startPrevSibling.textContent + startTextSpan.textContent);
+				//range.setStart(startPrevSibling, startPrevSibling.textContent.length);
+				//range.insertNode(startText)
+				if(rightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = rightText;
+					startPrevSibling.after(rightTool);
+				}
+				startPrevSibling.after(node);
+				if(leftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = leftText 
+					startPrevSibling.after(leftTool);
+				}
+			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
+				//startNextSibling.replaceData(startTextSpan.textContent + startNextSibling.textContent);
+				//range.setStart(startNextSibling, 0);
+				//range.insertNode(startText)
+				if(leftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = leftText 
+					startNextSibling.before(leftTool);
+				}
+				startNextSibling.before(node);
+				if(rightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = rightText;
+					startNextSibling.before(rightTool);
+				}
+			}else{
+				if(leftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = leftText 
+					this.append(leftTool);
+				}
+				this.append(document.createTextNode(node));
+				if(rightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = rightText;
+					this.append(leftTool);
+				}
+			}
+			tool.remove();
+		})
+	}
+	async cancelTool2(TargetTool, selection){
 		return await new Promise(resolve => {
 			console.log('selection', selection);
 			let {isCollapsed, anchorNode, anchorOffset} = selection; 
@@ -109,8 +210,6 @@ export default class Line extends HTMLDivElement {
 			let range = selection.getRangeAt(0);
 			console.log('range', range);
 			let startTextFragment = range.extractContents();
-			console.log(document.querySelector('[is="freedom-editor-plus"]').textContent.includes('\u200B'));
-			console.log(tool);
 			let {startOffset, endOffset, startContainer, endContainer} = range;
 			let startNextSibling = (tool?.nextSibling || anchorNode.nextSibling || endContainer.nextSibling);
 			let startPrevSibling = (tool?.previousSibling || anchorNode.previousSibling || startContainer.previousSibling);
@@ -124,7 +223,7 @@ export default class Line extends HTMLDivElement {
 			//range.setStart(startContainer, startOffset);
 			//range.setEnd(startContainer, startContainer.textContent.length);
 			//range.insertNode(startTextSpan);
-
+			console.log(startTextFragment);
 			let node = [...startTextFragment.childNodes].filter(e=> e.nodeType == Node.TEXT_NODE && e.textContent != undefined).map(e=>{
 				return e.textContent
 			}).join('');
