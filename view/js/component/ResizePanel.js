@@ -8,7 +8,7 @@ class ResizeDragPanel extends HTMLElement {
 		super();
 	}
 
-	connectedCallback(e){
+	connectedCallback(){
         if( ! this.#isLoaded){
             this.#isLoaded = true;
 			this.innerHTML =  `

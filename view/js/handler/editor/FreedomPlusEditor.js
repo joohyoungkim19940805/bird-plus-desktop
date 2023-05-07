@@ -27,20 +27,23 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			'freedom-line' : FreedomPlusEditor.Components.Line
 		},
 		tools={
-			'freedom-blod' : FreedomPlusEditor.Tools.Bold
+			'freedom-blod' : Bold,
+			'freedom-color' : Color
 		}
 	){
 		super();
 		this.components = components;
 		this.tools = tools;
-		Object.entries(this.components).forEach( ([className, Component]) => {
+		this.componentsMap = Object.entries(this.components).forEach( ([className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Component.options.defaultClass = className;
 			window.customElements.define(className, Component, {extends:Component.options.extendsElement});
+			//obj[Component.constructor.name] = Component;
+			//return obj;
 		})
-		Object.entries(this.tools).forEach( ([className, Tool]) => {
+		this.toolsMap = Object.entries(this.tools).reduce( (obj, [className, Tool]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
@@ -64,8 +67,10 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			})
 			
 			//Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
-			window.customElements.define(className, Tool, {extends:Tool.options.extendsElement});
-		})
+			window.customElements.define(className, Tool, Tool.options.extendsElement ? {extends:Tool.options.extendsElement} : undefined);
+			obj[Tool.constructor.name] = Tool;
+			return obj;
+		}, {})
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){
@@ -135,10 +140,14 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 	#addAfterSelectionMove(targetElement){
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
-		if(targetElement.textContent.length == 0){
+		if( ! targetElement){
+		//	return;
+		}
+		if(targetElement && targetElement.nodeType == Node.ELEMENT_NODE && targetElement.textContent.length == 0){
 			let emptyElement = document.createTextNode('\u200B')
 			targetElement.append(emptyElement)
 		}
+		
 		targetElement.tabIndex = 1;
 		range.selectNodeContents(targetElement)
 		range.setStart(targetElement, targetElement.length);
@@ -205,32 +214,90 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
-		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		let line = FreedomPlusEditor.Components.Line.getLine(anchorNode);
-		if( ! line){
-			return;
-		}
-		//if(isCollapsed){
-			
-			//let line = anchorNode.closest(`.${FreedomPlusEditor.Components.Line.defaultClass}`)
-			// line element를 찾지 못하였을 경우 함수 중지
-			
-			line.applyTool(TargetTool, selection.getRangeAt(0)).then(tool=>{
-				this.#addAfterSelectionMove(tool);
-			});
-		//}else{
-			
+		let {anchorNode, focusNode} = selection; 
+		//if( ! anchorNodeLine || ! focusNodeLine){
+		//	return;
 		//}
+		let startAndEndLineFindObject;
+		if(anchorNode == this){
+			let allLine = this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)
+			startAndEndLineFindObject = {
+				startLine : allLine[0],
+				endLine : allLine[allLine.length - 1]
+			}
+			let range = selection.getRangeAt(0);
+			selection.removeAllRanges();
+			range.setStart(startAndEndLineFindObject.startLine.childNodes[0], 0);
+			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
+			selection.addRange(range);
+		}else{
+			let anchorNodeLine = FreedomPlusEditor.Components.Line.getLine(anchorNode);
+			let focusNodeLine = FreedomPlusEditor.Components.Line.getLine(focusNode);
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+				if(item == anchorNodeLine || item == focusNodeLine){
+					let key = 'startLine';
+					if(obj.hasOwnProperty(key)){
+						obj['endLine'] = item
+					}else{
+						obj[key] = item
+					}
+				}
+				return obj;
+			},{})
+		}
+		let {startLine, endLine} = startAndEndLineFindObject;
+		startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine).then(tool=>{
+			this.querySelectorAll(`.${TargetTool.options.defaultClass}`).forEach(async e =>{
+				await new Promise(resolve=>{
+					resolve();
+				})
+			})
+			this.#addAfterSelectionMove(tool);
+		});
+
 	}
 
 	#removerToos(TargetTool){
 		let selection = window.getSelection();
-		let {isCollapsed, anchorNode, anchorOffset} = selection; 
-		let line = FreedomPlusEditor.Components.Line.getLine(anchorNode);
-		if( ! line ){
+		let {isCollapsed,anchorNode, focusNode} = selection;
+		// 범위 선택 x인 경우 넘어가기
+		if(isCollapsed){
 			return;
 		}
-		line.cancelTool(TargetTool, selection).then(textNode => {
+		let startAndEndLineFindObject;
+		if(anchorNode == this){
+			let allLine = this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)
+			startAndEndLineFindObject = {
+				startLine : allLine[0],
+				endLine : allLine[allLine.length - 1]
+			}
+			let range = selection.getRangeAt(0);
+			selection.removeAllRanges();
+			range.setStart(startAndEndLineFindObject.startLine.childNodes[0], 0);
+			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
+			selection.addRange(range);
+		}else{
+			let anchorNodeLine = FreedomPlusEditor.Components.Line.getLine(anchorNode);
+			let focusNodeLine = FreedomPlusEditor.Components.Line.getLine(focusNode);
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+				if(item == anchorNodeLine || item == focusNodeLine){
+					let key = 'startLine';
+					if(obj.hasOwnProperty(key)){
+						obj['endLine'] = item
+					}else{
+						obj[key] = item
+					}
+				}
+				return obj;
+			},{})
+		}
+		let {startLine, endLine} = startAndEndLineFindObject;
+		startLine.cancelTool(TargetTool, selection, endLine).then(textNode => {
+			this.querySelectorAll(`.${TargetTool.options.defaultClass}`).forEach(async e =>{
+				await new Promise(resolve=>{
+					resolve();
+				})
+			})
 			console.log(textNode);
 			//console.log(textNode)
 			//this.#removeAfterSelectionMove(textNode);

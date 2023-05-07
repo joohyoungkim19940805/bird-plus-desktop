@@ -6,9 +6,10 @@ class Editor extends FreedomPlusEditor{
 			'freedom-line' : FreedomPlusEditor.Components.Line
 		};
 		let tools = {
-			'freedom-bold' : FreedomPlusEditor.Tools.Bold
+			'freedom-bold' : Bold,
+			'freedom-color' : Color
 		}
-		super(components, tools);
+		super(undefined, tools);
 		let wrap = document.createElement('div');
 		super.showToolsWrap = wrap;
 	}

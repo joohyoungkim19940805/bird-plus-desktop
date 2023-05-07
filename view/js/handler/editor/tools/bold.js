@@ -3,7 +3,7 @@ import Options from "../module/Options"
 export default class Bold extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
-	static options = new Options();
+	static options = new Options(this);
 	static{
 		this.options.extendsElement = 'strong';
 		this.options.defaultClass = 'freedom-bold';
@@ -14,10 +14,8 @@ export default class Bold extends FreedomInterface {
 		button.textContent = 'B'
 		// default tools icon
 		this.options.showTools = button;
-		console.log(this.options)
-		console.log(this.options.showTools)
 		this.options.showTools.onclick = ()=>{
-			if(this.options.showTools.dataset.tool_status == 'active'){
+			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
 				this.options.showTools.dataset.tool_status = 'cancel';
 			}else{
 				this.options.showTools.dataset.tool_status = 'active';

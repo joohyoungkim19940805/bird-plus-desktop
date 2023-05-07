@@ -17,6 +17,8 @@ export default class Line extends HTMLDivElement {
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
+		}else if(element.classList?.contains(this.options.defaultClass)){
+			return element;
 		}else if(element.parentElement.classList.contains(this.options.defaultClass)){
 			line = element.parentElement;
 		}else{
@@ -26,8 +28,11 @@ export default class Line extends HTMLDivElement {
 	}
 	static getTool(element, TargetTool){
 		let tool = undefined;
+		
 		if( ! element.parentElement){
 			return tool;
+		}else if(element.classList?.contains(TargetTool.options.defaultClass)){
+			return element
 		}else if(element.parentElement.classList.contains(TargetTool.options.defaultClass)){
 			tool = element.parentElement;
 		}else{
@@ -36,7 +41,7 @@ export default class Line extends HTMLDivElement {
 		return tool;
 	}
 	static findTool(element, TargetTool){
-		return element.querySelector(`,${TargetTool.options.defaultClass}`);
+		return element.querySelector(`.${TargetTool.options.defaultClass}`);
 	}
 	constructor(){
 		super();
@@ -64,7 +69,8 @@ export default class Line extends HTMLDivElement {
         this.#isLoaded = false;
     }
 	/**
-	 * applyTool, cancelTool에서 3가지 경우의 수로 함수를 분기시킬 것 apply mng와 cancel mng class를 새로 만들것, line이 할 일이 아니니 freedomPlusEditor로 옮길 것
+	 * applyTool, cancelTool에서 3가지 경우의 수로 함수를 분기시킬 것 apply mng와 cancel mng class를 새로 만들것, 
+	 * line이 할 일이 아니니 freedomPlusEditor로 옮길 것
 	 * --applyTool
 	 * 1. 범위 전체
 	 * 2. 범위이되 line이 같을 때 (textNode별로 처리 필요)
@@ -76,220 +82,445 @@ export default class Line extends HTMLDivElement {
 	 */
 
 	/**
+	 * tool이 좌우 옆 또는 자식, 부모에서 동일한 tool임을 감지할 때 합치는 로직 필요
+	 */
+	/**
+	 * 
+	 * @param {*} tool 
+	 * @param {*} range 
+	 * @returns 
+	 */
+	async #applyOnlyOneTool(tool, range){
+		return await new Promise(resolve=>{
+			range.surroundContents(tool);
+			resolve(tool)
+		});
+	}
+	
+	async #applyOnlyOneLine(range, tool, TargetTool){
+		return await new Promise(resolve=>{
+			let {startOffset, endOffset, startContainer,endContainer} = range;
+
+			range.setStart(startContainer, startOffset);
+			range.setEnd(startContainer, startContainer.textContent.length);
+			range.surroundContents(tool);
+
+			let targetNode = startContainer.nextSibling
+			//let lastPrevTool = undefined;
+			while(targetNode){
+				if(targetNode == endContainer){
+					break;
+				}
+				if(targetNode.textContent == '' || TargetTool.prototype.isPrototypeOf(targetNode)){
+					targetNode = targetNode.nextSibling
+					continue;
+				}
+				//tool.append(targetNode);
+				//lastPrevTool = new TargetTool();
+				range.selectNodeContents(targetNode);
+				range.surroundContents(new TargetTool());
+				targetNode = targetNode.nextSibling
+			}
+
+			let endTool = new TargetTool();
+			range.setStart(endContainer, 0);
+			range.setEnd(endContainer, endOffset);
+			range.surroundContents(endTool);
+			resolve(endTool);
+		});
+	}
+
+	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
+		return await new Promise(resolve=>{
+			let {startOffset, endOffset, startContainer,endContainer} = range;
+
+			range.setStart(startContainer, startOffset);
+			range.setEnd(startContainer, startContainer.textContent.length);
+			range.surroundContents(tool);
+			// 분할 적용 되지 않도록 합친다 ex(<b>1</b><b>2</b> => <b>12</b>) 
+
+			let targetStartLineItem = startContainer.nextSibling.nextSibling;
+			if(targetStartLineItem){
+				let itemRemoveList = [];
+				let itemAppendList = [];
+				while(targetStartLineItem){
+					if(targetStartLineItem.nodeType == Node.ELEMENT_NODE){
+						tool.append(targetStartLineItem);
+						/*let firstTextNode = [...targetStartLineItem.childNodes].find(e=>e.nodeType == Node.TEXT_NODE);
+						[...tool.childNodes].filter(e=>e.nodeType == Node.TEXT_NODE).forEach(e=>{
+							//firstTextNode.appendData(e.data);
+							e.appendData(firstTextNode.textContent);
+							firstTextNode.remove();
+							firstTextNode = e;
+						})
+						targetStartLineItem.append(firstTextNode)
+						*/
+					}else{
+						itemAppendList.push(targetStartLineItem.textContent);
+						itemRemoveList.push(targetStartLineItem);
+					}
+					targetStartLineItem = targetStartLineItem.nextSibling;
+				}
+				[...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
+				itemRemoveList.forEach(e=>e.remove())
+			}
+			
+			let targetLine = Line.getLine(startContainer).nextElementSibling; 
+			while(targetLine){
+				if(targetLine === endLine){
+					break;
+				}
+				// 아래 주석 지우지 말 것, 중첩 자식 요소에서 미동작 또는 오류 발생시 아래 로직 주석 풀고 테스트 해볼 것
+				// let middleTool = new TargetTool();
+				// middleTool.append(...targetLine.childNodes);
+				// targetLine.append(middleTool);
+				let middleTargetTool = new TargetTool()
+				range.selectNodeContents(targetLine);
+				range.surroundContents(middleTargetTool);
+				targetLine = targetLine.nextElementSibling;
+			}
+			let endTool = new TargetTool();
+			range.setStart(endContainer, 0);
+			range.setEnd(endContainer, endOffset);
+			range.surroundContents(endTool);
+			// 분할 적용 되지 않도록 합친다 ex(<b>1</b><b>2</b> => <b>12</b>) 
+			let targetEndLineItem = endContainer.previousSibling;
+			if(targetEndLineItem){
+				let itemRemoveList = [];
+				let itemAppendList = [];
+				while(targetEndLineItem){
+					if(targetEndLineItem.nodeType == Node.ELEMENT_NODE){
+						endTool.prepend(targetEndLineItem);
+						/*
+						let firstTextNode = [...targetEndLineItem.childNodes].find(e=>e.nodeType == Node.TEXT_NODE);
+						let moveTextList = [...endTool.childNodes].filter(e=>e.nodeType == Node.TEXT_NODE)
+						moveTextList.forEach(e=>{
+							e.textContent = firstTextNode.textContent + e.data
+							firstTextNode.remove();
+							firstTextNode = e;
+						})
+						targetEndLineItem.append(firstTextNode);
+						*/
+					}else{
+					//endTool.prepend(document.createTextNode(targetEndLineItem.textContent));
+						itemRemoveList.push(targetEndLineItem);
+						itemAppendList.unshift(targetEndLineItem.textContent)
+					}
+					targetEndLineItem = targetEndLineItem.previousSibling;
+				}
+				//let targetTextNode = [...endTool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)
+				//itemAppendList.push(targetTextNode.data);
+				//targetTextNode.textContent = itemAppendList.join('');
+				//endTool.append(targetTextNode)
+				[...endTool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
+				//endTool.prepend(document.createTextNode(itemAppendList.join('')))
+				//itemRemoveList.forEach(e=>e.remove())
+			}
+
+			resolve(endTool);
+		})
+	}
+
+	/**
 	 * 
 	 * @param {*} TargetTool 
 	 * @param {*} range 
 	 * @returns 
 	 */
-	async applyTool(TargetTool, range){
+	async applyTool(TargetTool, range, endLine){
 		return await new Promise(resolve => {
 			let tool = new TargetTool();
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 			if(startContainer === endContainer){
-				range.surroundContents(tool);
-				resolve(tool);
+				console.log('applyOnlyOneTool');
+				this.#applyOnlyOneTool(tool, range).then(tool=>{
+					resolve(tool)
+				})
+			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
+				console.log('applyOnlyOneLine')
+				this.#applyOnlyOneLine(range, tool, TargetTool).then(endTool => {
+					resolve(endTool)
+				})
 			}else{
-				let endLine = Line.getLine(endContainer);
-				range.setStart(startContainer, startOffset);
-				range.setEnd(startContainer, startContainer.textContent.length);
-				range.surroundContents(tool);
-				let targetLine = this.nextElementSibling; 
-				while(targetLine){
-					// 아래 주석 지우지 말 것, 중첩 자식 요소에서 미동작 또는 오류 발생시 아래 로직 주석 풀고 테스트 해볼 것
-					// let middleTool = new TargetTool();
-					// middleTool.append(...targetLine.childNodes);
-					// targetLine.append(middleTool);
-					range.selectNodeContents(targetLine);
-					range.surroundContents(new TargetTool());
-					targetLine = targetLine.nextElementSibling;
-					if(targetLine === endLine){
-						break;
-					}
-				}
-				let endTool = new TargetTool();
-				range.setStart(endContainer, 0);
-				range.setEnd(endContainer, endOffset);
-				range.surroundContents(endTool);
-				resolve(endTool);
+				console.log('applyMultipleLineAll')
+				this.#applyMultipleLineAll(range, tool, TargetTool, endLine).then(endTool => {
+					resolve(endTool)
+				})
 			}
 		})
 	}
 
-	async cancelTool(TargetTool, selection){
+	async #cancelOnlyOneTool(range, tool, TargetTool){
 		return await new Promise(resolve => {
-			let {isCollapsed, anchorNode, anchorOffset} = selection;
-			console.log(anchorNode) 
+			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
+			let {startOffset, endOffset, startContainer, endContainer} = range;
+			const fun = (element) => {
+				new Promise(res=>{
+					
+					if(TargetTool.prototype.isPrototypeOf(element)){
+						if(element.nextSibling){
+							element.nextSibling.before(...element.childNodes);
+						} else if(element.previousSibling){
+							element.previousSibling.after(...element.childNodes);
+						}else {
+							element.parentElement.append(...element.childNodes);
+						}
+						element.remove();
+					}else{
+						element.childNodes.forEach(e=>{
+							fun(e);
+						})
+					}
+					res();
+				})
+				/*
+				console.log('element',element);
+				console.log('lement.parentElement',element.parentElement);
+				element.childNodes.forEach(e=>{
+					let parent = element.parentElement;
 
-			
-			let range = selection.getRangeAt(0);
-			console.log('range', range);
-			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
-			let tool = Line.getTool(startContainer, TargetTool);
-			if( ! tool){
-				resolve(tool)
+					if(TargetTool.prototype.isPrototypeOf(e)){
+						fun(e);
+					}else if(e.nodeType == Node.TEXT_NODE){
+						console.log(4)
+						parent.append(e);
+						
+						if(parent.nextSibling){
+							console.log(1)
+							console.log(element.nextSibling);
+							parent.nextSibling.before(e);
+						} else if(parent.previousSibling){
+							console.log(2)
+							parent.previousSibling.after(e);
+						}else {
+							console.log(3)
+							this.append(e);
+						}
+						
+					}
+				});
+				if(TargetTool.prototype.isPrototypeOf(element)){
+					element.remove();
+				}*/
 			}
-			console.log(startContainer);
-			let node;
-			console.log(commonAncestorContainer )
-			console.log(tool);
-			console.log('true test >>>', commonAncestorContainer == tool );
+			this.childNodes.forEach(e=>{
+				fun(e);
+			});
+			/*
+			let textNode = document.createTextNode(range.toString());
+			let startNextSibling = (tool?.nextSibling  || endContainer.nextSibling);
+			let startPrevSibling = (tool?.previousSibling || startContainer.previousSibling);
+			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+				console.log(1)
+				startPrevSibling.after(textNode);
+			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
+				console.log(2)
+				startNextSibling.before(textNode);
+			}else{
+				console.log(3)
+				this.append(textNode);
+			}
+			*/
+			//tool.remove();
+			resolve();
+		});
+	}
+	async #cancelOnlyOneItem(range, tool, TargetTool){
+		return await new Promise(resolve => {
+			let {startOffset, endOffset, startContainer, endContainer} = range;
+			let textNode = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
+			let startNextSibling = (tool?.nextSibling  || endContainer.nextSibling);
+			let startPrevSibling = (tool?.previousSibling || startContainer.previousSibling);
+
+			let offset = endOffset - startOffset;
+
 			let leftText = undefined;
 			let rightText = undefined;
-			if(commonAncestorContainer == tool){
-				// tool 범위 전체 선택인 경우
-				node = document.createTextNode(startContainer.textContent);
-			}else{
-				// tool 범위 중 일부 선택인 경우
-				node = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
-				leftText = startContainer.textContent.substring(0, startOffset);
-				rightText = startContainer.textContent.substring(startOffset+1, endOffset+1);
+			if(startContainer.textContent.length != offset){
+				leftText = startContainer.textContent.substring(0, startOffset);			
+				rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : startContainer.textContent.substring(startOffset + 1, offset);	
 			}
-			console.log('node', node);
-			console.log('leftText', leftText);
-			console.log('rightText', rightText);
-			let startNextSibling = (tool?.nextSibling || anchorNode.nextSibling || endContainer.nextSibling);
-			let startPrevSibling = (tool?.previousSibling || anchorNode.previousSibling || startContainer.previousSibling);
-			console.log(anchorNode.nextElementSibling);
-			console.log(anchorNode.previousElementSibling);
-
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
-				//startPrevSibling.replaceData(startPrevSibling.textContent + startTextSpan.textContent);
-				//range.setStart(startPrevSibling, startPrevSibling.textContent.length);
-				//range.insertNode(startText)
+				console.log(1)
 				if(rightText){
 					let rightTool = new TargetTool();
 					rightTool.textContent = rightText;
 					startPrevSibling.after(rightTool);
 				}
-				startPrevSibling.after(node);
+				startPrevSibling.after(textNode);
 				if(leftText){
 					let leftTool = new TargetTool()
 					leftTool.textContent = leftText 
 					startPrevSibling.after(leftTool);
 				}
 			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
-				//startNextSibling.replaceData(startTextSpan.textContent + startNextSibling.textContent);
-				//range.setStart(startNextSibling, 0);
-				//range.insertNode(startText)
+				console.log(2)
 				if(leftText){
 					let leftTool = new TargetTool()
 					leftTool.textContent = leftText 
 					startNextSibling.before(leftTool);
 				}
-				startNextSibling.before(node);
+				startNextSibling.before(textNode);
 				if(rightText){
 					let rightTool = new TargetTool();
 					rightTool.textContent = rightText;
 					startNextSibling.before(rightTool);
 				}
 			}else{
+				console.log(3)
 				if(leftText){
 					let leftTool = new TargetTool()
 					leftTool.textContent = leftText 
 					this.append(leftTool);
 				}
-				this.append(document.createTextNode(node));
+				this.append(document.createTextNode(textNode));
 				if(rightText){
 					let rightTool = new TargetTool();
 					rightTool.textContent = rightText;
-					this.append(leftTool);
+					this.append(rightTool);
 				}
 			}
+			//startContainer.remove();
 			tool.remove();
-		})
-	}
-	async cancelTool2(TargetTool, selection){
-		return await new Promise(resolve => {
-			console.log('selection', selection);
-			let {isCollapsed, anchorNode, anchorOffset} = selection; 
-			let tool = Line.getTool(anchorNode, TargetTool);
-			if( ! tool){
-				resolve(tool)
-			}
-			
-			let range = selection.getRangeAt(0);
-			console.log('range', range);
-			let startTextFragment = range.extractContents();
-			let {startOffset, endOffset, startContainer, endContainer} = range;
-			let startNextSibling = (tool?.nextSibling || anchorNode.nextSibling || endContainer.nextSibling);
-			let startPrevSibling = (tool?.previousSibling || anchorNode.previousSibling || startContainer.previousSibling);
-
-			console.log('startContainer ::: ', startContainer);
-			console.log('startNextSibling ::: ', startNextSibling);
-			console.log('startNextSibling data ::: ', startNextSibling?.textContent);
-			console.log('startPrevSibling ::: ', startPrevSibling);
-			console.log('startPrevSibling data ::: ', startPrevSibling?.textContent);
-			//throw new Error();
-			//range.setStart(startContainer, startOffset);
-			//range.setEnd(startContainer, startContainer.textContent.length);
-			//range.insertNode(startTextSpan);
-			console.log(startTextFragment);
-			let node = [...startTextFragment.childNodes].filter(e=> e.nodeType == Node.TEXT_NODE && e.textContent != undefined).map(e=>{
-				return e.textContent
-			}).join('');
-			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
-				//startPrevSibling.replaceData(startPrevSibling.textContent + startTextSpan.textContent);
-				//range.setStart(startPrevSibling, startPrevSibling.textContent.length);
-				//range.insertNode(startText)
-				startPrevSibling.appendData(node);
-			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
-				//startNextSibling.replaceData(startTextSpan.textContent + startNextSibling.textContent);
-				//range.setStart(startNextSibling, 0);
-				//range.insertNode(startText)
-				startNextSibling.appendData(node);
-			}else{
-				//this.append(document.createTextNode(startTextSpan.textContent));
-			}
-			
-			//range.insertNode(document.createTextNode(node));
-
-			console.log('130 ::: startContainer',startContainer)
-
-			let endLine = Line.getLine(endContainer);
-			let endTool = Line.getTool(endContainer, TargetTool);
-			resolve(startContainer)
-			/*
-			if(startContainer !== endContainer){
-				let targetLine = this.nextElementSibling; 
-				while(targetLine){
-					let targetToolList = targetLine.querySelectorAll(`.${TargetTool.options.defaultClass}`);
-					if(targetToolList.length == 0){
-						continue;
-					}
-					let textNodeList = [...targetToolList].map(targetTool=>{
-						let targetTextSpan = document.createElement('span');
-						range.selectNodeContents(targetTool);
-						range.surroundContents(targetTextSpan);
-						let targetTextNode = document.createTextNode(targetTextSpan.textContent);
-						targetTool.remove();
-						return targetTextNode;
-					});
-					targetLine.append(...textNodeList);
-
-					targetLine = targetLine.nextElementSibling;
-					if(targetLine === endLine){
-						break;
-					}
-				}
-				let endTextSpan = document.createElement('span');
-				
-				range.setStart(endContainer, 0);
-				range.setEnd(endContainer, endOffset)
-				range.surroundContents(endTextSpan);
-				let endTextNode = document.createTextNode(endTextSpan.textContent);
-				if(endContainer.nextSibling && endContainer.nextSibling.nodeType == Node.TEXT_NODE){
-					endContainer.nextSibling.appendData(endTextNode.textContent);
-				}else{
-					endLine.prepend(endTextNode);
-				}
-				endTool.remove();
-				resolve(endTextNode);
-			}else{
-				resolve(startTextNode);
-			}
-			*/
+			resolve();
 		});
 	}
+
+	async #cancelMultipleLineAll(range, tool, TargetTool, endLine){
+		return await new Promise(resolve => {
+			let {startOffset, endOffset, startContainer, endContainer} = range;
+			
+			let endTool = Line.getTool(endContainer, TargetTool);
+
+			// 파이어폭스에서 startContainer, endContainer가 나노 미세 컨트롤로 커서 위치와 관계 없이 비정상 동작 하는 현상 수정 필요
+			let startTextNode = document.createTextNode(startContainer.textContent.substring(startOffset, startContainer.textContent.length));
+			let endTextNode = document.createTextNode(endContainer.textContent.substring(0, endOffset));
+			
+			let startLeftText = startContainer.textContent.substring(0, startOffset);
+			let endRightText = endContainer.textContent.substring(endOffset, endContainer.textContent.length)
+
+			let startNextSibling = tool?.nextSibling
+			let startPrevSibling = tool?.previousSibling
+
+			let endNextSibling = endTool?.nextSibling
+			let endPrevSibling = endTool?.previousSibling
+
+			if(startOffset == 0){
+				this.#findCancels(this, TargetTool);
+			}else if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+				startPrevSibling.after(startTextNode);
+				if(startLeftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = startLeftText 
+					startPrevSibling.after(leftTool);
+				}
+			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
+				if(startLeftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = startLeftText 
+					startNextSibling.before(leftTool);
+				}
+				startNextSibling.before(startTextNode);
+			}else{
+				if(startLeftText){
+					let leftTool = new TargetTool()
+					leftTool.textContent = startLeftText 
+					this.append(leftTool);
+				}
+				this.append(startTextNode);
+			}
+			if(tool){
+				tool.remove();
+			}
+
+			let nextLine = this.nextElementSibling
+			while(nextLine){
+				if(nextLine == endLine){
+					break;
+				}
+				nextLine.childNodes.forEach(e=>{
+					this.#findCancels(e, TargetTool);
+				})
+				nextLine = nextLine.nextElementSibling;
+			}
+
+			if(endOffset == endContainer.length){
+				this.#findCancels(endLine, TargetTool);
+			}else if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
+				if(endRightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = endRightText;
+					endPrevSibling.after(rightTool);
+				}
+				endPrevSibling.after(endTextNode);
+			}else if(endNextSibling && endNextSibling.nodeType == Node.TEXT_NODE){
+				endNextSibling.before(endTextNode);
+				if(endRightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = endRightText;
+					endNextSibling.after(rightTool);
+				}
+			}else{
+				endLine.append(endTextNode);
+			}
+
+			if(endTool){
+				endTool.remove();
+			}
+			resolve();
+		});
+	}
+
+	async cancelTool(TargetTool, selection, endLine){
+		return await new Promise(resolve => {
+			let {isCollapsed, anchorNode, anchorOffset} = selection;
+			let range = selection.getRangeAt(0);
+			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
+			let tool = Line.getTool(startContainer, TargetTool);
+			if(startContainer === endContainer){
+				// 범위 중 일부
+				this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
+					console.log('cancelOnlyOneItem')
+					resolve();
+				})
+			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
+				// 하나만
+				// tool 범위 전체 선택인 경우
+				this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
+					console.log('cancelOnlyOneTool')
+					resolve();
+				})
+			}else{
+				this.#cancelMultipleLineAll(range, tool, TargetTool, endLine).then(()=>{
+					console.log('cancelMultipleLineAll')
+					resolve();
+				}).catch(err=>console.error(err))
+			}
+			
+			resolve();
+		})
+	}
+
+	#findCancels(element, TargetTool){
+		new Promise(res=>{
+			if(TargetTool.prototype.isPrototypeOf(element)){
+				if(element.nextSibling){
+					element.nextSibling.before(...element.childNodes);
+				} else if(element.previousSibling){
+					element.previousSibling.after(...element.childNodes);
+				}else {
+					element.parentElement.append(...element.childNodes);
+				}
+				element.remove();
+			}else{
+				element.childNodes.forEach(e=>{
+					this.#findCancels(e, TargetTool);
+				})
+			}
+			res();
+		})
+	}
+
 	selectstartEventFunction(event){
 		console.log(event)
 		console.log(window.getSelection())
