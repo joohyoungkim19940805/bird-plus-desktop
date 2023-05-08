@@ -1,22 +1,6 @@
-import ProcessModule from "./ProcessModule";
-import Bold from "../tools/Bold"
-export default class Tools {		
-	static #Bold = Bold;
+export {default as Bold} from "../tools/Bold"
 
-	/**
-	 * @param {Bold} newBold
-	 */
-	static set Bold(newBold){
-		ProcessModule.checkSuperClass(this.#Bold, newBold);
-		this.#Bold = newBold; 
-	}
-	/**
-	 * @param {Bold} newBold
-	 */
-	static get Bold(){
-		return this.#Bold; 
-	}
-
+export {default as Color} from "../tools/Color"
 
 	// 사용 할 거 각각 class로 만들기
 	// 차후 과제 - 중첩 인 경우 어떻게 대응할 것인지?
@@ -24,55 +8,55 @@ export default class Tools {
 	 * b보다 강력한 강조 표시 심각성 또는 중요성 표시 (좀더 진한듯?)
 	 * %% 쓴다. %%
 	 */
-	static strongTag = document.createElement('strong');
+	//static strongTag = document.createElement('strong');
 	
 	/**
 	 * 하이퍼링크 표시
 	 * %% 쓴다. %%
 	 */
-	static aTag = document.createElement('a');
+	//static aTag = document.createElement('a');
 	/**
 	 * 강세가 강조 된 표시 (살짝 기우는 텍스트)
 	 * %% 쓴다. %%
 	 */
-	static emTag = document.createElement('em');
+	//static emTag = document.createElement('em');
 	/**
 	 * q보다 긴 인용문에는 이 요소를 사용하십시오.
 	 * %% 쓴다. %%
 	 */
-	static blockquoteTag = document.createElement('blockquote');
+	//static blockquoteTag = document.createElement('blockquote');
 	/**
 	 * 텍스트가 컴퓨터 코드 의 짧은 조각임을 나타내기 위한 스타일로 내용을 표시합니다.
 	 * %% 쓴다. %%
 	 */
-	static codeTag = document.createElement('code');
+	//static codeTag = document.createElement('code');
 	/**
 	 * 키보드, 음성 입력 또는 기타 텍스트 입력 장치의 텍스트 사용자 입력을 나타내는 인라인 텍스트 범위를 나타냅니다 . 
 	 * 규칙에 따라 사용자 에이전트는 기본 고정 폭 글꼴을 사용하여 요소 의 내용을 렌더링하도록 기본 설정되어 있지만 HTML 표준에서 요구하는 사항은 아닙니다.
 	 * 별도의 css가 있어야 하는듯, mdn 예제에서 css를 지우면 그냥 텍스트랑 차이가 안 남
 	 * %% 쓴다. mdn css 따라 갈 거 %%
 	 */
-	static kbdTag = document.createElement('kbd'); 
+	//static kbdTag = document.createElement('kbd'); 
 	/**
 	 * 인쇄상의 이유로 아래 첨자로 표시되어야 하는 인라인 텍스트를 지정합니다 .
 	 * %% 쓴다. %%
 	 */
-	static subTag = document.createElement('sub');
+	//static subTag = document.createElement('sub');
 	/**
 	 * 인쇄상의 이유로 위 첨자 로 표시되는 인라인 텍스트를 지정합니다. 위 첨자는 일반적으로 더 작은 텍스트를 사용하여 기준선을 올려 렌더링합니다.
 	 * %% 쓴다. %%
 	 */
-	static supTag = document.createElement('sup');
+	//static supTag = document.createElement('sup');
 	/**
 	 * 특정 글자 하이라이트
 	 * 기본적으로 노란색 하이라이트
 	 * %% 쓴다. %%
 	 */
-	static markTag = document.createElement('mark');
+	//static markTag = document.createElement('mark');
 	/**
 	 * 질적 으로 아무 것도 나타내지 않는 구문 콘텐츠를 위한 일반적인 인라인 컨테이너입니다. 스타일을 지정하기 위해( 또는 속성 사용) 또는 와 같은 속성 값을 공유하기 때문에 요소를 그룹화하는 데 사용할 수 있습니다
 	 */
-	static spanTag = document.createElement('span');
+	//static spanTag = document.createElement('span');
 
 			/**
 	 * 약어 또는 두문자어를 나타냅니다. 
@@ -158,5 +142,3 @@ export default class Tools {
 	 * 텍스트의 현재 방향성을 재정의하여 내부 텍스트가 다른 방향으로 렌더링되도록 합니다.
 	 */
 	//static bdoTag = document.createElement('bdo');
-
-}

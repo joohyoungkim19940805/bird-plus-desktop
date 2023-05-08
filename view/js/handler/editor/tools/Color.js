@@ -4,8 +4,15 @@ export default class Color extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
 	static options = new Options(this);
-	static #paletteVh = 35;
+	//static #paletteVh = 35;
 	static #paletteVw = 30; 
+	static #r = 255;
+	static #g = 0;
+	static #b = 0;
+	static #a = 1;
+	static get #selectedColor(){
+		return `rgba(${this.#r}, ${this.#g}, ${this.#b}, ${this.#a})`;
+	}
 	static{
 		this.options.extendsElement = 'kbd';
 		this.options.defaultClass = 'freedom-color';
@@ -23,6 +30,7 @@ export default class Color extends FreedomInterface {
 				this.#processingPalettePosition(palette);
 			}
 		});
+		palette.replaceChildren(...Object.values(this.#createPaletteItems()));
 		document.head.append(this.#style())
 		this.options.showTools = button;
 		this.options.showTools.onclick = ()=>{
@@ -62,7 +70,22 @@ export default class Color extends FreedomInterface {
 			className: 'palette-panel'
 		})
 		let context = colorPanel.getContext('2d');
-		let gradient = context.createLinearGradient(0,0,300,0) 
+
+		// 가로 그라데이션
+		let gradientH = context.createLinearGradient(0, 0, context.canvas.width, 0);
+		gradientH.addColorStop(0, 'white');
+		gradientH.addColorStop(1, this.#selectedColor);
+		context.fillStyle = gradientH;
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
+		// 수직 그라데이션
+		let gradientV = context.createLinearGradient(0, 0, 0, context.canvas.height);
+		gradientV.addColorStop(0, 'rgba(0,0,0,0)');
+		gradientV.addColorStop(1,  'black');
+		context.fillStyle = gradientV;
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
+
 
 		return colorPanel;
 	}
@@ -72,17 +95,17 @@ export default class Color extends FreedomInterface {
 			className: 'palette-paint'
 		});
 		let context = paint.getContext('2d');
-		let gradient = context.createLinearGradient(0,0,0,150) 
-		gradient.addColorStop(0, 'red')
-		gradient.addColorStop(0.15, 'violet')
-		gradient.addColorStop(0.35, 'blue')
-		gradient.addColorStop(0.45, 'rgb(0, 255, 255)')
-		gradient.addColorStop(0.65, 'green')
-		gradient.addColorStop(0.85, 'yellow')
+		let gradient = context.createLinearGradient(0,0,0,context.canvas.height); 
+		gradient.addColorStop(0, 'rgb(255, 0, 0)') // red
+		gradient.addColorStop(0.15, 'rgb(255, 0, 255)') // violet
+		gradient.addColorStop(0.35, 'rgb(0, 0, 255)') // blue
+		gradient.addColorStop(0.45, 'rgb(0, 255, 255)') // Sky blue
+		gradient.addColorStop(0.65, 'rgb(0, 255, 0)') // green
+		gradient.addColorStop(0.85, 'rgb(255, 255, 0)') // yellow
 		gradient.addColorStop(0.9, 'orange')
-		gradient.addColorStop(1, 'red')
+		gradient.addColorStop(1, 'rgb(255, 0, 0)') // red
 		context.fillStyle = gradient;
-		context.fillRect(0,0,200,150);
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 		return paint;
 	}
 
@@ -95,7 +118,12 @@ export default class Color extends FreedomInterface {
 		})
 		brightnessWrap.append(brightnessColor)
 		let context = brightnessColor.getContext('2d');
-		let gradient = context.createLinearGradient(0,0,0,150) 
+		let gradient = context.createLinearGradient(0, 0, context.canvas.width, 0) 
+		gradient.addColorStop(0, 'rgba(0,0,0,0)');
+		gradient.addColorStop(1, this.#selectedColor);
+		context.fillStyle = gradient;
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+		
 		return brightnessWrap;
 	}
 
@@ -103,14 +131,18 @@ export default class Color extends FreedomInterface {
 		let topTextWrap = Object.assign(document.createElement('div'), {
 			className: 'top-text-wrap'
 		});
-
-		let selectionRgbBg = Object.assign(document.createElement('div'), {
-			className: 'selection-rgb-bg'
-		});
 		
-		let previousRgbBg = Object.assign(document.createElement('div'), {
-			className : 'previous-rgb-bg'
+		let selectionRgbBg = Object.assign(document.createElement('div'), {
+			className: 'selection-rgb-bg',
+			textContent: this.#selectedColor
 		});
+		selectionRgbBg.style.background = this.#selectedColor;
+
+		let previousRgbBg = Object.assign(document.createElement('div'), {
+			className : 'previous-rgb-bg',
+		});
+		previousRgbBg.style.background = this.#selectedColor;
+
 		topTextWrap.append(selectionRgbBg, previousRgbBg)
 
 		return {topTextWrap, selectionRgbBg, previousRgbBg}
@@ -120,17 +152,23 @@ export default class Color extends FreedomInterface {
 		let bottomTextWrap = Object.assign(document.createElement('div'), {
 			className: 'bottom-text-wrap'
 		});
-		let sampleText = window.getSelection().getRangeAt(0).toString();
+		let selection = window.getSelection();
+		let sampleText = '';
+		if(selection.rangeCount != 0){
+			sampleText = window.getSelection().getRangeAt(0).toString();
+		}
 		sampleText = sampleText == '' ? '가 나다 라 A BC D' : sampleText;
 		let selectionRgbText = Object.assign(document.createElement('div'), {
 			className: 'selection-rgb-text',
 			textContent: sampleText
 		});
+		selectionRgbText.style.color = this.#selectedColor;
 		
 		let previousRgbText = Object.assign(document.createElement('div'), {
 			className: 'previous-rgb-text',
 			textContent: sampleText
 		});
+		previousRgbText.style.color = this.#selectedColor;
 
 		let buttonWrap = Object.assign(document.createElement('div'),{
 			className: 'button-wrap'
@@ -153,8 +191,8 @@ export default class Color extends FreedomInterface {
 	static #processingPalettePosition(palette){
 		let {x, y, height} = this.options.showTools.getBoundingClientRect();
 		//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
-		let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
-
+		//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
+		let paletteHeightPx = palette.clientHeight;
 		let paletteTop = (y - paletteHeightPx)
 		if(paletteTop > 0){
 			palette.style.top = paletteTop + 'px';
@@ -169,35 +207,70 @@ export default class Color extends FreedomInterface {
 		let style = document.createElement('style');
 		style.innerHTML = `
 			.palette-wrap{
-				background: #688299;
+				background: #000000bf;
 				position: fixed;
 				padding: 0.9%;
 				width: ${this.#paletteVw}vw;
-				height: ${this.#paletteVh}vh;
+				height: fit-content;
+				color: white;
+    			font-size: 13px;
 			}
+
 			.top-text-wrap{
 				display: flex;
     			justify-content: space-between;
+				margin-bottom: 2%;
+				height: 8%;
+			}
+			.top-text-wrap .selection-rgb-bg{
+				width: 100%;
+				text-align-last: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			.top-text-wrap .previous-rgb-bg{
+				text-align-last: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				width: 11.5%;
 			}
 
 			.color-wrap{
 				display: flex;
 				justify-content: space-between;
+				margin-bottom: 2%;
 			}
-			.palette-paint{
-				width: 35px;
-				height: 180px;
+			.color-wrap .palette-panel{
+				width: 90%;
 			}
-			.brightness-color{
+			.color-wrap .palette-paint{
+				width: 5%;
+			}
+
+			.brightness-wrap{
+				margin-bottom: 2%;
+				background-image: /* tint image */ linear-gradient(to right, rgb(192 192 192 / 20%), rgb(192 192 192 / 20%)), /* checkered effect */ linear-gradient(to right, #505050 50%, #a1a1a1 50%), linear-gradient(to bottom, #505050 50%, #a1a1a1 50%);
+				background-blend-mode: normal, difference, normal;
+				background-size: 2em 2em;
+				display: flex;
+			}
+			.brightness-wrap .brightness-color{
 				height: 3vh;
     			width: 100%;
 			}
+
 			.bottom-text-wrap{
 				display: flex;
 				justify-content: space-between;
+				align-items: center;
 			}
-			.selection-rgb-text{
-				width: 60%;
+			.bottom-text-wrap .selection-rgb-text{
+				background: white;
+			}
+			.bottom-text-wrap .previous-rgb-text{
+				background: white;
 			}
 		`;
 		return style;

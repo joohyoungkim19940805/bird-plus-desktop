@@ -1,6 +1,4 @@
 import Components from "./module/Components"
-import Tools from "./module/Tools"
-
 /**
  * 전부 다 지우면 line 객체가 사라지는 문제 해결 필요 20230409
  */
@@ -13,10 +11,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 	showToolsWrap = undefined;
 
 	static Components = Components
-	/**
-	 * HTMLElement을 상속 받고 extendsElement를 아래 중 하나로 하면 적용 가능 할 것입니다.
-	 */
-	static Tools = Tools
+	
 	/**
 	 * 
 	 * @param {Object} components 
@@ -26,14 +21,12 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		components={
 			'freedom-line' : FreedomPlusEditor.Components.Line
 		},
-		tools={
-			'freedom-blod' : Bold,
-			'freedom-color' : Color
-		}
+		tools
 	){
 		super();
 		this.components = components;
 		this.tools = tools;
+		console.log(tools);
 		this.componentsMap = Object.entries(this.components).forEach( ([className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
@@ -47,6 +40,9 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
+			console.log(Tool);
+			console.log(Tool.options);
+			console.log(Tool.options.defaultClass);
 			Tool.options.defaultClass = className;
 			this.toolsElement[className] = Tool.options.showTools
 			let observer = new MutationObserver( (mutationList, observer) => {

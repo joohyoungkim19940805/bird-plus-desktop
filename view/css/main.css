@@ -60,21 +60,15 @@ div.chating_block{
 	overflow-wrap: revert-layer;
 	width: 100%;
 }
-.chating_content_wrapper{
-    position: relative;
-    display: flex;
+
+div.chating_block .chating_summary{
+	height: 20%;
 }
-.chating_content_wrapper.chat_tools{
-	background-color: burlywood;
-	height:5vh;
+div.chating_block .chating_info{
+	height: 50%;
 }
-.chating_content_wrapper.chat_view{
-	background-color: skyblue;
-	height: 100vh;
-}
-.chating_content_wrapper.chat_editor{
-    background-color: darksalmon;
-	height: 100vh;
+div.chating_block .chating_content{
+	height: 30%;
 }
 
 

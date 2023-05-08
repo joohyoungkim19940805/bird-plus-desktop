@@ -1,5 +1,5 @@
 import FreedomPlusEditor from "../handler/editor/FreedomPlusEditor"
-
+import {Bold, Color}from "../handler/editor/module/Tools"
 class Editor extends FreedomPlusEditor{
 	constructor(){
 		let components = {
