@@ -30,7 +30,7 @@ export default class Color extends FreedomInterface {
 				this.#processingPalettePosition(palette);
 			}
 		});
-		palette.replaceChildren(...Object.values(this.#createPaletteItems()));
+		//palette.replaceChildren(...Object.values(this.#createPaletteItems()));
 		document.head.append(this.#style())
 		this.options.showTools = button;
 		this.options.showTools.onclick = ()=>{
@@ -54,7 +54,10 @@ export default class Color extends FreedomInterface {
 		let colorWrap = Object.assign(document.createElement('div'),{
 			className: 'color-wrap'
 		})
-		colorWrap.append(this.#createColorPanel(), this.#createPaint());
+
+		let colorPanel = this.#createColorPanel();
+		let colorPaint = this.#createPaint();
+		colorWrap.append(colorPanel, colorPaint);
 
 		// 팔레트 색상 명도 조절 설정 캔버스 영역
 		let brightnessColor = this.#createBrightnessColor()
@@ -62,6 +65,13 @@ export default class Color extends FreedomInterface {
 		// 팔레트 하단 텍스트 영역
 		let {bottomTextWrap, selectionRgbText, previousRgbText} = this.#rgbaBottomTextWrap();
 		
+		this.#addEvent({
+			topTextWrap, selectionRgbBg, previousRgbBg, 
+			colorPanel, colorPaint, 
+			brightnessColor, 
+			bottomTextWrap, selectionRgbText, previousRgbText
+		});
+
 		return {topTextWrap, colorWrap, brightnessColor, bottomTextWrap}; 
 	}
 
@@ -84,8 +94,6 @@ export default class Color extends FreedomInterface {
 		gradientV.addColorStop(1,  'black');
 		context.fillStyle = gradientV;
 		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-
-
 
 		return colorPanel;
 	}
@@ -203,6 +211,64 @@ export default class Color extends FreedomInterface {
 
 	}
 
+	static #addEvent(obj){
+		return new Promise(resolve=> {
+			let {
+				topTextWrap, selectionRgbBg, previousRgbBg, 
+				colorPanel, colorPaint, 
+				brightnessColor, 
+				bottomTextWrap, selectionRgbText, previousRgbText
+			} = obj;
+			console.log('??');
+			console.log(colorPanel);
+			let context = colorPanel.getContext('2d',  { colorSpace: "display-p3" });
+			colorPanel.onmousedown = async ()=>{
+				console.log('1')
+				colorPanel.setAttribute('data-is_mouse_down', '');
+				//await colorPanel.requestPointerLock();
+			}
+			colorPanel.onmouseup = () => {
+				//document.exitPointerLock();
+				colorPanel.removeAttribute('data-is_mouse_down');
+			}
+			colorPanel.onmousemove = (event) => {
+				//if(colorPanel.hasAttribute('data-is_mouse_down') == false){
+				//	return;
+				//}
+				let {x:posX,y:posY, width, height} = colorPanel.getBoundingClientRect();
+				//let pos = this.#findPos(colorPanel);
+				//if(! pos){
+				//	return;
+				//}
+				console.log(event);
+				console.log( context.canvas.height);
+				let x = event.pageX - posX - (width - context.canvas.width);
+				let y = event.pageY - posY
+	
+				let [r,g,b] = context.getImageData(x, y, 1, 1, { colorSpace: "srgb" }).data;
+				this.#r = r;
+				this.#g = g;
+				this.#b = b;
+				selectionRgbBg.textContent = this.#selectedColor;
+				selectionRgbBg.style.background = this.#selectedColor;
+				//selectionRgbBg.textContent = `${event.pageX}, ${posX}`
+			}
+			resolve();
+		})
+	}
+	/*
+	static #findPos(element){
+		let curleft = 0, curtop = 0;
+		if (element.offsetParent) {
+			do {
+				curleft += element.offsetLeft;
+				curtop += element.offsetTop;
+			} while (element = element.offsetParent);
+			return { x: curleft, y: curtop };
+		}
+		return undefined;
+	}
+	*/
 	static #style(){
 		let style = document.createElement('style');
 		style.innerHTML = `
@@ -267,10 +333,10 @@ export default class Color extends FreedomInterface {
 				align-items: center;
 			}
 			.bottom-text-wrap .selection-rgb-text{
-				background: white;
+				background: #ffffffd4;
 			}
 			.bottom-text-wrap .previous-rgb-text{
-				background: white;
+				background: #ffffffd4;
 			}
 		`;
 		return style;
@@ -281,5 +347,5 @@ export default class Color extends FreedomInterface {
 		super(Color);
 		this.style.color = 'red';
 	}
-		
+
 }
