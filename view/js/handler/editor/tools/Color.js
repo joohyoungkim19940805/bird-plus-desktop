@@ -40,7 +40,7 @@ export default class Color extends FreedomInterface {
 			}else{
 				this.options.showTools.dataset.tool_status = 'active'
 				this.#componentMap = this.#createPaletteItems();
-				this.#createPalette(palette, obj);
+				this.#createPalette(palette, this.#componentMap);
 				this.#processingPalettePosition(palette);
 			}
 		}

@@ -23,6 +23,7 @@ export default class Options{
 			}else {
 				this.#showTools.dataset.tool_status = 'blur';
 			}
+
 		})
 	}
 	/**

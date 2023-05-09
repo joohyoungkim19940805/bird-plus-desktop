@@ -63,6 +63,24 @@ export default class Line extends HTMLDivElement {
 			//this.append(testDiv);
 			//자기 자신 호출로 아웃오브메모리
 			//this.parentElement.append(new Line());
+			this.append(document.createTextNode('\u200B'))
+			let observer = new MutationObserver( (mutationList, observer) => {
+				mutationList.forEach((mutation) => {
+					if(mutation.target.textContent.includes('\u200B')){
+						mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
+						document.getSelection().modify('move', 'forward', 'line')
+						observer.disconnect();
+					}else{
+						observer.disconnect();
+					}
+				});
+			});
+			observer.observe(this, {
+				characterData: true,
+				characterDataOldValue: true,
+				childList:true,
+				subtree: true
+			})
 		}
 	}
 	disconnectedCallback(){

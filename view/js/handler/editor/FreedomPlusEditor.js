@@ -76,7 +76,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			let line = new FreedomPlusEditor.Components.Line();
 			this.append(line);
 			// 최초에 첫번째 추가 된 line에 빈 element를 삽입하여 포커싱 되도록 한다.
-			this.#addAfterSelectionMove(line); 
+			//this.#addAfterSelectionMove(line); 
 			/*
 			if(parseInt(window.getComputedStyle(line).height) == 0 || window.getComputedStyle(line).height == 'auto'){
 				line.style.minHeight = '1rem';

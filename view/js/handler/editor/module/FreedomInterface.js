@@ -28,9 +28,9 @@ export default class FreedomInterface extends HTMLElement {
 		const removeFun = () => {
 			if((this.textContent.includes('\u200B') && this.textContent.length == 1) || this.textContent.length == 0){
 				this.remove();
-				document.removeEventListener('selectionchange',removeFun, true);
+				document.removeEventListener('selectionchange', removeFun, true);
 			}else if( ! this.isConnected){
-				document.removeEventListener('selectionchange',removeFun, true);
+				document.removeEventListener('selectionchange', removeFun, true);
 			}
 		}
 		document.addEventListener('selectionchange',removeFun, true);
