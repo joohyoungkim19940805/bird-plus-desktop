@@ -49,39 +49,18 @@ export default class Line extends HTMLDivElement {
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){
-			//this.draggable="true"
-			//this.tabIndex = 1;
             this.#isLoaded = true;
-			//this.onselectstart  = (event) => console.log(event)
-			//this.onselectionchange = (event) => this.selectionchangeEventFunction(event);
-			//this.onselect = (event) => console.log(event);
-			//this.onbeforexrselect = (event) => console.log(event)
-			//this.onmouseup = (event) => console.log(window.getSelection())
-			//let testDiv = document.createElement('div');
-			//testDiv.className = 'testAAAA'
-			//testDiv.textContent = 'testaaa';
-			//this.append(testDiv);
-			//자기 자신 호출로 아웃오브메모리
-			//this.parentElement.append(new Line());
 			this.append(document.createTextNode('\u200B'))
 			let selection = document.getSelection();
-			let range = new Range();
-			targetElement.tabIndex = 1;
-			range.selectNodeContents(targetElement)
-			range.setStart(targetElement, targetElement.length);
-			range.setEnd(targetElement, targetElement.length);
-			selection.removeAllRanges()
-			selection.addRange(range)
-			selection.modify('move', 'forward', 'character')
-			selection.setPosition(targetElement, 1)
-			targetElement.removeAttribute('tabIndex');
+			selection.setPosition(this, 0)
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
-					if(mutation.target.textContent.includes('\u200B')){
+					if(mutation.target.textContent.includes('\u200B') && mutation.target.textContent.length > 1 ){
 						mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
+						selection.setPosition(this, 0)
 						document.getSelection().modify('move', 'forward', 'line')
 						observer.disconnect();
-					}else{
+					}else if(mutation.target.textContent.includes('\u200B') == false){
 						observer.disconnect();
 					}
 				});
@@ -283,74 +262,9 @@ export default class Line extends HTMLDivElement {
 		return await new Promise(resolve => {
 			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
 			let {startOffset, endOffset, startContainer, endContainer} = range;
-			const fun = (element) => {
-				new Promise(res=>{
-					
-					if(TargetTool.prototype.isPrototypeOf(element)){
-						if(element.nextSibling){
-							element.nextSibling.before(...element.childNodes);
-						} else if(element.previousSibling){
-							element.previousSibling.after(...element.childNodes);
-						}else {
-							element.parentElement.append(...element.childNodes);
-						}
-						element.remove();
-					}else{
-						element.childNodes.forEach(e=>{
-							fun(e);
-						})
-					}
-					res();
-				})
-				/*
-				console.log('element',element);
-				console.log('lement.parentElement',element.parentElement);
-				element.childNodes.forEach(e=>{
-					let parent = element.parentElement;
-
-					if(TargetTool.prototype.isPrototypeOf(e)){
-						fun(e);
-					}else if(e.nodeType == Node.TEXT_NODE){
-						console.log(4)
-						parent.append(e);
-						
-						if(parent.nextSibling){
-							console.log(1)
-							console.log(element.nextSibling);
-							parent.nextSibling.before(e);
-						} else if(parent.previousSibling){
-							console.log(2)
-							parent.previousSibling.after(e);
-						}else {
-							console.log(3)
-							this.append(e);
-						}
-						
-					}
-				});
-				if(TargetTool.prototype.isPrototypeOf(element)){
-					element.remove();
-				}*/
-			}
 			this.childNodes.forEach(e=>{
-				fun(e);
+				this.#findCancels(e, TargetTool);
 			});
-			/*
-			let textNode = document.createTextNode(range.toString());
-			let startNextSibling = (tool?.nextSibling  || endContainer.nextSibling);
-			let startPrevSibling = (tool?.previousSibling || startContainer.previousSibling);
-			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
-				console.log(1)
-				startPrevSibling.after(textNode);
-			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
-				console.log(2)
-				startNextSibling.before(textNode);
-			}else{
-				console.log(3)
-				this.append(textNode);
-			}
-			*/
-			//tool.remove();
 			resolve();
 		});
 	}
@@ -366,9 +280,16 @@ export default class Line extends HTMLDivElement {
 			let leftText = undefined;
 			let rightText = undefined;
 			if(startContainer.textContent.length != offset){
+				console.log(0)
 				leftText = startContainer.textContent.substring(0, startOffset);			
+				// 뒷쪽 글자가 짤리는 현상으로 startContainer => endContainer으로 변경 //20230509
 				rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : startContainer.textContent.substring(startOffset + 1, offset);	
+				//rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : endContainer.textContent.substring(startOffset + 1, offset);	
 			}
+			console.log('endOffset',endOffset);
+			console.log('startOffset',startOffset);
+			console.log('offset',offset);
+			
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
 				console.log(1)
 				if(rightText){
@@ -506,12 +427,26 @@ export default class Line extends HTMLDivElement {
 			let range = selection.getRangeAt(0);
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			let tool = Line.getTool(startContainer, TargetTool);
+			console.log(startContainer);
+			console.log(endContainer);
+			console.log(commonAncestorContainer);
 			if(startContainer === endContainer){
-				// 범위 중 일부
-				this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
-					console.log('cancelOnlyOneItem')
-					resolve();
-				})
+				if(startContainer.parentElement.childNodes.length == 1 
+					&& startContainer.parentElement.childNodes[0] ==  startContainer
+					&& startContainer.parentElement.childNodes[0] ==  endContainer
+					&& endContainer.textContent.length == endOffset){
+					// tool 범위 전체 선택인 경우
+					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
+						console.log('cancelOnlyOneTool')
+						resolve();
+					})
+				}else{
+					// 범위 중 일부
+					this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
+						console.log('cancelOnlyOneItem')
+						resolve();
+					})
+				}
 			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
 				// 하나만
 				// tool 범위 전체 선택인 경우

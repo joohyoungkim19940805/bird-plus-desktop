@@ -40,9 +40,6 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
-			console.log(Tool);
-			console.log(Tool.options);
-			console.log(Tool.options.defaultClass);
 			Tool.options.defaultClass = className;
 			this.toolsElement[className] = Tool.options.showTools
 			let observer = new MutationObserver( (mutationList, observer) => {
@@ -75,46 +72,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			//this.tabIndex = '';
 			let line = new FreedomPlusEditor.Components.Line();
 			this.append(line);
-			// 최초에 첫번째 추가 된 line에 빈 element를 삽입하여 포커싱 되도록 한다.
-			//this.#addAfterSelectionMove(line); 
-			/*
-			if(parseInt(window.getComputedStyle(line).height) == 0 || window.getComputedStyle(line).height == 'auto'){
-				line.style.minHeight = '1rem';
-				let isFirstKeyUp = false;
-				console.log(111)
-				line.addEventListener('keyup',(e) => {
-					console.log('event >>>> ',e)
-					console.log('???');
-					if(isFirstKeyUp == false){
-						isFirstKeyUp = true;
-						line.style.minHeight = '';
-					}
-				})
-			}
-			*/
-			
 			this.#showTools(this.showToolsWrap);
-			/*
-			// 온키업인 경우 엔터로 얻는 엘레멘탈을 이어받나? = 아니었음
-			this.onkeyup = Object.freeze( (event) => {
-				console.log(event)
-				console.log(window.getSelection());
-				console.log(window.getSelection().toString())
-				console.log(window.getSelection().getRangeAt(0))
-				//console.log(window.getSelection().getRangeAt(1))
-			});
-			this.onselectstart = Object.freeze( (event) => {
-				console.log(event)
-				console.log(window.getSelection())
-				console.log(window.getSelection().toString())
-			});
-			this.onmouseup = Object.freeze( (event) => {
-				console.log(event);
-				console.log(window.getSelection())
-				console.log(window.getSelection().toString())
-			});
-			*/
-			// getSelection - isCollapsed이 true인 경우 선택 된 텍스트가 없음, false = 있음
 		}
 	}
 	disconnectedCallback(){
