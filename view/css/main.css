@@ -81,6 +81,6 @@ div[is="freedom-editor-plus"]{
 
 }
 
-[data-tool_status="active"]{
+[data-tool_status="active"], [data-tool_status="connected"]{
 	background-color:rgb(0, 0, 255);
 }

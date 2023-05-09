@@ -6,6 +6,7 @@ export default class Color extends FreedomInterface {
 	static options = new Options(this);
 	//static #paletteVh = 35;
 	static #paletteVw = 30; 
+	static #componentMap = undefined;
 	static #r = 255;
 	static #g = 0;
 	static #b = 0;
@@ -37,14 +38,85 @@ export default class Color extends FreedomInterface {
 			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
 				this.options.showTools.dataset.tool_status = 'cancel';
 			}else{
-				//this.options.showTools.dataset.tool_status = 'active';
-				palette.replaceChildren(...Object.values(this.#createPaletteItems()));
-				document.body.append(palette);
+				this.options.showTools.dataset.tool_status = 'active'
+				this.#componentMap = this.#createPaletteItems();
+				this.#createPalette(palette, obj);
 				this.#processingPalettePosition(palette);
 			}
 		}
+		window.addEventListener('resize', (event) => {
+			console.log('resize ::: ', event)
+			this.#componentMap = this.#createPaletteItems();
+			this.#createPalette(palette, obj);
+			let done = setTimeout(()=>{
+				this.#processingPalettePosition(palette);
+				clearTimeout(done);
+				done = undefined
+			},100)
+		})
+
+		window.addEventListener('mouseup', () => {
+			if( ! this.#componentMap){
+				return;
+			}
+		})
+		window.addEventListener('mousemove', (event) => {
+			if( ! this.#componentMap){
+				return;
+			}
+			let {
+				topTextWrap, selectionRgbBg, previousRgbBg, 
+				colorWrap, colorPanel, colorPaint, 
+				brightnessColor, 
+				bottomTextWrap, selectionRgbText, previousRgbText
+			} = this.#componentMap;
+			
+			if(this.#componentMap.colorPanel.hasAttribute('data-is_mouse_down')){
+				let rect = colorPanel.getBoundingClientRect();
+				let x = event.pageX - rect.x
+				let y = event.pageY - rect.y
+				let [r,g,b] = context.getImageData(x, y, 1, 1).data;
+				let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
+				let blackOrWhite = this.#blackOrWhite(r,g,b);
+				selectionRgbBg.textContent = selectedColor;
+				selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+				selectionRgbBg.style.background = selectedColor;
+				
+				selectionRgbText.style.color = selectedColor;
+				selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+			}
+		})
 	}
-	
+
+	static mousePositionProcessing(mx, my, rect){
+		let x = mx;
+		let y = my;
+		if(mx < rect.x){
+			x = rect.x;
+		}else if(mx > (rect.x + rect.width)){
+			x = rect.x + rect.width;
+		}
+
+		if(my < rect.y){
+			y = rect.y;
+		}else if(my > (rect.y + rect.height)){
+			y = (rect.y + rect.height);
+		}
+		return {x,y}
+	}
+
+	static #createPalette(palette, itemMap){
+		let {
+			topTextWrap, selectionRgbBg, previousRgbBg, 
+			colorWrap, colorPanel, colorPaint, 
+			brightnessColor, 
+			bottomTextWrap, selectionRgbText, previousRgbText
+		} = itemMap
+		palette.replaceChildren(topTextWrap, colorWrap, brightnessColor, bottomTextWrap);
+		document.body.append(palette);
+		this.#settingCanvas(itemMap);
+	}
+
 	static #createPaletteItems(){
 
 		// 팔레트 상단 텍스트 영역
@@ -65,35 +137,18 @@ export default class Color extends FreedomInterface {
 		// 팔레트 하단 텍스트 영역
 		let {bottomTextWrap, selectionRgbText, previousRgbText} = this.#rgbaBottomTextWrap();
 		
-		this.#addEvent({
+		return {
 			topTextWrap, selectionRgbBg, previousRgbBg, 
-			colorPanel, colorPaint, 
+			colorWrap, colorPanel, colorPaint, 
 			brightnessColor, 
 			bottomTextWrap, selectionRgbText, previousRgbText
-		});
-
-		return {topTextWrap, colorWrap, brightnessColor, bottomTextWrap}; 
+		};
 	}
 
 	static #createColorPanel(){
 		let colorPanel = Object.assign(document.createElement('canvas'),{
 			className: 'palette-panel'
 		})
-		let context = colorPanel.getContext('2d');
-
-		// 가로 그라데이션
-		let gradientH = context.createLinearGradient(0, 0, context.canvas.width, 0);
-		gradientH.addColorStop(0, 'white');
-		gradientH.addColorStop(1, this.#selectedColor);
-		context.fillStyle = gradientH;
-		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-
-		// 수직 그라데이션
-		let gradientV = context.createLinearGradient(0, 0, 0, context.canvas.height);
-		gradientV.addColorStop(0, 'rgba(0,0,0,0)');
-		gradientV.addColorStop(1,  'black');
-		context.fillStyle = gradientV;
-		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
 		return colorPanel;
 	}
@@ -162,21 +217,33 @@ export default class Color extends FreedomInterface {
 		});
 		let selection = window.getSelection();
 		let sampleText = '';
-		if(selection.rangeCount != 0){
-			sampleText = window.getSelection().getRangeAt(0).toString();
+		if(selection.rangeCount != 0 && selection.isCollapsed == false){
+			//console.log(window.getSelection().getRangeAt(0))
+			let range = window.getSelection().getRangeAt(0)
+			let span = document.createElement('span');
+			//commonAncestorContainer
+			span.append(range.cloneContents())
+			sampleText = span
+			console.log(sampleText);
 		}
 		sampleText = sampleText == '' ? '가 나다 라 A BC D' : sampleText;
 		let selectionRgbText = Object.assign(document.createElement('div'), {
 			className: 'selection-rgb-text',
-			textContent: sampleText
 		});
 		selectionRgbText.style.color = this.#selectedColor;
 		
 		let previousRgbText = Object.assign(document.createElement('div'), {
 			className: 'previous-rgb-text',
-			textContent: sampleText
 		});
 		previousRgbText.style.color = this.#selectedColor;
+		
+		if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
+			selectionRgbText.innerHTML = sampleText.innerHTML;
+			previousRgbText.innerHTML = sampleText.innerHTML;
+		}else{
+			selectionRgbText.textContent = sampleText;
+			previousRgbText.textContent = sampleText;
+		}
 
 		let buttonWrap = Object.assign(document.createElement('div'),{
 			className: 'button-wrap'
@@ -211,7 +278,7 @@ export default class Color extends FreedomInterface {
 
 	}
 
-	static #addEvent(obj){
+	static #settingCanvas(obj){
 		return new Promise(resolve=> {
 			let {
 				topTextWrap, selectionRgbBg, previousRgbBg, 
@@ -219,42 +286,80 @@ export default class Color extends FreedomInterface {
 				brightnessColor, 
 				bottomTextWrap, selectionRgbText, previousRgbText
 			} = obj;
-			console.log('??');
-			console.log(colorPanel);
-			let context = colorPanel.getContext('2d',  { colorSpace: "display-p3" });
-			colorPanel.onmousedown = async ()=>{
-				console.log('1')
-				colorPanel.setAttribute('data-is_mouse_down', '');
-				//await colorPanel.requestPointerLock();
-			}
-			colorPanel.onmouseup = () => {
-				//document.exitPointerLock();
-				colorPanel.removeAttribute('data-is_mouse_down');
-			}
-			colorPanel.onmousemove = (event) => {
-				//if(colorPanel.hasAttribute('data-is_mouse_down') == false){
-				//	return;
-				//}
-				let {x:posX,y:posY, width, height} = colorPanel.getBoundingClientRect();
-				//let pos = this.#findPos(colorPanel);
-				//if(! pos){
-				//	return;
-				//}
-				console.log(event);
-				console.log( context.canvas.height);
-				let x = event.pageX - posX - (width - context.canvas.width);
-				let y = event.pageY - posY
-	
-				let [r,g,b] = context.getImageData(x, y, 1, 1, { colorSpace: "srgb" }).data;
-				this.#r = r;
-				this.#g = g;
-				this.#b = b;
-				selectionRgbBg.textContent = this.#selectedColor;
-				selectionRgbBg.style.background = this.#selectedColor;
-				//selectionRgbBg.textContent = `${event.pageX}, ${posX}`
-			}
+			this.#addColorPanelEvent(colorPanel, selectionRgbBg, selectionRgbText)
+			
 			resolve();
 		})
+	}
+	static #addColorPanelEvent(colorPanel, selectionRgbBg, selectionRgbText){
+		let context = colorPanel.getContext('2d');
+		let styleMap = window.getComputedStyle(colorPanel);
+		colorPanel.width = parseInt(styleMap.width);
+		colorPanel.height = parseInt(styleMap.height);
+
+		// 가로 그라데이션
+		let gradientH = context.createLinearGradient(0, 0, colorPanel.width, 0);
+		gradientH.addColorStop(0, 'white');
+		gradientH.addColorStop(1, this.#selectedColor);
+		context.fillStyle = gradientH;
+		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
+
+		// 수직 그라데이션
+		let gradientV = context.createLinearGradient(0, 0, 0, colorPanel.height);
+		gradientV.addColorStop(0, 'rgba(0,0,0,0)');
+		gradientV.addColorStop(1, 'black');
+		context.fillStyle = gradientV;
+		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
+
+		colorPanel.onmousedown = ()=>{
+			colorPanel.setAttribute('data-is_mouse_down', '');
+			//await colorPanel.requestPointerLock();
+		}
+		colorPanel.onmouseup = () => {
+			//document.exitPointerLock();
+			colorPanel.removeAttribute('data-is_mouse_down');
+		}
+		colorPanel.onmousemove = (event) => {
+			if(colorPanel.hasAttribute('data-is_mouse_down') == false){
+				return;
+			}
+			let {x:posX,y:posY, width, height} = colorPanel.getBoundingClientRect();
+
+			let x = event.pageX - posX
+			let y = event.pageY - posY
+
+			let [r,g,b] = context.getImageData(x, y, 1, 1).data;
+			//this.#r = r;
+			//this.#g = g;
+			//this.#b = b;
+			//selectionRgbBg.textContent = this.#selectedColor;
+			//selectionRgbBg.style.background = this.#selectedColor;
+			//selectionRgbBg.textContent = `${event.pageX}, ${posX}`
+			let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
+			let blackOrWhite = this.#blackOrWhite(r,g,b);
+			selectionRgbBg.textContent = selectedColor;
+			selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			selectionRgbBg.style.background = selectedColor;
+			
+			selectionRgbText.style.color = selectedColor;
+			selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+		}
+		colorPanel.onmouseout = (event) => {
+			colorPanel.removeAttribute('data-is_mouse_down');
+		}
+	}
+	//텍스트 샘플의 투명도는 0.83
+	/**
+	 * 
+	 * @param  {...Number} rgb 
+	 * @see https://stackoverflow.com/a/3943023/112731
+	 * @returns 
+	 */
+	static #blackOrWhite(...rgb){
+		let [r,g,b] = rgb;
+		return (r * 0.299 + g * 0.587 + b * 0.114) > 150
+            ? [0, 0, 0]
+            : [255, 255, 255];
 	}
 	/*
 	static #findPos(element){
