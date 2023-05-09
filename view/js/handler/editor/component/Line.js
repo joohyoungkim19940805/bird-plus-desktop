@@ -64,6 +64,17 @@ export default class Line extends HTMLDivElement {
 			//자기 자신 호출로 아웃오브메모리
 			//this.parentElement.append(new Line());
 			this.append(document.createTextNode('\u200B'))
+			let selection = document.getSelection();
+			let range = new Range();
+			targetElement.tabIndex = 1;
+			range.selectNodeContents(targetElement)
+			range.setStart(targetElement, targetElement.length);
+			range.setEnd(targetElement, targetElement.length);
+			selection.removeAllRanges()
+			selection.addRange(range)
+			selection.modify('move', 'forward', 'character')
+			selection.setPosition(targetElement, 1)
+			targetElement.removeAttribute('tabIndex');
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
 					if(mutation.target.textContent.includes('\u200B')){
