@@ -60,7 +60,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			})
 			
 			//Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
-			window.customElements.define(className, Tool, Tool.options.extendsElement ? {extends:Tool.options.extendsElement} : undefined);
+			window.customElements.define(className, Tool, Tool.options.extendsElement && Tool.options.extendsElement != '' ? {extends:Tool.options.extendsElement} : undefined);
 			obj[Tool.constructor.name] = Tool;
 			return obj;
 		}, {})
@@ -157,7 +157,6 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 	}
 
 	#showTools(wrap){
-		console.log(wrap);
 		if( ! wrap instanceof HTMLElement || ! wrap){
 			throw new Error(`args is not element`);
 		}
