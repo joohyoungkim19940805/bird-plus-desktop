@@ -1,20 +1,19 @@
 import FreedomInterface from "../module/FreedomInterface"
 import Options from "../module/Options"
 export default class Color extends FreedomInterface {
-	//static extendsElement = 'strong';
-	//static defaultClass = 'line';
 	static options = new Options(this);
+	static #style = document.createElement('style');
 	//static #paletteVh = 35;
-	static #paletteVw = 30; 
+	static #paletteVw = 20; 
 	static #componentMap = undefined;
+	static #isPaletteActive = false;
+	static #lastSelectPosition = undefined;
+
 	static #r = 255;
 	static #g = 0;
 	static #b = 0;
 	static #a = 1;
-	static #lastSelectPosition = undefined;
-	static get #selectedColor(){
-		return `rgba(${this.#r}, ${this.#g}, ${this.#b}, ${this.#a})`;
-	}
+
 	static{
 		this.options.extendsElement = 'kbd';
 		this.options.defaultClass = 'freedom-color';
@@ -32,44 +31,54 @@ export default class Color extends FreedomInterface {
 				this.#processingPalettePosition(palette);
 			}
 		});
-		//palette.replaceChildren(...Object.values(this.#createPaletteItems()));
-		document.head.append(this.#style())
+
 		this.options.showTools = button;
 		this.options.showTools.onclick = ()=>{
 			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
 				this.options.showTools.dataset.tool_status = 'cancel';
 			}else{
+				this.#isPaletteActive = ! this.#isPaletteActive;
+				if(this.#isPaletteActive == false){
+					palette.remove()
+				}else{
+					document.head.append(this.style)
+					this.#componentMap = this.#createPaletteItems();
+					document.body.append(palette);
+					this.#createPalette(palette, this.#componentMap);
+					this.#processingPalettePosition(palette);
+				}
 				//this.options.showTools.dataset.tool_status = 'active'
-				this.#componentMap = this.#createPaletteItems();
-				this.#createPalette(palette, this.#componentMap);
-				this.#processingPalettePosition(palette);
 			}
 		}
 		window.addEventListener('resize', (event) => {
-			console.log('resize ::: ', event)
 			this.#componentMap = this.#createPaletteItems();
 			this.#createPalette(palette, this.#componentMap);
 			let done = setTimeout(()=>{
 				this.#processingPalettePosition(palette);
 				clearTimeout(done);
 				done = undefined
-			},100)
+			},500)
 		})
-
-		window.addEventListener('mouseup', () => {
-			if( ! this.#componentMap){
-				return;
-			}
-			this.#componentMap.colorPanel?.removeAttribute('data-is_mouse_down');
+		
+		new Array('mouseup', 'touchend').forEach(eventName => {
+			window.addEventListener('mouseup', () => {
+				if( ! this.#componentMap){
+					return;
+				}
+				this.#componentMap.colorPanel?.removeAttribute('data-is_mouse_down');
+			})
 		})
-		window.addEventListener('mousemove', (event) => {
-			if( ! this.#componentMap){
-				return;
-			}
-			
-			if(this.#componentMap.colorPanel && this.#componentMap.colorPanel.hasAttribute('data-is_mouse_down')){
-				this.#colorPanelEvent(event)
-			}
+		
+		new Array('mousemove', 'touchmove').forEach(eventName=>{
+			window.addEventListener(eventName, (event) => {
+				if( ! this.#componentMap){
+					return;
+				}
+				
+				if(this.#componentMap.colorPanel && this.#componentMap.colorPanel.hasAttribute('data-is_mouse_down')){
+					this.#colorPanelEvent(event)
+				}
+			})
 		})
 	}
 
@@ -82,8 +91,8 @@ export default class Color extends FreedomInterface {
 			applyWrap, cancelButton, applyButton
 		} = itemMap
 		palette.replaceChildren(topTextWrap, colorWrap, brightnessColorWrap, bottomTextWrap, applyWrap);
-		document.body.append(palette);
 		this.#settingCanvas();
+		this.#settingApplyEvent(palette, cancelButton, applyButton, selectionRgbText);
 	}
 
 	static #createPaletteItems(){
@@ -127,29 +136,7 @@ export default class Color extends FreedomInterface {
 		let colorPanelSelectedPointer = Object.assign(document.createElement('div'),{
 			className: 'panel_selected_pointer'
 		});
-		colorPanelSelected.onmousedown = () => {
-			colorPanel.setAttribute('data-is_mouse_down', '');
-			let colorPanelRect = colorPanel.getBoundingClientRect();
-			let colorPanelSelected = colorPanel.__colorPanelSelected;
-			colorPanelSelected.style.top = colorPanelRect.y + 'px';
-			colorPanelSelected.style.left = colorPanelRect.x + 'px';
-			colorPanelSelected.style.width = colorPanelRect.width + 'px';
-			colorPanelSelected.style.height = colorPanelRect.height + 'px';
-			colorPanelSelected.width = colorPanelRect.width;
-			colorPanelSelected.height = colorPanelRect.height;
-		}
-		colorPanelSelected.onmouseout = (event) => {
-			colorPanel.setAttribute('data-is_mouse_out', '');
-		}
-		colorPanelSelected.onmouseover = (event) => {
-			colorPanel.removeAttribute('data-is_mouse_out');
-		}
-		colorPanelSelectedPointer.onmouseout = (event) => {
-			colorPanel.setAttribute('data-is_mouse_out', '');
-		}
-		colorPanelSelectedPointer.onmouseover = (event) => {
-			colorPanel.removeAttribute('data-is_mouse_out');
-		}
+
 		colorPanel.__colorPanelSelected = colorPanelSelected;
 		colorPanel.__colorPanelSelectedPointer = colorPanelSelectedPointer;
 
@@ -186,7 +173,7 @@ export default class Color extends FreedomInterface {
 		let context = brightnessColorWrap.getContext('2d', { willReadFrequently: true });
 		let gradient = context.createLinearGradient(0, 0, context.canvas.width, 0) 
 		gradient.addColorStop(0, 'rgba(0,0,0,0)');
-		gradient.addColorStop(1, this.#selectedColor);
+		gradient.addColorStop(1, this.#selectedColor); // 페인트 컬러로 변경 필요
 		context.fillStyle = gradient;
 		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 		
@@ -221,7 +208,6 @@ export default class Color extends FreedomInterface {
 		let selection = window.getSelection();
 		let sampleText = '';
 		if(selection.rangeCount != 0 && selection.isCollapsed == false){
-			//console.log(window.getSelection().getRangeAt(0))
 			let range = window.getSelection().getRangeAt(0)
 			let aticle = document.createElement('aticle');
 			//commonAncestorContainer
@@ -265,25 +251,10 @@ export default class Color extends FreedomInterface {
 		let applyButton = Object.assign(document.createElement('button'), {
 			className: 'apply-button',
 			type: 'button',
-			textcontent: 'apply'
+			textContent: 'apply'
 		})
 		applyWrap.append(cancelButton, applyButton);
 		return {applyWrap, cancelButton, applyButton};
-	}
-
-	static #processingPalettePosition(palette){
-		let {x, y, height} = this.options.showTools.getBoundingClientRect();
-		//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
-		//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
-		let paletteHeightPx = palette.clientHeight;
-		let paletteTop = (y - paletteHeightPx)
-		if(paletteTop > 0){
-			palette.style.top = paletteTop + 'px';
-		}else{
-			palette.style.top = y + height + 'px';
-		}
-		palette.style.left = x + 'px';
-
 	}
 
 	static #settingCanvas(){
@@ -308,7 +279,7 @@ export default class Color extends FreedomInterface {
 		// 가로 그라데이션
 		let gradientH = context.createLinearGradient(0, 0, colorPanel.width, 0);
 		gradientH.addColorStop(0, 'white');
-		gradientH.addColorStop(1, this.#selectedColor);
+		gradientH.addColorStop(1, this.#selectedColor); // 페인트 컬러로 변경 필요
 		context.fillStyle = gradientH;
 		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
 		// 수직 그라데이션
@@ -317,25 +288,7 @@ export default class Color extends FreedomInterface {
 		gradientV.addColorStop(1, 'black');
 		context.fillStyle = gradientV;
 		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
-		
-		colorPanel.__colorPanelSelected.style.top = colorPanelRect.y + 'px';
-		colorPanel.__colorPanelSelected.style.left = colorPanelRect.x + 'px';
-		colorPanel.__colorPanelSelected.style.width = colorPanelRect.width + 'px';
-		colorPanel.__colorPanelSelected.style.height = colorPanelRect.height + 'px';
-		colorPanel.__colorPanelSelected.width = colorPanelRect.width;
-		colorPanel.__colorPanelSelected.height = colorPanelRect.height;
-		if(this.#lastSelectPosition){
-			this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, this.#lastSelectPosition.x - colorPanelRect.x, this.#lastSelectPosition.y - colorPanelRect.y);
-		}else{
-			this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, colorPanelRect.x - (colorPanelRect.x + colorPanelRect.width), colorPanelRect.y - (colorPanelRect.y + colorPanelRect.height));
-		}
 
-		colorPanel.onmouseout = (event) => {
-			colorPanel.setAttribute('data-is_mouse_out', '');
-		}
-		colorPanel.onmouseover = (event) => {
-			colorPanel.removeAttribute('data-is_mouse_out');
-		}
 		colorPanel.onmousedown = (event)=>{
 			colorPanel.setAttribute('data-is_mouse_down', '');
 			let colorPanelRect = colorPanel.getBoundingClientRect();
@@ -348,72 +301,140 @@ export default class Color extends FreedomInterface {
 			colorPanelSelected.style.height = colorPanelRect.height + 'px';
 			colorPanelSelected.width = colorPanelRect.width;
 			colorPanelSelected.height = colorPanelRect.height;
-			this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, event.x - colorPanelRect.x, event.y - colorPanelRect.y);
+			this.#colorPanelEvent(event);
+			//this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, event.x - colorPanelRect.x, event.y - colorPanelRect.y);
 		}
-	}
-	static #colorPanelEvent(event, isFirst = false){
-		let {
-			topTextWrap, selectionRgbBg, previousRgbBg, 
-			colorWrap, colorPanel, colorPaint, 
-			brightnessColorWrap, 
-			bottomTextWrap, selectionRgbText, previousRgbText
-		} = this.#componentMap;
-		let rect = colorPanel.getBoundingClientRect();
-		let pointerRect = colorPanel.__colorPanelSelectedPointer.getBoundingClientRect();
+		colorPanel.ontouchstart = colorPanel.onmousedown;
 
-		let selectedPointerX = event.pageX;
-		let selectedPointerY = event.pageY;
-
-		if( pointerRect.x < rect.x ){
-			selectedPointerX = rect.x;
-			colorPanel.__colorPanelSelectedPointer.style.left = selectedPointerX + 'px';
-		}else if( pointerRect.x > (rect.x + rect.width) ){
-			selectedPointerX = rect.x + rect.width 
-			colorPanel.__colorPanelSelectedPointer.style.left = selectedPointerX + 'px';
-		}else {
-			colorPanel.__colorPanelSelectedPointer.style.left = selectedPointerX + 'px';
-		}
-
-		if( pointerRect.y < rect.y ){
-			selectedPointerY = rect.y;
-			colorPanel.__colorPanelSelectedPointer.style.top = selectedPointerY + 'px'
-		}else if( pointerRect.y > (rect.y + rect.height)){
-			selectedPointerY = rect.y + rect.height 
-			colorPanel.__colorPanelSelectedPointer.style.top = selectedPointerY + 'px'
-		}else {
-			colorPanel.__colorPanelSelectedPointer.style.top = selectedPointerY + 'px'
-		}
-
-		let reProcessingRect = colorPanel.__colorPanelSelectedPointer.getBoundingClientRect();
+		colorPanel.__colorPanelSelected.onmousedown = colorPanel.onmousedown;
+		colorPanel.__colorPanelSelected.ontouchstart = colorPanel.onmousedown;
 		
-		let x = reProcessingRect.x - rect.x
-		let y = reProcessingRect.y - rect.y
-		this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, x, y);
-		this.#lastSelectPosition = {x:reProcessingRect.x,y:reProcessingRect.y};
+		colorPanel.__colorPanelSelectedPointer.onmousedown = colorPanel.onmousedown;
+		colorPanel.__colorPanelSelectedPointer.ontouchstart = colorPanel.onmousedown;
 
-		let context = colorPanel.getContext('2d', { willReadFrequently: true });
-		let [r,g,b] = context.getImageData(x, y, 1, 1).data;
-		let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
-		let blackOrWhite = this.#blackOrWhite(r,g,b);
-		selectionRgbBg.textContent = selectedColor;
-		selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
-		selectionRgbBg.style.background = selectedColor;
-		
-		selectionRgbText.style.color = selectedColor;
-		selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+		setTimeout(()=>{
+			let colorPanelRect = colorPanel.getBoundingClientRect();
+			colorPanel.__colorPanelSelected.style.top = colorPanelRect.y + 'px';
+			colorPanel.__colorPanelSelected.style.left = colorPanelRect.x + 'px';
+			colorPanel.__colorPanelSelected.style.width = colorPanelRect.width + 'px';
+			colorPanel.__colorPanelSelected.style.height = colorPanelRect.height + 'px';
+			colorPanel.__colorPanelSelected.width = colorPanelRect.width;
+			colorPanel.__colorPanelSelected.height = colorPanelRect.height;
+			let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
+			if(this.#lastSelectPosition){
+				this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, this.#lastSelectPosition.x - colorPanelRect.x, this.#lastSelectPosition.y - colorPanelRect.y, blackOrWhite, true);
+			}else{
+				this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, colorPanelRect.width - 0.1, 0.1, blackOrWhite, true);
+			}
+		},200)
+
+	}
+	static #colorPanelEvent(event){
+		new Promise(resolve => {
+			let {
+				topTextWrap, selectionRgbBg, previousRgbBg, 
+				colorWrap, colorPanel, colorPaint, 
+				brightnessColorWrap, 
+				bottomTextWrap, selectionRgbText, previousRgbText
+			} = this.#componentMap;
+			let rect = colorPanel.getBoundingClientRect();
+			let pageX;
+			let pageY;
+			if(window.TouchEvent && event.constructor == window.TouchEvent){
+				pageX = event.touches[0].pageX
+				pageY = event.touches[0].pageY
+				event.preventDefault();
+			}else{
+				pageX = event.x
+				pageY = event.y
+			}
+
+			let isLeftOver = pageX < rect.left;
+			let isRightOver = pageX > rect.right;
+			let isTopOver = pageY < rect.top;
+			let isBottomOver = pageY > rect.bottom;
+
+			colorPanel.__colorPanelSelectedPointer.style.left = pageX + 'px';
+			colorPanel.__colorPanelSelectedPointer.style.top = pageY + 'px';
+
+			let {x : reProcessingRectX, y : reProcessingRectY} = colorPanel.__colorPanelSelectedPointer.getBoundingClientRect();
+			
+			let x = reProcessingRectX - rect.x
+			let y = reProcessingRectY - rect.y
+
+
+			if(isLeftOver){
+				x = 0.6
+				reProcessingRectX = rect.left + 0.6
+			}
+			if(isRightOver){
+				x = rect.width - 0.6
+				reProcessingRectX = rect.right - 0.6
+			}
+			if(isTopOver){
+				y = 0.6
+				reProcessingRectY = rect.top + 0.6
+			}
+			if(isBottomOver){
+				y = rect.height - 0.6
+				reProcessingRectY = rect.bottom - 0.6
+			}
+
+			this.#lastSelectPosition = {x : reProcessingRectX, y : reProcessingRectY};
+
+			let context = colorPanel.getContext('2d', { willReadFrequently: true });
+			let [r,g,b] = context.getImageData(x, y, 1, 1).data;
+			let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
+			let blackOrWhite = this.#blackOrWhite(r,g,b);
+
+			this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, x, y, blackOrWhite);
+
+			selectionRgbBg.textContent = selectedColor;
+			selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			selectionRgbBg.style.background = selectedColor;
+			
+			selectionRgbText.style.color = selectedColor;
+			selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+			resolve([r,g,b]);
+		})
 	}
 
-	static #processingColorPanelSeleter(selected, x, y){
+	static #processingColorPanelSeleter(selected, x, y, [r = 0, g = 0, b = 0] = []){
 		new Promise(resolve=>{
 			let colorPanelSelectedContext = selected.getContext('2d', { willReadFrequently: true });
-			
-			colorPanelSelectedContext.reset();
-			colorPanelSelectedContext.lineWidth = 5;
+			colorPanelSelectedContext.clearRect(0, 0, colorPanelSelectedContext.canvas.width, colorPanelSelectedContext.canvas.height);
+			colorPanelSelectedContext.lineWidth = 1;
 			colorPanelSelectedContext.beginPath();
-			colorPanelSelectedContext.arc(x, y, 20, 0, 2 * Math.PI);
+			colorPanelSelectedContext.arc(x, y, 10, 0, 2 * Math.PI);
+			colorPanelSelectedContext.strokeStyle = `rgb(${r}, ${g}, ${b})`
 			colorPanelSelectedContext.stroke();
 			resolve();
 		});
+	}
+
+	static #settingApplyEvent(palette, cancelButton, applyButton, selectionRgbText){
+		cancelButton.onclick = () => {
+			this.#isPaletteActive = false;
+			palette.remove();
+		}
+		applyButton.onclick = () => {
+
+		}
+	}
+
+	static #processingPalettePosition(palette){
+		let {x, y, height} = this.options.showTools.getBoundingClientRect();
+		//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
+		//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
+		let paletteHeightPx = palette.clientHeight;
+		let paletteTop = (y - paletteHeightPx)
+		if(paletteTop > 0){
+			palette.style.top = paletteTop + 'px';
+		}else{
+			palette.style.top = y + height + 'px';
+		}
+		palette.style.left = x + 'px';
+
 	}
 
 	//텍스트 샘플의 투명도는 0.83
@@ -429,22 +450,22 @@ export default class Color extends FreedomInterface {
             ? [0, 0, 0]
             : [255, 255, 255];
 	}
-	/*
-	static #findPos(element){
-		let curleft = 0, curtop = 0;
-		if (element.offsetParent) {
-			do {
-				curleft += element.offsetLeft;
-				curtop += element.offsetTop;
-			} while (element = element.offsetParent);
-			return { x: curleft, y: curtop };
-		}
-		return undefined;
+	
+	static get #selectedColor(){
+		return `rgba(${this.#r}, ${this.#g}, ${this.#b}, ${this.#a})`;
 	}
-	*/
-	static #style(){
-		let style = document.createElement('style');
-		style.innerHTML = `
+
+	static set style(style){
+		this.#style.textContent = style;
+	}
+
+	static set addStyle(addStyle){
+		this.#style.textContent = this.#style.textContent + addStyle;
+	}
+	
+
+	static get style(){
+		this.#style.textContent = `
 			.palette-wrap{
 				background: #000000bf;
 				position: fixed;
@@ -452,34 +473,32 @@ export default class Color extends FreedomInterface {
 				width: ${this.#paletteVw}vw;
 				height: fit-content;
 				color: white;
-    			font-size: 13px;
+				font-size: 13px;
+				min-width: 300px;
+				-webkit-user-select:none;
+				-moz-user-select:none;
+				-ms-user-select:none;
+				user-select:none
 			}
 			.palette-wrap .palette-panel{
 				width: 90%;
 				position: relative;
 			}
-			.palette-wrap .panel_selected{
-				position: fixed;
-				z-index: 9999;
-			}
-			.palette-wrap .panel_selected_pointer{
-				position: fixed;
-			}
 
-			.top-text-wrap{
+			.palette-wrap .top-text-wrap{
 				display: flex;
-    			justify-content: space-between;
+				justify-content: space-between;
 				margin-bottom: 2%;
 				height: 8%;
 			}
-			.top-text-wrap .selection-rgb-bg{
+			.palette-wrap .top-text-wrap .selection-rgb-bg{
 				width: 100%;
 				text-align-last: center;
 				display: flex;
 				justify-content: center;
 				align-items: center;
 			}
-			.top-text-wrap .previous-rgb-bg{
+			.palette-wrap .top-text-wrap .previous-rgb-bg{
 				text-align-last: center;
 				display: flex;
 				justify-content: center;
@@ -487,44 +506,61 @@ export default class Color extends FreedomInterface {
 				width: 11.5%;
 			}
 
-			.color-wrap{
+			.palette-wrap .color-wrap{
 				display: flex;
 				justify-content: space-between;
 				margin-bottom: 2%;
 			}
-			.color-wrap .panel_selected_pointer{
+			.palette-wrap .color-wrap .panel_selected{
+				position: fixed;
+				z-index: 9999;
+			}
+			.palette-wrap .color-wrap .panel_selected_pointer{
+				position: fixed;
 				width: 1px;
 				height: 1px;
 			}
-			.color-wrap .palette-paint{
+			.palette-wrap .color-wrap .palette-paint{
 				width: 5%;
 			}
 
-			.brightness-wrap{
+			.palette-wrap .brightness-wrap{
 				margin-bottom: 2%;
 				background-image: /* tint image */ linear-gradient(to right, rgb(192 192 192 / 20%), rgb(192 192 192 / 20%)), /* checkered effect */ linear-gradient(to right, #505050 50%, #a1a1a1 50%), linear-gradient(to bottom, #505050 50%, #a1a1a1 50%);
 				background-blend-mode: normal, difference, normal;
 				background-size: 2em 2em;
 				display: flex;
 			}
-			.brightness-wrap .brightness-color{
-				height: 3vh;
-    			width: 100%;
+			.palette-wrap .brightness-wrap .brightness-color{
+				height: 2vh;
+				width: 100%;
+				min-height: 17px;
 			}
 
-			.bottom-text-wrap{
+			.palette-wrap .bottom-text-wrap{
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
+				margin-bottom: 2%;
 			}
-			.bottom-text-wrap .selection-rgb-text{
+			.palette-wrap .bottom-text-wrap .selection-rgb-text{
 				background: #ffffffd4;
 			}
-			.bottom-text-wrap .previous-rgb-text{
+			.palette-wrap .bottom-text-wrap .previous-rgb-text{
 				background: #ffffffd4;
+			}
+			
+			.palette-wrap .button-wrap {
+				display: flex;
+				justify-content: space-around;
+			}
+			.palette-wrap .cancel-button, .palette-wrap .apply-button{
+				background: none;
+				border: revert;
+				color: #b9b9b9;
 			}
 		`;
-		return style;
+		return this.#style;
 	}
 
 	#isLoaded = false;
