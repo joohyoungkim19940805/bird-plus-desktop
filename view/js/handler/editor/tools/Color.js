@@ -7,7 +7,11 @@ export default class Color extends FreedomInterface {
 	static #paletteVw = 20; 
 	static #componentMap = undefined;
 	static #isPaletteActive = false;
-	static #lastSelectPosition = undefined;
+	
+	static #lastPanelPosition = undefined;
+	
+	static #lastPaintPosition = undefined;
+	static #lastPaintRgb = [255, 0, 0];
 
 	static #r = 255;
 	static #g = 0;
@@ -66,6 +70,7 @@ export default class Color extends FreedomInterface {
 					return;
 				}
 				this.#componentMap.colorPanel?.removeAttribute('data-is_mouse_down');
+				this.#componentMap.colorPaint?.removeAttribute('data-is_mouse_down');
 			})
 		})
 		
@@ -76,7 +81,10 @@ export default class Color extends FreedomInterface {
 				}
 				
 				if(this.#componentMap.colorPanel && this.#componentMap.colorPanel.hasAttribute('data-is_mouse_down')){
-					this.#colorPanelEvent(event)
+					this.#colorPanelMoveEvent(event)
+				}
+				if(this.#componentMap.colorPaint && this.#componentMap.colorPaint.hasAttribute('data-is_mouse_down')){
+					this.#colorPaintMoveEvent(event);
 				}
 			})
 		})
@@ -107,7 +115,8 @@ export default class Color extends FreedomInterface {
 
 		let colorPanel = this.#createColorPanel();
 		let colorPaint = this.#createPaint();
-		colorWrap.append(colorPanel, colorPaint, colorPanel.__colorPanelSelected, colorPanel.__colorPanelSelectedPointer);
+		colorWrap.append(colorPanel, colorPanel.__colorPanelSelected, colorPanel.__colorPanelSelectedPointer,
+			colorPaint, colorPaint.__colorPaintSelectedPointer);
 
 		// 팔레트 색상 명도 조절 설정 캔버스 영역
 		let brightnessColorWrap = this.#createBrightnessColor()
@@ -131,10 +140,10 @@ export default class Color extends FreedomInterface {
 			className: 'palette-panel'
 		})
 		let colorPanelSelected = Object.assign(document.createElement('canvas'),{
-			className: 'panel_selected'
+			className: 'panel-selected'
 		})
 		let colorPanelSelectedPointer = Object.assign(document.createElement('div'),{
-			className: 'panel_selected_pointer'
+			className: 'panel-selected-pointer'
 		});
 
 		colorPanel.__colorPanelSelected = colorPanelSelected;
@@ -144,22 +153,18 @@ export default class Color extends FreedomInterface {
 	}
 
 	static #createPaint(){
-		let paint = Object.assign(document.createElement('canvas'),{
+		let colorPaint = Object.assign(document.createElement('canvas'),{
 			className: 'palette-paint'
 		});
-		let context = paint.getContext('2d', { willReadFrequently: true } );
-		let gradient = context.createLinearGradient(0,0,0,context.canvas.height); 
-		gradient.addColorStop(0, 'rgb(255, 0, 0)') // red
-		gradient.addColorStop(0.15, 'rgb(255, 0, 255)') // violet
-		gradient.addColorStop(0.35, 'rgb(0, 0, 255)') // blue
-		gradient.addColorStop(0.45, 'rgb(0, 255, 255)') // Sky blue
-		gradient.addColorStop(0.65, 'rgb(0, 255, 0)') // green
-		gradient.addColorStop(0.85, 'rgb(255, 255, 0)') // yellow
-		gradient.addColorStop(0.9, 'orange')
-		gradient.addColorStop(1, 'rgb(255, 0, 0)') // red
-		context.fillStyle = gradient;
-		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-		return paint;
+
+		let colorPaintSelectedPointer = Object.assign(document.createElement('div'), {
+			className: 'paint-selected-pointer'
+		})
+
+		colorPaint.__colorPaintSelectedPointer = colorPaintSelectedPointer
+
+
+		return colorPaint;
 	}
 
 	static #createBrightnessColor(){
@@ -170,10 +175,12 @@ export default class Color extends FreedomInterface {
 			className: 'brightness-color'
 		})
 		brightnessWrap.append(brightnessColorWrap)
+
+		let [r,g,b] = this.#lastPaintRgb
 		let context = brightnessColorWrap.getContext('2d', { willReadFrequently: true });
 		let gradient = context.createLinearGradient(0, 0, context.canvas.width, 0) 
 		gradient.addColorStop(0, 'rgba(0,0,0,0)');
-		gradient.addColorStop(1, this.#selectedColor); // 페인트 컬러로 변경 필요
+		gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${this.#a})`); // 페인트 컬러로 변경 필요
 		context.fillStyle = gradient;
 		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 		
@@ -185,11 +192,15 @@ export default class Color extends FreedomInterface {
 			className: 'top-text-wrap'
 		});
 		
+		let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
+
 		let selectionRgbBg = Object.assign(document.createElement('div'), {
 			className: 'selection-rgb-bg',
 			textContent: this.#selectedColor
 		});
 		selectionRgbBg.style.background = this.#selectedColor;
+		selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+
 
 		let previousRgbBg = Object.assign(document.createElement('div'), {
 			className : 'previous-rgb-bg',
@@ -215,16 +226,21 @@ export default class Color extends FreedomInterface {
 			sampleText = aticle
 		}
 		sampleText = sampleText == '' ? '가 나다 라 A BC D' : sampleText;
+		let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
+		
 		let selectionRgbText = Object.assign(document.createElement('div'), {
 			className: 'selection-rgb-text',
 		});
 		selectionRgbText.style.color = this.#selectedColor;
-		
+		selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+
 		let previousRgbText = Object.assign(document.createElement('div'), {
 			className: 'previous-rgb-text',
 		});
 		previousRgbText.style.color = this.#selectedColor;
-		
+		previousRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+
+
 		if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
 			selectionRgbText.innerHTML = sampleText.innerHTML;
 			previousRgbText.innerHTML = sampleText.innerHTML;
@@ -260,77 +276,87 @@ export default class Color extends FreedomInterface {
 	static #settingCanvas(){
 		return new Promise(resolve=> {
 			this.#settingColorPanel()
-			
+			this.#settingColorPaint()
 			resolve();
 		})
 	}
 	static #settingColorPanel(){
-		let {
+		/*let {
 			topTextWrap, selectionRgbBg, previousRgbBg, 
 			colorWrap, colorPanel, colorPaint, 
 			brightnessColorWrap, 
 			bottomTextWrap, selectionRgbText, previousRgbText
-		} = this.#componentMap;
-		let context = colorPanel.getContext('2d', { willReadFrequently: true });
-		let colorPanelRect = colorPanel.getBoundingClientRect();
-		colorPanel.width = colorPanelRect.width;
-		colorPanel.height = colorPanelRect.height;
+		} = this.#componentMap;*/
+		return new Promise(resolve=>{
+			let colorPanel = this.#componentMap.colorPanel;
+			let context = colorPanel.getContext('2d', { willReadFrequently: true });
+			let colorPanelRect = colorPanel.getBoundingClientRect();
+			colorPanel.width = colorPanelRect.width;
+			colorPanel.height = colorPanelRect.height;
 
+			this.#setColorPanelPaint(context)
+
+			const setPanelSelectePosition = () => {
+				let colorPanelRect = colorPanel.getBoundingClientRect();
+				let colorPanelSelected = colorPanel.__colorPanelSelected;
+				colorPanelSelected.style.top = colorPanelRect.y + 'px';
+				colorPanelSelected.style.left = colorPanelRect.x + 'px';
+				colorPanelSelected.style.width = colorPanelRect.width + 'px';
+				colorPanelSelected.style.height = colorPanelRect.height + 'px';
+				colorPanelSelected.width = colorPanelRect.width;
+				colorPanelSelected.height = colorPanelRect.height;
+			}
+
+			colorPanel.onmousedown = (event)=>{
+				colorPanel.setAttribute('data-is_mouse_down', '');
+				colorPanel.__colorPanelSelectedPointer.style.top = event.y
+				colorPanel.__colorPanelSelectedPointer.style.left = event.x
+				setPanelSelectePosition()
+				this.#colorPanelMoveEvent(event);
+			}
+			colorPanel.ontouchstart = colorPanel.onmousedown;
+
+			colorPanel.__colorPanelSelected.onmousedown = colorPanel.onmousedown;
+			colorPanel.__colorPanelSelected.ontouchstart = colorPanel.onmousedown;
+			
+			colorPanel.__colorPanelSelectedPointer.onmousedown = colorPanel.onmousedown;
+			colorPanel.__colorPanelSelectedPointer.ontouchstart = colorPanel.onmousedown;
+
+			resolve(setTimeout(()=>{
+				setPanelSelectePosition();
+				let [r,g,b] = this.#lastPaintRgb
+				let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
+				let context = colorPanel.__colorPanelSelected.getContext('2d', { willReadFrequently: true })
+				let colorPanelRect = colorPanel.getBoundingClientRect();
+				if(this.#lastPanelPosition){
+					this.#processingColorPanelSeleter(context, this.#lastPanelPosition.x - colorPanelRect.x, this.#lastPanelPosition.y - colorPanelRect.y, blackOrWhite, true);
+				}else{
+					this.#processingColorPanelSeleter(context, colorPanelRect.width - 0.1, 0.1, blackOrWhite, true);
+					this.#lastPanelPosition = {x:colorPanelRect.right - 0.6, y:colorPanelRect.top + 0.6}
+				}
+			},200))
+		});
+	}
+
+	static #setColorPanelPaint(context){
+		let [r,g,b] = this.#lastPaintRgb
 		// 가로 그라데이션
-		let gradientH = context.createLinearGradient(0, 0, colorPanel.width, 0);
+		let gradientH = context.createLinearGradient(0, 0, context.canvas.width, 0);
 		gradientH.addColorStop(0, 'white');
-		gradientH.addColorStop(1, this.#selectedColor); // 페인트 컬러로 변경 필요
+		gradientH.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${this.#a})`);
 		context.fillStyle = gradientH;
-		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 		// 수직 그라데이션
-		let gradientV = context.createLinearGradient(0, 0, 0, colorPanel.height);
+		let gradientV = context.createLinearGradient(0, 0, 0, context.canvas.height);
 		gradientV.addColorStop(0, 'rgba(0,0,0,0)');
 		gradientV.addColorStop(1, 'black');
 		context.fillStyle = gradientV;
-		context.fillRect(0, 0, colorPanel.width, colorPanel.height);
-
-		colorPanel.onmousedown = (event)=>{
-			colorPanel.setAttribute('data-is_mouse_down', '');
-			let colorPanelRect = colorPanel.getBoundingClientRect();
-			let colorPanelSelected = colorPanel.__colorPanelSelected;
-			colorPanel.__colorPanelSelectedPointer.style.top = event.y
-			colorPanel.__colorPanelSelectedPointer.style.left = event.x
-			colorPanelSelected.style.top = colorPanelRect.y + 'px';
-			colorPanelSelected.style.left = colorPanelRect.x + 'px';
-			colorPanelSelected.style.width = colorPanelRect.width + 'px';
-			colorPanelSelected.style.height = colorPanelRect.height + 'px';
-			colorPanelSelected.width = colorPanelRect.width;
-			colorPanelSelected.height = colorPanelRect.height;
-			this.#colorPanelEvent(event);
-			//this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, event.x - colorPanelRect.x, event.y - colorPanelRect.y);
-		}
-		colorPanel.ontouchstart = colorPanel.onmousedown;
-
-		colorPanel.__colorPanelSelected.onmousedown = colorPanel.onmousedown;
-		colorPanel.__colorPanelSelected.ontouchstart = colorPanel.onmousedown;
-		
-		colorPanel.__colorPanelSelectedPointer.onmousedown = colorPanel.onmousedown;
-		colorPanel.__colorPanelSelectedPointer.ontouchstart = colorPanel.onmousedown;
-
-		setTimeout(()=>{
-			let colorPanelRect = colorPanel.getBoundingClientRect();
-			colorPanel.__colorPanelSelected.style.top = colorPanelRect.y + 'px';
-			colorPanel.__colorPanelSelected.style.left = colorPanelRect.x + 'px';
-			colorPanel.__colorPanelSelected.style.width = colorPanelRect.width + 'px';
-			colorPanel.__colorPanelSelected.style.height = colorPanelRect.height + 'px';
-			colorPanel.__colorPanelSelected.width = colorPanelRect.width;
-			colorPanel.__colorPanelSelected.height = colorPanelRect.height;
-			let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
-			if(this.#lastSelectPosition){
-				this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, this.#lastSelectPosition.x - colorPanelRect.x, this.#lastSelectPosition.y - colorPanelRect.y, blackOrWhite, true);
-			}else{
-				this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, colorPanelRect.width - 0.1, 0.1, blackOrWhite, true);
-			}
-		},200)
-
+		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 	}
-	static #colorPanelEvent(event){
+
+	static #colorPanelMoveEvent(event){
 		new Promise(resolve => {
+			console.log(event);
 			let {
 				topTextWrap, selectionRgbBg, previousRgbBg, 
 				colorWrap, colorPanel, colorPaint, 
@@ -380,14 +406,19 @@ export default class Color extends FreedomInterface {
 				reProcessingRectY = rect.bottom - 0.6
 			}
 
-			this.#lastSelectPosition = {x : reProcessingRectX, y : reProcessingRectY};
+			this.#lastPanelPosition = {x : reProcessingRectX, y : reProcessingRectY};
 
 			let context = colorPanel.getContext('2d', { willReadFrequently: true });
 			let [r,g,b] = context.getImageData(x, y, 1, 1).data;
+			this.#r = r;
+			this.#g = g;
+			this.#b = b;
 			let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
 			let blackOrWhite = this.#blackOrWhite(r,g,b);
 
-			this.#processingColorPanelSeleter(colorPanel.__colorPanelSelected, x, y, blackOrWhite);
+			this.#processingColorPanelSeleter(
+				colorPanel.__colorPanelSelected.getContext('2d', { willReadFrequently: true })
+				, x, y, blackOrWhite);
 
 			selectionRgbBg.textContent = selectedColor;
 			selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
@@ -399,9 +430,8 @@ export default class Color extends FreedomInterface {
 		})
 	}
 
-	static #processingColorPanelSeleter(selected, x, y, [r = 0, g = 0, b = 0] = []){
+	static #processingColorPanelSeleter(colorPanelSelectedContext, x, y, [r = 0, g = 0, b = 0] = []){
 		new Promise(resolve=>{
-			let colorPanelSelectedContext = selected.getContext('2d', { willReadFrequently: true });
 			colorPanelSelectedContext.clearRect(0, 0, colorPanelSelectedContext.canvas.width, colorPanelSelectedContext.canvas.height);
 			colorPanelSelectedContext.lineWidth = 1;
 			colorPanelSelectedContext.beginPath();
@@ -410,6 +440,129 @@ export default class Color extends FreedomInterface {
 			colorPanelSelectedContext.stroke();
 			resolve();
 		});
+	}
+
+	static #settingColorPaint(){
+		return new Promise(resolve => {
+			//__colorPaintSelectedPointer
+			let {
+				topTextWrap, selectionRgbBg, previousRgbBg, 
+				colorWrap, colorPanel, colorPaint, 
+				brightnessColorWrap, 
+				bottomTextWrap, selectionRgbText, previousRgbText
+			} = this.#componentMap;
+
+			let colorPaintRect = colorPaint.getBoundingClientRect();
+			colorPaint.width = colorPaintRect.width;
+			colorPaint.height = colorPaintRect.height;
+
+			let context = colorPaint.getContext('2d', { willReadFrequently: true } );
+			let gradient = context.createLinearGradient(0, 0, 0, context.canvas.height); 
+
+			gradient.addColorStop(0, 'rgb(255, 0, 0)') // red
+			gradient.addColorStop(0.15, 'rgb(255, 0, 255)') // violet
+			gradient.addColorStop(0.35, 'rgb(0, 0, 255)') // blue
+			gradient.addColorStop(0.45, 'rgb(0, 255, 255)') // Sky blue
+			gradient.addColorStop(0.65, 'rgb(0, 255, 0)') // green
+			gradient.addColorStop(0.85, 'rgb(255, 255, 0)') // yellow
+			gradient.addColorStop(0.9, 'orange')
+			gradient.addColorStop(1, 'rgb(255, 0, 0)') // red
+			context.fillStyle = gradient;
+			context.fillRect(0, 0, colorPaint.width, colorPaint.height);
+
+			colorPaint.onmousedown = (event) => {
+				colorPaint.setAttribute('data-is_mouse_down', '');
+				colorPaint.__colorPaintSelectedPointer.style.top = event.y;
+			}
+			colorPaint.ontouchstart = colorPaint.onmousedown;
+
+			colorPaint.__colorPaintSelectedPointer.onmousedown = colorPaint.onmousedown;
+			colorPaint.__colorPaintSelectedPointer.ontouchstart = colorPaint.ontouchstart;
+			
+			setTimeout(()=>{
+				let colorPaintRect = colorPaint.getBoundingClientRect();
+				if(this.#lastPaintPosition){
+					colorPaint.__colorPaintSelectedPointer.style.top = this.#lastPaintPosition.y + 'px';
+				}else{
+					colorPaint.__colorPaintSelectedPointer.style.top = colorPaintRect.y + 'px';
+					this.#lastPaintPosition = colorPaintRect.y;
+				}
+				colorPaint.__colorPaintSelectedPointer.style.left = colorPaintRect.x + 'px';
+				colorPaint.__colorPaintSelectedPointer.style.width = colorPaintRect.width + 'px';
+				let [r,g,b] = this.#blackOrWhite(...this.#lastPaintRgb);
+				colorPaint.__colorPaintSelectedPointer.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
+			},200)
+			resolve();
+		});
+	}
+
+	static #colorPaintMoveEvent(event){
+		new Promise(resolve => {
+			let {
+				topTextWrap, selectionRgbBg, previousRgbBg, 
+				colorWrap, colorPanel, colorPaint, 
+				brightnessColorWrap, 
+				bottomTextWrap, selectionRgbText, previousRgbText
+			} = this.#componentMap;
+			let rect = colorPaint.getBoundingClientRect();
+			let pageY;
+
+			if(window.TouchEvent && event.constructor == window.TouchEvent){
+				pageY = event.touches[0].pageY
+				event.preventDefault();
+			}else{
+				pageY = event.y
+			}
+
+			let isTopOver = pageY < rect.top;
+			let isBottomOver = pageY > rect.bottom;
+
+			colorPaint.__colorPaintSelectedPointer.style.top = pageY + 'px';
+
+			let {y : reProcessingRectY} = colorPaint.__colorPaintSelectedPointer.getBoundingClientRect();
+			
+			let y = reProcessingRectY - rect.y
+
+			if(isTopOver){
+				y = 0
+				reProcessingRectY = rect.top
+			}
+			if(isBottomOver){
+				y = rect.height - 0.6
+				reProcessingRectY = rect.bottom - 0.6
+			}
+
+			this.#lastPaintPosition = {y: reProcessingRectY}
+			colorPaint.__colorPaintSelectedPointer.style.top = reProcessingRectY + 'px';
+
+			let context = colorPaint.getContext('2d', { willReadFrequently: true });
+			
+			let [r,g,b] = context.getImageData(1, y, 1, 1).data;
+			let selectedColor = `rgba(${r}, ${g}, ${b}, ${this.#a})`;
+			let blackOrWhite = this.#blackOrWhite(r,g,b);
+
+			selectionRgbBg.textContent = selectedColor;
+			selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			selectionRgbBg.style.background = selectedColor;
+			
+			selectionRgbText.style.color = selectedColor;
+			selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+
+			colorPaint.__colorPaintSelectedPointer.style.backgroundColor = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+
+			this.#lastPaintRgb = [r,g,b];
+
+			this.#setColorPanelPaint(colorPanel.getContext('2d', { willReadFrequently: true }));
+			let colorPanelRect = colorPanel.getBoundingClientRect();
+			this.#processingColorPanelSeleter(
+				colorPanel.__colorPanelSelected.getContext('2d', { willReadFrequently: true }),
+				this.#lastPanelPosition.x - colorPanelRect.x,
+				this.#lastPanelPosition.y - colorPanelRect.y,
+				blackOrWhite
+			)
+			this.#colorPanelMoveEvent({x:this.#lastPanelPosition.x, y:this.#lastPanelPosition.y})
+			resolve([r,g,b]);
+		})
 	}
 
 	static #settingApplyEvent(palette, cancelButton, applyButton, selectionRgbText){
@@ -485,6 +638,7 @@ export default class Color extends FreedomInterface {
 				position: relative;
 			}
 
+			/* 상단 텍스트 영역 [S] */
 			.palette-wrap .top-text-wrap{
 				display: flex;
 				justify-content: space-between;
@@ -505,25 +659,35 @@ export default class Color extends FreedomInterface {
 				align-items: center;
 				width: 11.5%;
 			}
+			/* 상단 텍스트 영역 [E] */
 
+			/* 컬러 영역 영역 [S] */
 			.palette-wrap .color-wrap{
 				display: flex;
 				justify-content: space-between;
 				margin-bottom: 2%;
 			}
-			.palette-wrap .color-wrap .panel_selected{
+
+			.palette-wrap .color-wrap .panel-selected{
 				position: fixed;
 				z-index: 9999;
 			}
-			.palette-wrap .color-wrap .panel_selected_pointer{
+			.palette-wrap .color-wrap .panel-selected-pointer{
 				position: fixed;
 				width: 1px;
 				height: 1px;
 			}
+
 			.palette-wrap .color-wrap .palette-paint{
 				width: 5%;
 			}
+			.palette-wrap .color-wrap .paint-selected-pointer{
+				position: fixed;
+				height: 1px;
+			}
+			/* 컬러 영역 영역 [E] */
 
+			/* 투명도 영역 [S] */
 			.palette-wrap .brightness-wrap{
 				margin-bottom: 2%;
 				background-image: /* tint image */ linear-gradient(to right, rgb(192 192 192 / 20%), rgb(192 192 192 / 20%)), /* checkered effect */ linear-gradient(to right, #505050 50%, #a1a1a1 50%), linear-gradient(to bottom, #505050 50%, #a1a1a1 50%);
@@ -536,7 +700,9 @@ export default class Color extends FreedomInterface {
 				width: 100%;
 				min-height: 17px;
 			}
+			/* 투명도 영역 [E] */
 
+			/* 하단 텍스트 영역 [S] */
 			.palette-wrap .bottom-text-wrap{
 				display: flex;
 				justify-content: space-between;
@@ -549,7 +715,9 @@ export default class Color extends FreedomInterface {
 			.palette-wrap .bottom-text-wrap .previous-rgb-text{
 				background: #ffffffd4;
 			}
-			
+			/* 하단 텍스트 영역 [E] */
+
+			/* 버튼 영역 [S] */
 			.palette-wrap .button-wrap {
 				display: flex;
 				justify-content: space-around;
@@ -559,6 +727,7 @@ export default class Color extends FreedomInterface {
 				border: revert;
 				color: #b9b9b9;
 			}
+			/* 버튼 영역 [E] */
 		`;
 		return this.#style;
 	}
