@@ -50,15 +50,14 @@ export default class Line extends HTMLDivElement {
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			this.append(document.createTextNode('\u200B'))
-			let selection = document.getSelection();
-			selection.setPosition(this, 0)
+			this.textContent = '\u200B'
+			window.getSelection().setPosition(this, 1)
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
 					if(mutation.target.textContent.includes('\u200B') && mutation.target.textContent.length > 1 ){
 						mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
-						selection.setPosition(this, 0)
-						document.getSelection().modify('move', 'forward', 'line')
+						window.getSelection().setPosition(this, this.textContent.length);
+						//document.getSelection().modify('move', 'forward', 'line')
 						observer.disconnect();
 					}else if(mutation.target.textContent.includes('\u200B') == false){
 						observer.disconnect();
@@ -271,25 +270,76 @@ export default class Line extends HTMLDivElement {
 	async #cancelOnlyOneItem(range, tool, TargetTool){
 		return await new Promise(resolve => {
 			let {startOffset, endOffset, startContainer, endContainer} = range;
+
+
 			let textNode = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
 			let startNextSibling = (tool?.nextSibling  || endContainer.nextSibling);
 			let startPrevSibling = (tool?.previousSibling || startContainer.previousSibling);
+
+	
+
+
 
 			let offset = endOffset - startOffset;
 
 			let leftText = undefined;
 			let rightText = undefined;
-			if(startContainer.textContent.length != offset){
-				console.log(0)
-				leftText = startContainer.textContent.substring(0, startOffset);			
-				// 뒷쪽 글자가 짤리는 현상으로 startContainer => endContainer으로 변경 //20230509
-				rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : startContainer.textContent.substring(startOffset + 1, offset);	
-				//rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : endContainer.textContent.substring(startOffset + 1, offset);	
+			let leftList = [];
+			let rightList = [];
+			let targetWrap = undefined;
+			let targetText = range.cloneContents();
+
+			let selection = window.getSelection()
+			if(tool.childNodes.length > 1){
+				let list = [...tool.childNodes];
+				let index = list.findIndex(e=> selection.containsNode(e, true) || selection.containsNode(e, false))
+				targetWrap = list[index]
+				leftList = list.slice(0, index);
+				rightList = list.slice(index + 1);
 			}
-			console.log('endOffset',endOffset);
-			console.log('startOffset',startOffset);
-			console.log('offset',offset);
 			
+
+			if(startContainer.textContent.length != offset){
+				leftText = startContainer.textContent.substring(0, startOffset);			
+				rightText = offset <= 1 ? startContainer.textContent.substring(startOffset + 1) : startContainer.textContent.substring(startOffset + offset);
+				if(targetWrap != undefined){
+					let cloneLeft = targetWrap.cloneNode(false);
+					cloneLeft.textContent = leftText;
+					leftText = cloneLeft; 
+					let cloneRight = targetWrap.cloneNode(false);
+					cloneRight.textContent = rightText;
+					rightText = cloneRight; 
+					targetWrap.remove();
+				}else{
+					leftText = document.createTextNode(leftText);
+					rightText = document.createTextNode(rightText);
+				}
+				leftList.unshift(leftText);
+				rightList.push(rightText);
+			}
+			console.log(leftList, rightList, targetText);
+			//tool.replaceChildren(...leftList, targetText, ...rightList)
+
+			let leftElement = undefined;
+			if(leftList.length != 0){
+				leftElement = new TargetTool();
+				leftElement.append(...leftList);
+			}
+			let rightElement = undefined;
+			if(rightList.length != 0){
+				rightElement = new TargetTool();
+				rightElement.append(...rightList);
+			}
+
+			let appendList = [leftElement, targetText, rightElement].filter(e=>e);
+			if(tool.previousSibling){
+				tool.previousSibling.after(...appendList)
+			}else if(tool.nextSibling){
+				tool.nextSibling.before(...appendList);
+			}else{
+				this.append(...appendList);
+			}
+			/*
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
 				console.log(1)
 				if(rightText){
@@ -329,7 +379,7 @@ export default class Line extends HTMLDivElement {
 					rightTool.textContent = rightText;
 					this.append(rightTool);
 				}
-			}
+			}*/
 			//startContainer.remove();
 			tool.remove();
 			resolve();

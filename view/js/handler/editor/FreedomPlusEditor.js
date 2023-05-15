@@ -69,7 +69,8 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
 			this.contentEditable = true;
-			//this.tabIndex = '';
+			this.tabIndex = 1;
+			this.focus()
 			let line = new FreedomPlusEditor.Components.Line();
 			this.append(line);
 			this.#showTools(this.showToolsWrap);
@@ -98,18 +99,15 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		//	return;
 		}
 		if(targetElement && targetElement.nodeType == Node.ELEMENT_NODE && targetElement.textContent.length == 0){
-			let emptyElement = document.createTextNode('\u200B')
-			targetElement.append(emptyElement)
+			//let emptyElement = document.createTextNode('\u200B')
+			targetElement.textContent = '\u200B'; //.append(emptyElement)
 		}
 		
-		targetElement.tabIndex = 1;
 		range.selectNodeContents(targetElement)
 		range.setStart(targetElement, targetElement.length);
 		range.setEnd(targetElement, targetElement.length);
 		selection.removeAllRanges()
 		selection.addRange(range)
-		selection.modify('move', 'forward', 'character')
-		selection.setPosition(targetElement, 1)
 		targetElement.removeAttribute('tabIndex');
 		//cursor
 		let observer = new MutationObserver( (mutationList, observer) => {
@@ -122,22 +120,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 					console.log('146 :: targetElement.isConnected',targetElement.isConnected);
 					console.log('147 :: targetElement',targetElement);
 					if(targetElement.isConnected){
-						//window.getSelection().modify('move', 'forward', 'line')
-						try{
-							//firefox는 paragraphboundary 지원 X
-							selection.modify('move', 'forward', 'paragraphboundary')
-						}catch{
-							selection.modify('move', 'forward', 'line')
-						}finally{
-							//range.selectNodeContents(targetElement)
-							//range.setStart(targetElement, targetElement.length);
-							//range.setEnd(targetElement, targetElement.length);
-						}
-						//window.getSelection().setPosition(targetElement, targetElement.length + 1)
-						//range.selectNodeContents(targetElement)
-						//selection.removeAllRanges()
-						//selection.addRange(range) 
-						//argetElement.focus();
+						selection.modify('move', 'forward', 'line')
 					}
 					targetElement.removeAttribute('tabIndex');
 					observer.disconnect();
