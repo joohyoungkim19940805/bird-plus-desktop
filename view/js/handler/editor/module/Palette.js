@@ -319,11 +319,18 @@ export default class Palette {
 				let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
 				let context = colorPanel.__colorPanelSelected.getContext('2d', { willReadFrequently: true })
 				if(this.#lastPanelPosition){
+                    console.log(1)
 					this.#processingColorPanelSeleter(context, this.#lastPanelPosition.x - colorPanelRect.x, this.#lastPanelPosition.y - colorPanelRect.y, blackOrWhite);
 				}else{
+                    console.log(2)
 					this.#processingColorPanelSeleter(context, colorPanelRect.width - 1, 0.1, blackOrWhite);
 					this.#lastPanelPosition = {x:colorPanelRect.right - 1, y:colorPanelRect.top}
-				}
+                    console.log(this.#lastPanelPosition)
+                    colorPanel.__colorPanelSelectedPointer.style.top = this.#lastPanelPosition.y + 'px';
+                    colorPanel.__colorPanelSelectedPointer.style.left = this.#lastPanelPosition.x + 'px';
+                    console.log(colorPanelRect);
+                    console.log('???', colorPanel.__colorPanelSelectedPointer)    
+                }
 			},200))
 		});
 	}
@@ -751,9 +758,8 @@ export default class Palette {
 		this.#lastPanelPosition = undefined;
 		this.#lastPaintPosition = undefined;
 		this.#lastBrightnessPosition = undefined;
-        if(this.#componentMap){
-            this.#settingCanvas();
-        }
+        this.#componentMap = undefined;
+        
 	}
 
     close(){
