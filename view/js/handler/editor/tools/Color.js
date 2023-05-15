@@ -40,7 +40,7 @@ export default class Color extends FreedomInterface {
 	constructor(){
 		super(Color.palette);
 		this.style.color = Color.palette.selectedColor;
-		Color.palette.reset();
+		//Color.palette.reset();
 	}
 
 
