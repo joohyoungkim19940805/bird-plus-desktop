@@ -259,7 +259,15 @@ export default class Line extends HTMLDivElement {
 		return await new Promise(resolve => {
 			let tool = new TargetTool();
 			let {startOffset, endOffset, startContainer,endContainer} = range;
+
+			/*
 			if(startContainer === endContainer){
+				console.log('applyOnlyOneTool');
+				this.#applyOnlyOneTool(tool, range).then(tool=>{
+					resolve(tool)
+				})
+			}*/
+			if(this.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)
@@ -501,6 +509,7 @@ export default class Line extends HTMLDivElement {
 			console.log(startContainer);
 			console.log(endContainer);
 			console.log(commonAncestorContainer);
+			/*
 			if(startContainer === endContainer){
 				if(startContainer.parentElement.childNodes.length == 1 
 					&& startContainer.parentElement.childNodes[0] ==  startContainer
@@ -518,6 +527,12 @@ export default class Line extends HTMLDivElement {
 						resolve();
 					})
 				}
+			*/
+			if(this.innerText.length != range.toString().length){
+				this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
+					console.log('cancelOnlyOneItem')
+					resolve();
+				})
 			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
 				// 하나만
 				// tool 범위 전체 선택인 경우
