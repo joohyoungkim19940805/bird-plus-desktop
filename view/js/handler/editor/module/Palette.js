@@ -21,14 +21,37 @@ export default class Palette {
 	#b = 0;
 	#a = 1;
 
-    #openButton;
+    #openPositionMode;
+	#openPosition;
     #applyCallback = () => {}
 
-    constructor({openButton}){
-        this.#openButton = openButton;
-        if( ! this.#openButton || ! this.#openButton.nodeType || this.#openButton.nodeType != Node.ELEMENT_NODE){
-            throw new Error('button is not element');
+	static OpenPositionMode = class OpenPositionMode{
+		static BUTTON = new OpenPositionMode('button')
+		static WRAPPER = new OpenPositionMode('wrapper')
+		value;
+		static{
+			Object.freeze(this);
+		}
+		constructor(value){
+			this.value = value;
+			Object.freeze(this);
+		}
+	}
+
+    constructor({
+		openPositionMode,
+		openPosition
+	}){
+		
+        this.#openPositionMode = openPositionMode;
+		if( ! this.#openPositionMode || ! (this.#openPositionMode instanceof Palette.OpenPositionMode)){
+			throw new Error('this is not OpenPositionMode');
+		}
+		this.#openPosition = openPosition;
+        if( ! this.#openPosition || ! this.#openPosition.nodeType || this.#openPosition.nodeType != Node.ELEMENT_NODE){
+            throw new Error('openPosition is not element');
         }
+
         let style = document.querySelector(`#${this.#style.id}`);
         if(! style){
             document.head.append(this.createStyle());
@@ -686,18 +709,19 @@ export default class Palette {
 	}
 
     #processingPalettePosition(palette){
-		let {x, y, height} = this.#openButton.getBoundingClientRect();
-		//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
-		//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
-		let paletteHeightPx = palette.clientHeight;
-		let paletteTop = (y - paletteHeightPx)
-		if(paletteTop > 0){
-			palette.style.top = paletteTop + 'px';
-		}else{
-			palette.style.top = y + height + 'px';
+		if(this.#openPositionMode == Palette.OpenPositionMode.BUTTON){
+			let {x, y, height} = this.#openPosition.getBoundingClientRect();
+			//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
+			//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
+			let paletteHeightPx = palette.clientHeight;
+			let paletteTop = (y - paletteHeightPx)
+			if(paletteTop > 0){
+				palette.style.top = paletteTop + 'px';
+			}else{
+				palette.style.top = y + height + 'px';
+			}
+			palette.style.left = x + 'px';
 		}
-		palette.style.left = x + 'px';
-
 	}
 
     #blackOrWhite(...rgb){
@@ -723,14 +747,6 @@ export default class Palette {
 
     get selectedColor(){
 		return `rgba(${this.#r}, ${this.#g}, ${this.#b}, ${this.#a})`;
-	}
-
-    set style(style){
-		this.#style.textContent = style;
-	}
-
-    set addStyle(addStyle){
-		this.#style.textContent = this.#style.textContent + addStyle;
 	}
 
     get palette(){

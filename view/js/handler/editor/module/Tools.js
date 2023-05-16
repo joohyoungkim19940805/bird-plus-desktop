@@ -1,6 +1,6 @@
-export {default as Bold} from "../tools/Bold"
+//export {default as Bold} from "../tools/Bold"
 
-export {default as Color} from "../tools/Color"
+//export {default as Color} from "../tools/Color"
 
 	// 사용 할 거 각각 class로 만들기
 	// 차후 과제 - 중첩 인 경우 어떻게 대응할 것인지?

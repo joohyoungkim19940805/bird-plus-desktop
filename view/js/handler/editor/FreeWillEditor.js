@@ -2,7 +2,7 @@ import Components from "./module/Components"
 /**
  * 전부 다 지우면 line 객체가 사라지는 문제 해결 필요 20230409
  */
-export default class FreedomPlusEditor extends HTMLDivElement {
+export default class FreeWillEditor extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
 	components;
@@ -19,9 +19,13 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 	 */
 	constructor(
 		components={
-			'freedom-line' : FreedomPlusEditor.Components.Line
+			'freedom-line' : FreeWillEditor.Components.Line
 		},
-		tools
+		tools={
+			'free-will-strong' : Strong,
+			'free-will-color' : Color,
+			'free-will-background' : Background
+		}
 	){
 		super();
 		this.components = components;
@@ -71,7 +75,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			this.contentEditable = true;
 			this.tabIndex = 1;
 			this.focus()
-			let line = new FreedomPlusEditor.Components.Line();
+			let line = new FreeWillEditor.Components.Line();
 			this.append(line);
 			this.#showTools(this.showToolsWrap);
 		}
@@ -85,7 +89,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		console.log(targetElement);
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
-		let targetLine = FreedomPlusEditor.Components.Line.getLine(targetElement);
+		let targetLine = FreeWillEditor.Components.Line.getLine(targetElement);
 		range.setStartAfter(targetLine)
 		range.setEnd(targetLine, targetElement.textContent.length - 1);
 		selection.removeAllRanges()
@@ -156,7 +160,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		//}
 		let startAndEndLineFindObject;
 		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)
+			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)
 			startAndEndLineFindObject = {
 				startLine : allLine[0],
 				endLine : allLine[allLine.length - 1]
@@ -167,9 +171,9 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
 			selection.addRange(range);
 		}else{
-			let anchorNodeLine = FreedomPlusEditor.Components.Line.getLine(anchorNode);
-			let focusNodeLine = FreedomPlusEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
+			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
 				if(item == anchorNodeLine || item == focusNodeLine){
 					let key = 'startLine';
 					if(obj.hasOwnProperty(key)){
@@ -202,7 +206,7 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 		}
 		let startAndEndLineFindObject;
 		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)
+			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)
 			startAndEndLineFindObject = {
 				startLine : allLine[0],
 				endLine : allLine[allLine.length - 1]
@@ -213,9 +217,9 @@ export default class FreedomPlusEditor extends HTMLDivElement {
 			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
 			selection.addRange(range);
 		}else{
-			let anchorNodeLine = FreedomPlusEditor.Components.Line.getLine(anchorNode);
-			let focusNodeLine = FreedomPlusEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreedomPlusEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
+			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
 				if(item == anchorNodeLine || item == focusNodeLine){
 					let key = 'startLine';
 					if(obj.hasOwnProperty(key)){

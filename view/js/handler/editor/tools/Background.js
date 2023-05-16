@@ -2,18 +2,18 @@ import FreedomInterface from "../module/FreedomInterface"
 import Options from "../module/Options"
 import Palette from "../module/Palette"
 
-export default class Color extends FreedomInterface {
+export default class Background extends FreedomInterface {
 	static options = new Options(this);
 
 	static palette;// = new Palette();
 
 	static{
-		this.options.defaultClass = 'freedom-color';
+		this.options.defaultClass = 'free-will-background';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
-		button.textContent = 'C'
+		button.textContent = 'BG'
 		// default tools icon
 		this.options.showTools = button;
 
@@ -21,7 +21,7 @@ export default class Color extends FreedomInterface {
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
             openPosition : this.options.showTools
         });
-		
+
 		this.options.showTools.onclick = ()=>{
 			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
 				this.options.showTools.dataset.tool_status = 'cancel';
@@ -41,8 +41,8 @@ export default class Color extends FreedomInterface {
 
 	#isLoaded = false;
 	constructor(){
-		super(Color);
-		this.style.color = Color.palette.selectedColor;
+		super(Background);
+		this.style.backgroundColor = Background.palette.selectedColor;
 		//Color.palette.reset();
 	}
 

@@ -1,12 +1,12 @@
 import FreedomInterface from "../module/FreedomInterface"
 import Options from "../module/Options"
-export default class Bold extends FreedomInterface {
+export default class Strong extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
 	static options = new Options(this);
 	static{
 		this.options.extendsElement = 'strong';
-		this.options.defaultClass = 'freedom-bold';
+		this.options.defaultClass = 'free-will-Strong';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
@@ -24,7 +24,7 @@ export default class Bold extends FreedomInterface {
 	}
 	#isLoaded = false;
 	constructor(){
-		super(Bold);
+		super(Strong);
 	}
 	
 }
