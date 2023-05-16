@@ -24,7 +24,7 @@ export default class FreedomInterface extends HTMLElement {
 	constructor(Tool){
 		super();
 		//this.Tool = Tool;
-		this.classList.add(this.constructor.options.defaultClass)
+		this.classList.add(this.constructor.toolHandler.defaultClass)
 		const removeFun = () => {
 			if((this.textContent.includes('\u200B') && this.textContent.length == 1) || this.textContent.length == 0){
 				this.remove();
@@ -68,52 +68,52 @@ export default class FreedomInterface extends HTMLElement {
 		*/
 		/*
 		document.addEventListener("selectstart", (event) => {
-			if( ! this.Tool.options.showTools){
+			if( ! this.Tool.toolHandler.toolButton){
 				return;
 			}
 			//console.log(event.composedPath());
 			if(event.composedPath().some(e=>e==this)){
-				this.Tool.options.showTools.dataset.tool_status = 'active';
+				this.Tool.toolHandler.toolButton.dataset.tool_status = 'active';
 			}else{
-				this.Tool.options.showTools.dataset.tool_status = '';
+				this.Tool.toolHandler.toolButton.dataset.tool_status = '';
 			}
 		})
 		*/
 		/*
 		document.addEventListener("selectionchange", (event) => {
 			let selection = window.getSelection();
-			if( ! this.Tool.options.showTools, selection.type == 'None' || ! selection.focusNode){
+			if( ! this.Tool.toolHandler.toolButton, selection.type == 'None' || ! selection.focusNode){
 				console.log('???')
 				return;
 			}
 			let target = window.getSelection().focusNode.parentElement;
 			// u200B를 제거하는 로직으로 인해 오류 발생하여 추가 20230405
-			if(( this.textContent.includes('\u200B') || this.Tool.options.showTools.hasAttribute('data-is_alive') ) && (this.isThisInnerRange(target) == false)){
+			if(( this.textContent.includes('\u200B') || this.Tool.toolHandler.toolButton.hasAttribute('data-is_alive') ) && (this.isThisInnerRange(target) == false)){
 				console.log(this.constructor.name, 1)
-				console.log(this.constructor.name, this.Tool.options.showTools.dataset.tool_status)
-				if( this.isThisInnerRange(target) == false && this.Tool.options.showTools.dataset.tool_status != 'connected'){
+				console.log(this.constructor.name, this.Tool.toolHandler.toolButton.dataset.tool_status)
+				if( this.isThisInnerRange(target) == false && this.Tool.toolHandler.toolButton.dataset.tool_status != 'connected'){
 					console.log(this.constructor.name, 2)
-					console.log(this.constructor.name, this.Tool.options.showTools.dataset.tool_status)
-					this.Tool.options.showTools.dataset.tool_status = '';
+					console.log(this.constructor.name, this.Tool.toolHandler.toolButton.dataset.tool_status)
+					this.Tool.toolHandler.toolButton.dataset.tool_status = '';
 					if((this.textContent.includes('\u200B') && this.textContent.length == 1) || this.textContent.length == 0){
 						this.remove();
 					}
 				}
 				return;
-			}else if(this.isThisInnerRange(target)){//target.Tool && target.Tool.options == this.Tool.options){
-				this.Tool.options.showTools.removeAttribute('data-is_alive');
+			}else if(this.isThisInnerRange(target)){//target.Tool && target.Tool.toolHandler == this.Tool.toolHandler){
+				this.Tool.toolHandler.toolButton.removeAttribute('data-is_alive');
 				console.log(this.constructor.name, 3)
-				console.log(this.constructor.name, this.Tool.options.showTools.dataset.tool_status)
-				this.Tool.options.showTools.dataset.tool_status = 'connected';
-			}else if(this.isThisInnerRange(target) == false && this.Tool.options.showTools.dataset.tool_status != 'connected'){
-				this.Tool.options.showTools.dataset.tool_status = '';
+				console.log(this.constructor.name, this.Tool.toolHandler.toolButton.dataset.tool_status)
+				this.Tool.toolHandler.toolButton.dataset.tool_status = 'connected';
+			}else if(this.isThisInnerRange(target) == false && this.Tool.toolHandler.toolButton.dataset.tool_status != 'connected'){
+				this.Tool.toolHandler.toolButton.dataset.tool_status = '';
 				if(this.textContent.includes('\u200B') && this.textContent.length == 1){
 					this.remove();
 				}
 			}else{
 				console.log(this.constructor.name, 4)
 				console.log(this.constructor.name, this.isThisInnerRange(target))
-				this.Tool.options.showTools.dataset.tool_status = 'blur';
+				this.Tool.toolHandler.toolButton.dataset.tool_status = 'blur';
 			}
 		})
 		*/
@@ -122,17 +122,17 @@ export default class FreedomInterface extends HTMLElement {
 	connectedCallback(){
 		if( ! this.#isLoaded){
 			this.#isLoaded = true;
-			this.constructor.options.connectedFriends = this;
+			this.constructor.toolHandler.connectedFriends = this;
 		}
 	}
 	disconnectedCallback(){
         this.#isLoaded = false;
-		this.constructor.options.connectedFriends = this;
+		this.constructor.toolHandler.connectedFriends = this;
     }
 	/*
 	#mergeedSameTool(){
 		console.log('merge',this.textContent)
-		let parentSameElement = this.closest(`.${this.options.defaultClass}`);
+		let parentSameElement = this.closest(`.${this.toolHandler.defaultClass}`);
 		if(this.nextElementSibling && this.nextElementSibling.constructor.name == this.constructor.name && this.nextElementSibling != this){
 			console.log('next')
 			console.log(this.nextElementSibling)

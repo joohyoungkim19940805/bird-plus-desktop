@@ -1,28 +1,31 @@
-import Options from "../module/Options"
+import ToolHandler from "../module/ToolHandler"
 export default class Line extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
+
+	isFirstLine = false;
+
 	/**
 	 * line은 무조건 div를 상속받아야 합니다.
 	 * mark라던가 span으로 사용해도 엔터치는 순간 div로 감싸입니다. 
 	 * 즉 엔터시 무조건 div로 됩니다.
 	 * 추후 엔터 이벤트를 막고 알트 엔터로 트리거 할 수 있도록 바꾸어야합니다.
 	 */
-	static options = new Options();
+	static toolHandler = new ToolHandler();
 	static{
-		this.options.extendsElement = 'div';
-		this.options.defaultClass = 'line';
+		this.toolHandler.extendsElement = 'div';
+		this.toolHandler.defaultClass = 'line';
 	}
 	static getLine(element){
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
-		}else if(element.classList?.contains(this.options.defaultClass)){
+		}else if(element.classList?.contains(this.toolHandler.defaultClass)){
 			return element;
-		}else if(element.parentElement.classList.contains(this.options.defaultClass)){
+		}else if(element.parentElement.classList.contains(this.toolHandler.defaultClass)){
 			line = element.parentElement;
 		}else{
-			line = element.parentElement.closest(`.${this.options.defaultClass}`);
+			line = element.parentElement.closest(`.${this.toolHandler.defaultClass}`);
 		}
 		return line;
 	}
@@ -31,33 +34,46 @@ export default class Line extends HTMLDivElement {
 		
 		if( ! element.parentElement){
 			return tool;
-		}else if(element.classList?.contains(TargetTool.options.defaultClass)){
+		}else if(element.classList?.contains(TargetTool.toolHandler.defaultClass)){
 			return element
-		}else if(element.parentElement.classList.contains(TargetTool.options.defaultClass)){
+		}else if(element.parentElement.classList.contains(TargetTool.toolHandler.defaultClass)){
 			tool = element.parentElement;
 		}else{
-			tool = element.parentElement.closest(`.${TargetTool.options.defaultClass}`);
+			tool = element.parentElement.closest(`.${TargetTool.toolHandler.defaultClass}`);
 		}
 		return tool;
 	}
 	static findTool(element, TargetTool){
-		return element.querySelector(`.${TargetTool.options.defaultClass}`);
+		return element.querySelector(`.${TargetTool.toolHandler.defaultClass}`);
 	}
 	constructor(){
 		super();
-		this.classList.add(Line.options.defaultClass);
+		this.classList.add(Line.toolHandler.defaultClass);
+		if(this.isFirstLine == false){
+			this.removeAttribute('placeholder')
+		}
+		/*
+		this.onkeyup = (event) => {
+			if(event.key === 'Backspace' && this.innerText.length == 1 && (this.innerText.includes)){
+
+			}
+		}
+		*/
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			this.textContent = '\u200B'
-			window.getSelection().setPosition(this, 1)
+			//this.textContent = '\u200B'
+			if(this.innerText.length == 0){
+				this.innerText = '\n';
+				window.getSelection().setPosition(this, 1)
+			}
+			/*
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
 					if(mutation.target.textContent.includes('\u200B') && mutation.target.textContent.length > 1 ){
 						mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
 						window.getSelection().setPosition(this, this.textContent.length);
-						//document.getSelection().modify('move', 'forward', 'line')
 						observer.disconnect();
 					}else if(mutation.target.textContent.includes('\u200B') == false){
 						observer.disconnect();
@@ -70,6 +86,7 @@ export default class Line extends HTMLDivElement {
 				childList:true,
 				subtree: true
 			})
+			*/
 		}
 	}
 	disconnectedCallback(){
@@ -111,21 +128,25 @@ export default class Line extends HTMLDivElement {
 			range.setStart(startContainer, startOffset);
 			range.setEnd(startContainer, startContainer.textContent.length);
 			range.surroundContents(tool);
-
-			let targetNode = startContainer.nextSibling
+			
+			let targetNode = startContainer.nextSibling;
 			//let lastPrevTool = undefined;
 			while(targetNode){
+				console.log(targetNode)
 				if(targetNode == endContainer){
+					console.log(2)
 					break;
 				}
 				if(targetNode.textContent == '' || TargetTool.prototype.isPrototypeOf(targetNode)){
+					console.log(3)
 					targetNode = targetNode.nextSibling
 					continue;
 				}
-				//tool.append(targetNode);
-				//lastPrevTool = new TargetTool();
-				range.selectNodeContents(targetNode);
+
+				console.log(targetNode);
+				range.selectNode(targetNode);
 				range.surroundContents(new TargetTool());
+				console.log(4)
 				targetNode = targetNode.nextSibling
 			}
 
@@ -487,7 +508,7 @@ export default class Line extends HTMLDivElement {
 					&& endContainer.textContent.length == endOffset){
 					// tool 범위 전체 선택인 경우
 					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
-						console.log('cancelOnlyOneTool')
+						console.log('cancelOnlyOneTool 1')
 						resolve();
 					})
 				}else{
@@ -501,7 +522,7 @@ export default class Line extends HTMLDivElement {
 				// 하나만
 				// tool 범위 전체 선택인 경우
 				this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
-					console.log('cancelOnlyOneTool')
+					console.log('cancelOnlyOneTool 2')
 					resolve();
 				})
 			}else{

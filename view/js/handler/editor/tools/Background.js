@@ -1,30 +1,30 @@
 import FreedomInterface from "../module/FreedomInterface"
-import Options from "../module/Options"
+import ToolHandler from "../module/ToolHandler"
 import Palette from "../module/Palette"
 
 export default class Background extends FreedomInterface {
-	static options = new Options(this);
+	static toolHandler = new ToolHandler(this);
 
 	static palette;// = new Palette();
 
 	static{
-		this.options.defaultClass = 'free-will-background';
+		this.toolHandler.defaultClass = 'free-will-background';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
-		button.textContent = 'BG'
+		button.textContent = 'G'
 		// default tools icon
-		this.options.showTools = button;
+		this.toolHandler.toolButton = button;
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
-            openPosition : this.options.showTools
+            openPosition : this.toolHandler.toolButton
         });
 
-		this.options.showTools.onclick = ()=>{
-			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
-				this.options.showTools.dataset.tool_status = 'cancel';
+		this.toolHandler.toolButton.onclick = ()=>{
+			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
+				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else if(this.palette.isConnected){
 				this.palette.close();
 			}else{
@@ -33,7 +33,7 @@ export default class Background extends FreedomInterface {
 		}
 
 		this.palette.applyCallback = (event) => {
-			this.options.showTools.dataset.tool_status = 'active'
+			this.toolHandler.toolButton.dataset.tool_status = 'active'
 			this.palette.close();
 		}
 	}

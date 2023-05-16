@@ -1,7 +1,7 @@
-export default class Options{
+export default class ToolHandler{
 	#extendsElement;
 	#defaultClass;
-	#showTools;
+	#toolButton;
 	#identity;
 	#connectedFriends = [];
 	constructor(identity){
@@ -13,15 +13,15 @@ export default class Options{
 			 * Caret 선택 항목이 축소됩니다(예: 캐럿이 일부 텍스트에 배치되지만 범위가 선택되지 않음).
 			 * Range 범위가 선택되었습니다.
 			 */
-			if(selection.type == 'None' || ! this.#showTools){
+			if(selection.type == 'None' || ! this.#toolButton){
 				return;
 			}
 
 			let findTarget = this.#connectedFriends.find(e=> selection.containsNode(e, true) || selection.containsNode(e, false))
 			if(findTarget){
-				this.#showTools.dataset.tool_status = 'connected';
+				this.#toolButton.dataset.tool_status = 'connected';
 			}else {
-				this.#showTools.dataset.tool_status = 'blur';
+				this.#toolButton.dataset.tool_status = 'blur';
 			}
 
 		})
@@ -45,12 +45,19 @@ export default class Options{
 		return this.#defaultClass;
 	}
 
-	set showTools(showTools){
-		this.#showTools = showTools;
+	set toolButton(toolButton){
+		if( ! toolButton || ! toolButton.nodeType || ! toolButton.nodeType == Node.ELEMENT_NODE){
+			throw new Error('toolButton is not element');
+		}
+		if(this.#toolButton){
+			toolButton.onclick = this.#toolButton.onclick;
+			this.#toolButton.remove();
+		}
+		this.#toolButton = toolButton;
 	}
 	
-	get showTools(){
-		return this.#showTools;
+	get toolButton(){
+		return this.#toolButton;
 	}
 	/**
 	 * @param {FreedomInterface}

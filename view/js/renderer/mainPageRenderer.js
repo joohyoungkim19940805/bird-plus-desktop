@@ -1,11 +1,11 @@
-import FreeWillEditor from "../../handler/editor/FreeWillEditor"
+import FreeWillEditor from "../handler/editor/FreeWillEditor"
 import Strong from "../handler/editor/tools/Strong"
 import Color from "../handler/editor/tools/Color"
 import Background from "../handler/editor/tools/Background"
 class Editor extends FreeWillEditor{
 	constructor(){
 		let components = {
-			'freedom-line' : FreeWillEditor.Components.Line
+			'free-will-line' : FreeWillEditor.Components.Line
 		};
 		let tools = {
 			'free-will-strong' : Strong,
@@ -13,8 +13,15 @@ class Editor extends FreeWillEditor{
 			'free-will-background' : Background
 		}
 		super(undefined, tools);
-		let wrap = document.createElement('div');
-		super.showToolsWrap = wrap;
+
+		let toolbar = document.querySelector('#toolbar');
+		
+		toolbar.append(
+			Strong.toolHandler.toolButton,
+			Color.toolHandler.toolButton,
+			Background.toolHandler.toolButton,	
+		);
+		super.placeholder = '텍스트를 입력해주세요.'
 	}
 	
 }

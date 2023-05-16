@@ -43,7 +43,7 @@ div[is="content-block"]{
 }
 .content_wrapper.chating_wrapper{
 	width: 100vw;
-    background-color: aqua;
+    background-color: #f3f3f3;
 }
 .content_wrapper.thread_wrapper{
 	width: 100vw;
@@ -69,18 +69,59 @@ div.chating_block .chating_info{
 }
 div.chating_block .chating_content{
 	height: 30%;
+	display: flex;
+    flex-direction: column;
 }
-
-
 
 div[is="free-will-editor"]{
 	height: 100%;
     overflow: auto;
     overflow-wrap: anywhere;
-	padding-left: 0.5%;
+	outline: none;
+	background-color: white;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+div[is="free-will-editor"]::-webkit-scrollbar {
+	display: none;
+}
 
+#toolbar{
+	background-color: #d7d7d7cf;
+	padding-left: 1%;
+    padding-right: 1%;
+    border-top: ridge 2px;
+    border-color: #dbdbdb;
+	overflow: auto;
+    overflow-wrap: anywhere;
+    display: inline-table;
+}
+
+#toolbar > button{
+	background: none;
+	border: none;
+	outline: none;
+	font-family: revert;
+    font-weight: 900;
+	color: #7c7c7cd1;
+	padding-bottom: 0.3%;
+    padding-top: 0.9%;
+	border-bottom: groove 1px #ffffff40;
+}
+
+#toolbar > button:hover{
+	transition: all 0.7s;
+	background-color: #c7c7c7;
 }
 
 [data-tool_status="active"], [data-tool_status="connected"]{
-	background-color:rgb(0, 0, 255);
+    color: #020202 !important;
+}
+
+[is="free-will-editor"] > :nth-child(1)::before{
+    content: attr(placeholder);
+    position: fixed;
+    color: #d1d1d1;
+    font-weight: 600;
+    font-family: revert;
 }

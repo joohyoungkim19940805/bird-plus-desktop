@@ -1,24 +1,24 @@
 import FreedomInterface from "../module/FreedomInterface"
-import Options from "../module/Options"
+import ToolHandler from "../module/ToolHandler"
 export default class Strong extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
-	static options = new Options(this);
+	static toolHandler = new ToolHandler(this);
 	static{
-		this.options.extendsElement = 'strong';
-		this.options.defaultClass = 'free-will-Strong';
+		this.toolHandler.extendsElement = 'strong';
+		this.toolHandler.defaultClass = 'free-will-Strong';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
 		button.textContent = 'B'
 		// default tools icon
-		this.options.showTools = button;
-		this.options.showTools.onclick = ()=>{
-			if(this.options.showTools.dataset.tool_status == 'active' || this.options.showTools.dataset.tool_status == 'connected'){
-				this.options.showTools.dataset.tool_status = 'cancel';
+		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton.onclick = ()=>{
+			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
+				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else{
-				this.options.showTools.dataset.tool_status = 'active';
+				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
 	}

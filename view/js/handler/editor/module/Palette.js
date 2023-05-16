@@ -232,10 +232,10 @@ export default class Palette {
 		let selection = window.getSelection();
 		let sampleText = '';
 		if(selection.rangeCount != 0 && selection.isCollapsed == false){
-			let range = window.getSelection().getRangeAt(0)
+			let range = selection.getRangeAt(0)
 			let aticle = document.createElement('aticle');
-			//commonAncestorContainer
-			aticle.append(range.cloneContents())
+			let rangeClone = range.cloneContents();
+			aticle.append(rangeClone);
 			sampleText = aticle
 		}
 		sampleText = sampleText == '' ? '가 나다 라 A BC D' : sampleText;
@@ -252,7 +252,6 @@ export default class Palette {
 		});
 		previousRgbText.style.color = this.selectedColor;
 		previousRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
-
 
 		if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
 			selectionRgbText.innerHTML = sampleText.innerHTML;

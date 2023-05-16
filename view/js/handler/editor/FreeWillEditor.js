@@ -8,8 +8,8 @@ export default class FreeWillEditor extends HTMLDivElement {
 	components;
 	tools;
 	toolsElement = {};
-	showToolsWrap = undefined;
-
+	#placeholder;
+	#firstLine;
 	static Components = Components
 	
 	/**
@@ -19,7 +19,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 	 */
 	constructor(
 		components={
-			'freedom-line' : FreeWillEditor.Components.Line
+			'free-will-line' : FreeWillEditor.Components.Line
 		},
 		tools={
 			'free-will-strong' : Strong,
@@ -35,8 +35,8 @@ export default class FreeWillEditor extends HTMLDivElement {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
-			Component.options.defaultClass = className;
-			window.customElements.define(className, Component, {extends:Component.options.extendsElement});
+			Component.toolHandler.defaultClass = className;
+			window.customElements.define(className, Component, {extends:Component.toolHandler.extendsElement});
 			//obj[Component.constructor.name] = Component;
 			//return obj;
 		})
@@ -44,8 +44,8 @@ export default class FreeWillEditor extends HTMLDivElement {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
-			Tool.options.defaultClass = className;
-			this.toolsElement[className] = Tool.options.showTools
+			Tool.toolHandler.defaultClass = className;
+			this.toolsElement[className] = Tool.toolHandler.toolButton
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
 					let focusNode = window.getSelection().focusNode;
@@ -58,16 +58,44 @@ export default class FreeWillEditor extends HTMLDivElement {
 			});
 			// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
 			// oldvalue로 구분할 수 있게 합시다.
-			observer.observe(Tool.options.showTools, {
+			observer.observe(Tool.toolHandler.toolButton, {
 				attributeFilter:['data-tool_status'],
 				attributeOldValue:true
 			})
 			
-			//Tool.options.showTools.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
-			window.customElements.define(className, Tool, Tool.options.extendsElement && Tool.options.extendsElement != '' ? {extends:Tool.options.extendsElement} : undefined);
+			//Tool.toolHandler.toolButton.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
+			window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
 			obj[Tool.constructor.name] = Tool;
 			return obj;
 		}, {})
+
+		let observer = new MutationObserver( (mutationList, observer) => {
+			mutationList.forEach((mutation) => {
+				if(this.innerText.length <= 1 && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
+					this.#firstLine.setAttribute('placeholder', this.#placeholder);
+				}else if(this.innerText.charAt(0) != '\u200B' && this.innerText.length > 0){
+					this.#firstLine.removeAttribute('placeholder');
+				}
+
+				if(this.childElementCount == 0){
+					this.#startFirstLine();
+				}
+			})
+		});
+		observer.observe(this, {
+			characterData: true,
+			characterDataOldValue: true,
+			childList:true,
+			subtree: true
+		})
+	}
+	#startFirstLine(){
+		let line = new FreeWillEditor.Components.Line();
+		line.isFirstLine = true;
+		line.setAttribute('placeholder', this.#placeholder);
+		this.#firstLine = line;
+		this.append(line);
+		return line;
 	}
 	connectedCallback(){
 		if( ! this.#isLoaded){
@@ -75,9 +103,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 			this.contentEditable = true;
 			this.tabIndex = 1;
 			this.focus()
-			let line = new FreeWillEditor.Components.Line();
-			this.append(line);
-			this.#showTools(this.showToolsWrap);
+			this.#startFirstLine();
 		}
 	}
 	disconnectedCallback(){
@@ -104,7 +130,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		}
 		if(targetElement && targetElement.nodeType == Node.ELEMENT_NODE && targetElement.textContent.length == 0){
 			//let emptyElement = document.createTextNode('\u200B')
-			targetElement.textContent = '\u200B'; //.append(emptyElement)
+			//targetElement.textContent = '\u200B'; //.append(emptyElement)
 		}
 		
 		range.selectNodeContents(targetElement)
@@ -114,11 +140,12 @@ export default class FreeWillEditor extends HTMLDivElement {
 		selection.addRange(range)
 		targetElement.removeAttribute('tabIndex');
 		//cursor
+		/*
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(mutation.target.textContent.includes('\u200B')){
-					if(targetElement.options && targetElement.options.showTools ? true: false){
-						targetElement.options.showTools.setAttribute('data-is_alive', '');
+					if(targetElement.toolHandler && targetElement.toolHandler.toolButton ? true: false){
+						targetElement.toolHandler.toolButton.setAttribute('data-is_alive', '');
 					}
 					mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
 					console.log('146 :: targetElement.isConnected',targetElement.isConnected);
@@ -141,15 +168,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 			childList:true,
 			subtree: true
 		})
-	}
-
-	#showTools(wrap){
-		if( ! wrap instanceof HTMLElement || ! wrap){
-			throw new Error(`args is not element`);
-		}
-		let toolsList = Object.values(this.toolsElement);
-		wrap.append(...toolsList);
-		this.insertAdjacentElement('beforebegin', wrap);
+		*/
 	}
 
 	#renderingTools(TargetTool){
@@ -160,7 +179,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		//}
 		let startAndEndLineFindObject;
 		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)
+			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)
 			startAndEndLineFindObject = {
 				startLine : allLine[0],
 				endLine : allLine[allLine.length - 1]
@@ -173,7 +192,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		}else{
 			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
 			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
 				if(item == anchorNodeLine || item == focusNodeLine){
 					let key = 'startLine';
 					if(obj.hasOwnProperty(key)){
@@ -186,15 +205,17 @@ export default class FreeWillEditor extends HTMLDivElement {
 			},{})
 		}
 		let {startLine, endLine} = startAndEndLineFindObject;
-		startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine).then(tool=>{
-			this.querySelectorAll(`.${TargetTool.options.defaultClass}`).forEach(async e =>{
+		startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine)
+		/*
+		.then(tool=>{
+			this.querySelectorAll(`.${TargetTool.toolHandler.defaultClass}`).forEach(async e =>{
 				await new Promise(resolve=>{
 					resolve();
 				})
 			})
-			this.#addAfterSelectionMove(tool);
+			//this.#addAfterSelectionMove(tool);
 		});
-
+		*/
 	}
 
 	#removerToos(TargetTool){
@@ -206,7 +227,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		}
 		let startAndEndLineFindObject;
 		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)
+			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)
 			startAndEndLineFindObject = {
 				startLine : allLine[0],
 				endLine : allLine[allLine.length - 1]
@@ -219,7 +240,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		}else{
 			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
 			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.options.defaultClass}`)].reduce((obj,item,index)=>{
+			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
 				if(item == anchorNodeLine || item == focusNodeLine){
 					let key = 'startLine';
 					if(obj.hasOwnProperty(key)){
@@ -233,7 +254,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 		}
 		let {startLine, endLine} = startAndEndLineFindObject;
 		startLine.cancelTool(TargetTool, selection, endLine).then(textNode => {
-			this.querySelectorAll(`.${TargetTool.options.defaultClass}`).forEach(async e =>{
+			this.querySelectorAll(`.${TargetTool.toolHandler.defaultClass}`).forEach(async e =>{
 				await new Promise(resolve=>{
 					resolve();
 				})
@@ -242,5 +263,16 @@ export default class FreeWillEditor extends HTMLDivElement {
 			//console.log(textNode)
 			//this.#removeAfterSelectionMove(textNode);
 		}).catch(e=>console.error(e));
+	}
+
+	set placeholder(placeholder){
+		this.#placeholder = placeholder;
+		if(this.#firstLine){
+			this.#firstLine.setAttribute('placeholder', this.#placeholder);
+		}
+	}
+
+	get firstLine(){
+		return this.#firstLine;
 	}
 }
