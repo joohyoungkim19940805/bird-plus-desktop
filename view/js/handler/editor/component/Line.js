@@ -64,7 +64,13 @@ export default class Line extends HTMLDivElement {
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
 			//this.textContent = '\u200B'
-			if(this.innerText.length == 0){
+			/*
+			console.log(this.innerText)
+			console.log(this.innerText.length)
+			console.log(this.innerText.includes('\n'))
+			console.log(this.innerText.includes('\u200B'));
+			*/
+			if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 				this.innerText = '\n';
 				window.getSelection().setPosition(this, 1)
 			}
@@ -123,8 +129,31 @@ export default class Line extends HTMLDivElement {
 	
 	async #applyOnlyOneLine(range, tool, TargetTool){
 		return await new Promise(resolve=>{
-			let {startOffset, endOffset, startContainer,endContainer} = range;
+			//let {startOffset, endOffset, startContainer,endContainer} = range;
 
+			let selection = window.getSelection();
+
+			let startNodeToPrevNodeIndex = [...this.childNodes].findIndex(e=>selection.containsNode(e, true)) - 1;
+			let isFirstNodeToStart = startNodeToPrevNodeIndex < 0;
+
+			
+			let nodeList = [];
+			for(let i = startNodeToPrevNodeIndex + 1 ; true ; i += 1){
+				if( ! this.childNodes[i] || ! selection.containsNode(this.childNodes[i], true)){
+					break;
+				}
+				nodeList.push(this.childNodes[i]);
+			}
+			//nodeList.forEach(e=>e.remove())
+			//prepend
+			tool.append(...nodeList);
+			if(isFirstNodeToStart){
+				this.prepend(tool)
+			}else{
+				let startTarget = this.childNodes[startNodeToPrevNodeIndex];
+				startTarget.after(tool);
+			}
+			/*
 			range.setStart(startContainer, startOffset);
 			range.setEnd(startContainer, startContainer.textContent.length);
 			range.surroundContents(tool);
@@ -155,6 +184,8 @@ export default class Line extends HTMLDivElement {
 			range.setEnd(endContainer, endOffset);
 			range.surroundContents(endTool);
 			resolve(endTool);
+			*/
+			resolve();
 		});
 	}
 
@@ -267,7 +298,7 @@ export default class Line extends HTMLDivElement {
 					resolve(tool)
 				})
 			}*/
-			if(this.innerText.length != range.toString().length){
+			if(startContainer === endContainer && this.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)
@@ -286,7 +317,7 @@ export default class Line extends HTMLDivElement {
 		})
 	}
 
-	async #cancelOnlyOneTool(range, tool, TargetTool){
+	async #cancelOnlyOneLine(range, tool, TargetTool){
 		return await new Promise(resolve => {
 			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
 			let {startOffset, endOffset, startContainer, endContainer} = range;
@@ -296,18 +327,13 @@ export default class Line extends HTMLDivElement {
 			resolve();
 		});
 	}
-	async #cancelOnlyOneItem(range, tool, TargetTool){
+	async #cancelOnlyOneTool(range, tool, TargetTool){
 		return await new Promise(resolve => {
-			let {startOffset, endOffset, startContainer, endContainer} = range;
-
+			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 
 			let textNode = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
 			let startNextSibling = (tool?.nextSibling  || endContainer.nextSibling);
 			let startPrevSibling = (tool?.previousSibling || startContainer.previousSibling);
-
-	
-
-
 
 			let offset = endOffset - startOffset;
 
@@ -316,7 +342,14 @@ export default class Line extends HTMLDivElement {
 			let leftList = [];
 			let rightList = [];
 			let targetWrap = undefined;
-			let targetText = range.cloneContents();
+			let targetText;
+			if(commonAncestorContainer.nodeType == Node.TEXT_NODE && commonAncestorContainer.parentElement != this && ! TargetTool.prototype.isPrototypeOf(commonAncestorContainer.parentElement)){
+				let cloneRange = range.cloneRange();
+				cloneRange.selectNode(commonAncestorContainer.parentElement);
+				targetText = cloneRange.cloneContents();
+			}else{
+				targetText = range.cloneContents();
+			}
 
 			let selection = window.getSelection()
 			if(tool.childNodes.length > 1){
@@ -346,7 +379,6 @@ export default class Line extends HTMLDivElement {
 				leftList.unshift(leftText);
 				rightList.push(rightText);
 			}
-			console.log(leftList, rightList, targetText);
 			//tool.replaceChildren(...leftList, targetText, ...rightList)
 
 			let leftElement = undefined;
@@ -434,9 +466,12 @@ export default class Line extends HTMLDivElement {
 			let endNextSibling = endTool?.nextSibling
 			let endPrevSibling = endTool?.previousSibling
 
-			if(startOffset == 0){
+			/*if(startOffset == 0){
+				console.log(1)
 				this.#findCancels(this, TargetTool);
-			}else if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+			}else */
+			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
+				//console.log(2)
 				startPrevSibling.after(startTextNode);
 				if(startLeftText){
 					let leftTool = new TargetTool()
@@ -444,6 +479,7 @@ export default class Line extends HTMLDivElement {
 					startPrevSibling.after(leftTool);
 				}
 			}else if(startNextSibling && startNextSibling.nodeType == Node.TEXT_NODE){
+				//console.log(3)
 				if(startLeftText){
 					let leftTool = new TargetTool()
 					leftTool.textContent = startLeftText 
@@ -451,12 +487,14 @@ export default class Line extends HTMLDivElement {
 				}
 				startNextSibling.before(startTextNode);
 			}else{
+				/*console.log(4)
 				if(startLeftText){
 					let leftTool = new TargetTool()
 					leftTool.textContent = startLeftText 
 					this.append(leftTool);
 				}
 				this.append(startTextNode);
+				*/
 			}
 			if(tool){
 				tool.remove();
@@ -473,9 +511,12 @@ export default class Line extends HTMLDivElement {
 				nextLine = nextLine.nextElementSibling;
 			}
 
-			if(endOffset == endContainer.length){
+			/*if(endOffset == endContainer.length){
+				//console.log(1)
 				this.#findCancels(endLine, TargetTool);
-			}else if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
+			}else*/ 
+			if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
+				//console.log(2)
 				if(endRightText){
 					let rightTool = new TargetTool();
 					rightTool.textContent = endRightText;
@@ -483,6 +524,7 @@ export default class Line extends HTMLDivElement {
 				}
 				endPrevSibling.after(endTextNode);
 			}else if(endNextSibling && endNextSibling.nodeType == Node.TEXT_NODE){
+				//console.log(3)
 				endNextSibling.before(endTextNode);
 				if(endRightText){
 					let rightTool = new TargetTool();
@@ -490,7 +532,14 @@ export default class Line extends HTMLDivElement {
 					endNextSibling.after(rightTool);
 				}
 			}else{
-				endLine.append(endTextNode);
+				/*console.log(4)
+				if(endRightText){
+					let rightTool = new TargetTool();
+					rightTool.textContent = endRightText;
+					//endLine.append(rightTool);
+				}
+				endLine.prepend(endTextNode);
+				*/
 			}
 
 			if(endTool){
@@ -506,9 +555,6 @@ export default class Line extends HTMLDivElement {
 			let range = selection.getRangeAt(0);
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			let tool = Line.getTool(startContainer, TargetTool);
-			console.log(startContainer);
-			console.log(endContainer);
-			console.log(commonAncestorContainer);
 			/*
 			if(startContainer === endContainer){
 				if(startContainer.parentElement.childNodes.length == 1 
@@ -516,28 +562,28 @@ export default class Line extends HTMLDivElement {
 					&& startContainer.parentElement.childNodes[0] ==  endContainer
 					&& endContainer.textContent.length == endOffset){
 					// tool 범위 전체 선택인 경우
-					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
-						console.log('cancelOnlyOneTool 1')
+					this.#cancelOnlyOneLine(range, tool, TargetTool).then(()=>{
+						console.log('cancelOnlyOneLine 1')
 						resolve();
 					})
 				}else{
 					// 범위 중 일부
-					this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
-						console.log('cancelOnlyOneItem')
+					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
+						console.log('cancelOnlyOneTool')
 						resolve();
 					})
 				}
 			*/
-			if(this.innerText.length != range.toString().length){
-				this.#cancelOnlyOneItem(range, tool, TargetTool).then(()=>{
-					console.log('cancelOnlyOneItem')
+			if(startContainer === endContainer && this.innerText.length != range.toString().length){
+				this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
+					console.log('cancelOnlyOneTool')
 					resolve();
 				})
 			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
 				// 하나만
 				// tool 범위 전체 선택인 경우
-				this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
-					console.log('cancelOnlyOneTool 2')
+				this.#cancelOnlyOneLine(range, tool, TargetTool).then(()=>{
+					console.log('cancelOnlyOneLine 2')
 					resolve();
 				})
 			}else{

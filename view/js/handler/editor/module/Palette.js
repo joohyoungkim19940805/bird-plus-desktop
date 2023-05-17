@@ -52,6 +52,10 @@ export default class Palette {
             throw new Error('openPosition is not element');
         }
 
+		if(this.#openPositionMode == Palette.OpenPositionMode.BUTTON){
+			this.#palette.style.position = "fixed";
+		}
+
         let style = document.querySelector(`#${this.#style.id}`);
         if(! style){
             document.head.append(this.createStyle());
@@ -785,14 +789,15 @@ export default class Palette {
         this.#componentMap = this.#createPaletteItems();
         document.body.append(this.#palette);
         this.#createPalette(this.#palette, this.#componentMap);
-        this.#processingPalettePosition(this.#palette);
+        //this.#processingPalettePosition(this.#palette);
     }
 
     createStyle(){
+		//position: fixed; 제거 20230517
 		this.#style.textContent = `
 			.palette-wrap{
 				background: #000000bf;
-				position: fixed;
+				
 				padding: 0.9%;
 				width: ${this.#paletteVw}vw;
 				height: fit-content;

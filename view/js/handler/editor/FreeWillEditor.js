@@ -1,7 +1,9 @@
 import Components from "./module/Components"
-/**
- * 전부 다 지우면 line 객체가 사라지는 문제 해결 필요 20230409
- */
+import Strong from "./tools/Strong"
+import Color from "./tools/Color"
+import Background from "./tools/Background"
+import Strikethrough from "./tools/Strikethrough"
+
 export default class FreeWillEditor extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
@@ -24,7 +26,8 @@ export default class FreeWillEditor extends HTMLDivElement {
 		tools={
 			'free-will-strong' : Strong,
 			'free-will-color' : Color,
-			'free-will-background' : Background
+			'free-will-background' : Background,
+			'free-will-strikethrough' : Strikethrough
 		}
 	){
 		super();
@@ -71,6 +74,7 @@ export default class FreeWillEditor extends HTMLDivElement {
 
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
+				
 				if(this.innerText.length <= 1 && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
 					this.#firstLine.setAttribute('placeholder', this.#placeholder);
 				}else if(this.innerText.charAt(0) != '\u200B' && this.innerText.length > 0){

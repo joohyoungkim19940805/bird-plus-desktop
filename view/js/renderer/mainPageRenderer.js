@@ -2,6 +2,8 @@ import FreeWillEditor from "../handler/editor/FreeWillEditor"
 import Strong from "../handler/editor/tools/Strong"
 import Color from "../handler/editor/tools/Color"
 import Background from "../handler/editor/tools/Background"
+import Strikethrough from "../handler/editor/tools/Strikethrough"
+
 class Editor extends FreeWillEditor{
 	constructor(){
 		let components = {
@@ -10,7 +12,8 @@ class Editor extends FreeWillEditor{
 		let tools = {
 			'free-will-strong' : Strong,
 			'free-will-color' : Color,
-			'free-will-background' : Background
+			'free-will-background' : Background,
+			'free-will-strikethrough' : Strikethrough,
 		}
 		super(undefined, tools);
 
@@ -19,7 +22,8 @@ class Editor extends FreeWillEditor{
 		toolbar.append(
 			Strong.toolHandler.toolButton,
 			Color.toolHandler.toolButton,
-			Background.toolHandler.toolButton,	
+			Background.toolHandler.toolButton,
+			Strikethrough.toolHandler.toolButton,	
 		);
 		super.placeholder = '텍스트를 입력해주세요.'
 	}

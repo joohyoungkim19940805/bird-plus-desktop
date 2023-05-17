@@ -78,4 +78,18 @@ export default class ToolHandler{
 		return this.#connectedFriends;
 	}
 
+	processingElementPosition(element){
+			let {x, y, height} = this.#toolButton.getBoundingClientRect();
+			//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
+			//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
+			let elementHeightPx = element.clientHeight;
+			let elementTop = (y - elementHeightPx)
+			if(elementTop > 0){
+				element.style.top = elementTop + 'px';
+			}else{
+				element.style.top = y + height + 'px';
+			}
+			element.style.left = x + 'px';
+	}
+
 }
