@@ -1,11 +1,14 @@
 
 export default class Palette {
-    #palette = Object.assign(document.createElement('div'),{
-		className: 'palette-wrap'
-	});
-    #style = Object.assign(document.createElement('style'), {
+	
+	#style = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-palette'
 	});
+
+	#palette = Object.assign(document.createElement('div'),{
+		className: 'palette-wrap'
+	});
+
 	#paletteVw = 20; 
 	#componentMap = undefined;
 	
@@ -797,7 +800,6 @@ export default class Palette {
 		this.#style.textContent = `
 			.palette-wrap{
 				background: #000000bf;
-				
 				padding: 0.9%;
 				width: ${this.#paletteVw}vw;
 				height: fit-content;

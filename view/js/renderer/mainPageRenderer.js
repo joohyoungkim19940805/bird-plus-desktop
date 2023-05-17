@@ -3,6 +3,7 @@ import Strong from "../handler/editor/tools/Strong"
 import Color from "../handler/editor/tools/Color"
 import Background from "../handler/editor/tools/Background"
 import Strikethrough from "../handler/editor/tools/Strikethrough"
+import FontFamily from "../handler/editor/tools/FontFamily"
 
 class Editor extends FreeWillEditor{
 	constructor(){
@@ -14,6 +15,7 @@ class Editor extends FreeWillEditor{
 			'free-will-color' : Color,
 			'free-will-background' : Background,
 			'free-will-strikethrough' : Strikethrough,
+			'free-will-strikethrough' : FontFamily,
 		}
 		super(undefined, tools);
 
@@ -23,7 +25,8 @@ class Editor extends FreeWillEditor{
 			Strong.toolHandler.toolButton,
 			Color.toolHandler.toolButton,
 			Background.toolHandler.toolButton,
-			Strikethrough.toolHandler.toolButton,	
+			Strikethrough.toolHandler.toolButton,
+			FontFamily.toolHandler.toolButton,
 		);
 		super.placeholder = '텍스트를 입력해주세요.'
 	}

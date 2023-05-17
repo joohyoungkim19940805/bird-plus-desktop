@@ -1,4 +1,11 @@
 export default class FontBox {
+    
+    #style = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-palette'
+	});
+
+    #paletteVw = 20;
+
     #fontList = [];
     #fontBox = Object.assign(document.createElement('div'), {
         className: 'font-box-wrap',
@@ -28,6 +35,14 @@ export default class FontBox {
             throw new Error('fontList is undefined');
         }
         this.#fontList = fontList;
+
+        let style = document.querySelector(`#${this.#style.id}`);
+        if(! style){
+            document.head.append(this.createStyle());
+        }else{
+            this.#style = style;
+        }
+
         /*
         let searchWrap = Object.assign(document.createElement('div'),{
             className: 'font-box-search-wrap'
@@ -53,6 +68,24 @@ export default class FontBox {
         })
     }
 
+    #createFontElementList(sampleText){
+        return new Promise(resolve=> {
+        this.#fontElementList = this.#fontList.map(fontFamily=>{
+            let div = Object.assign(document.createElement('div'),{
+                className: 'font-item',
+            });
+            if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
+                div.innerHTML = sampleText.innerHTML;
+            }else{
+                div.textContent = sampleText;
+            }
+            div.style.fontFamily = fontFamily;
+            return div;
+        });
+            resolve(this.#fontElementList);
+        })
+    }
+
     open(){
         let selection = window.getSelection();
         if(selection.rangeCount != 0 && selection.isCollapsed == false){
@@ -64,19 +97,10 @@ export default class FontBox {
         }
         this.#sampleText = this.#sampleText == '' ? this.#defaultSampleText : this.#sampleText;
     
-        this.#fontElementList = this.#fontList.map(fontFamily=>{
-            let div = Object.assign(document.createElement('div'),{
-                className: 'font-item',
-            });
-            if(this.#sampleText.nodeType && this.#sampleText.nodeType == Node.ELEMENT_NODE){
-                div.innerHTML = this.#sampleText.innerHTML;
-            }else{
-                div.textContent = this.#sampleText;
-            }
-            div.style.fontFamily = fontFamily;
+        this.#createFontElementList(this.#sampleText).then(fontElementList => {
+            this.#fontBoxContainer.replaceChildren(fontElementList);
         });
 
-        this.#fontBoxContainer.replaceChildren(this.#fontElementList);
         document.body.append(this.#fontBox);
     }
     close(){
@@ -93,5 +117,24 @@ export default class FontBox {
 
     get fontBox(){
         return this.#fontBox;
+    }
+
+    createStyle(){
+        this.#style.textContent = `
+            .font-box-wrap{
+                background: #000000bf;
+                position: fixed;
+				padding: 0.9%;
+				width: ${this.#paletteVw}vw;
+				height: fit-content;
+				color: white;
+				font-size: 13px;
+				min-width: 300px;
+				-webkit-user-select:none;
+				-moz-user-select:none;
+				-ms-user-select:none;
+				user-select:none
+            }
+        `
     }
 }

@@ -26,10 +26,10 @@ export default class FontFamily extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-font-family';
 		
-        this.fontBox = new FontBox();
+        this.fontBox = new FontBox(this.#fontList);
 
 		let button = document.createElement('button');
-		button.textContent = 'S'
+		button.textContent = 'F'
 		// default tools icon
 		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -39,6 +39,7 @@ export default class FontFamily extends FreedomInterface {
 				this.fontBox.close();
 			}else{
 				this.fontBox.open();
+				this.toolHandler.processingElementPosition(this.fontBox.fontBox);
 			}
 		}
 
