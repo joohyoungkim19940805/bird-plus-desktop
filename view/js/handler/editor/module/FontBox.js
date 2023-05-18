@@ -1,7 +1,7 @@
 export default class FontBox {
     
     #style = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-palette'
+		id: 'free-will-editor-font-box'
 	});
 
     #paletteVw = 20;
@@ -10,7 +10,7 @@ export default class FontBox {
     #fontBox = Object.assign(document.createElement('div'), {
         className: 'font-box-wrap',
     })
-    #fontBoxContainer = Object.assign(document.createElement('div'), {
+    #fontBoxContainer = Object.assign(document.createElement('ul'), {
         className: 'font-box-container'
     })
     /*
@@ -23,7 +23,7 @@ export default class FontBox {
     })
     */
     #fontElementList = [];
-    #lastSelectedItem;
+    #selectedFont;
 
     #defaultSampleText = '가나 다라 ab cd'
     #sampleText = this.#defaultSampleText;
@@ -59,34 +59,42 @@ export default class FontBox {
         
     }
 
-    addFontItemEvent(item){
-        return new Promise(resolve => {
-            item.onclick = (event) => {
-                this.applyCallback(event);
-            }
-            resolve();
-        })
+    #addFontItemEvent(item){
+        item.onclick = (event) => {
+            this.#selectedFont = item;
+            this.applyCallback(event);
+        }
+        resolve();
     }
 
     #createFontElementList(sampleText){
         return new Promise(resolve=> {
-        this.#fontElementList = this.#fontList.map(fontFamily=>{
-            let div = Object.assign(document.createElement('div'),{
-                className: 'font-item',
-            });
-            if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
-                div.innerHTML = sampleText.innerHTML;
-            }else{
-                div.textContent = sampleText;
+            const createFontItem = () => {
+                let li = Object.assign(document.createElement('li'),{
+                    className: 'font-item',
+                });
+                if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
+                    li.innerHTML = sampleText.innerHTML;
+                }else{
+                    li.textContent = sampleText;
+                }
+                this.#addFontItemEvent(li)
+                return li;
             }
-            div.style.fontFamily = fontFamily;
-            return div;
-        });
+            this.#fontElementList = this.#fontList.map(fontFamily=>{
+                let li = createFontItem();
+                li.style.fontFamily = fontFamily;
+                return li;
+            });
+
+            let defaultFont = createFontItem();
+            this.#fontElementList.push(defaultFont)
+
             resolve(this.#fontElementList);
         })
     }
 
-    open(){
+    async open(){
         let selection = window.getSelection();
         if(selection.rangeCount != 0 && selection.isCollapsed == false){
             let range = selection.getRangeAt(0)
@@ -97,11 +105,13 @@ export default class FontBox {
         }
         this.#sampleText = this.#sampleText == '' ? this.#defaultSampleText : this.#sampleText;
     
-        this.#createFontElementList(this.#sampleText).then(fontElementList => {
-            this.#fontBoxContainer.replaceChildren(fontElementList);
-        });
-
         document.body.append(this.#fontBox);
+
+        return await this.#createFontElementList(this.#sampleText).then(fontElementList => {
+            this.#fontBoxContainer.replaceChildren(...fontElementList);
+            return this.#fontBoxContainer;
+        });
+        
     }
     close(){
         this.#fontBox.remove();
@@ -117,6 +127,14 @@ export default class FontBox {
 
     get fontBox(){
         return this.#fontBox;
+    }
+
+    get selectedFont(){
+        return this.#selectedFont;
+    }
+
+    set style(style){
+        this.#style.textContent = style;
     }
 
     createStyle(){
@@ -135,6 +153,20 @@ export default class FontBox {
 				-ms-user-select:none;
 				user-select:none
             }
+            .font-box-wrap .font-box-container{
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+            .font-box-wrap .font-item:hover{
+                background-color: #343434;
+                cursor: pointer;
+            }
+            .font-box-wrap .font-item{
+                margin-bottom: 1%;
+            }
+
         `
+        return this.#style;
     }
 }

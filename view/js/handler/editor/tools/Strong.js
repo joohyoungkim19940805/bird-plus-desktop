@@ -7,13 +7,11 @@ export default class Strong extends FreedomInterface {
 	static{
 		this.toolHandler.extendsElement = 'strong';
 		this.toolHandler.defaultClass = 'free-will-strong';
-		
-		//let img = document.createElement('img');
+
 		let button = document.createElement('button');
-		//button.append(img);
 		button.textContent = 'B'
-		// default tools icon
 		this.toolHandler.toolButton = button;
+		
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -22,7 +20,7 @@ export default class Strong extends FreedomInterface {
 			}
 		}
 	}
-	#isLoaded = false;
+
 	constructor(){
 		super(Strong);
 	}

@@ -1,10 +1,15 @@
-import Components from "./module/Components"
+import Line from './component/Line'
+import FreeWiilHandler from './module/FreeWiilHandler'
+
 import Strong from "./tools/Strong"
 import Color from "./tools/Color"
 import Background from "./tools/Background"
 import Strikethrough from "./tools/Strikethrough"
+import Underline from "./tools/Underline"
+import FontFamily from "./tools/FontFamily"
+import Quote from "./tools/Quote"
 
-export default class FreeWillEditor extends HTMLDivElement {
+export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
 	#prevParent;
 	components;
@@ -12,22 +17,19 @@ export default class FreeWillEditor extends HTMLDivElement {
 	toolsElement = {};
 	#placeholder;
 	#firstLine;
-	static Components = Components
-	
-	/**
-	 * 
-	 * @param {Object} components 
-	 * @param {Ojbect} tools 
-	 */
+
 	constructor(
 		components={
-			'free-will-line' : FreeWillEditor.Components.Line
+			'free-will-line' : Line
 		},
 		tools={
 			'free-will-strong' : Strong,
 			'free-will-color' : Color,
 			'free-will-background' : Background,
-			'free-will-strikethrough' : Strikethrough
+			'free-will-strikethrough' : Strikethrough,
+			'free-will-underline' : Underline,
+			'free-will-font-family' : FontFamily,
+			'free-will-font-quote' : Quote,
 		}
 	){
 		super();
@@ -66,24 +68,34 @@ export default class FreeWillEditor extends HTMLDivElement {
 				attributeOldValue:true
 			})
 			
-			//Tool.toolHandler.toolButton.addEventListener('click', (event) => this.#toolsClickEvent(event, Tool))
 			window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
-			obj[Tool.constructor.name] = Tool;
+			obj[Tool.name] = Tool;
 			return obj;
 		}, {})
 
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
-				
+
 				if(this.innerText.length <= 1 && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
 					this.#firstLine.setAttribute('placeholder', this.#placeholder);
 				}else if(this.innerText.charAt(0) != '\u200B' && this.innerText.length > 0){
 					this.#firstLine.removeAttribute('placeholder');
 				}
 
+				if(mutation.type == 'childList' && mutation.addedNodes.length > 0){
+					new Promise(resolve=> {
+						mutation.addedNodes.forEach(item => {
+							if(this.toolsMap.hasOwnProperty(item.constructor.name)){
+								item.parentEditor = this; 
+							}
+						})
+					})
+				}
+
 				if(this.childElementCount == 0){
 					this.#startFirstLine();
 				}
+
 			})
 		});
 		observer.observe(this, {
@@ -92,15 +104,9 @@ export default class FreeWillEditor extends HTMLDivElement {
 			childList:true,
 			subtree: true
 		})
+
 	}
-	#startFirstLine(){
-		let line = new FreeWillEditor.Components.Line();
-		line.isFirstLine = true;
-		line.setAttribute('placeholder', this.#placeholder);
-		this.#firstLine = line;
-		this.append(line);
-		return line;
-	}
+
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
@@ -115,11 +121,19 @@ export default class FreeWillEditor extends HTMLDivElement {
 		this.contentEditable = false;
     }
 
+	#startFirstLine(){
+		let line = super.createLine();
+		line.isFirstLine = true;
+		line.setAttribute('placeholder', this.#placeholder);
+		this.#firstLine = line;
+		return line;
+	}
+
 	#removeAfterSelectionMove(targetElement){
 		console.log(targetElement);
 		let selection = document.getSelection()
 		let range =  new Range();//document.createRange()
-		let targetLine = FreeWillEditor.Components.Line.getLine(targetElement);
+		let targetLine = Line.getLine(targetElement);
 		range.setStartAfter(targetLine)
 		range.setEnd(targetLine, targetElement.textContent.length - 1);
 		selection.removeAllRanges()
@@ -177,39 +191,13 @@ export default class FreeWillEditor extends HTMLDivElement {
 
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
-		let {anchorNode, focusNode} = selection; 
 		//if( ! anchorNodeLine || ! focusNodeLine){
 		//	return;
 		//}
-		let startAndEndLineFindObject;
-		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)
-			startAndEndLineFindObject = {
-				startLine : allLine[0],
-				endLine : allLine[allLine.length - 1]
-			}
-			let range = selection.getRangeAt(0);
-			selection.removeAllRanges();
-			range.setStart(startAndEndLineFindObject.startLine.childNodes[0], 0);
-			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
-			selection.addRange(range);
-		}else{
-			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
-			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
-				if(item == anchorNodeLine || item == focusNodeLine){
-					let key = 'startLine';
-					if(obj.hasOwnProperty(key)){
-						obj['endLine'] = item
-					}else{
-						obj[key] = item
-					}
-				}
-				return obj;
-			},{})
-		}
-		let {startLine, endLine} = startAndEndLineFindObject;
-		startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine)
+		
+		super.getLineRange(selection).then(({startLine, endLine})=> {
+			startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine)
+		})
 		/*
 		.then(tool=>{
 			this.querySelectorAll(`.${TargetTool.toolHandler.defaultClass}`).forEach(async e =>{
@@ -229,44 +217,9 @@ export default class FreeWillEditor extends HTMLDivElement {
 		if(isCollapsed){
 			return;
 		}
-		let startAndEndLineFindObject;
-		if(anchorNode == this){
-			let allLine = this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)
-			startAndEndLineFindObject = {
-				startLine : allLine[0],
-				endLine : allLine[allLine.length - 1]
-			}
-			let range = selection.getRangeAt(0);
-			selection.removeAllRanges();
-			range.setStart(startAndEndLineFindObject.startLine.childNodes[0], 0);
-			range.setEnd(startAndEndLineFindObject.endLine.childNodes[0], startAndEndLineFindObject.endLine.childNodes[0].textContent.length);
-			selection.addRange(range);
-		}else{
-			let anchorNodeLine = FreeWillEditor.Components.Line.getLine(anchorNode);
-			let focusNodeLine = FreeWillEditor.Components.Line.getLine(focusNode);
-			startAndEndLineFindObject = [...this.querySelectorAll(`.${FreeWillEditor.Components.Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
-				if(item == anchorNodeLine || item == focusNodeLine){
-					let key = 'startLine';
-					if(obj.hasOwnProperty(key)){
-						obj['endLine'] = item
-					}else{
-						obj[key] = item
-					}
-				}
-				return obj;
-			},{})
-		}
-		let {startLine, endLine} = startAndEndLineFindObject;
-		startLine.cancelTool(TargetTool, selection, endLine).then(textNode => {
-			this.querySelectorAll(`.${TargetTool.toolHandler.defaultClass}`).forEach(async e =>{
-				await new Promise(resolve=>{
-					resolve();
-				})
-			})
-			console.log(textNode);
-			//console.log(textNode)
-			//this.#removeAfterSelectionMove(textNode);
-		}).catch(e=>console.error(e));
+		super.getLineRange(selection).then(({startLine, endLine})=> {
+			startLine.cancelTool(TargetTool, selection, endLine);
+		})
 	}
 
 	set placeholder(placeholder){

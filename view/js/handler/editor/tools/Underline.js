@@ -2,18 +2,17 @@ import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 import Palette from "../module/Palette"
 
-export default class Background extends FreedomInterface {
+export default class Underline extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static palette;
 
 	static{
-
-		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-background';
+		this.toolHandler.extendsElement = 'u';
+		this.toolHandler.defaultClass = 'free-will-underline';
 		
 		let button = document.createElement('button');
-		button.textContent = 'G'
+		button.textContent = 'U'
 		this.toolHandler.toolButton = button;
 
 		this.palette = new Palette({
@@ -38,9 +37,8 @@ export default class Background extends FreedomInterface {
 	}
 
 	constructor(){
-		super(Background);
-		this.style.backgroundColor = Background.palette.selectedColor;
+		super(Underline);
+        this.style.textDecoration = `underline ${Underline.palette.selectedColor} 1px`;
 	}
-
-
+	
 }

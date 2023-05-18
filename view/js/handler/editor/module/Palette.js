@@ -771,6 +771,11 @@ export default class Palette {
         return this.#applyCallback;
     }
 
+	set style(style){
+        this.#style.textContent = style;
+    }
+
+
     reset(){
 		this.#r = 255;
 		this.#g = 0;
@@ -792,7 +797,7 @@ export default class Palette {
         this.#componentMap = this.#createPaletteItems();
         document.body.append(this.#palette);
         this.#createPalette(this.#palette, this.#componentMap);
-        //this.#processingPalettePosition(this.#palette);
+        this.#processingPalettePosition(this.#palette);
     }
 
     createStyle(){

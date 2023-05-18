@@ -26,6 +26,33 @@ export default class ToolHandler{
 
 		})
 	}
+
+	processingElementPosition(element){
+		let {x, y, height} = this.#toolButton.getBoundingClientRect();
+		
+		let elementHeightPx = element.clientHeight;
+		let elementTop = (y - elementHeightPx)
+		if(elementTop > 0){
+			element.style.top = elementTop + 'px';
+		}else{
+			element.style.top = y + height + 'px';
+		}
+		element.style.left = x + 'px';
+	}
+
+	isLastTool(tool){
+		console.log(this.#identity.name);
+		if(this.#identity.prototype.isPrototypeOf(tool)){
+			console.log(tool);
+			console.log(this.#connectedFriends);
+			console.log(this.#connectedFriends.filter(e=> e== tool));
+			return tool === this.#connectedFriends[this.#connectedFriends.length - 1];
+		}else{
+			throw new Error(`tool is not my identity, this tool name is ${tool.constructor.name}. but my identity name is ${this.#identity.name}`);
+		}
+		
+	}
+
 	/**
 	 * @param {String}
 	 */
@@ -76,20 +103,6 @@ export default class ToolHandler{
 
 	get connectedFriends(){
 		return this.#connectedFriends;
-	}
-
-	processingElementPosition(element){
-			let {x, y, height} = this.#toolButton.getBoundingClientRect();
-			//let paletteWidthPx = document.documentElement.clientHeight * (this.#paletteVw / 100);
-			//let paletteHeightPx = document.documentElement.clientHeight * (this.#paletteVh / 100);
-			let elementHeightPx = element.clientHeight;
-			let elementTop = (y - elementHeightPx)
-			if(elementTop > 0){
-				element.style.top = elementTop + 'px';
-			}else{
-				element.style.top = y + height + 'px';
-			}
-			element.style.left = x + 'px';
 	}
 
 }

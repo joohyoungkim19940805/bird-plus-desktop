@@ -73,12 +73,14 @@ div.chating_block .chating_content{
     flex-direction: column;
 }
 
+/* 채팅 영역 시작 [S] */
 div[is="free-will-editor"]{
 	height: 100%;
     overflow: auto;
     overflow-wrap: anywhere;
 	outline: none;
 	background-color: white;
+	padding-top: 0.6%;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
@@ -120,8 +122,10 @@ div[is="free-will-editor"]::-webkit-scrollbar {
 
 [is="free-will-editor"] > :nth-child(1)::before{
     content: attr(placeholder);
-    position: fixed;
+    position: absolute;
     color: #d1d1d1;
     font-weight: 600;
     font-family: revert;
+	cursor: text;
 }
+/* 채팅 영역 종료 [E] */

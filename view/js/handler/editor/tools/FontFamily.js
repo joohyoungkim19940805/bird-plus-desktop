@@ -35,11 +35,12 @@ export default class FontFamily extends FreedomInterface {
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
-			}else if(this.fontBox.isConnected){
+			}else if(this.fontBox.fontBox.isConnected){
 				this.fontBox.close();
 			}else{
-				this.fontBox.open();
-				this.toolHandler.processingElementPosition(this.fontBox.fontBox);
+				this.fontBox.open().then(fontBoxContainer=>{
+				    this.toolHandler.processingElementPosition(this.fontBox.fontBox);
+                });
 			}
 		}
 
@@ -47,8 +48,21 @@ export default class FontFamily extends FreedomInterface {
 			this.toolHandler.toolButton.dataset.tool_status = 'active'
 			this.fontBox.close();
 		}
+
+        document.addEventListener("scroll", () => {
+			if(this.fontBox.fontBox.isConnected){
+				this.toolHandler.processingPalettePosition(this.fontBox.fontBox);
+			}
+		});
+        window.addEventListener('resize', (event) => {
+            if(this.fontBox.fontBox.isConnected){
+                this.fontBox.open().then(fontBoxContainer=>{
+				    this.toolHandler.processingElementPosition(this.fontBox.fontBox);
+                });
+            }
+		})
 	}
-	#isLoaded = false;
+
 	constructor(){
 		super(FontFamily);
         this.style.fontFamily = FontFamily.fontBox.lastSelectedItem.style.fontFamily;

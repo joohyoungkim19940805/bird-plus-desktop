@@ -5,16 +5,15 @@ import Palette from "../module/Palette"
 export default class Color extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
-	static palette;// = new Palette();
+	static palette;
 
 	static{
+
+		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'freedom-color';
 		
-		//let img = document.createElement('img');
 		let button = document.createElement('button');
-		//button.append(img);
 		button.textContent = 'C'
-		// default tools icon
 		this.toolHandler.toolButton = button;
 
 		this.palette = new Palette({
@@ -38,8 +37,6 @@ export default class Color extends FreedomInterface {
 		}
 	}
 
-
-	#isLoaded = false;
 	constructor(){
 		super(Color);
 		this.style.color = Color.palette.selectedColor;
