@@ -20,7 +20,7 @@ export default class Line extends HTMLDivElement {
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
-		}else if(element.classList?.contains(this.toolHandler.defaultClass)){
+		}else if(Line.prototype.isPrototypeOf(element)){//element.classList?.contains(this.toolHandler.defaultClass)){
 			return element;
 		}else if(element.parentElement.classList.contains(this.toolHandler.defaultClass)){
 			line = element.parentElement;
@@ -193,11 +193,17 @@ export default class Line extends HTMLDivElement {
 		return await new Promise(resolve=>{
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 
-			range.setStart(startContainer, startOffset);
-			range.setEnd(startContainer, startContainer.textContent.length);
-			range.surroundContents(tool);
+			let startText = startContainer.substring(startOffset);
+			startContainer.textContent = startText;
+			tool.append(startText);
+			startContainer.after(tool);
+			//range.setStart(startContainer, startOffset);
+			//range.setEnd(startContainer, startContainer.textContent.length);
+			//range.surroundContents(tool);
 			// 분할 적용 되지 않도록 합친다 ex(<b>1</b><b>2</b> => <b>12</b>) 
-
+			console.log(tool);
+			console.log(tool.childNodes);
+			console.log(tool.children);
 			let targetStartLineItem = startContainer.nextSibling.nextSibling;
 			if(targetStartLineItem){
 				let itemRemoveList = [];
@@ -271,6 +277,7 @@ export default class Line extends HTMLDivElement {
 				//itemAppendList.push(targetTextNode.data);
 				//targetTextNode.textContent = itemAppendList.join('');
 				//endTool.append(targetTextNode)
+				console.log(itemAppendList);
 				[...endTool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
 				//endTool.prepend(document.createTextNode(itemAppendList.join('')))
 				//itemRemoveList.forEach(e=>e.remove())
@@ -617,13 +624,13 @@ export default class Line extends HTMLDivElement {
 		})
 	}
 
-	selectstartEventFunction(event){
-		console.log(event)
-		console.log(window.getSelection())
-		console.log(document.getSelection())
-	}
-	selectionchangeEventFunction(event){
-		console.log(event);
+	lookAtMe(){
+		if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
+			this.innerText = '\n';
+			window.getSelection().setPosition(this, 1)
+		}else{
+			window.getSelection().setPosition(this, 1)
+		}
 	}
 
 }

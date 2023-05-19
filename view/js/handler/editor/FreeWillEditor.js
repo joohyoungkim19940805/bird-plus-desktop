@@ -87,8 +87,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						mutation.addedNodes.forEach(item => {
 							if(this.toolsMap.hasOwnProperty(item.constructor.name)){
 								item.parentEditor = this; 
+								item.parentLine = Line.getLine(item);
 							}
 						})
+						resolve()
 					})
 				}
 

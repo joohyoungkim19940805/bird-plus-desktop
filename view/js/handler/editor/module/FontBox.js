@@ -64,7 +64,6 @@ export default class FontBox {
             this.#selectedFont = item;
             this.applyCallback(event);
         }
-        resolve();
     }
 
     #createFontElementList(sampleText){

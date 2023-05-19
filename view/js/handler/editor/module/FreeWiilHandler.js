@@ -48,6 +48,7 @@ export default class FreeWiilHandler extends HTMLDivElement{
                 range.setStart(startAndEndLineObject.startLine.childNodes[0], 0);
                 range.setEnd(endLineChildNodes[endLineChildNodes.length - 1], endLineChildNodes[endLineChildNodes.length - 1].textContent.length);
                 selection.addRange(range);
+                console.log(startAndEndLineObject)
             }else{
                 let anchorNodeLine = Line.getLine(anchorNode);
                 let focusNodeLine = Line.getLine(focusNode);
@@ -63,6 +64,7 @@ export default class FreeWiilHandler extends HTMLDivElement{
                     return obj;
                 },{})
             }
+            console.log(startAndEndLineObject)
             resolve(startAndEndLineObject);
         })
     }
@@ -71,7 +73,23 @@ export default class FreeWiilHandler extends HTMLDivElement{
         return line.innerText.length == 0 || (line.innerText.length == 1 && (line.innerText == '\n' || line.innerText == '\u200B'));
     }
 
-    isNextLineExist(tool){
-        
+    isNextLineExist(element){
+        let line = Line.getLine(element);
+
+        let nextLine = line.nextElementSibling;
+        if( ! nextLine){
+            return false;
+        }
+        return Line.prototype.isPrototypeOf(nextLine);
+    }
+
+    getNextLine(element){
+        let line = Line.getLine(element);
+
+        let nextLine = line.nextElementSibling;
+        if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
+            return nextLine;
+        }
+        return undefined;
     }
 }

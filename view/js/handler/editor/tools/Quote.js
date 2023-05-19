@@ -28,16 +28,20 @@ export default class Quote extends FreedomInterface {
         display: 'block',
         paddingLeft: '1em',
         borderLeft: '3px solid #d7d7db',
-        marginInline: '3em',
+        marginInline: '2.5em',
     }
 	constructor(){
 		super(Quote);
         Object.assign(this.style, this.#defaultStyle);
 
         super.disconnectedAfterCallback = () => {
-            console.log(Quote.toolHandler.isLastTool(this));
-            if(Quote.toolHandler.isLastTool(this)){
-                this.parentEditor.createLine();
+			if(Quote.toolHandler.isLastTool(this)){
+				let nextLine = this.parentEditor.getNextLine(this.parentLine);
+				if( ! nextLine){
+                	this.parentEditor.createLine();
+				}else{
+					nextLine.lookAtMe();
+				}
             }
         }
 	}
@@ -48,6 +52,7 @@ export default class Quote extends FreedomInterface {
 
     set defaultStyle(styleMap = {}){
         this.#defaultStyle = styleMap;
+		Object.assign(this.style, this.#defaultStyle);
     }
 	
 
