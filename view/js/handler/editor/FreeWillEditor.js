@@ -88,6 +88,13 @@ export default class FreeWillEditor extends FreeWiilHandler {
 							if(this.toolsMap.hasOwnProperty(item.constructor.name)){
 								item.parentEditor = this; 
 								item.parentLine = Line.getLine(item);
+							}else if(Line.prototype.isPrototypeOf(item)){
+								item.parentEditor = this;
+								if(item.previousElementSibling && Line.prototype.isPrototypeOf(item.previousElementSibling) && ! item.previousElementSibling.nextLine){
+									item.previousElementSibling.nextLine = item;
+								}else if(item.nextElementSibling && Line.prototype.isPrototypeOf(item.nextElementSibling) && ! item.nextLine){
+									item.nextLine = item;
+								}
 							}
 						})
 						resolve()

@@ -43,7 +43,7 @@ export default class FreeWiilHandler extends HTMLDivElement{
                     endLine : allLine[allLine.length - 1]
                 }
                 let range = selection.getRangeAt(0);
-                selection.removeAllRanges();
+                //selection.removeAllRanges();
                 let endLineChildNodes = startAndEndLineObject.endLine.childNodes;
                 range.setStart(startAndEndLineObject.startLine.childNodes[0], 0);
                 range.setEnd(endLineChildNodes[endLineChildNodes.length - 1], endLineChildNodes[endLineChildNodes.length - 1].textContent.length);
