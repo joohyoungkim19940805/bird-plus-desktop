@@ -6,6 +6,8 @@ import Strikethrough from "../handler/editor/tools/Strikethrough"
 import Underline from "../handler/editor/tools/Underline"
 import FontFamily from "../handler/editor/tools/FontFamily"
 import Quote from "../handler/editor/tools/Quote"
+import IndexPoint from "../handler/editor/tools/IndexPoint"
+import BulletPoint from "../handler/editor/tools/BulletPoint"
 
 class Editor extends FreeWillEditor{
 	constructor(){
@@ -18,6 +20,8 @@ class Editor extends FreeWillEditor{
 			'free-will-underline' : Underline,
 			'free-will-font-family' : FontFamily,
 			'free-will-font-quote' : Quote,
+			'free-will-index-point' : IndexPoint,
+			'free-will-bullet-point' : BulletPoint,
 		}
 		super(undefined, tools);
 
@@ -31,6 +35,8 @@ class Editor extends FreeWillEditor{
 			Underline.toolHandler.toolButton,
 			FontFamily.toolHandler.toolButton,
 			Quote.toolHandler.toolButton,
+			IndexPoint.toolHandler.toolButton,
+			BulletPoint.toolHandler.toolButton,
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'

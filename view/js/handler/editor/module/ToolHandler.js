@@ -41,11 +41,7 @@ export default class ToolHandler{
 	}
 
 	isLastTool(tool){
-		console.log(this.#identity.name);
 		if(this.#identity.prototype.isPrototypeOf(tool)){
-			console.log(tool);
-			console.log(this.#connectedFriends);
-			console.log(this.#connectedFriends.filter(e=> e== tool));
 			return tool === this.#connectedFriends[this.#connectedFriends.length - 1];
 		}else{
 			throw new Error(`tool is not my identity, this tool name is ${tool.constructor.name}. but my identity name is ${this.#identity.name}`);
@@ -94,6 +90,7 @@ export default class ToolHandler{
 			new TypeError('is not my friend')
 		}
 
+		console.log(friend.isConnected);
 		if(friend.isConnected){
 			this.#connectedFriends.push(friend);
 		}else{

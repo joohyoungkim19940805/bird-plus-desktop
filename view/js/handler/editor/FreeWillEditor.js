@@ -8,6 +8,8 @@ import Strikethrough from "./tools/Strikethrough"
 import Underline from "./tools/Underline"
 import FontFamily from "./tools/FontFamily"
 import Quote from "./tools/Quote"
+import IndexPoint from "./tools/IndexPoint"
+import BulletPoint from "./tools/BulletPoint"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -30,6 +32,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-underline' : Underline,
 			'free-will-font-family' : FontFamily,
 			'free-will-font-quote' : Quote,
+			'free-will-index-point' : IndexPoint,
+			'free-will-bullet-point' : BulletPoint,
 		}
 	){
 		super();
