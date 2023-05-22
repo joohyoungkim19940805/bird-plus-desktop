@@ -85,7 +85,10 @@ export default class FreeWiilHandler extends HTMLDivElement{
 
     getNextLine(element){
         let line = Line.getLine(element);
-
+        if( ! line){
+            return undefined;
+        }
+        
         let nextLine = line.nextElementSibling;
         if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
             return nextLine;

@@ -44,21 +44,25 @@ export default class FreedomInterface extends HTMLElement {
 	connectedCallback(){
 		if( ! this.#isLoaded){
 			this.#isLoaded = true;
-			this.connectedAfterOnlyOneCallback();
 			this.constructor.toolHandler.connectedFriends = this;
 			if(this.style.display == 'block' && this.innerText.length == 0){
 				this.innerText = '\n';
 			}
+			this.connectedAfterOnlyOneCallback();
 			return;
 		}
 		this.connectedAfterCallback();
 	}
 	disconnectedCallback(){
         this.#isLoaded = false;
-		this.disconnectedAfterCallback();
-		this.constructor.toolHandler.connectedFriends = this;
-		
-    }
+		try{
+			this.disconnectedAfterCallback();
+		}catch(err){
+			console.error(err)
+		}finally{
+			this.constructor.toolHandler.connectedFriends = this;
+		}
+	}
 
 	isToolEmpty(){
         return this.innerText.length == 0 || (this.innerText.length == 1 && (this.innerText == '\n' || this.innerText == '\u200B'));
