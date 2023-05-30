@@ -6,7 +6,7 @@ export default class IndexPoint extends FreedomInterface {
 	//static defaultClass = 'line';
 	static toolHandler = new ToolHandler(this);
 	
-	static #style = Object.assign(document.createElement('style'), {
+	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-index'
 	});
 
@@ -28,33 +28,34 @@ export default class IndexPoint extends FreedomInterface {
 			}
 		}
 
-		let style = document.querySelector(`#${this.#style.id}`);
-        if(! style){
-            document.head.append(this.createStyle());
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
         }else{
-            this.#style = style;
+            this.#defaultStyle = defaultStyle;
         }
 	}
 
-	static createStyle(){
-		this.#style.textContent = ``/*`
-			[data-index]::before {
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = `
+			.${this.toolHandler.defaultClass}[data-index]::before {
 				content: attr(data-index) '. ';
+				padding-right: 1em;
 			}
-		`*/
-		return this.#style;
+			.${this.toolHandler.defaultClass} {
+				display: list-item;
+				margin-inline: 1.3em;
+				list-style-type: none;
+			}
+		`
+		return this.#defaultStyle;
 	}
 
-    #defaultStyle = {
-        display: 'list-item',
-        paddingLeft: '1em',
-        marginInline: '2.5em',
-		listStyleType: 'decimal',
-    }
 	constructor(){
 		super(IndexPoint);
-        Object.assign(this.style, this.#defaultStyle);
-
+		if(IndexPoint.#defaultStyle.textContent != '' && IndexPoint.#defaultStyle.textContent){
+			IndexPoint.createDefaultStyle();
+		}
         super.disconnectedAfterCallback = () => {
 			if(IndexPoint.toolHandler.isLastTool(this)){
 				let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -68,8 +69,15 @@ export default class IndexPoint extends FreedomInterface {
 				e.dataset.index = i + 1; 
 			})
         }
+		
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = IndexPoint.toolHandler.connectedFriends.length;
+		}
+
+		super.connectedAfterCallback = () => {
+			IndexPoint.toolHandler.connectedFriends.forEach((e, i)=>{
+				e.dataset.index = i + 1; 
+			})
 		}
 	}
 
@@ -77,11 +85,13 @@ export default class IndexPoint extends FreedomInterface {
         return this.#defaultStyle;
     }
 
-    set defaultStyle(styleMap = {}){
-        this.#defaultStyle = styleMap;
-		Object.assign(this.style, this.#defaultStyle);
+    set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
     }
-	
+
+	set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
 
 
 }

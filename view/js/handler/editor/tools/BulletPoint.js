@@ -6,8 +6,8 @@ export default class BulletPoint extends FreedomInterface {
 	//static defaultClass = 'line';
 	static toolHandler = new ToolHandler(this);
 	
-	static #style = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-index'
+	static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-bullet-point'
 	});
 
 	static{
@@ -28,31 +28,31 @@ export default class BulletPoint extends FreedomInterface {
 			}
 		}
 
-		let style = document.querySelector(`#${this.#style.id}`);
-        if(! style){
-            document.head.append(this.createStyle());
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
         }else{
-            this.#style = style;
+            this.#defaultStyle = defaultStyle;
         }
 	}
 
-	static createStyle(){
-		this.#style.textContent = `
-
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = `
+			.${this.toolHandler.defaultClass} {
+				display: list-item;
+				padding-left: 1em;
+				margin-inline: 2.5em;
+				list-style-type: disc;
+			}
 		`
-		return this.#style;
+		return this.#defaultStyle;
 	}
-
-    #defaultStyle = {
-        display: 'list-item',
-        paddingLeft: '1em',
-        marginInline: '2.5em',
-		listStyleType: 'disc',
-    }
+	
 	constructor(){
 		super(BulletPoint);
-        Object.assign(this.style, this.#defaultStyle);
-
+		if(BulletPoint.#defaultStyle.textContent != '' && BulletPoint.#defaultStyle.textContent){
+			BulletPoint.createDefaultStyle();
+		}
         super.disconnectedAfterCallback = () => {
 			if(BulletPoint.toolHandler.isLastTool(this)){
 				let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -70,11 +70,12 @@ export default class BulletPoint extends FreedomInterface {
         return this.#defaultStyle;
     }
 
-    set defaultStyle(styleMap = {}){
-        this.#defaultStyle = styleMap;
-		Object.assign(this.style, this.#defaultStyle);
+    set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
     }
-	
 
+	set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
 
 }
