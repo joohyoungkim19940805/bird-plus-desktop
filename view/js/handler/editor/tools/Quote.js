@@ -5,6 +5,11 @@ export default class Quote extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
 	static toolHandler = new ToolHandler(this);
+
+	static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-quote'
+	});
+
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-quote';
@@ -22,18 +27,32 @@ export default class Quote extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
+
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
 	}
 
-    #defaultStyle = {
-        display: 'block',
-        paddingLeft: '1em',
-        borderLeft: '3px solid #d7d7db',
-        marginInline: '2.5em',
-    }
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = `
+			.${this.toolHandler.defaultClass} {
+				display: block;
+				padding-left: 1em;
+				border-left: 3px solid #d7d7db;
+				margin-inline: 2.5em;
+			}
+		`
+		return this.#defaultStyle;
+	}
+
 	constructor(){
 		super(Quote);
-        Object.assign(this.style, this.#defaultStyle);
-
+		if(Quote.#defaultStyle.textContent != '' && Quote.#defaultStyle.textContent){
+			Quote.createDefaultStyle();
+		}
         super.disconnectedAfterCallback = () => {
 			if(Quote.toolHandler.isLastTool(this)){
 				let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -50,11 +69,13 @@ export default class Quote extends FreedomInterface {
         return this.#defaultStyle;
     }
 
-    set defaultStyle(styleMap = {}){
-        this.#defaultStyle = styleMap;
-		Object.assign(this.style, this.#defaultStyle);
+    set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
     }
-	
+
+	set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
 
 
 }

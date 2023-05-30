@@ -771,9 +771,17 @@ export default class Palette {
         return this.#applyCallback;
     }
 
+	get style(){
+		return this.#style;
+	}
+
 	set style(style){
         this.#style.textContent = style;
     }
+
+	set addStyle(style){
+		this.#style.sheet.insertRule(style);
+	}
 
 
     reset(){

@@ -132,9 +132,18 @@ export default class FontBox {
         return this.#selectedFont;
     }
 
-    set style(style){
+	get style(){
+		return this.#style;
+	}
+
+	set style(style){
         this.#style.textContent = style;
     }
+
+	set addStyle(style){
+		this.#style.sheet.insertRule(style);
+	}
+
 
     createStyle(){
         this.#style.textContent = `
