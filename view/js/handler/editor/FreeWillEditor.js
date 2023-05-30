@@ -57,10 +57,14 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			this.toolsElement[className] = Tool.toolHandler.toolButton
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
+					//if(mutation.oldValue == mutation.mutation.target.dataset.tool_status){
+						// 동일한 동작이 수행되지 않도록 추가 2023 05 25
+					//	return;
+					//}
 					let focusNode = window.getSelection().focusNode;
 					if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
 						this.#renderingTools(Tool);
-					}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){
+					}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
 						this.#removerToos(Tool);
 					}
 				});
