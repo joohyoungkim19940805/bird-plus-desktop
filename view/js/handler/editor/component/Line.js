@@ -41,10 +41,11 @@ export default class Line extends HTMLDivElement {
 		}else{
 			tool = element.parentElement.closest(`.${TargetTool.toolHandler.defaultClass}`);
 		}
+
+		if(! tool){
+			tool = element.parentElement.querySelector(`.${TargetTool.toolHandler.defaultClass}`);
+		}
 		return tool;
-	}
-	static findTool(element, TargetTool){
-		return element.querySelector(`.${TargetTool.toolHandler.defaultClass}`);
 	}
 	constructor(){
 		super();
@@ -474,10 +475,10 @@ export default class Line extends HTMLDivElement {
 			let endNextSibling = endTool?.nextSibling
 			let endPrevSibling = endTool?.previousSibling
 
-			/*if(startOffset == 0){
+			if(startOffset == 0){
 				console.log(1)
 				this.#findCancels(this, TargetTool);
-			}else */
+			}else
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
 				//console.log(2)
 				startPrevSibling.after(startTextNode);
@@ -519,10 +520,10 @@ export default class Line extends HTMLDivElement {
 				nextLine = nextLine.nextElementSibling;
 			}
 
-			/*if(endOffset == endContainer.length){
+			if(endOffset == endContainer.length){
 				//console.log(1)
 				this.#findCancels(endLine, TargetTool);
-			}else*/ 
+			}else
 			if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
 				//console.log(2)
 				if(endRightText){
