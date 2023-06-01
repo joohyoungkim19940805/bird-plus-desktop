@@ -48,10 +48,11 @@ export default class Quote extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
-	constructor(){
-		super(Quote);
-		if(Quote.#defaultStyle.textContent != '' && Quote.#defaultStyle.textContent){
+	constructor(dataset){
+		super(Quote, dataset);
+		if(Quote.#defaultStyle.textContent != '' && Quote.#defaultStyle.textContent && Quote.#defaultStyle.hasAttribute('data-is_update')){
 			Quote.createDefaultStyle();
+			Quote.#defaultStyle.toggleAttribute('data-is_update');
 		}
         super.disconnectedAfterCallback = () => {
 			if(Quote.toolHandler.isLastTool(this)){

@@ -10,6 +10,7 @@ import FontFamily from "./tools/FontFamily"
 import Quote from "./tools/Quote"
 import IndexPoint from "./tools/IndexPoint"
 import BulletPoint from "./tools/BulletPoint"
+import Sort from "./tools/Sort"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -22,24 +23,25 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	constructor(
 		components={
-			'free-will-line' : Line
+			'free-will-editor-line' : Line
 		},
 		tools={
-			'free-will-strong' : Strong,
-			'free-will-color' : Color,
-			'free-will-background' : Background,
-			'free-will-strikethrough' : Strikethrough,
-			'free-will-underline' : Underline,
-			'free-will-font-family' : FontFamily,
-			'free-will-font-quote' : Quote,
-			'free-will-index-point' : IndexPoint,
-			'free-will-bullet-point' : BulletPoint,
+			'free-will-editor-strong' : Strong,
+			'free-will-editor-color' : Color,
+			'free-will-editor-background' : Background,
+			'free-will-editor-strikethrough' : Strikethrough,
+			'free-will-editor-underline' : Underline,
+			'free-will-editor-font-family' : FontFamily,
+			'free-will-editor-font-quote' : Quote,
+			'free-will-editor-index-point' : IndexPoint,
+			'free-will-editor-bullet-point' : BulletPoint,
+			'free-will-editor-sort' : Sort,
 		}
 	){
 		super();
 		this.components = components;
 		this.tools = tools;
-		console.log(tools);
+
 		this.componentsMap = Object.entries(this.components).forEach( ([className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);

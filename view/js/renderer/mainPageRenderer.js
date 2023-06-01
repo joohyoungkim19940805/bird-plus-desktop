@@ -8,6 +8,7 @@ import FontFamily from "../handler/editor/tools/FontFamily"
 import Quote from "../handler/editor/tools/Quote"
 import IndexPoint from "../handler/editor/tools/IndexPoint"
 import BulletPoint from "../handler/editor/tools/BulletPoint"
+import Sort from "../handler/editor/tools/Sort"
 
 class Editor extends FreeWillEditor{
 	constructor(){
@@ -22,6 +23,7 @@ class Editor extends FreeWillEditor{
 			'free-will-font-quote' : Quote,
 			'free-will-index-point' : IndexPoint,
 			'free-will-bullet-point' : BulletPoint,
+			'free-will-sort' : Sort,
 		}
 		super(undefined, tools);
 

@@ -5,10 +5,14 @@ import Palette from "../module/Palette"
 export default class Underline extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
+	static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-underline'
+	});
+
 	static palette;
 
 	static{
-		this.toolHandler.extendsElement = 'u';
+		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-underline';
 		
 		let button = document.createElement('button');
@@ -34,11 +38,42 @@ export default class Underline extends FreedomInterface {
 			this.toolHandler.toolButton.dataset.tool_status = 'active'
 			this.palette.close();
 		}
+
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
 	}
 
-	constructor(){
-		super(Underline);
-        this.style.textDecoration = `underline ${Underline.palette.selectedColor} 1px`;
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = ``
+		return this.#defaultStyle;
 	}
-	
+
+	constructor(dataset){
+		super(Underline, dataset);
+		if(Underline.#defaultStyle.textContent != '' && Underline.#defaultStyle.textContent && Underline.#defaultStyle.hasAttribute('data-is_update')){
+			Underline.createDefaultStyle();
+			Underline.#defaultStyle.toggleAttribute('data-is_update');
+		}
+		if( ! dataset){
+			this.dataset.rgba = Underline.palette.r + ',' + Underline.palette.g + ',' + Underline.palette.b + ',' + Underline.palette.a;
+		}
+		this.style.textDecoration = `underline rgba(${this.dataset.rgba}) 1px`;
+	}
+
+	get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
 }

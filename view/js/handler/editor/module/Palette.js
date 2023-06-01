@@ -783,6 +783,18 @@ export default class Palette {
 		this.#style.sheet.insertRule(style);
 	}
 
+	get r(){
+		return this.#r;
+	}
+	get g(){
+		return this.#g;
+	}
+	get b(){
+		return this.#b;
+	}
+	get a(){
+		return this.#a;
+	}
 
     reset(){
 		this.#r = 255;

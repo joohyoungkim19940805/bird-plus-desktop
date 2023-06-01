@@ -7,12 +7,12 @@ export default class IndexPoint extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-index'
+		id: 'free-will-editor-index-point'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-index';
+		this.toolHandler.defaultClass = 'free-will-index-point';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
@@ -51,10 +51,11 @@ export default class IndexPoint extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
-	constructor(){
-		super(IndexPoint);
-		if(IndexPoint.#defaultStyle.textContent != '' && IndexPoint.#defaultStyle.textContent){
+	constructor(dataset){
+		super(IndexPoint, dataset);
+		if(IndexPoint.#defaultStyle.textContent != '' && IndexPoint.#defaultStyle.textContent && IndexPoint.#defaultStyle.hasAttribute('data-is_update')){
 			IndexPoint.createDefaultStyle();
+			IndexPoint.#defaultStyle.toggleAttribute('data-is_update');
 		}
         super.disconnectedAfterCallback = () => {
 			if(IndexPoint.toolHandler.isLastTool(this)){

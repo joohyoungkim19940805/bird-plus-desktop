@@ -24,7 +24,7 @@ export default class FreedomInterface extends HTMLElement {
 		let isMouseInnerY = ((y + height) >= clientY && y <= clientY);
 		return (isMouseInnerX && isMouseInnerY);
 	}
-	constructor(Tool){
+	constructor(Tool, dataset){
 		super();
 		//this.Tool = Tool;
 		this.classList.add(this.constructor.toolHandler.defaultClass)
@@ -38,7 +38,10 @@ export default class FreedomInterface extends HTMLElement {
 			}
 		}
 		document.addEventListener('selectionchange',removeFun, true);
-
+		
+		if(dataset){
+			Object.assign(this.dataset, dataset);
+		}
 	}
 	
 	connectedCallback(){

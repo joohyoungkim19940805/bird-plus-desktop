@@ -1,23 +1,22 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 
-export default class BulletPoint extends FreedomInterface {
-	//static extendsElement = 'strong';
-	//static defaultClass = 'line';
-	static toolHandler = new ToolHandler(this);
+export default class Sort extends FreedomInterface {
+    static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-bullet-point'
+		id: 'free-will-editor-index'
 	});
-
-	static{
+    static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-bullet-point';
+		this.toolHandler.defaultClass = 'free-will-index';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
-		button.textContent = 'P'
+		button.textContent = 'Ξ'
+        button.style.fontSize = '14px';
+
 		// default tools icon
 		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -35,35 +34,27 @@ export default class BulletPoint extends FreedomInterface {
             this.#defaultStyle = defaultStyle;
         }
 	}
-
-	static createDefaultStyle(){
+    static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-			.${this.toolHandler.defaultClass} {
-				display: list-item;
-				padding-left: 1em;
-				margin-inline: 2.5em;
-				list-style-type: disc;
-			}
+            .${this.toolHandler.defaultClass} {
+
+            }
 		`
 		return this.#defaultStyle;
 	}
-	
-	constructor(dataset){
-		super(BulletPoint, dataset);
-		if(BulletPoint.#defaultStyle.textContent != '' && BulletPoint.#defaultStyle.textContent && BulletPoint.#defaultStyle.hasAttribute('data-is_update')){
-			BulletPoint.createDefaultStyle();
-			BulletPoint.#defaultStyle.toggleAttribute('data-is_update');
+
+    constructor(dataset){
+		super(Sort, dataset);
+		if(Sort.#defaultStyle.textContent != '' && Sort.#defaultStyle.textContent && Sort.#defaultStyle.hasAttribute('data-is_update')){
+			Sort.createDefaultStyle();
+			Sort.#defaultStyle.toggleAttribute('data-is_update');
 		}
-        super.disconnectedAfterCallback = () => {
-			if(BulletPoint.toolHandler.isLastTool(this)){
-				let nextLine = this.parentEditor.getNextLine(this.parentLine);
-				if( ! nextLine){
-                	this.parentEditor.createLine();
-				}else{
-					nextLine.lookAtMe();
-				}
-            }
+
+        let nextLine = this.parentEditor.getNextLine(this.parentLine);
+        if( ! nextLine){
+            this.parentEditor.createLine();
         }
+
 	}
 
     get defaultStyle(){

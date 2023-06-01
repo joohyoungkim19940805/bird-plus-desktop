@@ -3,7 +3,13 @@ import ToolHandler from "../module/ToolHandler"
 import FontBox from "../module/FontBox";
 export default class FontFamily extends FreedomInterface {
     static toolHandler = new ToolHandler(this);
+
+    static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-font-family'
+	});
+
     static fontBox;
+
     static #fontList = [
         'Arial, Helvetica, Sans-Serif',
         'Arial Black, Gadget, Sans-Serif',
@@ -24,7 +30,7 @@ export default class FontFamily extends FreedomInterface {
     static{
         
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-font-family';
+		this.toolHandler.defaultClass = 'free-will-editor-font-family';
 		
         this.fontBox = new FontBox(this.#fontList);
 
@@ -61,11 +67,42 @@ export default class FontFamily extends FreedomInterface {
                 });
             }
 		})
+
+        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
 	}
 
-	constructor(){
-		super(FontFamily);
-        this.style.fontFamily = FontFamily.fontBox.lastSelectedItem.style.fontFamily;
+    static createDefaultStyle(){
+		this.#defaultStyle.textContent = ``
+		return this.#defaultStyle;
+	}
+
+	constructor(dataset){
+		super(FontFamily, dataset);
+        if(FontFamily.#defaultStyle.textContent != '' && FontFamily.#defaultStyle.textContent && FontFamily.#defaultStyle.hasAttribute('data-is_update')){
+			FontFamily.createDefaultStyle();
+			FontFamily.#defaultStyle.toggleAttribute('data-is_update');
+		}
+        if( ! dataset){
+            this.style.fontFamily = FontFamily.fontBox.lastSelectedItem.style.fontFamily;
+            this.dataset.font_family = FontFamily.fontBox.lastSelectedItem.style.fontFamily;
+        }
+    }
+
+	get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
 	}
 	
 }

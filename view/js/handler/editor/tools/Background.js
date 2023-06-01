@@ -5,12 +5,16 @@ import Palette from "../module/Palette"
 export default class Background extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
+	static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-background'
+	});
+
 	static palette;
 
 	static{
 
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-background';
+		this.toolHandler.defaultClass = 'free-will-editor-background';
 		
 		let button = document.createElement('button');
 		button.textContent = 'G'
@@ -37,9 +41,12 @@ export default class Background extends FreedomInterface {
 		}
 	}
 
-	constructor(){
-		super(Background);
-		this.style.backgroundColor = Background.palette.selectedColor;
+	constructor(dataset){
+		super(Background, dataset);
+		if( ! dataset){
+			this.dataset.rgba = Background.palette.r + ',' + Background.palette.g + ',' + Background.palette.b + ',' + Background.palette.a;
+		}
+		this.style.backgroundColor = `rgba(${this.dataset.rgba})`;
 	}
 
 
