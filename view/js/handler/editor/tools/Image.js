@@ -85,6 +85,7 @@ export default class Image extends FreedomInterface {
 	static set insertDefaultStyle(style){
 		this.#defaultStyle.sheet.insertRule(style);
 	}
+    
 
 	constructor(dataset){
 		super(Image, dataset);
@@ -93,7 +94,28 @@ export default class Image extends FreedomInterface {
 			Image.defaultStyle.toggleAttribute('data-is_update');
 		}
 
+        let wrap = Object.assign(document.createElement('div'),{
+
+        });
+
+        let image = document.createElement('img', {
+            src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
+        });
+
+        wrap.append(image);
+
+        this.shadowRoot.append(wrap);
+
 	}
 
+    createImage(){
+
+    }
 	
+    open(){
+        this.attachShadow({ mode : 'open' });
+    }
+    close(){
+        this.attachShadow({ mode: 'closed' });
+    }
 }

@@ -231,7 +231,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		if(isCollapsed){
 			return;
 		}
-		console.log(111);
 		super.getLineRange(selection).then(({startLine, endLine})=> {
 			console.log(startLine, endLine);
 			startLine.cancelTool(TargetTool, selection, endLine);

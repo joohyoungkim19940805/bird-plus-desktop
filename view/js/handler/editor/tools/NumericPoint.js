@@ -71,9 +71,10 @@ export default class NumericPoint extends FreedomInterface {
 			NumericPoint.createDefaultStyle();
 			NumericPoint.defaultStyle.toggleAttribute('data-is_update');
 		}
-
+		
 		super.connectedAfterOnlyOneCallback = () => {
 			this.parentLine = NumericPoint.toolHandler.parentEditor.getLine(this);
+			this.dataset.index = NumericPoint.toolHandler.connectedFriends.length;
 		}
 		
         super.disconnectedAfterCallback = () => {
@@ -89,10 +90,6 @@ export default class NumericPoint extends FreedomInterface {
 				e.dataset.index = i + 1; 
 			})
         }
-		
-		super.connectedAfterOnlyOneCallback = () => {
-			this.dataset.index = NumericPoint.toolHandler.connectedFriends.length;
-		}
 
 		super.connectedAfterCallback = () => {
 			NumericPoint.toolHandler.connectedFriends.forEach((e, i)=>{
