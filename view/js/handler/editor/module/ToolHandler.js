@@ -4,6 +4,7 @@ export default class ToolHandler{
 	#toolButton;
 	#identity;
 	#connectedFriends = [];
+	#parentEditor;
 	constructor(identity){
 		this.#identity = identity;
 		document.addEventListener("selectionchange", (event) => {
@@ -82,6 +83,13 @@ export default class ToolHandler{
 	get toolButton(){
 		return this.#toolButton;
 	}
+
+	set parentEditor(parentEditor){
+		this.#parentEditor = parentEditor;
+	}
+	get parentEditor(){
+		return this.#parentEditor;
+	}
 	/**
 	 * @param {FreedomInterface}
 	 */
@@ -89,8 +97,7 @@ export default class ToolHandler{
 		if(friend.constructor != this.#identity){
 			new TypeError('is not my friend')
 		}
-
-		console.log(friend.isConnected);
+		
 		if(friend.isConnected){
 			this.#connectedFriends.push(friend);
 		}else{

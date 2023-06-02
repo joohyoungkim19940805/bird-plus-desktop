@@ -17,7 +17,8 @@ export default class BulletPoint extends FreedomInterface {
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
-		button.textContent = 'P'
+		button.textContent = '●'
+		button.style.fontSize = '14px';
 		// default tools icon
 		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -48,34 +49,41 @@ export default class BulletPoint extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 	
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
+	parentLine;
+
 	constructor(dataset){
 		super(BulletPoint, dataset);
-		if(BulletPoint.#defaultStyle.textContent != '' && BulletPoint.#defaultStyle.textContent && BulletPoint.#defaultStyle.hasAttribute('data-is_update')){
+		if(BulletPoint.defaultStyle.textContent != '' && BulletPoint.defaultStyle.textContent && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false){
 			BulletPoint.createDefaultStyle();
-			BulletPoint.#defaultStyle.toggleAttribute('data-is_update');
+			BulletPoint.defaultStyle.toggleAttribute('data-is_update');
 		}
+		
+		super.connectedAfterOnlyOneCallback = () => {
+			this.parentLine = BulletPoint.toolHandler.parentEditor.getLine(this);
+		}
+
         super.disconnectedAfterCallback = () => {
 			if(BulletPoint.toolHandler.isLastTool(this)){
-				let nextLine = this.parentEditor.getNextLine(this.parentLine);
+				let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
-                	this.parentEditor.createLine();
+                	BulletPoint.toolHandler.parentEditor.createLine();
 				}else{
 					nextLine.lookAtMe();
 				}
             }
         }
-	}
-
-    get defaultStyle(){
-        return this.#defaultStyle;
-    }
-
-    set defaultStyle(style){
-        this.#defaultStyle.textContent = style;
-    }
-
-	set insertDefaultStyle(style){
-		this.#defaultStyle.sheet.insertRule(style);
 	}
 
 }

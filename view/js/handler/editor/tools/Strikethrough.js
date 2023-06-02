@@ -52,29 +52,29 @@ export default class Strikethrough extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
 	constructor(dataset){
 		super(Strikethrough, dataset);
-		if(Strikethrough.#defaultStyle.textContent != '' && Strikethrough.#defaultStyle.textContent && Strikethrough.#defaultStyle.hasAttribute('data-is_update')){
+		if(Strikethrough.defaultStyle.textContent != '' && Strikethrough.defaultStyle.textContent && Strikethrough.defaultStyle.hasAttribute('data-is_update') == false){
 			Strikethrough.createDefaultStyle();
-			Strikethrough.#defaultStyle.toggleAttribute('data-is_update');
+			Strikethrough.defaultStyle.toggleAttribute('data-is_update');
 		}
 		if( ! dataset){
 			this.dataset.rgba = Strikethrough.palette.r + ',' + Strikethrough.palette.g + ',' + Strikethrough.palette.b + ',' + Strikethrough.palette.a;
 		}
 
 		this.style.textDecoration = `line-through rgba(${this.dataset.rgba}) 1px`;
-	}
-	
-	get defaultStyle(){
-        return this.#defaultStyle;
-    }
-
-    set defaultStyle(style){
-        this.#defaultStyle.textContent = style;
-    }
-
-	set insertDefaultStyle(style){
-		this.#defaultStyle.sheet.insertRule(style);
 	}
 
 }

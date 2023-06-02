@@ -1,16 +1,16 @@
-export default class FontBox {
+export default class FontFamilyBox {
     
     #style = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-font-box'
+		id: 'free-will-editor-font-family-box'
 	});
 
-    #paletteVw = 20;
+    #fontFamilyBoxVw = 20;
 
     #fontList = [];
-    #fontBox = Object.assign(document.createElement('div'), {
+    #fontFamilyBox = Object.assign(document.createElement('div'), {
         className: 'font-box-wrap',
     })
-    #fontBoxContainer = Object.assign(document.createElement('ul'), {
+    #fontFamilyBoxContainer = Object.assign(document.createElement('ul'), {
         className: 'font-box-container'
     })
     /*
@@ -49,9 +49,9 @@ export default class FontBox {
         });
         searchWrap.append(this.#searchInputText);
         
-        this.#fontBox.append(searchWrap, this.#fontBoxContainer);
+        this.#fontFamilyBox.append(searchWrap, this.#fontFamilyBoxContainer);
         */
-        this.#fontBox.append(this.#fontBoxContainer);
+        this.#fontFamilyBox.append(this.#fontFamilyBoxContainer);
 
     }
 
@@ -60,17 +60,20 @@ export default class FontBox {
     }
 
     #addFontItemEvent(item){
-        item.onclick = (event) => {
-            this.#selectedFont = item;
-            this.applyCallback(event);
-        }
+        return new Promise(res=>{
+            item.onclick = (event) => {
+                this.#selectedFont = item;
+                this.applyCallback(event);
+            }
+            res(item);
+        })
     }
 
     #createFontElementList(sampleText){
         return new Promise(resolve=> {
             const createFontItem = () => {
                 let li = Object.assign(document.createElement('li'),{
-                    className: 'font-item',
+                    className: 'font-family-item',
                 });
                 if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
                     li.innerHTML = sampleText.innerHTML;
@@ -104,16 +107,16 @@ export default class FontBox {
         }
         this.#sampleText = this.#sampleText == '' ? this.#defaultSampleText : this.#sampleText;
     
-        document.body.append(this.#fontBox);
+        document.body.append(this.#fontFamilyBox);
 
         return await this.#createFontElementList(this.#sampleText).then(fontElementList => {
-            this.#fontBoxContainer.replaceChildren(...fontElementList);
-            return this.#fontBoxContainer;
+            this.#fontFamilyBoxContainer.replaceChildren(...fontElementList);
+            return this.#fontFamilyBoxContainer;
         });
         
     }
     close(){
-        this.#fontBox.remove();
+        this.#fontFamilyBox.remove();
     }
 
     set applyCallback(applyCallback){
@@ -124,8 +127,8 @@ export default class FontBox {
         return this.#applyCallback;
     }
 
-    get fontBox(){
-        return this.#fontBox;
+    get fontFamilyBox(){
+        return this.#fontFamilyBox;
     }
 
     get selectedFont(){
@@ -140,7 +143,7 @@ export default class FontBox {
         this.#style.textContent = style;
     }
 
-	set addStyle(style){
+	set insertStyle(style){
 		this.#style.sheet.insertRule(style);
 	}
 
@@ -151,7 +154,7 @@ export default class FontBox {
                 background: #000000bf;
                 position: fixed;
 				padding: 0.9%;
-				width: ${this.#paletteVw}vw;
+				width: ${this.#fontFamilyBoxVw}vw;
 				height: fit-content;
 				color: white;
 				font-size: 13px;
@@ -166,12 +169,12 @@ export default class FontBox {
                 padding: 0;
                 margin: 0;
             }
-            .font-box-wrap .font-item:hover{
+            .font-box-wrap .font-family-item{
+                margin-bottom: 1%;
+            }
+            .font-box-wrap .font-family-item:hover{
                 background-color: #343434;
                 cursor: pointer;
-            }
-            .font-box-wrap .font-item{
-                margin-bottom: 1%;
             }
 
         `

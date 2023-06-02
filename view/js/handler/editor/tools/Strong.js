@@ -1,8 +1,7 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 export default class Strong extends FreedomInterface {
-	//static extendsElement = 'strong';
-	//static defaultClass = 'line';
+
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
@@ -11,7 +10,7 @@ export default class Strong extends FreedomInterface {
 
 	static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-strong';
+		this.toolHandler.defaultClass = 'free-will-editor-strong';
 
 		let button = document.createElement('button');
 		button.textContent = 'B'
@@ -24,7 +23,7 @@ export default class Strong extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-		
+
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.createDefaultStyle());
@@ -42,25 +41,24 @@ export default class Strong extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
-	constructor(dataset){
-		super(Strong, dataset);
-		if(Strong.#defaultStyle.textContent != '' && Strong.#defaultStyle.textContent && Strong.#defaultStyle.hasAttribute('data-is_update')){
-			Strong.createDefaultStyle();
-			Strong.#defaultStyle.toggleAttribute('data-is_update');
-		}
-	}
-
-	get defaultStyle(){
+	static get defaultStyle(){
         return this.#defaultStyle;
     }
 
-    set defaultStyle(style){
+    static set defaultStyle(style){
         this.#defaultStyle.textContent = style;
     }
 
-	set insertDefaultStyle(style){
+	static set insertDefaultStyle(style){
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
+	constructor(dataset){
+		super(Strong, dataset);
+		if(Strong.defaultStyle.textContent != '' && Strong.defaultStyle.textContent && Strong.defaultStyle.hasAttribute('data-is_update') == false){
+			Strong.createDefaultStyle();
+			Strong.defaultStyle.toggleAttribute('data-is_update');
+		}
+	}
 	
 }

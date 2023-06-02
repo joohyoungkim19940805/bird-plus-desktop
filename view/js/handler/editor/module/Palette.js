@@ -779,7 +779,7 @@ export default class Palette {
         this.#style.textContent = style;
     }
 
-	set addStyle(style){
+	set insertStyle(style){
 		this.#style.sheet.insertRule(style);
 	}
 

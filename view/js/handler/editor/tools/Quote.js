@@ -48,35 +48,39 @@ export default class Quote extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
+	parentLine;
+
 	constructor(dataset){
 		super(Quote, dataset);
-		if(Quote.#defaultStyle.textContent != '' && Quote.#defaultStyle.textContent && Quote.#defaultStyle.hasAttribute('data-is_update')){
+		if(Quote.defaultStyle.textContent != '' && Quote.defaultStyle.textContent && Quote.defaultStyle.hasAttribute('data-is_update') == false){
 			Quote.createDefaultStyle();
-			Quote.#defaultStyle.toggleAttribute('data-is_update');
+			Quote.defaultStyle.toggleAttribute('data-is_update');
+		}
+		super.connectedAfterOnlyOneCallback = () => {
+			this.parentLine = Quote.toolHandler.parentEditor.getLine(this);
 		}
         super.disconnectedAfterCallback = () => {
 			if(Quote.toolHandler.isLastTool(this)){
-				let nextLine = this.parentEditor.getNextLine(this.parentLine);
+				let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
-                	this.parentEditor.createLine();
+                	Quote.toolHandler.parentEditor.createLine();
 				}else{
 					nextLine.lookAtMe();
 				}
             }
         }
 	}
-
-    get defaultStyle(){
-        return this.#defaultStyle;
-    }
-
-    set defaultStyle(style){
-        this.#defaultStyle.textContent = style;
-    }
-
-	set insertDefaultStyle(style){
-		this.#defaultStyle.sheet.insertRule(style);
-	}
-
 
 }

@@ -4,7 +4,7 @@ div[is="content-block"]{
 }
 resize-drag-panel{
     background-color: #b1b1b1;
-	z-index: 9999;
+	z-index: 0;
 	position: absolute;
 	display: flex;
     justify-content: center;

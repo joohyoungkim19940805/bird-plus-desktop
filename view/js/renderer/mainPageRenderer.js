@@ -6,9 +6,11 @@ import Strikethrough from "../handler/editor/tools/Strikethrough"
 import Underline from "../handler/editor/tools/Underline"
 import FontFamily from "../handler/editor/tools/FontFamily"
 import Quote from "../handler/editor/tools/Quote"
-import IndexPoint from "../handler/editor/tools/IndexPoint"
+import NumericPoint from "../handler/editor/tools/NumericPoint"
 import BulletPoint from "../handler/editor/tools/BulletPoint"
 import Sort from "../handler/editor/tools/Sort"
+import FontSize from "../handler/editor/tools/FontSize"
+import Italic from "../handler/editor/tools/Italic"
 
 class Editor extends FreeWillEditor{
 	constructor(){
@@ -21,9 +23,11 @@ class Editor extends FreeWillEditor{
 			'free-will-underline' : Underline,
 			'free-will-font-family' : FontFamily,
 			'free-will-font-quote' : Quote,
-			'free-will-index-point' : IndexPoint,
+			'free-will-numeric-point' : NumericPoint,
 			'free-will-bullet-point' : BulletPoint,
 			'free-will-sort' : Sort,
+			'free-will-editor-font-size' : FontSize,
+			'free-will-editor-italic' : Italic,
 		}
 		super(undefined, tools);
 
@@ -37,8 +41,11 @@ class Editor extends FreeWillEditor{
 			Underline.toolHandler.toolButton,
 			FontFamily.toolHandler.toolButton,
 			Quote.toolHandler.toolButton,
-			IndexPoint.toolHandler.toolButton,
+			NumericPoint.toolHandler.toolButton,
 			BulletPoint.toolHandler.toolButton,
+			Sort.toolHandler.toolButton,
+			FontSize.toolHandler.toolButton,
+			Italic.toolHandler.toolButton,
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'
@@ -46,4 +53,4 @@ class Editor extends FreeWillEditor{
 	
 }
 
-window.customElements.define('free-will-editor', Editor, {extends : 'div'});
+window.customElements.define('free-will-editor', Editor);

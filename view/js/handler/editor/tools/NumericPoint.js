@@ -1,23 +1,23 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 
-export default class IndexPoint extends FreedomInterface {
+export default class NumericPoint extends FreedomInterface {
 	//static extendsElement = 'strong';
 	//static defaultClass = 'line';
 	static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-index-point'
+		id: 'free-will-editor-numeric-point'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-index-point';
+		this.toolHandler.defaultClass = 'free-will-numeric-point';
 		
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
-		button.textContent = 'I'
+		button.textContent = '1.'
 		// default tools icon
 		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -50,49 +50,55 @@ export default class IndexPoint extends FreedomInterface {
 		`
 		return this.#defaultStyle;
 	}
+	
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
 
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
+	parentLine;
+	
 	constructor(dataset){
-		super(IndexPoint, dataset);
-		if(IndexPoint.#defaultStyle.textContent != '' && IndexPoint.#defaultStyle.textContent && IndexPoint.#defaultStyle.hasAttribute('data-is_update')){
-			IndexPoint.createDefaultStyle();
-			IndexPoint.#defaultStyle.toggleAttribute('data-is_update');
+		super(NumericPoint, dataset);
+		if(NumericPoint.defaultStyle.textContent != '' && NumericPoint.defaultStyle.textContent && NumericPoint.defaultStyle.hasAttribute('data-is_update') == false){
+			NumericPoint.createDefaultStyle();
+			NumericPoint.defaultStyle.toggleAttribute('data-is_update');
 		}
+
+		super.connectedAfterOnlyOneCallback = () => {
+			this.parentLine = NumericPoint.toolHandler.parentEditor.getLine(this);
+		}
+		
         super.disconnectedAfterCallback = () => {
-			if(IndexPoint.toolHandler.isLastTool(this)){
-				let nextLine = this.parentEditor.getNextLine(this.parentLine);
+			if(NumericPoint.toolHandler.isLastTool(this)){
+				let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
-                	this.parentEditor.createLine();
+                	NumericPoint.toolHandler.parentEditor.createLine();
 				}else{
 					nextLine.lookAtMe();
 				}
             }
-			IndexPoint.toolHandler.connectedFriends.forEach((e, i)=>{
+			NumericPoint.toolHandler.connectedFriends.forEach((e, i)=>{
 				e.dataset.index = i + 1; 
 			})
         }
 		
 		super.connectedAfterOnlyOneCallback = () => {
-			this.dataset.index = IndexPoint.toolHandler.connectedFriends.length;
+			this.dataset.index = NumericPoint.toolHandler.connectedFriends.length;
 		}
 
 		super.connectedAfterCallback = () => {
-			IndexPoint.toolHandler.connectedFriends.forEach((e, i)=>{
+			NumericPoint.toolHandler.connectedFriends.forEach((e, i)=>{
 				e.dataset.index = i + 1; 
 			})
 		}
 	}
-
-    get defaultStyle(){
-        return this.#defaultStyle;
-    }
-
-    set defaultStyle(style){
-        this.#defaultStyle.textContent = style;
-    }
-
-	set insertDefaultStyle(style){
-		this.#defaultStyle.sheet.insertRule(style);
-	}
-
 
 }

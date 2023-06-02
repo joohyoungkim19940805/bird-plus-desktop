@@ -74,32 +74,19 @@ div.chating_block .chating_content{
 }
 
 /* 채팅 영역 시작 [S] */
-div[is="free-will-editor"]{
-	height: 100%;
-    overflow: auto;
-    overflow-wrap: anywhere;
-	outline: none;
-	background-color: white;
-	padding-top: 0.6%;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-}
-div[is="free-will-editor"]::-webkit-scrollbar {
-	display: none;
-}
 
 #toolbar{
 	background-color: #d7d7d7cf;
-	padding-left: 1%;
+    padding-left: 1%;
     padding-right: 1%;
     border-top: ridge 2px;
     border-color: #dbdbdb;
-	overflow: auto;
     overflow-wrap: anywhere;
-    display: inline-table;
+    display: flex;
+    flex-wrap: wrap;
 }
 
-#toolbar > button{
+#toolbar button{
 	background: none;
 	border: none;
 	outline: none;
@@ -109,23 +96,15 @@ div[is="free-will-editor"]::-webkit-scrollbar {
 	padding-bottom: 0.3%;
     padding-top: 0.9%;
 	border-bottom: groove 1px #ffffff40;
+	transition: all 0.7s;
 }
 
 #toolbar > button:hover{
-	transition: all 0.7s;
 	background-color: #c7c7c7;
 }
 
 [data-tool_status="active"], [data-tool_status="connected"]{
-    color: #020202 !important;
+    color: #d94c4c !important;
 }
 
-[is="free-will-editor"] > :nth-child(1)::before{
-    content: attr(placeholder);
-    position: absolute;
-    color: #d1d1d1;
-    font-weight: 600;
-    font-family: revert;
-	cursor: text;
-}
 /* 채팅 영역 종료 [E] */

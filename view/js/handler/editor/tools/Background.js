@@ -41,13 +41,35 @@ export default class Background extends FreedomInterface {
 		}
 	}
 
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = ``
+		return this.#defaultStyle;
+	}
+
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
 	constructor(dataset){
 		super(Background, dataset);
+		if(Background.defaultStyle.textContent != '' && Background.defaultStyle.textContent && Background.defaultStyle.hasAttribute('data-is_update') == false){
+			Background.createDefaultStyle();
+			Background.defaultStyle.toggleAttribute('data-is_update');
+		}
 		if( ! dataset){
 			this.dataset.rgba = Background.palette.r + ',' + Background.palette.g + ',' + Background.palette.b + ',' + Background.palette.a;
 		}
 		this.style.backgroundColor = `rgba(${this.dataset.rgba})`;
 	}
+
 
 
 }

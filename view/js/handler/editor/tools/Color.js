@@ -45,29 +45,29 @@ export default class Color extends FreedomInterface {
 		this.#defaultStyle.textContent = ``
 		return this.#defaultStyle;
 	}
-	
+
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
 	constructor(dataset){
 		super(Color, dataset);
-		if(Color.#defaultStyle.textContent != '' && Color.#defaultStyle.textContent && Color.#defaultStyle.hasAttribute('data-is_update')){
+		if(Color.defaultStyle.textContent != '' && Color.defaultStyle.textContent && Color.defaultStyle.hasAttribute('data-is_update') == false){
 			Color.createDefaultStyle();
-			Color.#defaultStyle.toggleAttribute('data-is_update');
+			Color.defaultStyle.toggleAttribute('data-is_update');
 		}
 		if( ! dataset){
 			this.dataset.rgba = Color.palette.r + ',' + Color.palette.g + ',' + Color.palette.b + ',' + Color.palette.a;
 		}
 		this.style.color = `rgba(${this.dataset.rgba})`;
-	}
-
-	get defaultStyle(){
-        return this.#defaultStyle;
-    }
-
-    set defaultStyle(style){
-        this.#defaultStyle.textContent = style;
-    }
-
-	set insertDefaultStyle(style){
-		this.#defaultStyle.sheet.insertRule(style);
 	}
 
 }

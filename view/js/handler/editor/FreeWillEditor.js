@@ -8,9 +8,11 @@ import Strikethrough from "./tools/Strikethrough"
 import Underline from "./tools/Underline"
 import FontFamily from "./tools/FontFamily"
 import Quote from "./tools/Quote"
-import IndexPoint from "./tools/IndexPoint"
+import NumericPoint from "./tools/NumericPoint"
 import BulletPoint from "./tools/BulletPoint"
 import Sort from "./tools/Sort"
+import FontSize from "./tools/FontSize"
+import Italic from "./tools/Italic"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -33,9 +35,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-editor-underline' : Underline,
 			'free-will-editor-font-family' : FontFamily,
 			'free-will-editor-font-quote' : Quote,
-			'free-will-editor-index-point' : IndexPoint,
+			'free-will-editor-numeric-point' : NumericPoint,
 			'free-will-editor-bullet-point' : BulletPoint,
 			'free-will-editor-sort' : Sort,
+			'free-will-editor-font-size' : FontSize,
+			'free-will-editor-italic' : Italic,
 		}
 	){
 		super();
@@ -56,6 +60,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Tool.toolHandler.defaultClass = className;
+			Tool.toolHandler.parentEditor = this;
 			this.toolsElement[className] = Tool.toolHandler.toolButton
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
@@ -87,25 +92,15 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			mutationList.forEach((mutation) => {
 
 				if(this.innerText.length <= 1 && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
-					this.#firstLine.setAttribute('placeholder', this.#placeholder);
+					this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
 				}else if(this.innerText.charAt(0) != '\u200B' && this.innerText.length > 0){
-					this.#firstLine.removeAttribute('placeholder');
+					this.#firstLine.removeAttribute('data-placeholder');
 				}
 
 				if(mutation.type == 'childList' && mutation.addedNodes.length > 0){
 					new Promise(resolve=> {
 						mutation.addedNodes.forEach(item => {
-							if(this.toolsMap.hasOwnProperty(item.constructor.name)){
-								item.parentEditor = this; 
-								item.parentLine = Line.getLine(item);
-							}else if(Line.prototype.isPrototypeOf(item)){
-								item.parentEditor = this;
-								if(item.previousElementSibling && Line.prototype.isPrototypeOf(item.previousElementSibling) && ! item.previousElementSibling.nextLine){
-									item.previousElementSibling.nextLine = item;
-								}else if(item.nextElementSibling && Line.prototype.isPrototypeOf(item.nextElementSibling) && ! item.nextLine){
-									item.nextLine = item;
-								}
-							}
+							
 						})
 						resolve()
 					})
@@ -143,7 +138,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#startFirstLine(){
 		let line = super.createLine();
 		line.isFirstLine = true;
-		line.setAttribute('placeholder', this.#placeholder);
+		line.setAttribute('data-placeholder', this.#placeholder);
 		this.#firstLine = line;
 		return line;
 	}
@@ -246,7 +241,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	set placeholder(placeholder){
 		this.#placeholder = placeholder;
 		if(this.#firstLine){
-			this.#firstLine.setAttribute('placeholder', this.#placeholder);
+			this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
 		}
 	}
 

@@ -1,6 +1,7 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import FontBox from "../module/FontBox";
+import FontFamilyBox from "../module/FontFamilyBox";
+
 export default class FontFamily extends FreedomInterface {
     static toolHandler = new ToolHandler(this);
 
@@ -8,7 +9,7 @@ export default class FontFamily extends FreedomInterface {
 		id: 'free-will-editor-font-family'
 	});
 
-    static fontBox;
+    static fontFamilyBox;
 
     static #fontList = [
         'Arial, Helvetica, Sans-Serif',
@@ -32,7 +33,7 @@ export default class FontFamily extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-font-family';
 		
-        this.fontBox = new FontBox(this.#fontList);
+        this.fontFamilyBox = new FontFamilyBox(this.#fontList);
 
 		let button = document.createElement('button');
 		button.textContent = 'F'
@@ -41,29 +42,29 @@ export default class FontFamily extends FreedomInterface {
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
-			}else if(this.fontBox.fontBox.isConnected){
-				this.fontBox.close();
+			}else if(this.fontFamilyBox.fontFamilyBox.isConnected){
+				this.fontFamilyBox.close();
 			}else{
-				this.fontBox.open().then(fontBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontBox.fontBox);
+				this.fontFamilyBox.open().then(fontFamilyBoxContainer=>{
+				    this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
                 });
 			}
 		}
 
-        this.fontBox.applyCallback = (event) => {
+        this.fontFamilyBox.applyCallback = (event) => {
 			this.toolHandler.toolButton.dataset.tool_status = 'active'
-			this.fontBox.close();
+			this.fontFamilyBox.close();
 		}
 
         document.addEventListener("scroll", () => {
-			if(this.fontBox.fontBox.isConnected){
-				this.toolHandler.processingPalettePosition(this.fontBox.fontBox);
+			if(this.fontFamilyBox.fontFamilyBox.isConnected){
+				this.toolHandler.processingPalettePosition(this.fontFamilyBox.fontFamilyBox);
 			}
 		});
         window.addEventListener('resize', (event) => {
-            if(this.fontBox.fontBox.isConnected){
-                this.fontBox.open().then(fontBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontBox.fontBox);
+            if(this.fontFamilyBox.fontFamilyBox.isConnected){
+                this.fontFamilyBox.open().then(fontFamilyBoxContainer=>{
+				    this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
                 });
             }
 		})
@@ -81,28 +82,28 @@ export default class FontFamily extends FreedomInterface {
 		return this.#defaultStyle;
 	}
 
-	constructor(dataset){
-		super(FontFamily, dataset);
-        if(FontFamily.#defaultStyle.textContent != '' && FontFamily.#defaultStyle.textContent && FontFamily.#defaultStyle.hasAttribute('data-is_update')){
-			FontFamily.createDefaultStyle();
-			FontFamily.#defaultStyle.toggleAttribute('data-is_update');
-		}
-        if( ! dataset){
-            this.style.fontFamily = FontFamily.fontBox.lastSelectedItem.style.fontFamily;
-            this.dataset.font_family = FontFamily.fontBox.lastSelectedItem.style.fontFamily;
-        }
-    }
-
-	get defaultStyle(){
+    static get defaultStyle(){
         return this.#defaultStyle;
     }
 
-    set defaultStyle(style){
+    static set defaultStyle(style){
         this.#defaultStyle.textContent = style;
     }
 
-	set insertDefaultStyle(style){
+	static set insertDefaultStyle(style){
 		this.#defaultStyle.sheet.insertRule(style);
 	}
+
+	constructor(dataset){
+		super(FontFamily, dataset);
+        if(FontFamily.defaultStyle.textContent != '' && FontFamily.defaultStyle.textContent && FontFamily.defaultStyle.hasAttribute('data-is_update') == false){
+			FontFamily.createDefaultStyle();
+			FontFamily.defaultStyle.toggleAttribute('data-is_update');
+		}
+        if( ! dataset){
+            this.dataset.font_family = FontFamily.fontFamilyBox.selectedFont?.style.fontFamily;
+        }
+        this.style.fontFamily = this.dataset.font_family
+    }
 	
 }

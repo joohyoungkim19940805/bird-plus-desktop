@@ -1,8 +1,78 @@
 import Line from '../component/Line'
 
-export default class FreeWiilHandler extends HTMLDivElement{
+export default class FreeWiilHandler extends HTMLElement{
+    static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor'
+	});
+
+    static #defaultClass = 'free-will-editor';
+
+    static{
+        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
+    }
+
+    static createDefaultStyle(){
+		this.#defaultStyle.textContent = `
+            .${this.defaultClass}{
+                height: 100%;
+                overflow: auto;
+                overflow-wrap: anywhere;
+                outline: none;
+                background-color: white;
+                padding-top: 0.6%;
+                padding-left: 0.5%;
+                padding-right: 0.8%;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                disply: block;
+            }
+            .${this.#defaultClass}::-webkit-scrollbar {
+                display: none;
+            }
+
+            .${this.#defaultClass} > :nth-child(1)::before{
+                content: attr(data-placeholder);
+                position: absolute;
+                color: #d1d1d1;
+                font-weight: 600;
+                font-family: revert;
+                cursor: text;
+            }
+		`
+		return this.#defaultStyle;
+	}
+    static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
+    static get defaultClass(){
+        return this.#defaultClass;
+    }
+
+    static set defaultClass(defaultClass){
+        this.#defaultClass = defaultClass;
+    }
+
     constructor(){
         super()
+        if(FreeWiilHandler.#defaultStyle.textContent != '' && FreeWiilHandler.#defaultStyle.textContent && FreeWiilHandler.#defaultStyle.hasAttribute('data-is_update') == false){
+			FreeWiilHandler.createDefaultStyle();
+			FreeWiilHandler.#defaultStyle.toggleAttribute('data-is_update');
+		}
+        this.classList.add('free-will-editor');
         this.addEventListener('keydown', (event) => {
             let key = event.key;
             if(key === 'Backspace'){
@@ -95,4 +165,9 @@ export default class FreeWiilHandler extends HTMLDivElement{
         }
         return undefined;
     }
+
+    getLine(element){
+        return Line.getLine(element);
+    }
+
 }
