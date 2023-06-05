@@ -5,7 +5,7 @@ export default class Image extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);
 
-    static imageBox = new ImageBox();
+    static imageBox;// = new ImageBox();
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-image'
@@ -70,6 +70,12 @@ export default class Image extends FreedomInterface {
                 top: 1px;
                 left: 1px;
             }
+            .${this.toolHandler.defaultClass} {
+				display: block;
+			}
+            .image-description{
+                
+            }
         `
 		return this.#defaultStyle;
 	}
@@ -88,26 +94,62 @@ export default class Image extends FreedomInterface {
     
 
 	constructor(dataset){
-		super(Image, dataset);
+		super(Image, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
 		if(Image.defaultStyle.textContent != '' && Image.defaultStyle.textContent && Image.defaultStyle.hasAttribute('data-is_update') == false){
 			Image.createDefaultStyle();
 			Image.defaultStyle.toggleAttribute('data-is_update');
 		}
 
+        this.contentEditable = false;
+
         let wrap = Object.assign(document.createElement('div'),{
 
         });
 
-        let image = document.createElement('img', {
+        let image = Object.assign(document.createElement('img'), {
             src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
         });
 
-        wrap.append(image);
-
+        this.open();
         this.shadowRoot.append(wrap);
+        this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
+        super.connectedAfterOnlyOneCallback = () => {
+            let nextLine = Image.toolHandler.parentEditor.getNextLine(this);
+            if( ! nextLine){
+                let nextLine = Image.toolHandler.parentEditor.createLine();
+                nextLine.lookAtMe();
+                nextLine.innerText = '&nbsp';
+            }
 
+            let description = undefined;
+            if(this.textContent != ''){
+                description = Object.assign(document.createElement('div'),{
+                    className: 'image-description',
+                    textContent: this.textContent
+                })
+            }
+
+            wrap.append(...[description,image].filter(e=>e != undefined));
+
+        }
 	}
-
+    /*
+    cloneDescription(target){
+        return new Promise(resolve => {
+            let result = [...target.childNodes].map(e=>{
+                let clone = e.cloneNode(true);
+                this.cloneDescription(clone).then(cloneList => {
+                    console.log(clone);
+                    if(clone.nodeType == Node.ELEMENT_NODE){
+                        clone.append(...cloneList);
+                    }
+                })
+                return clone
+            });
+            resolve(result);
+        })
+    }
+    */
     createImage(){
 
     }

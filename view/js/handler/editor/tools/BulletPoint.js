@@ -14,12 +14,11 @@ export default class BulletPoint extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-bullet-point';
 		
-		//let img = document.createElement('img');
 		let button = document.createElement('button');
-		//button.append(img);
+
 		button.textContent = '●'
 		button.style.fontSize = '14px';
-		// default tools icon
+
 		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
@@ -64,7 +63,7 @@ export default class BulletPoint extends FreedomInterface {
 	parentLine;
 
 	constructor(dataset){
-		super(BulletPoint, dataset);
+		super(BulletPoint, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
 		if(BulletPoint.defaultStyle.textContent != '' && BulletPoint.defaultStyle.textContent && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false){
 			BulletPoint.createDefaultStyle();
 			BulletPoint.defaultStyle.toggleAttribute('data-is_update');

@@ -24,14 +24,36 @@ export default class FreedomInterface extends HTMLElement {
 		let isMouseInnerY = ((y + height) >= clientY && y <= clientY);
 		return (isMouseInnerX && isMouseInnerY);
 	}
-	constructor(Tool, dataset){
+
+	static DeleteOption = class DeleteOption{
+		static EMPTY_CONTENT_IS_DELETE = new Option('empty_content_is_delete');
+		static EMPTY_CONTENT_IS_NOT_DELETE = new Option('empty_content_is_not_delete');
+		value;
+		static{
+			Object.freeze(this);
+		}
+		constructor(value){
+			this.value = value;
+			Object.freeze(this);
+		}
+	}
+
+	#deleteOption;
+
+	constructor(Tool, dataset, deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE){
 		super();
-		//this.Tool = Tool;
+		this.#deleteOption = deleteOption;
+		this.Tool = Tool;
 		this.classList.add(this.constructor.toolHandler.defaultClass)
 		const removeFun = () => {
-			//if((this.textContent.includes('\u200B') && this.textContent.length == 1) || this.textContent.length == 0){
-			if(this.innerText.length == 0){
+			if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE){
+				document.removeEventListener('selectionchange', removeFun, true);
+				return;
+			}else if(this.isToolEmpty() || this.childNodes.length == 0){
+				let thisLine = this.constructor.toolHandler.parentEditor.getLine(this);
+				console.log('delete!!!', this.innerText + ':::', this.innerText.length);
 				this.remove();
+				thisLine.lookAtMe();
 				document.removeEventListener('selectionchange', removeFun, true);
 			}else if( ! this.isConnected){
 				document.removeEventListener('selectionchange', removeFun, true);
@@ -48,7 +70,7 @@ export default class FreedomInterface extends HTMLElement {
 		if( ! this.#isLoaded){
 			this.#isLoaded = true;
 			this.constructor.toolHandler.connectedFriends = this;
-			if(this.style.display == 'block' && this.innerText.length == 0){
+			if(this.childNodes.length == 0 && this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE && (this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n'))){
 				this.innerText = '\n';
 			}
 			this.connectedAfterOnlyOneCallback();

@@ -11,6 +11,7 @@ import BulletPoint from "../handler/editor/tools/BulletPoint"
 import Sort from "../handler/editor/tools/Sort"
 import FontSize from "../handler/editor/tools/FontSize"
 import Italic from "../handler/editor/tools/Italic"
+import Image from "../handler/editor/tools/Image"
 
 class Editor extends FreeWillEditor{
 	constructor(){
@@ -28,6 +29,7 @@ class Editor extends FreeWillEditor{
 			'free-will-sort' : Sort,
 			'free-will-editor-font-size' : FontSize,
 			'free-will-editor-italic' : Italic,
+			'free-will-editor-image' : Image,
 		}
 		super(undefined, tools);
 
@@ -46,6 +48,7 @@ class Editor extends FreeWillEditor{
 			Sort.toolHandler.toolButton,
 			FontSize.toolHandler.toolButton,
 			Italic.toolHandler.toolButton,
+			Image.toolHandler.toolButton,
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'

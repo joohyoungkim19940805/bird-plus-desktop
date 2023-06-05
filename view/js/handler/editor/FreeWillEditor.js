@@ -13,6 +13,7 @@ import BulletPoint from "./tools/BulletPoint"
 import Sort from "./tools/Sort"
 import FontSize from "./tools/FontSize"
 import Italic from "./tools/Italic"
+import Image from "./tools/Image"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -40,6 +41,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-editor-sort' : Sort,
 			'free-will-editor-font-size' : FontSize,
 			'free-will-editor-italic' : Italic,
+			'free-will-editor-image' : Image,
 		}
 	){
 		super();
@@ -91,12 +93,16 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 
-				if(this.innerText.length <= 1 && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
+				if(this.innerText.length <= 1 && this.#firstLine.childNodes[0]?.nodeName == 'BR' && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
 					this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
-				}else if(this.innerText.charAt(0) != '\u200B' && this.innerText.length > 0){
+				}else{
 					this.#firstLine.removeAttribute('data-placeholder');
 				}
-
+				/*
+				else if(this.innerText.charAt(0) != '\u200B' && this.innerText.charAt(0) != '\n' && this.innerText.length > 0){
+					this.#firstLine.removeAttribute('data-placeholder');
+				}
+				*/
 				if(mutation.type == 'childList' && mutation.addedNodes.length > 0){
 					new Promise(resolve=> {
 						mutation.addedNodes.forEach(item => {

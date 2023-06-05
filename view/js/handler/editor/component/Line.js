@@ -304,6 +304,9 @@ export default class Line extends HTMLDivElement {
 					resolve(tool)
 				})
 			}*/
+			if(this.childNodes.length == 1 && this.innerText == '\n' && this.childNodes[0].nodeName == 'BR'){
+				this.childNodes[0].remove();
+			}
 			if(startContainer === endContainer && this.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
@@ -358,9 +361,7 @@ export default class Line extends HTMLDivElement {
 			}
 
 			let selection = window.getSelection()
-			console.log('tool',tool)
-			console.log('tool.childNodes', tool.childNodes);
-			console.log('tool.childNodes.length', tool.childNodes?.length)
+
 			if(tool.childNodes.length > 1){
 				let list = [...tool.childNodes];
 				let index = list.findIndex(e=> selection.containsNode(e, true) || selection.containsNode(e, false))
