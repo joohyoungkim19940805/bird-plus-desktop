@@ -51,9 +51,10 @@ export default class FreedomInterface extends HTMLElement {
 				return;
 			}else if(this.isToolEmpty() || this.childNodes.length == 0){
 				let thisLine = this.constructor.toolHandler.parentEditor.getLine(this);
-				console.log('delete!!!', this.innerText + ':::', this.innerText.length);
 				this.remove();
-				thisLine.lookAtMe();
+				if(thisLine){
+					thisLine.lookAtMe();
+				}
 				document.removeEventListener('selectionchange', removeFun, true);
 			}else if( ! this.isConnected){
 				document.removeEventListener('selectionchange', removeFun, true);
@@ -68,12 +69,36 @@ export default class FreedomInterface extends HTMLElement {
 	
 	connectedCallback(){
 		if( ! this.#isLoaded){
+			
 			this.#isLoaded = true;
 			this.constructor.toolHandler.connectedFriends = this;
+			this.parentLine = this.constructor.toolHandler.parentEditor.getLine(this);
+			
 			if(this.childNodes.length == 0 && this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE && (this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n'))){
 				this.innerText = '\n';
 			}
+
 			this.connectedAfterOnlyOneCallback();
+			if(this.shadowRoot){
+				this.parentLine.prepend(document.createTextNode('\u00A0'));
+			}
+			/*
+			if(this.shadowRoot && (this.querySelectorAll('[slot]').length == 0 || this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0]?.tagName == 'BR'))){
+				//this.parentLine.prepend(document.createElement('br'));
+				
+				let slot = Object.assign(document.createElement('slot'),{
+					name: 'empty-slot'
+				});
+				let emptySpan = Object.assign(document.createElement('span'), {
+					slot : 'empty-slot',
+				})
+				emptySpan.append(document.createTextNode('\u00A0'));
+				this.append(emptySpan);
+				this.shadowRoot.append(slot);
+				
+			}
+			*/
+
 			return;
 		}
 		this.connectedAfterCallback();

@@ -11,6 +11,18 @@ export default class Image extends FreedomInterface {
 		id: 'free-will-editor-image'
 	});
 
+    static descriptionName = 'free-will-editor-image-description-slot';
+
+    static #selectedFile = Object.assign(document.createElement('input'), {
+        type: 'file',
+        accept: 'image/*',
+        capture: 'camera',
+    });
+
+    static get selectedFile(){
+        return this.#selectedFile;
+    }
+
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-image';
@@ -18,13 +30,17 @@ export default class Image extends FreedomInterface {
 		let button = document.createElement('button');
 		this.toolHandler.toolButton = button;
 		button.append(Object.assign(document.createElement('i'),{
-            className: 'css-gg-image-icon'
+            className: `${this.#defaultStyle.id} css-gg-image-icon`
         }));
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else{
-				this.toolHandler.toolButton.dataset.tool_status = 'active';
+                this.#selectedFile.click();
+                this.#selectedFile.onchange = ()=> {
+                    //let url = URL.createObjectURL(this.#selectedFile.files[0])
+                    this.toolHandler.toolButton.dataset.tool_status = 'active';
+                }
 			}
 		}
 
@@ -38,7 +54,7 @@ export default class Image extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-            .css-gg-image-icon {
+            .${this.#defaultStyle.id}.css-gg-image-icon {
                 box-sizing: border-box;
                 position: relative;
                 display: block;
@@ -48,14 +64,14 @@ export default class Image extends FreedomInterface {
                 box-shadow: 0 0 0 2px;
                 border-radius: 2px
             }
-            .css-gg-image-icon::after, .gg-image-icon::before {
+            .${this.#defaultStyle.id}.css-gg-image-icon::after, .gg-image-icon::before {
                 content: "";
                 display: block;
                 box-sizing: border-box;
                 position: absolute;
                 border: 2px solid;
             }
-            .css-gg-image-icon::after {
+            .${this.#defaultStyle.id}.css-gg-image-icon::after {
                 transform: rotate(45deg);
                 border-radius: 3px;
                 width: 16px;
@@ -63,7 +79,7 @@ export default class Image extends FreedomInterface {
                 top: 9px;
                 left: 2px;
             }
-            .css-gg-image-icon::before {
+            .${this.#defaultStyle.id}.css-gg-image-icon::before {
                 width: 6px;
                 height: 6px;
                 border-radius: 100%;
@@ -73,9 +89,18 @@ export default class Image extends FreedomInterface {
             .${this.toolHandler.defaultClass} {
 				display: block;
 			}
-            .image-description{
-                
+            .${this.#defaultStyle.id}.image-description{            
+                cursor: pointer;
+                display: inline-flex;
             }
+
+            .${this.#defaultStyle.id}.image-description::before{
+                content: attr(start-close);
+            }
+            .${this.#defaultStyle.id}.image-description::after{
+                content: attr(end-close)' 'attr(open-status);
+            }
+ 
         `
 		return this.#defaultStyle;
 	}
@@ -100,38 +125,108 @@ export default class Image extends FreedomInterface {
 			Image.defaultStyle.toggleAttribute('data-is_update');
 		}
 
-        this.contentEditable = false;
+        if( ! dataset ){
+            this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
+            this.dataset.name = Image.selectedFile.files[0].name;
+            this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
+            this.dataset.size = Image.selectedFile.files[0].size;
+            
+        }
+        
+        Image.selectedFile.files = new DataTransfer().files
 
         let wrap = Object.assign(document.createElement('div'),{
 
         });
+        wrap.draggable = 'false'
+        let imageContanier = Object.assign(document.createElement('div'),{
 
-        let image = Object.assign(document.createElement('img'), {
-            src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
         });
 
-        this.open();
-        this.shadowRoot.append(wrap);
+        let image = Object.assign(document.createElement('img'), {
+            //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
+            src: this.dataset.url
+        });
+
+        imageContanier.append(image);
+        imageContanier.style.transition = 'all 0.5s'
+        imageContanier.style.overflow = 'hidden';
+
+        image.onload = () => {
+            imageContanier.style.height = window.getComputedStyle(image).height;
+        }
+        image.onerror = () => {
+            imageContanier.style.height = window.getComputedStyle(image).height;
+        }
+        
+        let description = document.createElement('div');
+
+        let aticle = document.createElement('aticle');
+        
+        aticle.contentEditable = 'false';
+        aticle.draggable = 'false';
+
+        this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
+        this.shadowRoot.append(wrap);
+
         super.connectedAfterOnlyOneCallback = () => {
+            //this.parentLine.prepend(document.createElement('br'));
             let nextLine = Image.toolHandler.parentEditor.getNextLine(this);
             if( ! nextLine){
                 let nextLine = Image.toolHandler.parentEditor.createLine();
                 nextLine.lookAtMe();
-                nextLine.innerText = '&nbsp';
+            }
+            
+            console.log(this.childNodes.length);
+            console.log(this.childNodes);
+            
+            if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+                aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+                aticle.slot = Image.descriptionName;
+                this.append(aticle);
+                
+                let slot = Object.assign(document.createElement('slot'),{
+                    name: Image.descriptionName
+                });
+                description.append(slot);
+                
+                description.setAttribute('start-close', '[');
+                description.setAttribute('end-close', ']');
+            }
+            description.className = `${Image.defaultStyle.id} image-description`
+            description.setAttribute('open-status', '▶');
+
+            description.onclick = (event) => {
+
+                if(description.getAttribute('open-status') == '▶'){
+                    description.setAttribute('open-status', '▼')
+                    imageContanier.style.height = '0px';
+                    imageContanier.ontransitionstart = ()=>{}
+                    imageContanier.ontransitionend = () => {
+                        image.style.opacity = 0;
+                        image.style.visibility = 'hidden';
+                    }
+                    
+                }else{
+                    description.setAttribute('open-status', '▶');
+                    imageContanier.style.height = window.getComputedStyle(image).height;
+                    imageContanier.ontransitionend = () => {}
+                    imageContanier.ontransitionstart = () => {
+                        image.style.opacity = '';
+                        image.style.visibility = '';
+                    }
+
+                }
             }
 
-            let description = undefined;
-            if(this.textContent != ''){
-                description = Object.assign(document.createElement('div'),{
-                    className: 'image-description',
-                    textContent: this.textContent
-                })
-            }
-
-            wrap.append(...[description,image].filter(e=>e != undefined));
-
+            wrap.append(...[description,imageContanier].filter(e=>e != undefined));
         }
+
+        super.disconnectedAfterCallback = () => {
+            aticle.remove();
+        }
+
 	}
     /*
     cloneDescription(target){
@@ -153,11 +248,5 @@ export default class Image extends FreedomInterface {
     createImage(){
 
     }
-	
-    open(){
-        this.attachShadow({ mode : 'open' });
-    }
-    close(){
-        this.attachShadow({ mode: 'closed' });
-    }
+
 }

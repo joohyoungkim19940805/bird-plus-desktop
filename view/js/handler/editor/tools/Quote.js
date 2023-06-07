@@ -68,9 +68,7 @@ export default class Quote extends FreedomInterface {
 			Quote.createDefaultStyle();
 			Quote.defaultStyle.toggleAttribute('data-is_update');
 		}
-		super.connectedAfterOnlyOneCallback = () => {
-			this.parentLine = Quote.toolHandler.parentEditor.getLine(this);
-		}
+
         super.disconnectedAfterCallback = () => {
 			if(Quote.toolHandler.isLastTool(this)){
 				let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
