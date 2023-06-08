@@ -87,7 +87,7 @@ export default class Image extends FreedomInterface {
                 left: 1px;
             }
             .${this.toolHandler.defaultClass} {
-				display: block;
+				disply:block
 			}
             .${this.#defaultStyle.id}.image-description{            
                 cursor: pointer;
@@ -161,7 +161,7 @@ export default class Image extends FreedomInterface {
         
         let description = document.createElement('div');
 
-        let aticle = document.createElement('aticle');
+        let aticle = document.createElement('div');
         
         aticle.contentEditable = 'false';
         aticle.draggable = 'false';

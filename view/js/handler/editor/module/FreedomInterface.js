@@ -79,25 +79,28 @@ export default class FreedomInterface extends HTMLElement {
 			}
 
 			this.connectedAfterOnlyOneCallback();
-			if(this.shadowRoot){
-				this.parentLine.prepend(document.createTextNode('\u00A0'));
-			}
-			/*
+			
+			//if(this.shadowRoot){
+			//	this.parentLine.prepend(document.createTextNode('\u00A0'));
+			//}
+			
 			if(this.shadowRoot && (this.querySelectorAll('[slot]').length == 0 || this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0]?.tagName == 'BR'))){
 				//this.parentLine.prepend(document.createElement('br'));
 				
 				let slot = Object.assign(document.createElement('slot'),{
 					name: 'empty-slot'
 				});
-				let emptySpan = Object.assign(document.createElement('span'), {
+				let emptySpan = Object.assign(document.createElement('div'), {
 					slot : 'empty-slot',
-				})
-				emptySpan.append(document.createTextNode('\u00A0'));
+					textContent : 'a'
+				});
+				emptySpan.style.opacity='0';
+				//emptySpan.append(document.createTextNode('\u200B'));
 				this.append(emptySpan);
 				this.shadowRoot.append(slot);
 				
 			}
-			*/
+			
 
 			return;
 		}
