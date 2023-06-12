@@ -83,7 +83,7 @@ export default class Sort extends FreedomInterface {
 	}
 
     constructor(dataset){
-		super(Sort, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
+		super(Sort, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		if(Sort.defaultStyle.textContent != '' && Sort.defaultStyle.textContent && Sort.defaultStyle.hasAttribute('data-is_update') == false){
 			Sort.createDefaultStyle();
 			Sort.defaultStyle.toggleAttribute('data-is_update');

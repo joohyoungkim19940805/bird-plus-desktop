@@ -71,9 +71,11 @@ export default class Line extends HTMLDivElement {
 			console.log(this.innerText.includes('\n'))
 			console.log(this.innerText.includes('\u200B'));
 			*/
+			
 			if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 				this.innerText = '\n';
-				window.getSelection().setPosition(this, 1)
+				window.getSelection().setPosition(this, 0)
+				this.focus();
 			}
 			/*
 			let observer = new MutationObserver( (mutationList, observer) => {
@@ -189,9 +191,22 @@ export default class Line extends HTMLDivElement {
 			resolve();
 		});
 	}
-
+	async #applyMultipleLineAllShadowRoot(range, tool ,TargetTool, endLine){
+		return await new Promise(resolve => {
+			let fragment = range.extractContents();
+			console.log(fragment.childNodes);
+			tool.append(...fragment.childNodes);
+			this.append(tool);
+			resolve(tool);
+		})
+	}
 	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
 		return await new Promise(resolve=>{
+			console.log(tool.shadowRoot)
+			if(tool.shadowRoot){
+				resolve(this.#applyMultipleLineAllShadowRoot(range, tool, TargetTool, endLine));
+				return;
+			}
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 
 			range.setStart(startContainer, startOffset);
@@ -204,6 +219,9 @@ export default class Line extends HTMLDivElement {
 				let itemAppendList = [];
 				while(targetStartLineItem){
 					if(targetStartLineItem.nodeType == Node.ELEMENT_NODE){
+						if(tool == targetStartLineItem){
+							break;
+						}
 						tool.append(targetStartLineItem);
 						/*let firstTextNode = [...targetStartLineItem.childNodes].find(e=>e.nodeType == Node.TEXT_NODE);
 						[...tool.childNodes].filter(e=>e.nodeType == Node.TEXT_NODE).forEach(e=>{
@@ -307,7 +325,7 @@ export default class Line extends HTMLDivElement {
 			if(this.childNodes.length == 1 && this.innerText == '\n' && this.childNodes[0].nodeName == 'BR'){
 				this.childNodes[0].remove();
 			}
-			if(startContainer === endContainer && this.innerText.length != range.toString().length){
+			if(startContainer === endContainer && this.innerText.length != range.toString().length && ! tool.shadowRoot){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)
@@ -635,10 +653,9 @@ export default class Line extends HTMLDivElement {
 	lookAtMe(){
 		if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 			this.innerText = '\n';
-			window.getSelection().setPosition(this, 1)
-		}else{
-			window.getSelection().setPosition(this, 1)
 		}
+		window.getSelection().setPosition(this, 0)
+		this.focus()
 	}
 
 }

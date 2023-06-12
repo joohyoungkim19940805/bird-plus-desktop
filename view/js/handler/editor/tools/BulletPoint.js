@@ -63,7 +63,7 @@ export default class BulletPoint extends FreedomInterface {
 	parentLine;
 
 	constructor(dataset){
-		super(BulletPoint, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
+		super(BulletPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		if(BulletPoint.defaultStyle.textContent != '' && BulletPoint.defaultStyle.textContent && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false){
 			BulletPoint.createDefaultStyle();
 			BulletPoint.defaultStyle.toggleAttribute('data-is_update');

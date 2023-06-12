@@ -40,7 +40,7 @@ export default class FreedomInterface extends HTMLElement {
 
 	#deleteOption;
 
-	constructor(Tool, dataset, deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE){
+	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
 		super();
 		this.#deleteOption = deleteOption;
 		this.Tool = Tool;
@@ -66,7 +66,7 @@ export default class FreedomInterface extends HTMLElement {
 			Object.assign(this.dataset, dataset);
 		}
 	}
-	
+
 	connectedCallback(){
 		if( ! this.#isLoaded){
 			
@@ -78,29 +78,42 @@ export default class FreedomInterface extends HTMLElement {
 				this.innerText = '\n';
 			}
 
+			if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE && (this.isToolEmpty() || this.childNodes.length == 0)){
+				let thisLine = this.constructor.toolHandler.parentEditor.getLine(this);
+				this.remove();
+				if(thisLine){
+					thisLine.lookAtMe();
+				}
+			}
+						
+			if(this.shadowRoot){
+				//this.parentLine.prepend(document.createTextNode('\u00A0'));
+				//this.parentLine.prepend(document.createElement('br'));
+				//this.before(document.createElement('br'));
+				this.parentLine.before(this.constructor.toolHandler.parentEditor.createLine());
+			}
+
 			this.connectedAfterOnlyOneCallback();
+
 			
-			//if(this.shadowRoot){
-			//	this.parentLine.prepend(document.createTextNode('\u00A0'));
-			//}
-			
+			/*
 			if(this.shadowRoot && (this.querySelectorAll('[slot]').length == 0 || this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0]?.tagName == 'BR'))){
 				//this.parentLine.prepend(document.createElement('br'));
 				
 				let slot = Object.assign(document.createElement('slot'),{
 					name: 'empty-slot'
 				});
-				let emptySpan = Object.assign(document.createElement('div'), {
-					slot : 'empty-slot',
-					textContent : 'a'
+				let emptySpan = Object.assign(document.createElement('span'), {
+					slot : 'empty-slot'
 				});
-				emptySpan.style.opacity='0';
+				//emptySpan.style.opacity='0';
 				//emptySpan.append(document.createTextNode('\u200B'));
-				this.append(emptySpan);
+				emptySpan.innerText = '\n'
+				this.prepend(emptySpan);
 				this.shadowRoot.append(slot);
 				
 			}
-			
+			*/
 
 			return;
 		}

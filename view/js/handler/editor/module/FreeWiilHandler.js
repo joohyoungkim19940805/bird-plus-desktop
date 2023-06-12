@@ -80,7 +80,6 @@ export default class FreeWiilHandler extends HTMLElement{
                 this.getLineRange().then( ({startLine, endLine}) => {
                     if(startLine == endLine && this.isLineEmpty(startLine)){
                         console.log(222);
-                        this.createLine();
                     }
                 })
                 */
@@ -93,7 +92,6 @@ export default class FreeWiilHandler extends HTMLElement{
     }
 
     blockBackspaceEvent(event){
-        this.createLine();
     }
 
     createLine(){
@@ -153,7 +151,7 @@ export default class FreeWiilHandler extends HTMLElement{
         return Line.prototype.isPrototypeOf(nextLine);
     }
 
-    getNextLine(element){
+    getNextLine(element, {focus = true} = {}){
         let line = Line.getLine(element);
         if( ! line){
             return undefined;
@@ -161,6 +159,9 @@ export default class FreeWiilHandler extends HTMLElement{
         
         let nextLine = line.nextElementSibling;
         if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
+            if(focus){
+                nextLine.lookAtMe();
+            }
             return nextLine;
         }
         return undefined;

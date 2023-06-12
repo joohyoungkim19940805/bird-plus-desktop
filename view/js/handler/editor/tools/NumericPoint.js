@@ -66,7 +66,7 @@ export default class NumericPoint extends FreedomInterface {
 	parentLine;
 	
 	constructor(dataset){
-		super(NumericPoint, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
+		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		if(NumericPoint.defaultStyle.textContent != '' && NumericPoint.defaultStyle.textContent && NumericPoint.defaultStyle.hasAttribute('data-is_update') == false){
 			NumericPoint.createDefaultStyle();
 			NumericPoint.defaultStyle.toggleAttribute('data-is_update');

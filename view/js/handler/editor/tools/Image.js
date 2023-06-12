@@ -64,7 +64,7 @@ export default class Image extends FreedomInterface {
                 box-shadow: 0 0 0 2px;
                 border-radius: 2px
             }
-            .${this.#defaultStyle.id}.css-gg-image-icon::after, .gg-image-icon::before {
+            .${this.#defaultStyle.id}.css-gg-image-icon::after, .${this.#defaultStyle.id}.css-gg-image-icon::before {
                 content: "";
                 display: block;
                 box-sizing: border-box;
@@ -80,14 +80,12 @@ export default class Image extends FreedomInterface {
                 left: 2px;
             }
             .${this.#defaultStyle.id}.css-gg-image-icon::before {
-                width: 6px;
-                height: 6px;
                 border-radius: 100%;
                 top: 1px;
                 left: 1px;
             }
             .${this.toolHandler.defaultClass} {
-				disply:block
+                display: block;
 			}
             .${this.#defaultStyle.id}.image-description{            
                 cursor: pointer;
@@ -119,7 +117,7 @@ export default class Image extends FreedomInterface {
     
 
 	constructor(dataset){
-		super(Image, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
+		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		if(Image.defaultStyle.textContent != '' && Image.defaultStyle.textContent && Image.defaultStyle.hasAttribute('data-is_update') == false){
 			Image.createDefaultStyle();
 			Image.defaultStyle.toggleAttribute('data-is_update');
@@ -130,15 +128,27 @@ export default class Image extends FreedomInterface {
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
-            
         }
         
         Image.selectedFile.files = new DataTransfer().files
 
+
+
+
+        this.attachShadow({ mode : 'open' });
+        this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
+        
+        this.createDefaultContent();
+	}
+
+    createDefaultContent(){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
         wrap.draggable = 'false'
+
+        this.shadowRoot.append(wrap);
+
         let imageContanier = Object.assign(document.createElement('div'),{
 
         });
@@ -166,21 +176,9 @@ export default class Image extends FreedomInterface {
         aticle.contentEditable = 'false';
         aticle.draggable = 'false';
 
-        this.attachShadow({ mode : 'open' });
-        this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
-        this.shadowRoot.append(wrap);
 
         super.connectedAfterOnlyOneCallback = () => {
-            //this.parentLine.prepend(document.createElement('br'));
-            let nextLine = Image.toolHandler.parentEditor.getNextLine(this);
-            if( ! nextLine){
-                let nextLine = Image.toolHandler.parentEditor.createLine();
-                nextLine.lookAtMe();
-            }
-            
-            console.log(this.childNodes.length);
-            console.log(this.childNodes);
-            
+
             if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
                 aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
                 aticle.slot = Image.descriptionName;
@@ -226,8 +224,8 @@ export default class Image extends FreedomInterface {
         super.disconnectedAfterCallback = () => {
             aticle.remove();
         }
+    }
 
-	}
     /*
     cloneDescription(target){
         return new Promise(resolve => {

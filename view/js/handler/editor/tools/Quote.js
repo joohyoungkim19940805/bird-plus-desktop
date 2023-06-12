@@ -63,7 +63,7 @@ export default class Quote extends FreedomInterface {
 	parentLine;
 
 	constructor(dataset){
-		super(Quote, dataset, FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE);
+		super(Quote, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		if(Quote.defaultStyle.textContent != '' && Quote.defaultStyle.textContent && Quote.defaultStyle.hasAttribute('data-is_update') == false){
 			Quote.createDefaultStyle();
 			Quote.defaultStyle.toggleAttribute('data-is_update');
