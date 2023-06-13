@@ -84,21 +84,17 @@ export default class Image extends FreedomInterface {
                 top: 1px;
                 left: 1px;
             }
-            .${this.toolHandler.defaultClass} {
-                display: block;
-			}
             .${this.#defaultStyle.id}.image-description{            
                 cursor: pointer;
                 display: inline-flex;
+                align-items: center;
             }
 
-            .${this.#defaultStyle.id}.image-description::before{
-                content: attr(start-close);
-            }
             .${this.#defaultStyle.id}.image-description::after{
-                content: attr(end-close)' 'attr(open-status);
-            }
- 
+                content: ' ['attr(data-file_name)'] 'attr(data-open_status);
+                font-size: small;
+                color: #bdbdbd;
+            }            
         `
 		return this.#defaultStyle;
 	}
@@ -114,7 +110,8 @@ export default class Image extends FreedomInterface {
 	static set insertDefaultStyle(style){
 		this.#defaultStyle.sheet.insertRule(style);
 	}
-    
+
+    file = new DataTransfer().files;
 
 	constructor(dataset){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
@@ -128,6 +125,7 @@ export default class Image extends FreedomInterface {
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
+            this.file.files = Image.selectedFile.files;
         }
         
         Image.selectedFile.files = new DataTransfer().files
@@ -171,6 +169,8 @@ export default class Image extends FreedomInterface {
         
         let description = document.createElement('div');
 
+        description.dataset.file_name = this.dataset.name
+
         let aticle = document.createElement('div');
         
         aticle.contentEditable = 'false';
@@ -189,16 +189,15 @@ export default class Image extends FreedomInterface {
                 });
                 description.append(slot);
                 
-                description.setAttribute('start-close', '[');
-                description.setAttribute('end-close', ']');
             }
-            description.className = `${Image.defaultStyle.id} image-description`
-            description.setAttribute('open-status', '▶');
+
+            description.className = `${Image.defaultStyle.id} image-description`;
+            description.dataset.open_status = '▼';
 
             description.onclick = (event) => {
 
-                if(description.getAttribute('open-status') == '▶'){
-                    description.setAttribute('open-status', '▼')
+                if(description.dataset.open_status == '▼'){
+                    description.dataset.open_status = '▶'
                     imageContanier.style.height = '0px';
                     imageContanier.ontransitionstart = ()=>{}
                     imageContanier.ontransitionend = () => {
@@ -207,7 +206,7 @@ export default class Image extends FreedomInterface {
                     }
                     
                 }else{
-                    description.setAttribute('open-status', '▶');
+                    description.dataset.open_status = '▼';
                     imageContanier.style.height = window.getComputedStyle(image).height;
                     imageContanier.ontransitionend = () => {}
                     imageContanier.ontransitionstart = () => {
@@ -219,32 +218,12 @@ export default class Image extends FreedomInterface {
             }
 
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
+        
         }
 
         super.disconnectedAfterCallback = () => {
             aticle.remove();
         }
-    }
-
-    /*
-    cloneDescription(target){
-        return new Promise(resolve => {
-            let result = [...target.childNodes].map(e=>{
-                let clone = e.cloneNode(true);
-                this.cloneDescription(clone).then(cloneList => {
-                    console.log(clone);
-                    if(clone.nodeType == Node.ELEMENT_NODE){
-                        clone.append(...cloneList);
-                    }
-                })
-                return clone
-            });
-            resolve(result);
-        })
-    }
-    */
-    createImage(){
-
     }
 
 }

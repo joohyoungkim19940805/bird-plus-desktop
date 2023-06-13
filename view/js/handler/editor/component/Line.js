@@ -16,6 +16,11 @@ export default class Line extends HTMLDivElement {
 		this.toolHandler.extendsElement = 'div';
 		this.toolHandler.defaultClass = 'line';
 	}
+	/**
+	 * 
+	 * @param {HTMLElement} element 
+	 * @returns {HTMLElement} 
+	 */
 	static getLine(element){
 		let line = undefined;
 		if( ! element.parentElement){
@@ -325,7 +330,7 @@ export default class Line extends HTMLDivElement {
 			if(this.childNodes.length == 1 && this.innerText == '\n' && this.childNodes[0].nodeName == 'BR'){
 				this.childNodes[0].remove();
 			}
-			if(startContainer === endContainer && this.innerText.length != range.toString().length && ! tool.shadowRoot){
+			if(startContainer === endContainer && this.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)

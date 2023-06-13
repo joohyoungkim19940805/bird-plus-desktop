@@ -1,3 +1,4 @@
+
 export default class ToolHandler{
 	#extendsElement;
 	#defaultClass;
@@ -5,6 +6,12 @@ export default class ToolHandler{
 	#identity;
 	#connectedFriends = [];
 	#parentEditor;
+
+	/**
+	 * 
+	 * @param {FreedomInterface} identity
+	 * @returns {FreedomInterface} 
+	 */
 	constructor(identity){
 		this.#identity = identity;
 		document.addEventListener("selectionchange", (event) => {
@@ -24,8 +31,7 @@ export default class ToolHandler{
 			}else {
 				this.#toolButton.dataset.tool_status = 'blur';
 			}
-
-		})
+		});
 	}
 
 	processingElementPosition(element){
@@ -107,6 +113,35 @@ export default class ToolHandler{
 
 	get connectedFriends(){
 		return this.#connectedFriends;
+	}
+
+	/**
+	 * 
+	 * @param {HTMLElement} element 
+	 * @param {Function} callBack 
+	 */
+	blurElementObserver(element, callBack = ({oldEvent, newEvent})=>{}){
+		console.log(555);
+		if(element == undefined){
+			throw new Error('element is not Element');
+		}
+		let oldEvent = undefined;
+		let newEvent = undefined;
+		const simpleObserver = () => {
+			console.log('identity',this.#identity);
+			console.log('globalClickEventPromise',this.#identity.constructor.globalClickEventPromise)
+			this.#identity.constructor.globalClickEventPromise.then((event)=>{
+				console.log('???',event);
+				let isMouseInner = this.#identity.constructor.isMouseInnerElement(element);
+				if( ! isMouseInner){
+					newEvent = event;
+					callBack({oldEvent, newEvent});
+					oldEvent = event;
+				}
+				simpleObserver();
+			})
+		}
+		simpleObserver();
 	}
 
 }

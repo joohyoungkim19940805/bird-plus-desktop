@@ -58,7 +58,7 @@ export default class FontFamily extends FreedomInterface {
 
         document.addEventListener("scroll", () => {
 			if(this.fontFamilyBox.fontFamilyBox.isConnected){
-				this.toolHandler.processingPalettePosition(this.fontFamilyBox.fontFamilyBox);
+				this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
 			}
 		});
         window.addEventListener('resize', (event) => {

@@ -43,7 +43,7 @@ export default class FontSize extends FreedomInterface {
 
         document.addEventListener("scroll", () => {
 			if(this.fontSizeBox.fontSizeBox.isConnected){
-				this.toolHandler.processingPalettePosition(this.fontSizeBox.fontSizeBox);
+				this.toolHandler.processingElementPosition(this.fontSizeBox.fontSizeBox);
 			}
 		});
         window.addEventListener('resize', (event) => {

@@ -19,7 +19,7 @@ export default class Color extends FreedomInterface {
 		let button = document.createElement('button');
 		button.textContent = 'C'
 		this.toolHandler.toolButton = button;
-
+		
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
             openPosition : this.toolHandler.toolButton
@@ -39,6 +39,11 @@ export default class Color extends FreedomInterface {
 			this.toolHandler.toolButton.dataset.tool_status = 'active'
 			this.palette.close();
 		}
+
+		FreedomInterface.outClickElementObserver(this.palette.palette, ({oldEvent, newEvent})=>{
+			console.log(oldEvent, newEvent);
+			this.palette.close();
+		})
 	}
 
 	static createDefaultStyle(){

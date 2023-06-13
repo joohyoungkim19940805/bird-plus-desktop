@@ -155,10 +155,11 @@ export default class FontFamilyBox {
                 position: fixed;
 				padding: 0.9%;
 				width: ${this.#fontFamilyBoxVw}vw;
-				height: fit-content;
+                height: 25vh;
 				color: white;
 				font-size: 13px;
 				min-width: 300px;
+                overflow-y: auto;
 				-webkit-user-select:none;
 				-moz-user-select:none;
 				-ms-user-select:none;
@@ -173,7 +174,7 @@ export default class FontFamilyBox {
                 margin-bottom: 1%;
             }
             .font-box-wrap .font-family-item:hover{
-                background-color: #343434;
+                background-color: #747474;
                 cursor: pointer;
             }
 

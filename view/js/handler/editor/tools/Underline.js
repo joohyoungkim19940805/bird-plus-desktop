@@ -21,7 +21,8 @@ export default class Underline extends FreedomInterface {
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
-            openPosition : this.toolHandler.toolButton
+            openPosition: this.toolHandler.toolButton,
+			exampleMode: Palette.ExampleMode.TEXT_UNDERLINE
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

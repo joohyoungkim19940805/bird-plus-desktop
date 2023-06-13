@@ -1,20 +1,23 @@
 
 export default class FreedomInterface extends HTMLElement {
-	#isLoaded = false;
-	Tool;
-	#connectedAfterCallback = () => {}
-	#connectedAfterOnlyOneCallback = ()=> {}
-	#disconnectedAfterCallback = ()=> {}
+
 	static globalMouseEvent = undefined;
-	static lastClickElementPath = undefined; 
+	static lastClickElementPath = undefined;
+	static globalClickEventPromise;
+
 	static{
 		document.addEventListener('mousemove', (event) => {
 			//mousePos = { x: event.clientX, y: event.clientY };
 			//mousePosText.textContent = `(${mousePos.x}, ${mousePos.y})`;
 			this.globalMouseEvent = event;
 		});
-		document.addEventListener('click', (event) => {
-			this.lastClickElementPath = event.composedPath();
+		this.globalClickEventPromise = new Promise(resolve=>{
+			console.log(1);
+			document.addEventListener('click', (event) => {
+				console.log(2);
+				this.lastClickElementPath = event.composedPath();
+				resolve(event);
+			})
 		})
 	}
 	static isMouseInnerElement(element){
@@ -24,6 +27,33 @@ export default class FreedomInterface extends HTMLElement {
 		let isMouseInnerY = ((y + height) >= clientY && y <= clientY);
 		return (isMouseInnerX && isMouseInnerY);
 	}
+
+	/**
+	 * 
+	 * @param {HTMLElement} element 
+	 * @param {Function} callBack 
+	 */
+	static outClickElementObserver(element, callBack = ({oldEvent, newEvent})=>{}){
+		console.log(element)
+		if(element == undefined || element?.nodeType != Node.ELEMENT_NODE){
+			throw new Error('element is not Element');
+		}
+		let oldEvent = undefined;
+		let newEvent = undefined;
+		const simpleObserver = () => {
+			this.globalClickEventPromise.then((event)=>{
+				let isMouseInner = this.isMouseInnerElement(element);
+				if( ! isMouseInner){
+					newEvent = event;
+					callBack({oldEvent, newEvent});
+					oldEvent = event;
+				}
+				simpleObserver();
+			})
+		}
+		simpleObserver();
+	}
+	
 
 	static DeleteOption = class DeleteOption{
 		static EMPTY_CONTENT_IS_DELETE = new Option('empty_content_is_delete');
@@ -38,6 +68,11 @@ export default class FreedomInterface extends HTMLElement {
 		}
 	}
 
+	#isLoaded = false;
+	Tool;
+	#connectedAfterCallback = () => {}
+	#connectedAfterOnlyOneCallback = ()=> {}
+	#disconnectedAfterCallback = ()=> {}
 	#deleteOption;
 
 	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
@@ -91,6 +126,12 @@ export default class FreedomInterface extends HTMLElement {
 				//this.parentLine.prepend(document.createElement('br'));
 				//this.before(document.createElement('br'));
 				this.parentLine.before(this.constructor.toolHandler.parentEditor.createLine());
+				let nextLine = this.constructor.toolHandler.parentEditor.getNextLine(this.parentLine);
+				if( ! nextLine){
+					this.constructor.toolHandler.parentEditor.createLine();
+				}else{
+					nextLine.lookAtMe();
+				}
 			}
 
 			this.connectedAfterOnlyOneCallback();

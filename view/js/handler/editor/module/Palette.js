@@ -26,11 +26,31 @@ export default class Palette {
 
     #openPositionMode;
 	#openPosition;
+	#exampleMode;
+
     #applyCallback = () => {}
+
+	static ExampleMode = class ExampleMode{
+		static TEXT_COLOR = new ExampleMode('color');
+		static TEXT_BACKGROUND_COLOR = new ExampleMode('background-color');
+		static TEXT_UNDERLINE = new ExampleMode('text-decoration');
+		static TEXT_LINE_THROUGH = new ExampleMode('text-decoration');
+		value;
+		static{
+			Object.freeze(this);
+		}
+		constructor(value){
+			this.value = value;
+			Object.freeze(this);
+		}
+	}
 
 	static OpenPositionMode = class OpenPositionMode{
 		static BUTTON = new OpenPositionMode('button')
 		static WRAPPER = new OpenPositionMode('wrapper')
+		/**
+		 * @returns {String}
+		 */
 		value;
 		static{
 			Object.freeze(this);
@@ -42,9 +62,10 @@ export default class Palette {
 	}
 
     constructor({
-		openPositionMode,
-		openPosition
-	}){
+		openPositionMode = Palette.OpenPositionMode.BUTTON,
+		openPosition,
+		exampleMode = Palette.ExampleMode.TEXT_COLOR
+	}={}){
 		
         this.#openPositionMode = openPositionMode;
 		if( ! this.#openPositionMode || ! (this.#openPositionMode instanceof Palette.OpenPositionMode)){
@@ -54,7 +75,8 @@ export default class Palette {
         if( ! this.#openPosition || ! this.#openPosition.nodeType || this.#openPosition.nodeType != Node.ELEMENT_NODE){
             throw new Error('openPosition is not element');
         }
-
+		this.#exampleMode = exampleMode;
+		
 		if(this.#openPositionMode == Palette.OpenPositionMode.BUTTON){
 			this.#palette.style.position = "fixed";
 		}
@@ -251,14 +273,12 @@ export default class Palette {
 		let selectionRgbText = Object.assign(document.createElement('div'), {
 			className: 'selection-rgb-text',
 		});
-		selectionRgbText.style.color = this.selectedColor;
-		selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+		this.#applyExampleTextColor(selectionRgbText, this.selectedColor, blackOrWhite);
 
 		let previousRgbText = Object.assign(document.createElement('div'), {
 			className: 'previous-rgb-text',
 		});
-		previousRgbText.style.color = this.selectedColor;
-		previousRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+		this.#applyExampleTextColor(previousRgbText, this.selectedColor, blackOrWhite);
 
 		if(sampleText.nodeType && sampleText.nodeType == Node.ELEMENT_NODE){
 			selectionRgbText.innerHTML = sampleText.innerHTML;
@@ -348,17 +368,12 @@ export default class Palette {
 				let blackOrWhite = this.#blackOrWhite(this.#r, this.#g, this.#b);
 				let context = colorPanel.__colorPanelSelected.getContext('2d', { willReadFrequently: true })
 				if(this.#lastPanelPosition){
-                    console.log(1)
 					this.#processingColorPanelSeleter(context, this.#lastPanelPosition.x - colorPanelRect.x, this.#lastPanelPosition.y - colorPanelRect.y, blackOrWhite);
 				}else{
-                    console.log(2)
 					this.#processingColorPanelSeleter(context, colorPanelRect.width - 1, 0.1, blackOrWhite);
 					this.#lastPanelPosition = {x:colorPanelRect.right - 1, y:colorPanelRect.top}
-                    console.log(this.#lastPanelPosition)
                     colorPanel.__colorPanelSelectedPointer.style.top = this.#lastPanelPosition.y + 'px';
                     colorPanel.__colorPanelSelectedPointer.style.left = this.#lastPanelPosition.x + 'px';
-                    console.log(colorPanelRect);
-                    console.log('???', colorPanel.__colorPanelSelectedPointer)    
                 }
 			},200))
 		});
@@ -459,9 +474,8 @@ export default class Palette {
 			selectionRgbBg.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
 			selectionRgbBg.style.background = selectedColor;
 			
-			selectionRgbText.style.color = selectedColor;
-			selectionRgbText.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
-			
+			this.#applyExampleTextColor(selectionRgbText, selectedColor, blackOrWhite);
+
 			if(this.#a < 0.75){
 				colorBrightness.__colorBrightnessSelectedPointer.style.background = 'white';
 			}else{
@@ -694,7 +708,7 @@ export default class Palette {
 			selectionRgbBg.style.background = this.selectedColor;
 
 			selectionRgbText.style.color = this.selectedColor;
-
+			this.#applyExampleTextColor(selectionRgbText, this.selectedColor);
 			if(this.#a < 0.75){
 				colorBrightness.__colorBrightnessSelectedPointer.style.background = 'white';
 			}else{
@@ -749,6 +763,49 @@ export default class Palette {
 			y = event.y
 		}
 		return {x,y};
+	}
+
+	/**
+	 * 
+	 * @param {HTMLElement} text 
+	 * @param {String} color 
+	 * @param {Array<Number>} blackOrWhite 
+	 */
+	#applyExampleTextColor(text, color, blackOrWhite){
+		if(this.#exampleMode == Palette.ExampleMode.TEXT_COLOR){
+			text.style.color = color
+			if(blackOrWhite && blackOrWhite.length != 0){
+				text.style.backgroundColor = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			}
+		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_BACKGROUND_COLOR){
+			text.style.backgroundColor = color
+			if(blackOrWhite && blackOrWhite.length != 0){
+				text.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			}
+		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_UNDERLINE){
+			text.style.textDecoration = 'underline'
+			text.style.textDecorationColor = color
+			
+			if(blackOrWhite && blackOrWhite.length != 0){
+				text.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+				text.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+				/*if(blackOrWhite.filter(e=>e==255).length == 3){
+					text.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
+				}else{
+					text.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+				}*/
+			}
+			
+		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_LINE_THROUGH){
+			text.style.textDecoration = 'line-through'
+			text.style.textDecorationColor = color;
+			
+			if(blackOrWhite && blackOrWhite.length != 0){
+				text.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+				text.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+			}
+			
+		}
 	}
 
     get selectedColor(){
@@ -917,10 +974,19 @@ export default class Palette {
 				margin-bottom: 2%;
 			}
 			.palette-wrap .bottom-text-wrap .selection-rgb-text{
-				background: #ffffffd4;
+				margin-right: 5%;
 			}
-			.palette-wrap .bottom-text-wrap .previous-rgb-text{
-				background: #ffffffd4;
+			.palette-wrap .bottom-text-wrap .selection-rgb-text, .palette-wrap .bottom-text-wrap .previous-rgb-text{
+				overflow-x: hidden;
+				max-width: 40%;
+				text-overflow: ellipsis;
+				width: fit-content;
+				background: rgba(255, 255, 255, 0.25);
+				color: rgba(255, 255, 255, 0.25);
+			}
+			.palette-wrap .bottom-text-wrap .selection-rgb-text *, .palette-wrap .bottom-text-wrap .previous-rgb-text *{
+				text-overflow: ellipsis;
+				overflow-x: hidden;
 			}
 			/* 하단 텍스트 영역 [E] */
 

@@ -24,6 +24,12 @@ export default class FontSizeBox {
         name: 'font-size-search',
         className: 'font-size-search',
         oninput: (event) => this.#searchInputTextEvent(event),
+        onkeyup: (event) => {
+            if(event.key == 'Enter' && this.#searchInputText.value != ''){
+                let item = this.#fontSizeBoxContainer.querySelector(`[data-size="${this.#searchInputText.value}"]`);
+                this.#apply(item, event);
+            }
+        },
     })
 
     #selectedFont;
@@ -82,6 +88,7 @@ export default class FontSizeBox {
             li.textContent = this.#sampleText;
         }
         li.style.fontSize = number + 'px';
+        li.dataset.size = number;
         this.#addFontItemEvent(li);
         this.#fontSizeBoxContainer.replaceChildren(li);
         this.#searchInputText.focus();
@@ -89,17 +96,19 @@ export default class FontSizeBox {
 
     #addFontItemEvent(item){
         return new Promise(res=>{
-            item.onclick = (event) => {
-                this.#selectedFont = item;
-                if(this.#lastSelectionRange){
-                    let selection = window.getSelection()
-                    selection.removeAllRanges();
-                    selection.addRange(this.#lastSelectionRange);
-                }
-                this.applyCallback(event);
-            }
+            item.onclick = (event) => this.#apply(item, event);
             res(item);
         });
+    }
+
+    #apply(item, event){
+        this.#selectedFont = item;
+        if(this.#lastSelectionRange){
+            let selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(this.#lastSelectionRange);
+        }
+        this.applyCallback(event);
     }
 
     #createFontElementList(sampleText){

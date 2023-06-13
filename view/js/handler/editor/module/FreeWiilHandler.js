@@ -75,6 +75,33 @@ export default class FreeWiilHandler extends HTMLElement{
         this.classList.add('free-will-editor');
         this.addEventListener('keydown', (event) => {
             let key = event.key;
+            /*
+            switch (event.keyCode) {
+                case 13: // Enter
+                    this.editor.value = this.editor.value + "\n";
+                    break;
+                case 8: // Backspace
+                    this.editor.value = this.editor.value.slice(0, -1);
+                    break;
+                case 46: // Delete
+                    this.editor.value = this.editor.value.slice(0, this.editor.selectionStart) + this.editor.value.slice(this.editor.selectionEnd);
+                    break;
+                case 67: // Ctrl+C
+                    var text = this.editor.value.slice(this.editor.selectionStart, this.editor.selectionEnd);
+                    this.editor.value = this.editor.value.slice(0, this.editor.selectionStart) + this.editor.value.slice(this.editor.selectionEnd);
+                    document.execCommand("copy");
+                    break;
+                case 86: // Ctrl+V
+                    this.editor.value = this.editor.value.slice(0, this.editor.selectionStart) + document.queryCommandValue("copy") + this.editor.value.slice(this.editor.selectionEnd);
+                    break;
+                case 90: // Ctrl+Z
+                    this.editor.value = this.editor.value.slice(0, this.editor.selectionStart) + this.editor.value.slice(this.editor.selectionEnd);
+                    break;
+                case 9: // Tab
+                    this.editor.value = this.editor.value.slice(0, this.editor.selectionStart) + "    " + this.editor.value.slice(this.editor.selectionEnd);
+                    break;
+            }
+            */
             if(key === 'Backspace'){
                 /*
                 this.getLineRange().then( ({startLine, endLine}) => {
@@ -151,6 +178,12 @@ export default class FreeWiilHandler extends HTMLElement{
         return Line.prototype.isPrototypeOf(nextLine);
     }
 
+    /**
+     * 
+     * @param {HTMLElement} element 
+     * @param {Object} param1 
+     * @returns {HTMLElement}
+     */
     getNextLine(element, {focus = true} = {}){
         let line = Line.getLine(element);
         if( ! line){
@@ -158,6 +191,27 @@ export default class FreeWiilHandler extends HTMLElement{
         }
         
         let nextLine = line.nextElementSibling;
+        if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
+            if(focus){
+                nextLine.lookAtMe();
+            }
+            return nextLine;
+        }
+        return undefined;
+    }
+    
+    /**
+     * 
+     * @param {HTMLElement} element 
+     * @param {Object} param1 
+     * @returns {HTMLElement}
+     */
+    getPrevLine(element, {focus = true} = {}){
+        let line = Line.getLine(element);
+        if( ! line){
+            return undefined;
+        }
+        let nextLine = line.previousElementSibling;
         if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
             if(focus){
                 nextLine.lookAtMe();

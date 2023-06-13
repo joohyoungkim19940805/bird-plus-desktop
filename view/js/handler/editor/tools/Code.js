@@ -54,40 +54,34 @@ export default class Video extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-            .${this.#defaultStyle.id}.css-gg-video-icon {
-                box-sizing: border-box;
-                position: relative;
+            .${this.#defaultStyle.id}.css-gg-code-icon {
                 display: block;
-                border: 2px solid;
-                border-radius: 3px;
-                width: 16px;
-                height: 12px;
-                perspective: 24px;
-                top: 1.6px;
+                position: relative;
+                box-sizing: border-box;
+                width: 2px;
+                height: 16px;
+                background: currentColor
             }
-            .${this.#defaultStyle.id}.css-gg-video-icon::after, .${this.#defaultStyle.id}.css-gg-video-icon::before {
+            .${this.#defaultStyle.id}.css-gg-code-icon::after, .${this.#defaultStyle.id}.css-gg-code-icon::before {
                 content: "";
                 display: block;
                 box-sizing: border-box;
-                position: absolute
-            }
-            .${this.#defaultStyle.id}.css-gg-video-icon::after {
-                width: 10px;
-                height: 5px;
-                border-top: 2px solid;
-                border-right: 2px solid;
-                top: -5px;
-                right: 2px;
-                border-top-right-radius: 2px
-            }
-            .${this.#defaultStyle.id}.css-gg-video-icon::before {
-                border: 2px solid;
-                border-left-color: transparent;
-                transform: rotateY(-70deg);
+                position: absolute;
                 width: 8px;
                 height: 8px;
-                right: -7px;
-                top: 0
+                transform: rotate(-60deg)
+            }
+            .${this.#defaultStyle.id}.css-gg-code-icon::after {
+                border-right: 2px solid;
+                border-bottom: 2px solid;
+                right: -8px;
+                top: 3px
+            }
+            .${this.#defaultStyle.id}.css-gg-code-icon::before {
+                border-left: 2px solid;
+                border-top: 2px solid;
+                left: -8px;
+                top: 5px
             }
             .${this.#defaultStyle.id}.video-description{            
                 cursor: pointer;

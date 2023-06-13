@@ -14,6 +14,7 @@ import Sort from "./tools/Sort"
 import FontSize from "./tools/FontSize"
 import Italic from "./tools/Italic"
 import Image from "./tools/Image"
+import Video from "./tools/video"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -42,6 +43,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-editor-font-size' : FontSize,
 			'free-will-editor-italic' : Italic,
 			'free-will-editor-image' : Image,
+			'free-will-editor-video' : Video,
 		}
 	){
 		super();

@@ -22,7 +22,8 @@ export default class Background extends FreedomInterface {
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
-            openPosition : this.toolHandler.toolButton
+            openPosition: this.toolHandler.toolButton,
+			exampleMode: Palette.ExampleMode.TEXT_BACKGROUND_COLOR
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{
