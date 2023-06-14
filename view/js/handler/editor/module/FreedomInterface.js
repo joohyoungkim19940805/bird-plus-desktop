@@ -3,22 +3,26 @@ export default class FreedomInterface extends HTMLElement {
 
 	static globalMouseEvent = undefined;
 	static lastClickElementPath = undefined;
-	static globalClickEventPromise;
-
+	static globalClickEventPromiseResolve;
+	static globalClickEventPromise = new Promise(resolve=>{
+		this.globalClickEventPromiseResolve = resolve;
+	});
+	
 	static{
 		document.addEventListener('mousemove', (event) => {
 			//mousePos = { x: event.clientX, y: event.clientY };
 			//mousePosText.textContent = `(${mousePos.x}, ${mousePos.y})`;
 			this.globalMouseEvent = event;
 		});
-		this.globalClickEventPromise = new Promise(resolve=>{
-			console.log(1);
-			document.addEventListener('click', (event) => {
-				console.log(2);
-				this.lastClickElementPath = event.composedPath();
-				resolve(event);
+		document.addEventListener('click', (event) => {
+			this.lastClickElementPath = event.composedPath();
+			console.log('click!')
+			this.globalClickEventPromiseResolve(event)
+			this.globalClickEventPromise = new Promise(resolve => {
+				this.globalClickEventPromiseResolve = resolve;
 			})
 		})
+		this.outClickElementObserver(document.body, ()=>{});
 	}
 	static isMouseInnerElement(element){
 		let {clientX, clientY} = this.globalMouseEvent;
@@ -42,6 +46,7 @@ export default class FreedomInterface extends HTMLElement {
 		let newEvent = undefined;
 		const simpleObserver = () => {
 			this.globalClickEventPromise.then((event)=>{
+				console.log(event.x, event.y);
 				let isMouseInner = this.isMouseInnerElement(element);
 				if( ! isMouseInner){
 					newEvent = event;

@@ -115,33 +115,5 @@ export default class ToolHandler{
 		return this.#connectedFriends;
 	}
 
-	/**
-	 * 
-	 * @param {HTMLElement} element 
-	 * @param {Function} callBack 
-	 */
-	blurElementObserver(element, callBack = ({oldEvent, newEvent})=>{}){
-		console.log(555);
-		if(element == undefined){
-			throw new Error('element is not Element');
-		}
-		let oldEvent = undefined;
-		let newEvent = undefined;
-		const simpleObserver = () => {
-			console.log('identity',this.#identity);
-			console.log('globalClickEventPromise',this.#identity.constructor.globalClickEventPromise)
-			this.#identity.constructor.globalClickEventPromise.then((event)=>{
-				console.log('???',event);
-				let isMouseInner = this.#identity.constructor.isMouseInnerElement(element);
-				if( ! isMouseInner){
-					newEvent = event;
-					callBack({oldEvent, newEvent});
-					oldEvent = event;
-				}
-				simpleObserver();
-			})
-		}
-		simpleObserver();
-	}
 
 }
