@@ -14,7 +14,7 @@ export default class FreedomInterface extends HTMLElement {
 			//mousePosText.textContent = `(${mousePos.x}, ${mousePos.y})`;
 			this.globalMouseEvent = event;
 		});
-		document.addEventListener('click', (event) => {
+		document.addEventListener('mouseup', (event) => {
 			this.lastClickElementPath = event.composedPath();
 			console.log('click!')
 			this.globalClickEventPromiseResolve(event)
@@ -47,12 +47,10 @@ export default class FreedomInterface extends HTMLElement {
 		const simpleObserver = () => {
 			this.globalClickEventPromise.then((event)=>{
 				console.log(event.x, event.y);
-				let isMouseInner = this.isMouseInnerElement(element);
-				if( ! isMouseInner){
-					newEvent = event;
-					callBack({oldEvent, newEvent});
-					oldEvent = event;
-				}
+				let isMouseOut = ! this.isMouseInnerElement(element);
+				newEvent = event;
+				callBack({oldEvent, newEvent, isMouseOut});
+				oldEvent = event;
 				simpleObserver();
 			})
 		}

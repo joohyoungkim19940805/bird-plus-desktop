@@ -26,6 +26,7 @@ export default class Color extends FreedomInterface {
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{
+			console.log(222)
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else if(this.palette.isConnected){
@@ -40,9 +41,12 @@ export default class Color extends FreedomInterface {
 			this.palette.close();
 		}
 
-		FreedomInterface.outClickElementObserver(this.palette.palette, ({oldEvent, newEvent})=>{
+		super.outClickElementObserver(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
 			console.log(oldEvent, newEvent);
-			this.palette.close();
+			console.log(this.palette.palette.isConnected)
+			if(isMouseOut && this.palette.palette.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+				this.palette.close();
+			}
 		})
 	}
 
