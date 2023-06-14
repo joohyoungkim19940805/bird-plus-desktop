@@ -40,6 +40,21 @@ export default class Background extends FreedomInterface {
 			this.toolHandler.toolButton.dataset.tool_status = 'active'
 			this.palette.close();
 		}
+
+		super.outClickElementListener(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
+			console.log(oldEvent, newEvent);
+			console.log(this.palette.palette.isConnected)
+			if(isMouseOut && this.palette.palette.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+				this.palette.close();
+			}
+		})
+
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
 	}
 
 	static createDefaultStyle(){

@@ -69,6 +69,12 @@ export default class FontFamily extends FreedomInterface {
             }
 		})
 
+		super.outClickElementListener(this.fontFamilyBox.fontFamilyBox, ({oldEvent, newEvent, isMouseOut})=>{
+			if(isMouseOut && this.fontFamilyBox.fontFamilyBox.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+                this.fontFamilyBox.close();
+			}
+		})
+
         let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.createDefaultStyle());

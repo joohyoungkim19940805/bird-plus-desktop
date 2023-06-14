@@ -40,6 +40,12 @@ export default class Strikethrough extends FreedomInterface {
 			this.palette.close();
 		}
 
+		super.outClickElementListener(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
+			if(isMouseOut && this.palette.palette.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+				this.palette.close();
+			}
+		})
+
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.createDefaultStyle());

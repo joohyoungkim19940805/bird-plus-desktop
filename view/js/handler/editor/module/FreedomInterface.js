@@ -22,7 +22,9 @@ export default class FreedomInterface extends HTMLElement {
 				this.globalClickEventPromiseResolve = resolve;
 			})
 		})
-		this.outClickElementObserver(document.body, ()=>{});
+		this.outClickElementListener(document.body, ()=>{
+			console.log(333333333333333333333)
+		});
 	}
 	static isMouseInnerElement(element){
 		let {clientX, clientY} = this.globalMouseEvent;
@@ -37,7 +39,7 @@ export default class FreedomInterface extends HTMLElement {
 	 * @param {HTMLElement} element 
 	 * @param {Function} callBack 
 	 */
-	static outClickElementObserver(element, callBack = ({oldEvent, newEvent})=>{}){
+	static outClickElementListener(element, callBack = ({oldEvent, newEvent})=>{}){
 		console.log(element)
 		if(element == undefined || element?.nodeType != Node.ELEMENT_NODE){
 			throw new Error('element is not Element');

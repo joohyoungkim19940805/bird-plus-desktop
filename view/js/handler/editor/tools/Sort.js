@@ -53,6 +53,11 @@ export default class Sort extends FreedomInterface {
             }
 		})
 
+		super.outClickElementListener(this.sortBox.sortBox, ({oldEvent, newEvent, isMouseOut})=>{
+			if(isMouseOut && this.sortBox.sortBox.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+				this.sortBox.close();
+			}
+		})
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){

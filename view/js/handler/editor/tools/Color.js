@@ -41,13 +41,18 @@ export default class Color extends FreedomInterface {
 			this.palette.close();
 		}
 
-		super.outClickElementObserver(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
-			console.log(oldEvent, newEvent);
-			console.log(this.palette.palette.isConnected)
+		super.outClickElementListener(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
 			if(isMouseOut && this.palette.palette.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
 				this.palette.close();
 			}
 		})
+
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.createDefaultStyle());
+        }else{
+            this.#defaultStyle = defaultStyle;
+        }
 	}
 
 	static createDefaultStyle(){

@@ -54,6 +54,12 @@ export default class FontSize extends FreedomInterface {
             }
 		})
 
+		super.outClickElementListener(this.fontSizeBox.fontSizeBox, ({oldEvent, newEvent, isMouseOut})=>{
+			if(isMouseOut && this.fontSizeBox.fontSizeBox.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
+				this.fontSizeBox.close();
+			}
+		})
+
         let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.createDefaultStyle());
