@@ -13,7 +13,8 @@ export default class NumericPoint extends FreedomInterface {
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-numeric-point';
-		
+		this.toolHandler.isInline = false;
+
 		//let img = document.createElement('img');
 		let button = document.createElement('button');
 		//button.append(img);
@@ -35,17 +36,19 @@ export default class NumericPoint extends FreedomInterface {
             this.#defaultStyle = defaultStyle;
         }
 	}
-
+    //list-style-type: disc;
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-			.${this.toolHandler.defaultClass}[data-index]::before {
-				content: attr(data-index) '. ';
-				padding-right: 1em;
-			}
+		
 			.${this.toolHandler.defaultClass} {
-				display: list-item;
+				display: block;
 				margin-inline: 1.3em;
 				list-style-type: none;
+			}
+			.${this.toolHandler.defaultClass} > * {
+				list-style-type: decimal;
+				display: list-item;
+				margin-inline: 1.3em;
 			}
 		`
 		return this.#defaultStyle;
@@ -73,10 +76,16 @@ export default class NumericPoint extends FreedomInterface {
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
-			this.parentLine = NumericPoint.toolHandler.parentEditor.getLine(this);
 			this.dataset.index = NumericPoint.toolHandler.connectedFriends.length;
+			let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				NumericPoint.toolHandler.parentEditor.createLine();
+			}else{
+				nextLine.lookAtMe();
+			}
 		}
 		
+		//ㅇㅏㄹㅐ ㄹㅗㅈㅣㄱㅇㅡㄹ ㅇㅗㅂㅈㅓㅂㅓㄹㅗ ㅂㅕㄱㅕㅇ ㅍㅣㄹㅇㅛ
         super.disconnectedAfterCallback = () => {
 			if(NumericPoint.toolHandler.isLastTool(this)){
 				let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
@@ -91,11 +100,6 @@ export default class NumericPoint extends FreedomInterface {
 			})
         }
 
-		super.connectedAfterCallback = () => {
-			NumericPoint.toolHandler.connectedFriends.forEach((e, i)=>{
-				e.dataset.index = i + 1; 
-			})
-		}
 	}
 
 }

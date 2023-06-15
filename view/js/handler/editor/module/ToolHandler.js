@@ -2,6 +2,7 @@
 export default class ToolHandler{
 	#extendsElement;
 	#defaultClass;
+	#isInline = true;
 	#toolButton;
 	#identity;
 	#connectedFriends = [];
@@ -75,6 +76,20 @@ export default class ToolHandler{
 		return this.#defaultClass;
 	}
 
+	/**
+	 * @param {boolean} isInline 
+	 */
+	set isInline(isInline){
+		this.#isInline = isInline;
+	}
+	
+	/**
+	 * @returns {boolean}
+	 */
+	get isInline(){
+		return this.#isInline
+	}
+
 	set toolButton(toolButton){
 		if( ! toolButton || ! toolButton.nodeType || ! toolButton.nodeType == Node.ELEMENT_NODE){
 			throw new Error('toolButton is not element');
@@ -107,7 +122,7 @@ export default class ToolHandler{
 		if(friend.isConnected){
 			this.#connectedFriends.push(friend);
 		}else{
-			this.#connectedFriends.splice(this.#connectedFriends.findIndex(e=>e==friend), 1)
+			this.#connectedFriends = this.#connectedFriends.filter(e=>e.isConnected);
 		}
 	}
 

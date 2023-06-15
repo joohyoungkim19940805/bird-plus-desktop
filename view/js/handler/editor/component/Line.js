@@ -1,21 +1,39 @@
 import ToolHandler from "../module/ToolHandler"
+import FreedomInterface from "../module/FreedomInterface"
 export default class Line extends HTMLDivElement {
 	#isLoaded = false;
 	#prevParent;
 
 	isFirstLine = false;
 
-	/**
-	 * line은 무조건 div를 상속받아야 합니다.
-	 * mark라던가 span으로 사용해도 엔터치는 순간 div로 감싸입니다. 
-	 * 즉 엔터시 무조건 div로 됩니다.
-	 * 추후 엔터 이벤트를 막고 알트 엔터로 트리거 할 수 있도록 바꾸어야합니다.
-	 */
-	static toolHandler = new ToolHandler();
+	static toolHandler = new ToolHandler(this);
+
+	static #defaultStyle = Object.assign(document.createElement('style'), {
+		id: 'free-will-editor-line'
+	});
+
 	static{
 		this.toolHandler.extendsElement = 'div';
-		this.toolHandler.defaultClass = 'line';
+		this.toolHandler.defaultClass = 'free-will-editor-line';
 	}
+
+	static createDefaultStyle(){
+		this.#defaultStyle.textContent = ``
+		return this.#defaultStyle;
+	}
+
+	static get defaultStyle(){
+        return this.#defaultStyle;
+    }
+
+    static set defaultStyle(style){
+        this.#defaultStyle.textContent = style;
+    }
+
+	static set insertDefaultStyle(style){
+		this.#defaultStyle.sheet.insertRule(style);
+	}
+
 	/**
 	 * 
 	 * @param {HTMLElement} element 
@@ -25,7 +43,7 @@ export default class Line extends HTMLDivElement {
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
-		}else if(Line.prototype.isPrototypeOf(element)){//element.classList?.contains(this.toolHandler.defaultClass)){
+		}else if(Line.prototype.isPrototypeOf(element) && ! element.parentElement?.closest(`.${this.toolHandler.defaultClass}`)){
 			return element;
 		}else if(element.parentElement.classList.contains(this.toolHandler.defaultClass)){
 			line = element.parentElement;
@@ -58,6 +76,8 @@ export default class Line extends HTMLDivElement {
 		if(this.isFirstLine == false){
 			this.removeAttribute('placeholder')
 		}
+
+
 		/*
 		this.onkeyup = (event) => {
 			if(event.key === 'Backspace' && this.innerText.length == 1 && (this.innerText.includes)){
@@ -65,7 +85,7 @@ export default class Line extends HTMLDivElement {
 			}
 		}
 		*/
-	}
+	}	
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
@@ -196,7 +216,7 @@ export default class Line extends HTMLDivElement {
 			resolve();
 		});
 	}
-	async #applyMultipleLineAllShadowRoot(range, tool ,TargetTool, endLine){
+	async #applyMultipleLineAllBlock(range, tool ,TargetTool, endLine){
 		return await new Promise(resolve => {
 			let fragment = range.extractContents();
 			console.log(fragment.childNodes);
@@ -208,8 +228,8 @@ export default class Line extends HTMLDivElement {
 	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
 		return await new Promise(resolve=>{
 			console.log(tool.shadowRoot)
-			if(tool.shadowRoot){
-				resolve(this.#applyMultipleLineAllShadowRoot(range, tool, TargetTool, endLine));
+			if(tool.shadowRoot || ! TargetTool.toolHandler.isInline){
+				resolve(this.#applyMultipleLineAllBlock(range, tool, TargetTool, endLine));
 				return;
 			}
 			let {startOffset, endOffset, startContainer,endContainer} = range;

@@ -55,7 +55,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Component.toolHandler.defaultClass = className;
-			window.customElements.define(className, Component, {extends:Component.toolHandler.extendsElement});
+			Component.toolHandler.parentEditor = this;
+			window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
+
 			//obj[Component.constructor.name] = Component;
 			//return obj;
 		})

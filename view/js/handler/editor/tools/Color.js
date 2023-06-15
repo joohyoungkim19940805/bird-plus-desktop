@@ -26,7 +26,6 @@ export default class Color extends FreedomInterface {
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{
-			console.log(222)
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else if(this.palette.isConnected){
