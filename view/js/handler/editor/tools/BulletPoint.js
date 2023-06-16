@@ -7,19 +7,19 @@ export default class BulletPoint extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-bullet-point'
+		id: 'free-will-editor-bullet-point-style'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-bullet-point';
+		this.toolHandler.isInline = false;
 		
-		let button = document.createElement('button');
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '●',
+            className: `${this.#defaultStyle.id}-button`
+        });
 
-		button.textContent = '●'
-		button.style.fontSize = '14px';
-
-		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -38,6 +38,10 @@ export default class BulletPoint extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 14px;
+			}
+
 			.${this.toolHandler.defaultClass} {
 				display: list-item;
 				padding-left: 1em;
@@ -70,18 +74,40 @@ export default class BulletPoint extends FreedomInterface {
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
-			this.parentLine = BulletPoint.toolHandler.parentEditor.getLine(this);
+			this.dataset.index = BulletPoint.toolHandler.connectedFriends.length;
+			let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				BulletPoint.toolHandler.parentEditor.createLine();
+			}else{
+				nextLine.lookAtMe();
+			}
+		}
+		
+		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
+			let lastItemIndex = undefined;
+			addedNodes.forEach((e, i)=>{
+				if(e != onlyLineNodes[i]){
+					let line = BulletPoint.toolHandler.parentEditor.createLine();
+					line.replaceChildren(e);
+					this.append(line);
+					line.lookAtMe();
+					if(i == addedNodes.length - 1){
+						lastItemIndex = i;
+					}
+				}
+			});
+			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
+				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
+			}else if(lastItemIndex && addedNodes[i].lookAtMe){
+				addedNodes[i].lookAtMe();
+			}
 		}
 
-        super.disconnectedAfterCallback = () => {
-			if(BulletPoint.toolHandler.isLastTool(this)){
-				let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
-				if( ! nextLine){
-                	BulletPoint.toolHandler.parentEditor.createLine();
-				}else{
-					nextLine.lookAtMe();
-				}
-            }
+		super.disconnectedChildAfterCallBack = (removedNodes) => {
+			let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				BulletPoint.toolHandler.parentEditor.createLine();
+			}
         }
 	}
 

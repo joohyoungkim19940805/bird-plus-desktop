@@ -741,6 +741,8 @@ export default class Palette {
 				palette.style.top = y + height + 'px';
 			}
 			palette.style.left = x + 'px';
+		}else if(this.#openPositionMode == Palette.OpenPositionMode.WRAPPER){
+			this.#openPosition.append(palette);
 		}
 	}
 

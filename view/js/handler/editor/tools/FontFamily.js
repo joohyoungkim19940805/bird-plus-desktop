@@ -6,7 +6,7 @@ export default class FontFamily extends FreedomInterface {
     static toolHandler = new ToolHandler(this);
 
     static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-font-family'
+		id: 'free-will-editor-font-family-style'
 	});
 
     static fontFamilyBox;
@@ -35,10 +35,11 @@ export default class FontFamily extends FreedomInterface {
 		
         this.fontFamilyBox = new FontFamilyBox(this.#fontList);
 
-		let button = document.createElement('button');
-		button.textContent = 'F'
-		// default tools icon
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'F',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';

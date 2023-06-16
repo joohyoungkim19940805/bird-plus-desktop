@@ -29,7 +29,7 @@ export default class FreeWiilHandler extends HTMLElement{
                 padding-right: 0.8%;
                 -ms-overflow-style: none;
                 scrollbar-width: none;
-                disply: block;
+                display: block;
             }
             .${this.#defaultClass}::-webkit-scrollbar {
                 display: none;
@@ -121,6 +121,10 @@ export default class FreeWiilHandler extends HTMLElement{
     blockBackspaceEvent(event){
     }
 
+    /**
+     * 
+     * @returns {Line}
+     */
     createLine(){
         let line = new Line();
         this.append(line);
@@ -132,7 +136,7 @@ export default class FreeWiilHandler extends HTMLElement{
             let {anchorNode, focusNode} = selection; 
             let startAndEndLineObject;
             if(anchorNode == this){
-                let allLine = this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)
+                let allLine = [...this.children].filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
                 startAndEndLineObject = {
                     startLine : allLine[0],
                     endLine : allLine[allLine.length - 1]
@@ -184,7 +188,7 @@ export default class FreeWiilHandler extends HTMLElement{
      * @param {Object} param1 
      * @returns {HTMLElement}
      */
-    getNextLine(element, {focus = true} = {}){
+    getNextLine(element, {focus = false} = {}){
         let line = Line.getLine(element);
         if( ! line){
             return undefined;
@@ -206,7 +210,7 @@ export default class FreeWiilHandler extends HTMLElement{
      * @param {Object} param1 
      * @returns {HTMLElement}
      */
-    getPrevLine(element, {focus = true} = {}){
+    getPrevLine(element, {focus = false} = {}){
         let line = Line.getLine(element);
         if( ! line){
             return undefined;

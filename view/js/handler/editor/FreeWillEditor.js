@@ -15,6 +15,7 @@ import FontSize from "./tools/FontSize"
 import Italic from "./tools/Italic"
 import Image from "./tools/Image"
 import Video from "./tools/video"
+import Code from "./tools/Code"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	#isLoaded = false;
@@ -44,6 +45,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-editor-italic' : Italic,
 			'free-will-editor-image' : Image,
 			'free-will-editor-video' : Video,
+			'free-will-editor-code' : Code,
 		}
 	){
 		super();

@@ -7,7 +7,7 @@ export default class Strikethrough extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-strikethrough'
+		id: 'free-will-editor-strikethrough-style'
 	});
 
     static palette;
@@ -15,9 +15,10 @@ export default class Strikethrough extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-strikethrough';
 		
-		let button = document.createElement('button');
-		button.textContent = 'S'
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'S',
+            className: `${this.#defaultStyle.id}-button`
+        });
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
@@ -55,7 +56,12 @@ export default class Strikethrough extends FreedomInterface {
 	}
 
 	static createDefaultStyle(){
-		this.#defaultStyle.textContent = ``
+		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				text-decoration: 1px line-through;
+				text-decoration-color: #404040;
+			}
+		`
 		return this.#defaultStyle;
 	}
 

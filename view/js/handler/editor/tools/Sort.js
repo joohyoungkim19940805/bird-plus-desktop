@@ -6,7 +6,7 @@ export default class Sort extends FreedomInterface {
     static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-index'
+		id: 'free-will-editor-index-style'
 	});
 
     static sortBox; 
@@ -14,17 +14,15 @@ export default class Sort extends FreedomInterface {
     static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-index';
-		
+		this.toolHandler.isInline = false;
+
         this.sortBox = new SortBox();
 
-		//let img = document.createElement('img');
-		let button = document.createElement('button');
-		//button.append(img);
-		button.textContent = 'Ξ'
-        button.style.fontSize = '14px';
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'Ξ',
+            className: `${this.#defaultStyle.id}-button`
+        });
 
-		// default tools icon
-		this.toolHandler.toolButton = button;
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -68,6 +66,10 @@ export default class Sort extends FreedomInterface {
 	}
     static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 14px;
+			}
+
             .${this.toolHandler.defaultClass} {
                 display: block;
             }
@@ -97,11 +99,42 @@ export default class Sort extends FreedomInterface {
             this.dataset.text_align = Sort.sortBox.selectedSort?.textContent;
         }
         this.style.textAlign = this.dataset.text_align;
-        super.connectedAfterOnlyOneCallback = () => {
-            let nextLine = Sort.toolHandler.parentEditor.getNextLine(this);
-            if( ! nextLine){
-                Sort.toolHandler.parentEditor.createLine();
-            }
+
+		super.connectedAfterOnlyOneCallback = () => {
+			this.dataset.index = Sort.toolHandler.connectedFriends.length;
+			let nextLine = Sort.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Sort.toolHandler.parentEditor.createLine();
+			}else{
+				nextLine.lookAtMe();
+			}
+		}
+		
+		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
+			let lastItemIndex = undefined;
+			addedNodes.forEach((e, i)=>{
+				if(e != onlyLineNodes[i]){
+					let line = Sort.toolHandler.parentEditor.createLine();
+					line.replaceChildren(e);
+					this.append(line);
+					line.lookAtMe();
+					if(i == addedNodes.length - 1){
+						lastItemIndex = i;
+					}
+				}
+			});
+			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
+				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
+			}else if(lastItemIndex && addedNodes[i].lookAtMe){
+				addedNodes[i].lookAtMe();
+			}
+		}
+
+		super.disconnectedChildAfterCallBack = (removedNodes) => {
+			let nextLine = Sort.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Sort.toolHandler.parentEditor.createLine();
+			}
         }
 
 	}

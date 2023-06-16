@@ -8,7 +8,7 @@ export default class Video extends FreedomInterface {
     static videoBox;// = new VideoBox();
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-video'
+		id: 'free-will-editor-video-style'
 	});
 
     static descriptionName = 'free-will-editor-video-description-slot';
@@ -27,11 +27,14 @@ export default class Video extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-video';
 
-		let button = document.createElement('button');
-		this.toolHandler.toolButton = button;
-		button.append(Object.assign(document.createElement('i'),{
-            className: `${this.#defaultStyle.id} css-gg-video-icon`
-        }));
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '',
+            className: `${this.#defaultStyle.id}-button`,
+            innerHTML: `
+                <i class="${this.#defaultStyle.id} css-gg-video-icon"></i>
+            `
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -94,8 +97,8 @@ export default class Video extends FreedomInterface {
                 display: inline-flex;
                 align-items: center;
             }
-
             .${this.#defaultStyle.id}.video-description::after{
+                margin-left: 0.5em;
                 content: ' ['attr(data-file_name)'] 'attr(data-open_status);
                 font-size: small;
                 color: #bdbdbd;
@@ -173,6 +176,7 @@ export default class Video extends FreedomInterface {
             );
             video.src = URL.createObjectURL(file);
             */
+            this.videoIsNotWorking();
         }
         videoContanier.append(video);
         videoContanier.style.transition = 'all 0.5s'
@@ -186,63 +190,78 @@ export default class Video extends FreedomInterface {
             videoContanier.style.height = window.getComputedStyle(video).height;
         }
         
+        super.connectedAfterOnlyOneCallback = () => {
+            let description = this.createDescription(video, videoContanier);
+
+            wrap.append(...[description,videoContanier].filter(e=>e != undefined));
+        }
+
+        super.disconnectedAfterCallback = () => {
+        }
+    }
+
+    createDescription(video, videoContanier){
         let description = document.createElement('div');
 
         description.dataset.file_name = this.dataset.name
+        description.className = `${Video.defaultStyle.id} video-description`;
+        description.dataset.open_status = '▼';
 
+        let slot = this.createSlot()
+        
+        if(slot){
+            description.append(slot);
+        }
+
+        description.onclick = (event) => {
+
+            if(description.dataset.open_status == '▼'){
+                description.dataset.open_status = '▶'
+                videoContanier.style.height = '0px';
+                videoContanier.ontransitionstart = ()=>{}
+                videoContanier.ontransitionend = () => {
+                    video.style.opacity = 0;
+                    video.style.visibility = 'hidden';
+                }
+                
+            }else{
+                description.dataset.open_status = '▼';
+                videoContanier.style.height = window.getComputedStyle(video).height;
+                videoContanier.ontransitionend = () => {}
+                videoContanier.ontransitionstart = () => {
+                    video.style.opacity = '';
+                    video.style.visibility = '';
+                }
+
+            }
+        }
+
+        return description
+    }
+
+    createSlot(){
         let aticle = document.createElement('div');
         
         aticle.contentEditable = 'false';
         aticle.draggable = 'false';
 
+        if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            aticle.slot = Video.descriptionName;
+            this.append(aticle);
+            
+            let slot = Object.assign(document.createElement('slot'),{
+                name: Video.descriptionName
+            });
 
-        super.connectedAfterOnlyOneCallback = () => {
-
-            if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-                aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
-                aticle.slot = Video.descriptionName;
-                this.append(aticle);
-                
-                let slot = Object.assign(document.createElement('slot'),{
-                    name: Video.descriptionName
-                });
-                description.append(slot);
-                
-            }
-
-            description.className = `${Video.defaultStyle.id} video-description`;
-            description.dataset.open_status = '▼';
-
-            description.onclick = (event) => {
-
-                if(description.dataset.open_status == '▼'){
-                    description.dataset.open_status = '▶'
-                    videoContanier.style.height = '0px';
-                    videoContanier.ontransitionstart = ()=>{}
-                    videoContanier.ontransitionend = () => {
-                        video.style.opacity = 0;
-                        video.style.visibility = 'hidden';
-                    }
-                    
-                }else{
-                    description.dataset.open_status = '▼';
-                    videoContanier.style.height = window.getComputedStyle(video).height;
-                    videoContanier.ontransitionend = () => {}
-                    videoContanier.ontransitionstart = () => {
-                        video.style.opacity = '';
-                        video.style.visibility = '';
-                    }
-
-                }
-            }
-
-            wrap.append(...[description,videoContanier].filter(e=>e != undefined));
-        
-        }
-
-        super.disconnectedAfterCallback = () => {
-            aticle.remove();
+            return slot;
+        }else{
+            return undefined;
         }
     }
 
+    videoIsNotWorking(){
+        alert('호환되지 않는 영상입니다.');
+        this.remove();
+    }
 }

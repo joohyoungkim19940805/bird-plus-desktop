@@ -7,19 +7,19 @@ export default class Quote extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-quote'
+		id: 'free-will-editor-quote-style'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-quote';
-		
-		//let img = document.createElement('img');
-		let button = document.createElement('button');
-		//button.append(img);
-		button.textContent = 'Q'
-		// default tools icon
-		this.toolHandler.toolButton = button;
+		this.toolHandler.isInline = false;
+
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'Q',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -69,15 +69,41 @@ export default class Quote extends FreedomInterface {
 			Quote.defaultStyle.toggleAttribute('data-is_update');
 		}
 
-        super.disconnectedAfterCallback = () => {
-			if(Quote.toolHandler.isLastTool(this)){
-				let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
-				if( ! nextLine){
-                	Quote.toolHandler.parentEditor.createLine();
-				}else{
-					nextLine.lookAtMe();
+		super.connectedAfterOnlyOneCallback = () => {
+			this.dataset.index = Quote.toolHandler.connectedFriends.length;
+			let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Quote.toolHandler.parentEditor.createLine();
+			}else{
+				nextLine.lookAtMe();
+			}
+		}
+
+		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
+			let lastItemIndex = undefined;
+			addedNodes.forEach((e, i)=>{
+				if(e != onlyLineNodes[i]){
+					let line = Quote.toolHandler.parentEditor.createLine();
+					line.replaceChildren(e);
+					this.append(line);
+					line.lookAtMe();
+					if(i == addedNodes.length - 1){
+						lastItemIndex = i;
+					}
 				}
-            }
+			});
+			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
+				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
+			}else if(lastItemIndex && addedNodes[i].lookAtMe){
+				addedNodes[i].lookAtMe();
+			}
+		}
+
+        super.disconnectedChildAfterCallBack = () => {
+			let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Quote.toolHandler.parentEditor.createLine();
+			}
         }
 	}
 

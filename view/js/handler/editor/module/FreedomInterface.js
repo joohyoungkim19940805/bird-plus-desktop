@@ -14,7 +14,7 @@ export default class FreedomInterface extends HTMLElement {
 			//mousePosText.textContent = `(${mousePos.x}, ${mousePos.y})`;
 			this.globalMouseEvent = event;
 		});
-		document.addEventListener('click', (event) => {
+		document.addEventListener('mousedown', (event) => {
 			this.lastClickElementPath = event.composedPath();
 			console.log('click!')
 			this.globalClickEventPromiseResolve(event)
@@ -38,15 +38,15 @@ export default class FreedomInterface extends HTMLElement {
 	 * @param {Function} callBack 
 	 */
 	static outClickElementListener(element, callBack = ({oldEvent, newEvent})=>{}){
-		console.log(element)
+
 		if(element == undefined || element?.nodeType != Node.ELEMENT_NODE){
 			throw new Error('element is not Element');
 		}
+
 		let oldEvent = undefined;
 		let newEvent = undefined;
 		const simpleObserver = () => {
 			this.globalClickEventPromise.then((event)=>{
-				console.log(event.x, event.y);
 				let isMouseOut = ! this.isMouseInnerElement(element);
 				newEvent = event;
 				callBack({oldEvent, newEvent, isMouseOut});
@@ -76,6 +76,8 @@ export default class FreedomInterface extends HTMLElement {
 	#connectedAfterCallback = () => {}
 	#connectedAfterOnlyOneCallback = ()=> {}
 	#disconnectedAfterCallback = ()=> {}
+	#connectedChildAfterCallBack = () => {}
+	#disconnectedChildAfterCallBack = () => {}
 	#deleteOption;
 
 	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
@@ -103,6 +105,51 @@ export default class FreedomInterface extends HTMLElement {
 		if(dataset){
 			Object.assign(this.dataset, dataset);
 		}
+
+		let childListObserver = new MutationObserver( (mutationList, observer) => {
+			mutationList.forEach((mutation) => {
+                console.log(mutation);
+				let {addedNodes, removedNodes} = mutation;
+				let connectedChildPromise = new Promise(resolve => {
+					if(addedNodes.length != 0){
+						let onlyLineNodes = [];
+						addedNodes.forEach((e,i)=>{
+							if(this.parentLine?.constructor.prototype.isPrototypeOf(e)){
+								onlyLineNodes[i] = e;
+							}else{
+								onlyLineNodes[i] = undefined
+							}
+						})
+						this.connectedChildAfterCallBack(addedNodes, onlyLineNodes);
+					}
+					resolve();
+				})
+				
+				let disconnectedChildPromise = new Promise(resolve => {
+					if(removedNodes.length != 0){
+						let onlyLineNodes = [];
+						removedNodes.forEach((e,i)=>{
+							if(this.parentLine?.constructor.prototype.isPrototypeOf(e)){
+								onlyLineNodes[i] = e;
+							}else{
+								onlyLineNodes[i] = undefined
+							}
+						})
+						this.disconnectedChildAfterCallBack(removedNodes, onlyLineNodes);
+					}
+					resolve();
+				})
+				
+			})
+		});
+		childListObserver.observe(this, {childList:true})
+
+		let disconnectedObserver = new MutationObserver( (mutationList, observer) => {
+			mutationList.forEach((mutation) => {
+				this.disconnectedChildAfterCallBack();
+			})
+		});
+		disconnectedObserver.observe(this, {childList:true})
 	}
 
 	connectedCallback(){
@@ -178,27 +225,73 @@ export default class FreedomInterface extends HTMLElement {
         return this.innerText.length == 0 || (this.innerText.length == 1 && (this.innerText == '\n' || this.innerText == '\u200B'));
     }
 
+	/**
+	 * @param {Function}
+	 */
 	set connectedAfterCallback(connectedAfterCallback){
 		this.#connectedAfterCallback = connectedAfterCallback;
 	}
 
+	/**
+	 * @returns {Function}
+	 */
 	get connectedAfterCallback(){
 		return this.#connectedAfterCallback;
 	}
 
+	/**
+	 * @param {Function}
+	 */
 	set connectedAfterOnlyOneCallback(connectedAfterOnlyOneCallback){
 		this.#connectedAfterOnlyOneCallback = connectedAfterOnlyOneCallback;
 	}
-
+	
+	/**
+	 * @returns {Function}
+	 */
 	get connectedAfterOnlyOneCallback(){
 		return this.#connectedAfterOnlyOneCallback;
 	}
 
+	/**
+	 * @param {Function}
+	 */
 	set disconnectedAfterCallback(disconnectedAfterCallback){
 		this.#disconnectedAfterCallback = disconnectedAfterCallback;
 	}
 
+	/**
+	 * @returns {Function}
+	 */
 	get disconnectedAfterCallback(){
 		return this.#disconnectedAfterCallback;
+	}
+ 
+	/**
+	 * @param {Function}
+	 */
+	set connectedChildAfterCallBack(connectedChildAfterCallBack){
+		this.#connectedChildAfterCallBack = connectedChildAfterCallBack;
+	}
+
+	/**
+	 * @returns {Function}
+	 */
+	get connectedChildAfterCallBack(){
+		return this.#connectedChildAfterCallBack;
+	}
+
+	/**
+	 * @param {Function}
+	 */
+	set disconnectedChildAfterCallBack(disconnectedChildAfterCallBack){
+		this.#disconnectedChildAfterCallBack = disconnectedChildAfterCallBack;
+	}
+
+	/**
+	 * @returns {Function}
+	 */
+	get disconnectedChildAfterCallBack(){
+		return this.#disconnectedChildAfterCallBack;
 	}
 }

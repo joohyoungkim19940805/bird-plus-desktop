@@ -1,46 +1,33 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 
-export default class Video extends FreedomInterface {
-
+export default class Code extends FreedomInterface {
+	//static extendsElement = 'strong';
+	//static defaultClass = 'line';
 	static toolHandler = new ToolHandler(this);
 
-    static videoBox;// = new VideoBox();
-
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-video'
+		id: 'free-will-editor-code-style'
 	});
-
-    static descriptionName = 'free-will-editor-video-description-slot';
-
-    static #selectedFile = Object.assign(document.createElement('input'), {
-        type: 'file',
-        accept: 'video/*',
-        capture: 'camera',
-    });
-
-    static get selectedFile(){
-        return this.#selectedFile;
-    }
 
 	static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-editor-video';
+		this.toolHandler.defaultClass = 'free-will-code';
+		this.toolHandler.isInline = false;
 
-		let button = document.createElement('button');
-		this.toolHandler.toolButton = button;
-		button.append(Object.assign(document.createElement('i'),{
-            className: `${this.#defaultStyle.id} css-gg-video-icon`
-        }));
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '',
+            className: `${this.#defaultStyle.id}-button`,
+            innerHTML: `
+                <i class="${this.#defaultStyle.id} css-gg-code-icon"></i>
+            `
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else{
-                this.#selectedFile.click();
-                this.#selectedFile.onchange = ()=> {
-                    //let url = URL.createObjectURL(this.#selectedFile.files[0])
-                    this.toolHandler.toolButton.dataset.tool_status = 'active';
-                }
+				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
 
@@ -54,13 +41,19 @@ export default class Video extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+            .${this.#defaultStyle.id}-button{
+                padding-left: 13px;
+                padding-right: 13px;
+            }
             .${this.#defaultStyle.id}.css-gg-code-icon {
                 display: block;
                 position: relative;
                 box-sizing: border-box;
                 width: 2px;
                 height: 16px;
-                background: currentColor
+                background: currentColor;
+                transform: rotate(14deg);
+                top: 0.3px;
             }
             .${this.#defaultStyle.id}.css-gg-code-icon::after, .${this.#defaultStyle.id}.css-gg-code-icon::before {
                 content: "";
@@ -69,36 +62,38 @@ export default class Video extends FreedomInterface {
                 position: absolute;
                 width: 8px;
                 height: 8px;
-                transform: rotate(-60deg)
+                transform: rotate(-60deg);
             }
             .${this.#defaultStyle.id}.css-gg-code-icon::after {
                 border-right: 2px solid;
                 border-bottom: 2px solid;
                 right: -8px;
-                top: 3px
+                top: 3px;
             }
             .${this.#defaultStyle.id}.css-gg-code-icon::before {
                 border-left: 2px solid;
                 border-top: 2px solid;
                 left: -8px;
-                top: 5px
-            }
-            .${this.#defaultStyle.id}.video-description{            
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
+                top: 5px;
             }
 
-            .${this.#defaultStyle.id}.video-description::after{
-                content: ' ['attr(data-file_name)'] 'attr(data-open_status);
-                font-size: small;
-                color: #bdbdbd;
-            }            
-        `
+			.${this.toolHandler.defaultClass} {
+                display: block;
+                background-color: #e7e7e7;
+                margin-inline: 0.5em;
+                border: solid 1px #d1d1d1;
+                border-radius: 4px;
+                white-space: pre-wrap;
+                font-family: monospace;
+                box-shadow: 0px 0px 3px 0px #d1d1d1;
+                padding: 0.5em 1em 0.5em 1em;
+			}
+            
+		`
 		return this.#defaultStyle;
 	}
 
-    static get defaultStyle(){
+	static get defaultStyle(){
         return this.#defaultStyle;
     }
 
@@ -109,134 +104,54 @@ export default class Video extends FreedomInterface {
 	static set insertDefaultStyle(style){
 		this.#defaultStyle.sheet.insertRule(style);
 	}
-    
-    /**
-     * @returns{FileList}
-     */
-    files = new DataTransfer().files;
+
+	parentLine;
 
 	constructor(dataset){
-		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Video.defaultStyle.textContent != '' && Video.defaultStyle.textContent && Video.defaultStyle.hasAttribute('data-is_update') == false){
-			Video.createDefaultStyle();
-			Video.defaultStyle.toggleAttribute('data-is_update');
+		super(Code, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
+		if(Code.defaultStyle.textContent != '' && Code.defaultStyle.textContent && Code.defaultStyle.hasAttribute('data-is_update') == false){
+			Code.createDefaultStyle();
+			Code.defaultStyle.toggleAttribute('data-is_update');
 		}
 
-        if( ! dataset ){
-            this.files = Video.selectedFile.files;
-            this.dataset.url = URL.createObjectURL(this.files[0]);
-            this.dataset.name = this.files[0].name;
-            this.dataset.lastModified = this.files[0].lastModified;
-            this.dataset.size = this.files[0].size;
-            
-        }
-        
-        Video.selectedFile.files = new DataTransfer().files
+		super.connectedAfterOnlyOneCallback = () => {
+			this.dataset.index = Code.toolHandler.connectedFriends.length;
+			let nextLine = Code.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Code.toolHandler.parentEditor.createLine();
+			}else{
+				nextLine.lookAtMe();
+			}
+		}
 
-        this.attachShadow({ mode : 'open' });
-        this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
-        
-        this.createDefaultContent();
+		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
+            console.log(1)
+			let lastItemIndex = undefined;
+			addedNodes.forEach((e, i)=>{
+				if(e != onlyLineNodes[i]){
+					let line = Code.toolHandler.parentEditor.createLine();
+					line.replaceChildren(e);
+					this.append(line);
+					line.lookAtMe();
+					if(i == addedNodes.length - 1){
+						lastItemIndex = i;
+					}
+				}
+			});
+			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
+				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
+			}else if(lastItemIndex && addedNodes[i].lookAtMe){
+				addedNodes[i].lookAtMe();
+			}
+		}
+
+        super.disconnectedChildAfterCallBack = () => {
+            console.log(1);
+			let nextLine = Code.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				Code.toolHandler.parentEditor.createLine();
+			}
+        }
 	}
-
-    createDefaultContent(){
-        let wrap = Object.assign(document.createElement('div'),{
-
-        });
-        wrap.draggable = 'false'
-
-        this.shadowRoot.append(wrap);
-
-        let videoContanier = Object.assign(document.createElement('div'),{
-
-        });
-
-        let video = Object.assign(document.createElement('video'), {
-            //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            src: this.dataset.url,
-            loop: true,
-        });
-        
-        console.log(video.canPlayType(this.files[0].type))
-        if(video.canPlayType(this.files[0].type) == ''){
-            /*
-            let file = new File(
-                [this.dataset.url],
-                this.files[0].name.split('.')[0] + '.mp4',
-                { type: 'video/mp4' }
-            );
-            video.src = URL.createObjectURL(file);
-            */
-        }
-        videoContanier.append(video);
-        videoContanier.style.transition = 'all 0.5s'
-        videoContanier.style.overflow = 'hidden';
-
-        video.onloadeddata = () => {
-            videoContanier.style.height = window.getComputedStyle(video).height;
-            video.play();
-        }
-        video.onerror = () => {
-            videoContanier.style.height = window.getComputedStyle(video).height;
-        }
-        
-        let description = document.createElement('div');
-
-        description.dataset.file_name = this.dataset.name
-
-        let aticle = document.createElement('div');
-        
-        aticle.contentEditable = 'false';
-        aticle.draggable = 'false';
-
-
-        super.connectedAfterOnlyOneCallback = () => {
-
-            if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-                aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
-                aticle.slot = Video.descriptionName;
-                this.append(aticle);
-                
-                let slot = Object.assign(document.createElement('slot'),{
-                    name: Video.descriptionName
-                });
-                description.append(slot);
-                
-            }
-
-            description.className = `${Video.defaultStyle.id} video-description`;
-            description.dataset.open_status = '▼';
-
-            description.onclick = (event) => {
-
-                if(description.dataset.open_status == '▼'){
-                    description.dataset.open_status = '▶'
-                    videoContanier.style.height = '0px';
-                    videoContanier.ontransitionstart = ()=>{}
-                    videoContanier.ontransitionend = () => {
-                        video.style.opacity = 0;
-                        video.style.visibility = 'hidden';
-                    }
-                    
-                }else{
-                    description.dataset.open_status = '▼';
-                    videoContanier.style.height = window.getComputedStyle(video).height;
-                    videoContanier.ontransitionend = () => {}
-                    videoContanier.ontransitionstart = () => {
-                        video.style.opacity = '';
-                        video.style.visibility = '';
-                    }
-
-                }
-            }
-
-            wrap.append(...[description,videoContanier].filter(e=>e != undefined));
-        
-        }
-
-        super.disconnectedAfterCallback = () => {
-            aticle.remove();
-        }
-    }
 
 }

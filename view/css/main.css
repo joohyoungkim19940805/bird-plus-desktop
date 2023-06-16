@@ -93,8 +93,8 @@ div.chating_block .chating_content{
 	font-family: revert;
     font-weight: 900;
 	color: #7c7c7cd1;
-	padding-bottom: 0.3%;
-    padding-top: 0.9%;
+    padding-bottom: 2.375px;
+    padding-top: 5.125px;
 	border-bottom: groove 1px #ffffff40;
 	transition: all 0.7s;
 }

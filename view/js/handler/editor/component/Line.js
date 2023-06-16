@@ -77,7 +77,6 @@ export default class Line extends HTMLDivElement {
 			this.removeAttribute('placeholder')
 		}
 
-
 		/*
 		this.onkeyup = (event) => {
 			if(event.key === 'Backspace' && this.innerText.length == 1 && (this.innerText.includes)){
@@ -99,7 +98,7 @@ export default class Line extends HTMLDivElement {
 			
 			if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 				this.innerText = '\n';
-				window.getSelection().setPosition(this, 0)
+				window.getSelection().setPosition(this, 1)
 				this.focus();
 			}
 			/*
@@ -679,7 +678,7 @@ export default class Line extends HTMLDivElement {
 		if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 			this.innerText = '\n';
 		}
-		window.getSelection().setPosition(this, 0)
+		window.getSelection().setPosition(this, this.childNodes.length)
 		this.focus()
 	}
 

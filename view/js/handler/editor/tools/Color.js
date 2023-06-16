@@ -6,7 +6,7 @@ export default class Color extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-color'
+		id: 'free-will-editor-color-style'
 	});
 
 	static palette;
@@ -16,10 +16,11 @@ export default class Color extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-color';
 		
-		let button = document.createElement('button');
-		button.textContent = 'C'
-		this.toolHandler.toolButton = button;
-		
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'C',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
             openPosition : this.toolHandler.toolButton

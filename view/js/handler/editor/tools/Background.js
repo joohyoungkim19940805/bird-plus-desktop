@@ -6,7 +6,7 @@ export default class Background extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-background'
+		id: 'free-will-editor-background-style'
 	});
 
 	static palette;
@@ -16,9 +16,10 @@ export default class Background extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-background';
 		
-		let button = document.createElement('button');
-		button.textContent = 'G'
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'G',
+            className: `${this.#defaultStyle.id}-button`
+        });
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 

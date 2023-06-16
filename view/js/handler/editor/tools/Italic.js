@@ -5,18 +5,18 @@ export default class Italic extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-italic'
+		id: 'free-will-editor-italic-style'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-italic';
 
-		let button = document.createElement('button');
-		button.textContent = 'I'
-        button.style.fontStyle = 'italic';
-		this.toolHandler.toolButton = button;
-		
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'I',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -35,6 +35,10 @@ export default class Italic extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-style: italic;
+			}
+
 			.${this.toolHandler.defaultClass} {
 				font-style: italic;
 			}

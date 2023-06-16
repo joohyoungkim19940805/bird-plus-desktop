@@ -5,17 +5,18 @@ export default class Strong extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-strong'
+		id: 'free-will-editor-strong-style'
 	});
 
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-strong';
 
-		let button = document.createElement('button');
-		button.textContent = 'B'
-		this.toolHandler.toolButton = button;
-		
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'B',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';

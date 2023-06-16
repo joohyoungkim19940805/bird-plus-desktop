@@ -7,7 +7,7 @@ export default class NumericPoint extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 	
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-numeric-point'
+		id: 'free-will-editor-numeric-point-style'
 	});
 
 	static{
@@ -15,12 +15,11 @@ export default class NumericPoint extends FreedomInterface {
 		this.toolHandler.defaultClass = 'free-will-numeric-point';
 		this.toolHandler.isInline = false;
 
-		//let img = document.createElement('img');
-		let button = document.createElement('button');
-		//button.append(img);
-		button.textContent = '1.'
-		// default tools icon
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '1.',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -39,7 +38,6 @@ export default class NumericPoint extends FreedomInterface {
     //list-style-type: disc;
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-		
 			.${this.toolHandler.defaultClass} {
 				display: block;
 				margin-inline: 1.3em;
@@ -85,19 +83,31 @@ export default class NumericPoint extends FreedomInterface {
 			}
 		}
 		
-		//ㅇㅏㄹㅐ ㄹㅗㅈㅣㄱㅇㅡㄹ ㅇㅗㅂㅈㅓㅂㅓㄹㅗ ㅂㅕㄱㅕㅇ ㅍㅣㄹㅇㅛ
-        super.disconnectedAfterCallback = () => {
-			if(NumericPoint.toolHandler.isLastTool(this)){
-				let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
-				if( ! nextLine){
-                	NumericPoint.toolHandler.parentEditor.createLine();
-				}else{
-					nextLine.lookAtMe();
+		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
+			let lastItemIndex = undefined;
+			addedNodes.forEach((e, i)=>{
+				if(e != onlyLineNodes[i]){
+					let line = NumericPoint.toolHandler.parentEditor.createLine();
+					line.replaceChildren(e);
+					this.append(line);
+					line.lookAtMe();
+					if(i == addedNodes.length - 1){
+						lastItemIndex = i;
+					}
 				}
-            }
-			NumericPoint.toolHandler.connectedFriends.forEach((e, i)=>{
-				e.dataset.index = i + 1; 
-			})
+			});
+			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
+				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
+			}else if(lastItemIndex && addedNodes[i].lookAtMe){
+				addedNodes[i].lookAtMe();
+			}
+		}
+
+		super.disconnectedChildAfterCallBack = (removedNodes) => {
+			let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			if( ! nextLine){
+				NumericPoint.toolHandler.parentEditor.createLine();
+			}
         }
 
 	}

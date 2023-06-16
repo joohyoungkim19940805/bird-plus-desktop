@@ -6,7 +6,7 @@ export default class Underline extends FreedomInterface {
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-underline'
+		id: 'free-will-editor-underline-style'
 	});
 
 	static palette;
@@ -15,9 +15,10 @@ export default class Underline extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-underline';
 		
-		let button = document.createElement('button');
-		button.textContent = 'U'
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: 'U',
+            className: `${this.#defaultStyle.id}-button`
+        });
 
 		this.palette = new Palette({
             openPositionMode: Palette.OpenPositionMode.BUTTON, 
@@ -55,7 +56,11 @@ export default class Underline extends FreedomInterface {
 	}
 
 	static createDefaultStyle(){
-		this.#defaultStyle.textContent = ``
+		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				text-decoration: 1px underline;
+			}
+		`
 		return this.#defaultStyle;
 	}
 

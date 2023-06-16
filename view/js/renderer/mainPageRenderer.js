@@ -13,6 +13,7 @@ import FontSize from "../handler/editor/tools/FontSize"
 import Italic from "../handler/editor/tools/Italic"
 import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/video"
+import Code from "../handler/editor/tools/Code"
 class Editor extends FreeWillEditor{
 	constructor(){
 
@@ -31,6 +32,7 @@ class Editor extends FreeWillEditor{
 			'free-will-editor-italic' : Italic,
 			'free-will-editor-image' : Image,
 			'free-will-editor-video' : Video,
+			'free-will-editor-code' : Code,
 		}
 		super(undefined, tools);
 
@@ -51,6 +53,7 @@ class Editor extends FreeWillEditor{
 			Italic.toolHandler.toolButton,
 			Image.toolHandler.toolButton,
 			Video.toolHandler.toolButton,
+			Code.toolHandler.toolButton,
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'

@@ -6,7 +6,7 @@ export default class FontSize extends FreedomInterface {
     static toolHandler = new ToolHandler(this);
 
     static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-font-size'
+		id: 'free-will-editor-font-size-style'
 	});
 
     static fontSizeBox;
@@ -18,12 +18,11 @@ export default class FontSize extends FreedomInterface {
 		
         this.fontSizeBox = new FontSizeBox({min:1, max:50});
 
-		let button = document.createElement('button');
-		button.textContent = '↑↓'
-		button.style.fontSize = '14px';
-		button.style.paddingBottom = '1.1%';
-		// default tools icon
-		this.toolHandler.toolButton = button;
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '↑↓',
+            className: `${this.#defaultStyle.id}-button`
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -69,7 +68,12 @@ export default class FontSize extends FreedomInterface {
 	}
 
     static createDefaultStyle(){
-		this.#defaultStyle.textContent = ``
+		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size = '14px';
+				padding-bottom = '1.1%';
+			}
+		`
 		return this.#defaultStyle;
 	}
 

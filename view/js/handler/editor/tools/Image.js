@@ -8,10 +8,10 @@ export default class Image extends FreedomInterface {
     static imageBox;// = new ImageBox();
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-image'
+		id: 'free-will-editor-image-style'
 	});
 
-    static descriptionName = 'free-will-editor-image-description-slot';
+    static slotName = 'free-will-editor-image-description-slot';
 
     static #selectedFile = Object.assign(document.createElement('input'), {
         type: 'file',
@@ -26,12 +26,16 @@ export default class Image extends FreedomInterface {
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-image';
+        this.toolHandler.isInline = false;
 
-		let button = document.createElement('button');
-		this.toolHandler.toolButton = button;
-		button.append(Object.assign(document.createElement('i'),{
-            className: `${this.#defaultStyle.id} css-gg-image-icon`
-        }));
+		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
+            textContent: '',
+            className: `${this.#defaultStyle.id}-button`,
+            innerHTML: `
+                <i class="${this.#defaultStyle.id} css-gg-image-icon"></i>
+            `
+        });
+
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
@@ -91,6 +95,7 @@ export default class Image extends FreedomInterface {
             }
 
             .${this.#defaultStyle.id}.image-description::after{
+                margin-left: 0.5em;
                 content: ' ['attr(data-file_name)'] 'attr(data-open_status);
                 font-size: small;
                 color: #bdbdbd;
@@ -167,63 +172,87 @@ export default class Image extends FreedomInterface {
             imageContanier.style.height = window.getComputedStyle(image).height;
         }
         
-        let description = document.createElement('div');
-
-        description.dataset.file_name = this.dataset.name
-
-        let aticle = document.createElement('div');
         
-        aticle.contentEditable = 'false';
-        aticle.draggable = 'false';
-
 
         super.connectedAfterOnlyOneCallback = () => {
-
-            if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-                aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
-                aticle.slot = Image.descriptionName;
-                this.append(aticle);
-                
-                let slot = Object.assign(document.createElement('slot'),{
-                    name: Image.descriptionName
-                });
-                description.append(slot);
-                
-            }
-
-            description.className = `${Image.defaultStyle.id} image-description`;
-            description.dataset.open_status = '▼';
-
-            description.onclick = (event) => {
-
-                if(description.dataset.open_status == '▼'){
-                    description.dataset.open_status = '▶'
-                    imageContanier.style.height = '0px';
-                    imageContanier.ontransitionstart = ()=>{}
-                    imageContanier.ontransitionend = () => {
-                        image.style.opacity = 0;
-                        image.style.visibility = 'hidden';
-                    }
-                    
-                }else{
-                    description.dataset.open_status = '▼';
-                    imageContanier.style.height = window.getComputedStyle(image).height;
-                    imageContanier.ontransitionend = () => {}
-                    imageContanier.ontransitionstart = () => {
-                        image.style.opacity = '';
-                        image.style.visibility = '';
-                    }
-
-                }
-            }
+            let description = this.createDescription(image, imageContanier);
 
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
         
         }
 
         super.disconnectedAfterCallback = () => {
-            aticle.remove();
         }
+    }
+
+    /**
+     * 
+     * @param {HTMLImageElement} image 
+     * @param {HTMLDivElement} imageContanier 
+     * @returns 
+     */
+    createDescription(image, imageContanier){
+        let description = document.createElement('div');
+
+        description.dataset.file_name = this.dataset.name
+        description.className = `${Image.defaultStyle.id} image-description`;
+        
+        description.dataset.open_status = '▼';
+        
+        let slot = this.createSlot();
+        if(slot){
+            description.append(slot)
+        }
+
+        description.onclick = (event) => {
+
+            if(description.dataset.open_status == '▼'){
+                description.dataset.open_status = '▶'
+                imageContanier.style.height = '0px';
+                imageContanier.ontransitionstart = ()=>{}
+                imageContanier.ontransitionend = () => {
+                    image.style.opacity = 0;
+                    image.style.visibility = 'hidden';
+                }
+                
+            }else{
+                description.dataset.open_status = '▼';
+                imageContanier.style.height = window.getComputedStyle(image).height;
+                imageContanier.ontransitionend = () => {}
+                imageContanier.ontransitionstart = () => {
+                    image.style.opacity = '';
+                    image.style.visibility = '';
+                }
+
+            }
+        }
+
+        return description;
+    }
+
+    /**
+     * 
+     * @returns {HTMLSlotElement}
+     */
+    createSlot(){
+        let aticle = document.createElement('div');
+        
+        aticle.contentEditable = 'false';
+        aticle.draggable = 'false'; 
+
+        if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            aticle.slot = Image.slotName;
+            this.append(aticle);
+            
+            let slot = Object.assign(document.createElement('slot'),{
+                name: Image.slotName
+            });
+            return slot;
+        }else{
+            return undefined
+        }
+
     }
 
 }
