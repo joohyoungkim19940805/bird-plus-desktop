@@ -102,7 +102,18 @@ export default class Video extends FreedomInterface {
                 content: ' ['attr(data-file_name)'] 'attr(data-open_status);
                 font-size: small;
                 color: #bdbdbd;
-            }            
+            }
+
+            .${this.#defaultStyle.id}.video-contanier{
+                width: auto;
+                transition: height 0.5s ease-in-out;
+                overflow: hidden;
+            }
+            .${this.#defaultStyle.id}.video-contanier video{
+                max-width: 100%;
+                height: auto;
+                aspect-ratio: attr(width) / attr(height);
+            }
         `
 		return this.#defaultStyle;
 	}
@@ -157,7 +168,7 @@ export default class Video extends FreedomInterface {
         this.shadowRoot.append(wrap);
 
         let videoContanier = Object.assign(document.createElement('div'),{
-
+            className: `${Video.defaultStyle.id} video-contanier`
         });
 
         let video = Object.assign(document.createElement('video'), {
@@ -179,15 +190,13 @@ export default class Video extends FreedomInterface {
             this.videoIsNotWorking();
         }
         videoContanier.append(video);
-        videoContanier.style.transition = 'all 0.5s'
-        videoContanier.style.overflow = 'hidden';
 
         video.onloadeddata = () => {
-            videoContanier.style.height = window.getComputedStyle(video).height;
+            //videoContanier.style.height = window.getComputedStyle(video).height;
             video.play();
         }
         video.onerror = () => {
-            videoContanier.style.height = window.getComputedStyle(video).height;
+            //videoContanier.style.height = window.getComputedStyle(video).height;
         }
         
         super.connectedAfterOnlyOneCallback = () => {
@@ -217,22 +226,28 @@ export default class Video extends FreedomInterface {
 
             if(description.dataset.open_status == '▼'){
                 description.dataset.open_status = '▶'
-                videoContanier.style.height = '0px';
-                videoContanier.ontransitionstart = ()=>{}
-                videoContanier.ontransitionend = () => {
-                    video.style.opacity = 0;
-                    video.style.visibility = 'hidden';
-                }
-                
+                videoContanier.style.height = window.getComputedStyle(video).height;
+                setTimeout(()=>{
+                    videoContanier.style.height = '0px';
+                },100)
+
             }else{
                 description.dataset.open_status = '▼';
-                videoContanier.style.height = window.getComputedStyle(video).height;
-                videoContanier.ontransitionend = () => {}
-                videoContanier.ontransitionstart = () => {
-                    video.style.opacity = '';
-                    video.style.visibility = '';
-                }
+                setTimeout(()=>{
+                    videoContanier.style.height = window.getComputedStyle(video).height;
+                },100)
+                
+                video.style.opacity = '';
+                video.style.visibility = '';
+            }
+        }
 
+        videoContanier.ontransitionend = () => {
+            if(description.dataset.open_status == '▼'){
+                videoContanier.style.height = 'auto';
+            }else{
+                video.style.opacity = 0;
+                video.style.visibility = 'hidden';
             }
         }
 

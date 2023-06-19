@@ -79,26 +79,6 @@ export default class Quote extends FreedomInterface {
 			}
 		}
 
-		super.connectedChildAfterCallBack = (addedNodes, onlyLineNodes) => {
-			let lastItemIndex = undefined;
-			addedNodes.forEach((e, i)=>{
-				if(e != onlyLineNodes[i]){
-					let line = Quote.toolHandler.parentEditor.createLine();
-					line.replaceChildren(e);
-					this.append(line);
-					line.lookAtMe();
-					if(i == addedNodes.length - 1){
-						lastItemIndex = i;
-					}
-				}
-			});
-			if( ! lastItemIndex && addedNodes[addedNodes.length - 1] == onlyLineNodes[onlyLineNodes.length - 1] && onlyLineNodes[onlyLineNodes.length - 1].lookAtMe){
-				onlyLineNodes[onlyLineNodes.length - 1].lookAtMe();
-			}else if(lastItemIndex && addedNodes[i].lookAtMe){
-				addedNodes[i].lookAtMe();
-			}
-		}
-
         super.disconnectedChildAfterCallBack = () => {
 			let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){

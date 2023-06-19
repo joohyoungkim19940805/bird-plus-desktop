@@ -1,3 +1,5 @@
+import { linePixelShader } from 'babylonjs/Shaders/line.fragment';
+import Line from '../component/Line'
 
 export default class FreedomInterface extends HTMLElement {
 
@@ -108,34 +110,37 @@ export default class FreedomInterface extends HTMLElement {
 
 		let childListObserver = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
-                console.log(mutation);
 				let {addedNodes, removedNodes} = mutation;
 				let connectedChildPromise = new Promise(resolve => {
 					if(addedNodes.length != 0){
-						let onlyLineNodes = [];
-						addedNodes.forEach((e,i)=>{
-							if(this.parentLine?.constructor.prototype.isPrototypeOf(e)){
-								onlyLineNodes[i] = e;
-							}else{
-								onlyLineNodes[i] = undefined
-							}
-						})
-						this.connectedChildAfterCallBack(addedNodes, onlyLineNodes);
+						let resultList;
+						if( ! this.constructor.toolHandler.isInline){
+							let lastItemIndex = undefined;
+							resultList = [...addedNodes].map((e,i)=>{
+								if( ! Line.prototype.isPrototypeOf(e)){
+									let line = this.constructor.toolHandler.parentEditor.createLine();
+									line.replaceChildren(e);
+									this.append(line);
+									line.lookAtMe();
+									if( i == addedNodes.length - 1){
+										lastItemIndex = i;
+									}
+									return line;
+								}
+								return e;
+							});
+							addedNodes[addedNodes.length - 1].lookAtMe();
+						}else{
+							resultList = addedNodes;
+						}
+						this.connectedChildAfterCallBack(resultList);
 					}
 					resolve();
 				})
 				
 				let disconnectedChildPromise = new Promise(resolve => {
 					if(removedNodes.length != 0){
-						let onlyLineNodes = [];
-						removedNodes.forEach((e,i)=>{
-							if(this.parentLine?.constructor.prototype.isPrototypeOf(e)){
-								onlyLineNodes[i] = e;
-							}else{
-								onlyLineNodes[i] = undefined
-							}
-						})
-						this.disconnectedChildAfterCallBack(removedNodes, onlyLineNodes);
+						this.disconnectedChildAfterCallBack(removedNodes);
 					}
 					resolve();
 				})

@@ -43,8 +43,7 @@ export default class Background extends FreedomInterface {
 		}
 
 		super.outClickElementListener(this.palette.palette, ({oldEvent, newEvent, isMouseOut})=>{
-			console.log(oldEvent, newEvent);
-			console.log(this.palette.palette.isConnected)
+
 			if(isMouseOut && this.palette.palette.isConnected && ! super.isMouseInnerElement(this.toolHandler.toolButton)){
 				this.palette.close();
 			}

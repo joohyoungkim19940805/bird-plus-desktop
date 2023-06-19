@@ -99,7 +99,18 @@ export default class Image extends FreedomInterface {
                 content: ' ['attr(data-file_name)'] 'attr(data-open_status);
                 font-size: small;
                 color: #bdbdbd;
-            }            
+            }
+
+            .${this.#defaultStyle.id}.image-contanier{
+                width: auto;
+                transition: height 0.5s ease-in-out
+                overflow: hidden;
+            }
+            .${this.#defaultStyle.id}.image-contanier img{
+                max-width: 100%;
+                height: auto;
+                aspect-ratio: attr(width) / attr(height);
+            }
         `
 		return this.#defaultStyle;
 	}
@@ -153,7 +164,7 @@ export default class Image extends FreedomInterface {
         this.shadowRoot.append(wrap);
 
         let imageContanier = Object.assign(document.createElement('div'),{
-
+            className: `${Image.defaultStyle.id} image-contanier`
         });
 
         let image = Object.assign(document.createElement('img'), {
@@ -162,17 +173,13 @@ export default class Image extends FreedomInterface {
         });
 
         imageContanier.append(image);
-        imageContanier.style.transition = 'all 0.5s'
-        imageContanier.style.overflow = 'hidden';
 
         image.onload = () => {
-            imageContanier.style.height = window.getComputedStyle(image).height;
+            //imageContanier.style.height = window.getComputedStyle(image).height;
         }
         image.onerror = () => {
-            imageContanier.style.height = window.getComputedStyle(image).height;
+            //imageContanier.style.height = window.getComputedStyle(image).height;
         }
-        
-        
 
         super.connectedAfterOnlyOneCallback = () => {
             let description = this.createDescription(image, imageContanier);
@@ -192,10 +199,12 @@ export default class Image extends FreedomInterface {
      * @returns 
      */
     createDescription(image, imageContanier){
-        let description = document.createElement('div');
+        let description = Object.assign(document.createElement('div'),{
+            className: `${Image.defaultStyle.id} image-description`
+        });
 
         description.dataset.file_name = this.dataset.name
-        description.className = `${Image.defaultStyle.id} image-description`;
+
         
         description.dataset.open_status = '▼';
         
@@ -208,22 +217,39 @@ export default class Image extends FreedomInterface {
 
             if(description.dataset.open_status == '▼'){
                 description.dataset.open_status = '▶'
-                imageContanier.style.height = '0px';
-                imageContanier.ontransitionstart = ()=>{}
+                imageContanier.style.height = window.getComputedStyle(image).height;
+                setTimeout(()=>{
+                    imageContanier.style.height = '0px';
+                },100)
+                /*imageContanier.ontransitionstart = ()=>{}
                 imageContanier.ontransitionend = () => {
                     image.style.opacity = 0;
                     image.style.visibility = 'hidden';
-                }
+                }*/
                 
             }else{
                 description.dataset.open_status = '▼';
-                imageContanier.style.height = window.getComputedStyle(image).height;
-                imageContanier.ontransitionend = () => {}
+                setTimeout(()=>{
+                    imageContanier.style.height = window.getComputedStyle(image).height;
+                },100)
+                
+                image.style.opacity = '';
+                image.style.visibility = '';
+                /*imageContanier.ontransitionend = () => {}
                 imageContanier.ontransitionstart = () => {
                     image.style.opacity = '';
                     image.style.visibility = '';
-                }
+                }*/
 
+            }
+        }
+
+        imageContanier.ontransitionend = () => {
+            if(description.dataset.open_status == '▼'){
+                imageContanier.style.height = 'auto';
+            }else{
+                image.style.opacity = 0;
+                image.style.visibility = 'hidden';
             }
         }
 
