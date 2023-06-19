@@ -1,5 +1,6 @@
 import Line from './component/Line'
 import FreeWiilHandler from './module/FreeWiilHandler'
+import UndoManager from './fragment/UndoManager'
 
 import Strong from "./tools/Strong"
 import Color from "./tools/Color"
@@ -25,7 +26,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	toolsElement = {};
 	#placeholder;
 	#firstLine;
-
+	#undoManager;
 	constructor(
 		components={
 			'free-will-editor-line' : Line
@@ -49,6 +50,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}
 	){
 		super();
+		this.#undoManager = new UndoManager(this);
 		this.components = components;
 		this.tools = tools;
 
@@ -99,34 +101,19 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 
+				if(this.childElementCount == 0){
+					this.#startFirstLine();
+				}
+
 				if(this.innerText.length <= 1 && this.#firstLine.childNodes[0]?.nodeName == 'BR' && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
 					this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
 				}else{
 					this.#firstLine.removeAttribute('data-placeholder');
 				}
-				/*
-				else if(this.innerText.charAt(0) != '\u200B' && this.innerText.charAt(0) != '\n' && this.innerText.length > 0){
-					this.#firstLine.removeAttribute('data-placeholder');
-				}
-				*/
-				if(mutation.type == 'childList' && mutation.addedNodes.length > 0){
-					new Promise(resolve=> {
-						mutation.addedNodes.forEach(item => {
-							
-						})
-						resolve()
-					})
-				}
-
-				if(this.childElementCount == 0){
-					this.#startFirstLine();
-				}
-
+				
 			})
 		});
 		observer.observe(this, {
-			characterData: true,
-			characterDataOldValue: true,
 			childList:true,
 			subtree: true
 		})

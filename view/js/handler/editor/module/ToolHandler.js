@@ -15,7 +15,11 @@ export default class ToolHandler{
 	 */
 	constructor(identity){
 		this.#identity = identity;
+		//다른 부분 선택시에 동작하지 않도록 수정 필요(에디터만 셀렉션체인지인 경우)
 		document.addEventListener("selectionchange", (event) => {
+			if(document.activeElement !== this.#parentEditor){
+				return;
+			}
 			let selection = window.getSelection();
 			/**
 			 * None 현재 선택된 항목이 없습니다.

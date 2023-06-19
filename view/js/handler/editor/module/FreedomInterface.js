@@ -1,4 +1,3 @@
-import { linePixelShader } from 'babylonjs/Shaders/line.fragment';
 import Line from '../component/Line'
 
 export default class FreedomInterface extends HTMLElement {
@@ -121,7 +120,6 @@ export default class FreedomInterface extends HTMLElement {
 									let line = this.constructor.toolHandler.parentEditor.createLine();
 									line.replaceChildren(e);
 									this.append(line);
-									line.lookAtMe();
 									if( i == addedNodes.length - 1){
 										lastItemIndex = i;
 									}
@@ -129,7 +127,7 @@ export default class FreedomInterface extends HTMLElement {
 								}
 								return e;
 							});
-							addedNodes[addedNodes.length - 1].lookAtMe();
+							resultList[resultList.length - 1].lookAtMe();
 						}else{
 							resultList = addedNodes;
 						}
@@ -149,12 +147,14 @@ export default class FreedomInterface extends HTMLElement {
 		});
 		childListObserver.observe(this, {childList:true})
 
+		/* 지웠던 코드인 걸로 기억하는데 남아있어서 오류 발생시 확인해볼 것 2023 06 19
 		let disconnectedObserver = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				this.disconnectedChildAfterCallBack();
 			})
 		});
 		disconnectedObserver.observe(this, {childList:true})
+		*/
 	}
 
 	connectedCallback(){
