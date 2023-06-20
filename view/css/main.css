@@ -14,28 +14,6 @@ body::-webkit-scrollbar {
 	display: none;
 }
 
-#container{
-	display: inline-flex;
-    height: 100%;
-    width: 100%;
-	flex: 1;
-	overflow: auto;
-	overflow-wrap: revert-layer;
-	-ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-#container::-webkit-scrollbar{
-	display: none;
-}
-
-#container > *{
-	box-sizing: border-box;
-	flex: 1;
-	resize: horizontal;
-	flex-direction: row;
-}
-
 /*
 div[is="content-block"]{
     height:100%;
@@ -50,21 +28,17 @@ div[is="content-block"]{
 }
 
 .content_wrapper.options_wrapper{
-    min-width: fit-content;
     background-color: aliceblue;
 }
 .content_wrapper.rooms_wrapper{
-    min-width: fit-content;
     background-color: antiquewhite;
 }
 .content_wrapper.chating_wrapper{
     background-color: #f3f3f3;
 }
 .content_wrapper.chating_wrapper > *{
-    width: 100%;
 }
 .content_wrapper.thread_wrapper{
-    min-width: fit-content;
     background-color: aquamarine;
 }
 

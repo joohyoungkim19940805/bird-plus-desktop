@@ -10,20 +10,21 @@
 		<link rel="stylesheet" type="text/css" href="./../css/main.css">
 		<!--<link rel="stylesheet" type="text/css" href="./../css/contentBlock.css">-->
 		<script type="text/javascript" src="./../js/component/header/HeaderDefault.js"></script>
+		<script type="text/javascript" src="./../js/component/FlexLayout.js"></script>
 		<!--<script type="text/javascript" src="./../js/component/ResizePanel.js"></script>-->
 		<!--<script type="text/javascript" src="./../js/component/MainLayout.js"></script>-->
 		<!--<script type="text/javascript" src="./../js/component/ContentBlockLayout.js"></script>-->
 	</head>
 	<body>
 		<header-default></header-default>
-		<flux-layout id="container">
-			<div class="content_wrapper options_wrapper" data-info="기능 옵션 도구">
+		<flex-layout id="container" data-direction="row">
+			<div class="content_wrapper options_wrapper" data-is_resize="true" data-info="기능 옵션 도구">
 				<div is="content-block" data-direction="x" class="content" data-is_no_resize="">aaaaaaa</div>
 			</div>
-			<div class="content_wrapper rooms_wrapper" data-info="채널과 방 등">
+			<div class="content_wrapper rooms_wrapper" data-is_resize="true" data-info="채널과 방 등">
 				<div is="content-block" data-direction="x" class="content">abcdddddddd</div>
 			</div>
-			<div class="content_wrapper chating_wrapper" data-info="채팅 관련">
+			<div class="content_wrapper chating_wrapper" data-is_resize="true" data-info="채팅 관련">
 				<div is="content-block" data-direction="x" class="content">
 					<div class="chating_block content_wrapper">
 						<!-- 추후 한번더 감싸는 동작 필요 = container 위치 parent > parent로 하위 콘텐츠 블럭을 핸들링해야함 -->
@@ -43,7 +44,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="content_wrapper thread_wrapper" data-info="스레드 같은 거">
+			<div class="content_wrapper thread_wrapper" data-is_resize="true" data-info="스레드 같은 거">
 				<div is="content-block" data-direction="x" class="content" data-is_no_resize="" data-is_last_child="">abcdefghijk</div>
 			</div>
 		</main-layout>

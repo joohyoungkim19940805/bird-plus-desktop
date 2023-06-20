@@ -11,25 +11,39 @@ class FlexLayout extends HTMLElement {
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'flex-layout-style',
 		textContent : `
+			${this.#componentName}{
+				display: inline-flex;
+				height: 100%;
+				width: 100%;
+				overflow: auto;
+				overflow-wrap: revert-layer;
+				-ms-overflow-style: none;
+				scrollbar-width: none;
+			}
+			${this.#componentName}::-webkit-scrollbar{
+				display: none;
+			}
 			${this.#componentName}[data-direction="column"]{
 				flex-direction: column;
 			}
 			${this.#componentName}[data-direction="row"]{
 				flex-direction: row;
-			} 
-			${this.#componentName} > ${this.#childClass}[data-is_resize="true"]{
-				flex: 1 1 0%;
 			}
-			${this.#componentName} > ${this.#childClass}[data-is_resize="false"]{
+
+			${this.#componentName} > .${this.#childClass}[data-is_resize="true"]{
+				flex: 1 1 0%;
+				box-sizing: border-box;
+			}
+			${this.#componentName} > .${this.#childClass}[data-is_resize="false"]{
 				flex: 0 0 0%;
+				box-sizing: border-box;
 			}
 			${this.#componentName} .${this.#resizePanelClass}{
 				background-color: #b1b1b1;
 				z-index: 0;
-				position: absolute;
 				display: flex;
 				justify-content: center;
-				flex : 0 0 0%;
+				flex: 0 0 0.1%;
 				-moz-user-select: -moz-none;
 				-khtml-user-select: none;
 				-webkit-user-select: none;
@@ -130,14 +144,14 @@ class FlexLayout extends HTMLElement {
 	// 세로 모드인 경우 firstElementChild의 리사이즈 제거 필요 
 	constructor(){
 		super();
+		console.log('??')
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				let {addedNodes, removedNodes} = mutation;
 				addedNodes.forEach(childElement=>{
-					if(childElement.nodeType != Node.ELEMENT_NODE){
+					if(childElement.nodeType != Node.ELEMENT_NODE || childElement.classList.contains(FlexLayout.resizePanelClass)){
 						return;
 					}
-					
 					childElement.classList.add(FlexLayout.childClass)
 					
 					if(childElement.dataset.is_resize == 'true'){
@@ -219,14 +233,29 @@ class FlexLayout extends HTMLElement {
 		}
 
 		window.addEventListener('mousemove', (event) => {
-			if( ! this.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
+			if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
 				return;
 			}
-			// 부모요소 width 계산, 자기 자신 요소 width 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex glow 반영
+			// 부모요소 width 계산, 자기 자신 요소 width 마우스 위치값 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex grow 반영
+			let parentWidth = this.getBoundingClientRect().width;
+			let targetRect = resizePanel.__resizeTarget.getBoundingClientRect();
+			let nextElementRect = resizePanel.nextElementSibling.getBoundingClientRect();
+
+			let {x,y} = event;
+			if(this.dataset.direction == 'row'){
+				let targetWidth = targetRect.left + event.x;
+				let nextElementWidth = nextElementRect.right - event.y;
+				
+				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
+				let nextElementFlexGrow = (nextElementWidth / parentWidth) * this.#growLimit;
+
+				resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
+				resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
+			}
 		})
 	}
 
 }
 
 
-window.customElements.define(FlexLayout.name, MainLayout);
+window.customElements.define(FlexLayout.componentName, FlexLayout);
