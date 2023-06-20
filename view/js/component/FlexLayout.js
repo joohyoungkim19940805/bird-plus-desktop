@@ -29,7 +29,9 @@ class FlexLayout extends HTMLElement {
 			${this.#componentName}[data-direction="row"]{
 				flex-direction: row;
 			}
-
+			${this.#componentName} > .${this.#childClass} > *{
+				width: 100%;
+			}
 			${this.#componentName} > .${this.#childClass}[data-is_resize="true"]{
 				flex: 1 1 0%;
 				box-sizing: border-box;
@@ -159,6 +161,7 @@ class FlexLayout extends HTMLElement {
 						childElement.__resizePanel = resizePanel;
 						childElement.after(resizePanel);
 						resizePanel.__resizeTarget = childElement; 
+						childElement.dataset.grow = 1
 					}
 				});
 				this.#growLimit = [...this.children].filter(e=>e.dataset.is_resize == 'true').length;
@@ -243,9 +246,11 @@ class FlexLayout extends HTMLElement {
 
 			let {x,y} = event;
 			if(this.dataset.direction == 'row'){
-				let targetWidth = targetRect.left + event.x;
-				let nextElementWidth = nextElementRect.right - event.y;
-				
+				console.log(event.x);
+				console.log(event);
+				let targetWidth = targetRect.left - event.x;
+				let nextElementWidth = nextElementRect.right - event.x;
+
 				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
 				let nextElementFlexGrow = (nextElementWidth / parentWidth) * this.#growLimit;
 
