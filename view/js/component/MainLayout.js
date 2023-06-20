@@ -179,6 +179,7 @@ class FlexLayout extends HTMLElement {
 				</div>
 			`
 		});
+		this.#addResizePanelEvent(resizePanel);
 		return resizePanel;
 	}
 
@@ -187,12 +188,17 @@ class FlexLayout extends HTMLElement {
 	 * @param {HTMLElement} resizePanel 
 	 */
 	#addResizePanelEvent(resizePanel){
-		let resizeCursor;
-		if(this.dataset.direction == 'row'){
-			resizeCursor = 'ew-resize';
-		}else if(this.dataset.direction == 'column'){
-			resizeCursor = 'ns-resize';
+		
+		let getCursor = () => {
+			if(this.dataset.direction == 'row'){
+				resizeCursor = 'ew-resize';
+			}else{
+				//is ::: this.dataset.direction == 'column'
+				resizeCursor = 'ns-resize';
+			}
+			return resizeCursor;
 		}
+		
 		resizePanel.onmousedown = (event) => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			document.body.style.cursor = 'ew-resize'
@@ -216,6 +222,7 @@ class FlexLayout extends HTMLElement {
 			if( ! this.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
 				return;
 			}
+			// 부모요소 width 계산, 자기 자신 요소 width 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex glow 반영
 		})
 	}
 
