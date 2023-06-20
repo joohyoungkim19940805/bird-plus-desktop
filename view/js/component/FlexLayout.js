@@ -244,11 +244,8 @@ class FlexLayout extends HTMLElement {
 			let targetRect = resizePanel.__resizeTarget.getBoundingClientRect();
 			let nextElementRect = resizePanel.nextElementSibling.getBoundingClientRect();
 
-			let {x,y} = event;
 			if(this.dataset.direction == 'row'){
-				console.log(event.x);
-				console.log(event);
-				let targetWidth = targetRect.left - event.x;
+				let targetWidth = event.x - targetRect.left;
 				let nextElementWidth = nextElementRect.right - event.x;
 
 				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
