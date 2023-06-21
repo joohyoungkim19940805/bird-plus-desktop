@@ -35,6 +35,7 @@ class FlexLayout extends HTMLElement {
 			${this.#componentName} > .${this.#childClass}[data-is_resize="true"]{
 				flex: 1 1 0%;
 				box-sizing: border-box;
+				overflow: hidden;
 			}
 			${this.#componentName} > .${this.#childClass}[data-is_resize="false"]{
 				flex: 0 0 0%;
@@ -62,11 +63,13 @@ class FlexLayout extends HTMLElement {
 				height: 2.5px;
 				width:100%;
 			}
-			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass}:hover > .hover{
+			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass}:hover > .hover, 
+			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass} > .hover[data-is_hover]{
 				width: 5px;
 				height: inherit;
 			}
-			${this.#componentName}[data-direction="column"] .${this.#resizePanelClass}:hover > .hover{
+			${this.#componentName}[data-direction="column"] .${this.#resizePanelClass}:hover > .hover,
+			${this.#componentName}[data-direction="column"] .${this.#resizePanelClass} > .hover[data-is_hover]{
 				height: 5px;
 				width: inherit;
 			}
@@ -77,7 +80,9 @@ class FlexLayout extends HTMLElement {
 				cursor: ns-resize;
 			}
 			${this.#componentName} .${this.#resizePanelClass} > .hover{
-				display: none;
+				opacity: 0;
+				visibility: hidden;
+				transition: all 1s;
 			}
 			${this.#componentName} .${this.#resizePanelClass}:hover{
 				animation-name: drag-panel-hover;
@@ -88,11 +93,15 @@ class FlexLayout extends HTMLElement {
 				animation-timing-function: cubic-bezier(1, -0.37, 0.73, 0.8);
 			}
 			
-			${this.#componentName} .${this.#resizePanelClass}:hover > .hover{
+			${this.#componentName} .${this.#resizePanelClass}:hover > .hover,
+			${this.#componentName} .${this.#resizePanelClass} > .hover[data-is_hover]{
 				background-color: #0066ffb5;
 				z-index: 9999;
 				position: absolute;
 				display: block;
+				opacity: 1;
+				visibility: inherit;
+				transition: all 1s;
 				animation-name: drag-panel-hover-highlight;
 				animation-fill-mode: forwards;
 				animation-direction: normal;
@@ -218,6 +227,7 @@ class FlexLayout extends HTMLElement {
 		
 		resizePanel.onmousedown = (event) => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
+			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 			document.body.style.cursor = 'ew-resize'
 		}
 
@@ -225,6 +235,8 @@ class FlexLayout extends HTMLElement {
 			if( resizePanel.hasAttribute('data-is_mouse_down')) {
 				resizePanel.removeAttribute('data-is_mouse_down');
 			}
+			
+			resizePanel.querySelector('.hover').removeAttribute('data-is_hover', '');
 			
 			if(document.body.style.cursor == 'ew-resize' || document.body.style.cursor == 'ns-resize'){
 				document.body.style.cursor = '';
@@ -247,7 +259,16 @@ class FlexLayout extends HTMLElement {
 			if(this.dataset.direction == 'row'){
 				let targetWidth = event.x - targetRect.left;
 				let nextElementWidth = nextElementRect.right - event.x;
-
+				if(targetWidth < 0){
+					targetWidth = 0
+					nextElementWidth = targetRect.width + nextElementRect.width
+				}else if(nextElementWidth < 0){
+					targetWidth = targetRect.width + nextElementRect.width;
+					nextElementWidth = 0
+				}
+				
+				console.log('targetWidth',targetWidth);
+				console.log('nextElementWidth',nextElementWidth);
 				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
 				let nextElementFlexGrow = (nextElementWidth / parentWidth) * this.#growLimit;
 
