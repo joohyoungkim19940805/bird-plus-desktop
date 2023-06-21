@@ -259,14 +259,16 @@ class FlexLayout extends HTMLElement {
 			if(this.dataset.direction == 'row'){
 				let targetWidth = event.x - targetRect.left;
 				let nextElementWidth = nextElementRect.right - event.x;
+
 				if(targetWidth < 0){
 					targetWidth = 0
-					nextElementWidth = targetRect.width + nextElementRect.width
+					nextElementWidth = /*targetRect.width +*/ nextElementRect.width
 				}else if(nextElementWidth < 0){
-					targetWidth = targetRect.width + nextElementRect.width;
+					targetWidth = targetRect.width /*+ nextElementRect.width*/;
 					nextElementWidth = 0
 				}
 				
+				//두 계산의 합이 무조건 100%가 되는 게 문제, grow 기준 비율이 되어야 함 2023 06 21
 				console.log('targetWidth',targetWidth);
 				console.log('nextElementWidth',nextElementWidth);
 				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
