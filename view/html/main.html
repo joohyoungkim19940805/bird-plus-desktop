@@ -18,30 +18,32 @@
 	<body>
 		<header-default></header-default>
 		<flex-layout id="container" data-direction="row">
-			<div class="content_wrapper options_wrapper" data-is_resize="true" style="flex: 0.23 1 0%;" data-info="기능 옵션 도구">
-				<div is="content-block" data-direction="x" class="content" data-is_no_resize="">aaaaaaa</div>
+			<div class="content_wrapper options_wrapper" data-is_resize="true" data-grow="0.28" data-info="기능 옵션 도구">
+				<div class="content" data-is_no_resize="">aaaaaaa</div>
 			</div>
-			<div class="content_wrapper rooms_wrapper" data-is_resize="true" style="flex: 0.456 1 0%;" data-info="채널과 방 등">
-				<div is="content-block" data-direction="x" class="content">abcdddddddd</div>
+			<div class="content_wrapper rooms_wrapper" data-is_resize="true" data-grow="0.5" data-info="채널과 방 등">
+				<div class="content">abcdddddddd</div>
 			</div>
 			<div class="content_wrapper chating_wrapper" data-is_resize="true" data-info="채팅 관련">
-				<div is="content-block" data-direction="x" class="content">
-					<div class="chating_block content_wrapper">
+				<div class="content">
+					<flex-layout class="chating_block content_wrapper" data-direction="column">
 						<!-- 추후 한번더 감싸는 동작 필요 = container 위치 parent > parent로 하위 콘텐츠 블럭을 핸들링해야함 -->
-							<div calss="chating_summary">
-							a
+							<div class="chating_summary" data-is_resize="true">
+								<div class="content">a</div>
 							</div>
-							<div class="chating_info">
-							a
+							<div class="chating_info" data-is_resize="true">
+								<div class="content">a</div>
 							</div>
-							<div class="chating_content">
-								<div id="toolbar" data-info="tool button wrap">
+							<div class="chating_content" data-is_resize="true">
+								<div class="content">
+									<div id="toolbar" data-info="tool button wrap">
+									</div>
+									<free-will-editor>
+										
+									</free-will-editor>
 								</div>
-								<free-will-editor>
-									
-								</free-will-editor>
 							</div>
-					</div>
+					</flex-layout>
 				</div>
 			</div>
 			<div class="content_wrapper thread_wrapper" data-is_resize="true" data-info="스레드 같은 거">

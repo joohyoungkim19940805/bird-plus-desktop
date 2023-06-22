@@ -30,6 +30,9 @@ class FlexLayout extends HTMLElement {
 				flex-direction: row;
 			}
 			${this.#componentName} > .${this.#childClass} > *{
+				display: flex;
+				flex-direction: column;
+				height: 100%;
 				width: 100%;
 			}
 			${this.#componentName} > .${this.#childClass}[data-is_resize="true"]{
@@ -43,7 +46,7 @@ class FlexLayout extends HTMLElement {
 			}
 			${this.#componentName} .${this.#resizePanelClass}{
 				background-color: #b1b1b1;
-				z-index: 0;
+				z-index: 9999;
 				display: flex;
 				justify-content: center;
 				flex: 0 0 0.1%;
@@ -65,12 +68,12 @@ class FlexLayout extends HTMLElement {
 			}
 			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass}:hover > .hover, 
 			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass} > .hover[data-is_hover]{
-				width: 5px;
+				width: 3px;
 				height: inherit;
 			}
 			${this.#componentName}[data-direction="column"] .${this.#resizePanelClass}:hover > .hover,
 			${this.#componentName}[data-direction="column"] .${this.#resizePanelClass} > .hover[data-is_hover]{
-				height: 5px;
+				height: 3px;
 				width: inherit;
 			}
 			${this.#componentName}[data-direction="row"] .${this.#resizePanelClass}{
@@ -168,12 +171,42 @@ class FlexLayout extends HTMLElement {
 					if(childElement.dataset.is_resize == 'true'){
 						let resizePanel = this.#createResizePanel();
 						childElement.__resizePanel = resizePanel;
+						
 						childElement.after(resizePanel);
+						
 						resizePanel.__resizeTarget = childElement; 
-						childElement.dataset.grow = 1
 					}
 				});
-				this.#growLimit = [...this.children].filter(e=>e.dataset.is_resize == 'true').length;
+				let forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
+				this.#growLimit = forResizeList.length;
+
+				new Promise(resolve => {
+					let notGrowList = [];
+					let remain = forResizeList.reduce((t,e,i)=>{
+						if(e.hasAttribute('data-grow') == false){
+							notGrowList.push(e);
+							return t;
+						}
+						let grow = parseFloat(e.dataset.grow);
+						e.style.flex = `${grow} 1 0%`;
+						t -= grow;
+						return t;
+					}, this.#growLimit);
+
+					const resizeFun = (list) => {
+						let resizeWeight = (remain - list.length) / list.length;
+						list.forEach(e=>{
+							e.style.flex = `${1 + resizeWeight} 1 0%`;
+						});
+					}
+					if(notGrowList.length == 0){
+						resizeFun(forResizeList);
+					}else{
+						resizeFun(notGrowList);
+					}
+
+					resolve();
+				});
 			});
 		})
 		observer.observe(this, {childList:true});
@@ -215,20 +248,10 @@ class FlexLayout extends HTMLElement {
 	 */
 	#addResizePanelEvent(resizePanel){
 		
-		let getCursor = () => {
-			if(this.dataset.direction == 'row'){
-				resizeCursor = 'ew-resize';
-			}else{
-				//is ::: this.dataset.direction == 'column'
-				resizeCursor = 'ns-resize';
-			}
-			return resizeCursor;
-		}
-		
 		resizePanel.onmousedown = (event) => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
-			document.body.style.cursor = 'ew-resize'
+			document.body.style.cursor = this.getCursor;
 		}
 
 		window.addEventListener('mouseup', (event) => {
@@ -252,34 +275,58 @@ class FlexLayout extends HTMLElement {
 				return;
 			}
 			// 부모요소 width 계산, 자기 자신 요소 width 마우스 위치값 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex grow 반영
-			let parentWidth = this.getBoundingClientRect().width;
+			
 			let targetRect = resizePanel.__resizeTarget.getBoundingClientRect();
 			let nextElementRect = resizePanel.nextElementSibling.getBoundingClientRect();
 
+			let xy;
+			let targetDirection;
+			let nextElementDirection;
+			let sizeName;
+			let parentSize;
 			if(this.dataset.direction == 'row'){
-				let targetWidth = event.x - targetRect.left;
-				let nextElementWidth = nextElementRect.right - event.x;
-
-				if(targetWidth < 0){
-					targetWidth = 0
-					nextElementWidth = /*targetRect.width +*/ nextElementRect.width
-				}else if(nextElementWidth < 0){
-					targetWidth = targetRect.width /*+ nextElementRect.width*/;
-					nextElementWidth = 0
-				}
-				
-				//두 계산의 합이 무조건 100%가 되는 게 문제, grow 기준 비율이 되어야 함 2023 06 21
-				console.log('targetWidth',targetWidth);
-				console.log('nextElementWidth',nextElementWidth);
-				let targetFlexGrow = (targetWidth / parentWidth) * this.#growLimit;
-				let nextElementFlexGrow = (nextElementWidth / parentWidth) * this.#growLimit;
-
-				resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
-				resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
+				xy = 'x';
+				targetDirection = 'left';
+				nextElementDirection = 'right'
+				sizeName = 'width'
+				parentSize = this.getBoundingClientRect().width;
+			}else{
+				xy = 'y';
+				targetDirection = 'top';
+				nextElementDirection = 'bottom';
+				sizeName = 'height';
+				parentSize = this.getBoundingClientRect().height;
 			}
+
+			let targetWidth = event[xy] - targetRect[targetDirection];
+			let nextElementWidth = nextElementRect[nextElementDirection] - event[xy];
+
+			if(targetWidth < 0){
+				targetWidth = 0
+				nextElementWidth = /*targetRect.width +*/ nextElementRect[sizeName]
+			}else if(nextElementWidth < 0){
+				targetWidth = targetRect[sizeName] /*+ nextElementRect.width*/;
+				nextElementWidth = 0
+			}
+
+			let targetFlexGrow = (targetWidth / parentSize) * this.#growLimit;
+			let nextElementFlexGrow = (nextElementWidth / parentSize) * this.#growLimit;
+
+			resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
+			resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
+
 		})
 	}
-
+	get getCursor(){
+		let resizeCursor;
+		if(this.dataset.direction == 'row'){
+			resizeCursor = 'ew-resize';
+		}else{
+			//is ::: this.dataset.direction == 'column'
+			resizeCursor = 'ns-resize';
+		}
+		return resizeCursor;
+	}
 }
 
 

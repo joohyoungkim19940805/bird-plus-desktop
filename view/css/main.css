@@ -43,7 +43,7 @@ div[is="content-block"]{
 }
 
 /* chating_wrapper 크기 조절*/
-div.chating_block{
+.chating_block{
     display: inline-flex;
     height: 100%;
     flex-direction: column;
@@ -53,14 +53,7 @@ div.chating_block{
 	width: 100%;
 }
 
-div.chating_block .chating_summary{
-	height: 20%;
-}
-div.chating_block .chating_info{
-	height: 50%;
-}
-div.chating_block .chating_content{
-	height: 30%;
+.chating_block .chating_content{
 	display: flex;
     flex-direction: column;
 }
@@ -71,7 +64,7 @@ div.chating_block .chating_content{
 	background-color: #d7d7d7cf;
     padding-left: 1%;
     padding-right: 1%;
-    border-top: ridge 2px;
+    /*border-top: ridge 2px;*/
     border-color: #dbdbdb;
     overflow-wrap: anywhere;
     display: flex;
