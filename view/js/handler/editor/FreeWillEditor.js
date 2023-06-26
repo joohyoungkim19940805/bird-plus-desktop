@@ -1,6 +1,6 @@
 import Line from './component/Line'
 import FreeWiilHandler from './module/FreeWiilHandler'
-import UndoManager from './fragment/UndoManager3'
+import UndoManager from './fragment/UndoManager'
 
 import Strong from "./tools/Strong"
 import Color from "./tools/Color"
