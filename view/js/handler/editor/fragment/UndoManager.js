@@ -276,4 +276,12 @@ export default class UndoManager{
 		});
         */
     }
+
+    clearHistory(){
+        this.#history = [];
+    }
+    
+    clearEditor(){
+        this.#editor.innerHTML = '';
+    }
 }
