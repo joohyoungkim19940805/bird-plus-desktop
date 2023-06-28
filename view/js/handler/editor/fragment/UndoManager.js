@@ -6,6 +6,7 @@ export default class UndoManager{
     #editor;
     #history = [];
     #historyIndex = 0;
+    #historyLimit = 2000;
     #UndoRedo = class UndoRedo{
         #html
         #time
@@ -231,6 +232,9 @@ export default class UndoManager{
                         if(this.#editor.tools.hasOwnProperty(tagName) && this.#history.length != 0 && this.#history[0].html.trim() != this.#editor.innerHTML.trim()){
                             let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
                             this.#history.unshift(undoRedo);
+                            if(this.#history.length > this.#historyLimit){
+                                this.#history = this.#history.splice(0, this.#historyLimit);
+                            }
                         }
                     });
                     resolve();
