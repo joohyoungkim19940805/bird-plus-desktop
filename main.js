@@ -9,7 +9,6 @@ global.__serverApi = (()=>{
 		return 'http://localhost:8079/';
 	}
 })();
-global.__apiToken = '';
 
 // 일렉트론 모듈 호출
 const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');

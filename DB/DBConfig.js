@@ -137,26 +137,24 @@ class DBConfig{
 					/**
 					 * columnInfo로 정의되었으나 테이블에는 없는 컬럼은 추가
 					 */
-					return new Promise(resolve=>{
-						return Promise.all(Object.entries(column.info).map(([key,value])=>{
-							let pormise = new Promise(res=>{
-								if( ! dbColumnMapper[key]){
-									console.log(value.type)
-									console.log(value.default)
-									db.run(`ALTER TABLE ${tableName} ADD COLUMN ${key} ${value.type} DEFAULT '${value.default}'`, (err)=>{
-										if(err){
-											console.error('add column trying but failed', err)
-										}
-										res();
-									})
-								}
-							})
-							//console.log(dbColumnMapper)
-							//console.log('dbColumnMapper >>> 222', dbColumnMapper);
-							
-							return pormise;
-						}))
-					})
+					return Promise.all(Object.entries(column.info).map(([key,value])=>{
+						let pormise = new Promise(res=>{
+							if( ! dbColumnMapper[key]){
+								console.log(value.type)
+								console.log(value.default)
+								db.run(`ALTER TABLE ${tableName} ADD COLUMN ${key} ${value.type} DEFAULT '${value.default}'`, (err)=>{
+									if(err){
+										console.error('add column trying but failed', err)
+									}
+									res();
+								})
+							}
+						})
+						//console.log(dbColumnMapper)
+						//console.log('dbColumnMapper >>> 222', dbColumnMapper);
+						
+						return pormise;
+					}))
 				}).then(()=>{
 					db.close((err) => {
 						if(err){

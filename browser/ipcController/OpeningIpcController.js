@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 //const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+const axios = require('axios');
 class OpeningIpcController {
 	constructor() {
 		/**
@@ -74,7 +75,8 @@ class OpeningIpcController {
 						mainWindow.autoHideMenuBar = false;
 						mainWindow.menuBarVisible = true;
 						if(rows[0]){
-							global.__apiToken = rows[0].TOKEN
+							//global.__apiToken = rows[0].TOKEN
+							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
 							mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
 								mainWindow.titleBarStyle = 'visibble'
 								mainWindow.show();

@@ -29,7 +29,7 @@ new class OpeningRenderer{
 				}, 1500)
 			})
 			.then(() => {
-				return window.myAPI.changeLoginPage();
+				return window.myAPI.pageChange.changeLoginPage();
 			}).then((e)=>{
 				console.log(e)
 			});

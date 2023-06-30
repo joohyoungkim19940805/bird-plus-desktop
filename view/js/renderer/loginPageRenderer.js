@@ -10,13 +10,15 @@ new class LoginPageRenderer{
 				obj[e.name] = e.value
 				return obj;
 			}, {});
-
-			window.myAPI.loginProc(param).then(response=>{
-				console.log('????????????????????????????????????');
+			console.log(window.myAPI.account)
+			console.log(window.myAPI)
+			console.log(window.myAPI.pageChange.changeMainPage());
+			
+			window.myAPI.account.loginProc(param).then(response=>{
 				console.log(response);
 				let {code} = response;
 				if(code == '00'){
-					window.myAPI.changeMainPage();
+					window.myAPI.pageChange.changeMainPage();
 				}else if(code == 101){
 					statusText.textContent = '해당 기능에 권한이 없습니다.'
 				}else if(code == 102){

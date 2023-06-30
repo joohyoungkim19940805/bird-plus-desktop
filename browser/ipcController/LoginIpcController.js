@@ -17,11 +17,13 @@ class LoginIpcController {
 				let status = response.status;
 				let {code, data} = response.data;
 				if((status == '200' || status == '201') && code == '00'){
+					
 					let db = dbConfig.getDB();
 					db.serialize( () => {
 						//console.log(data)
 						let {token, issuedAt, expiresAt} = data;
-						global.__apiToken = token; 
+						//global.__apiToken = token; 
+						/*
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
 								TOKEN,
@@ -35,12 +37,16 @@ class LoginIpcController {
 							}
 							global.__apiToken = token
 						});
+						*/
+						//console.log(axios.defaults);
+						
+						axios.defaults.headers.common['Authorization'] = token;
 					})
 					
 				}
-				return response.data;
+				return data;
 			}).catch(err=>{
-				console.log(err.response)
+				console.error(err);
 				return err.response.data;
 			})
 		})

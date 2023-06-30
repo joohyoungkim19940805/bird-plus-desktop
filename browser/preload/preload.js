@@ -18,6 +18,7 @@ const electronEventTrigger = {
 };
 
 contextBridge.exposeInMainWorld('myAPI', {
+
 	/**
 	 * 단방향 ipc 통신
 	 * 보안상의 이유로ipcRenderer.send 전체 API를 직접 노출하지 않습니다. 
@@ -34,12 +35,23 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	scanningUserDirectory : () => ipcRenderer.invoke('scanningUserDirectory'),
 	
-	changeLoginPage : () => ipcRenderer.invoke('changeLoginPage'),
-	changeMainPage : () => ipcRenderer.invoke('changeMainPage'),
+	pageChange : {
+		changeLoginPage : () => ipcRenderer.invoke('changeLoginPage'),
+		changeMainPage : () => ipcRenderer.invoke('changeMainPage'),
+	},
 
-	loginProc : (param) => ipcRenderer.invoke('loginProc', param),
+	regist : {
+		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
+	},
+
+	account : {
+		loginProc : (param) => ipcRenderer.invoke('loginProc', param),
+	},
 	
-	electronEventTrigger : electronEventTrigger,
+	event : {
+		electronEventTrigger : electronEventTrigger,
+	}
+	
 })
 
 

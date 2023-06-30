@@ -57,8 +57,24 @@ class Editor extends FreeWillEditor{
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'
+
+		this.#addEvent();
 	}
-	
+	#addEvent(){
+		this.onkeydown = (event) => {
+			let {altKey, ctrlKey, shiftKey, key} = event;
+			// key == Enter
+			console.log(event);
+			if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+				let line = this.createLine();
+			}else if(key == 'Enter'){
+				event.preventDefault();
+				window.myAPI.regist.sendChatting(this.innerHTML).then(res=>{
+					console.log(res);
+				})
+			}
+		}
+	}
 }
 
 window.customElements.define('free-will-editor', Editor);
