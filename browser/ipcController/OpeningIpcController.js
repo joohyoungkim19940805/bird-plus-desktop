@@ -96,9 +96,7 @@ class OpeningIpcController {
 
 		//this.addIpcMainEvents()
 	}
-	test(){
-		new EventSource()
-	}
+
 	/*
 	addIpcMainEvents(){
 		

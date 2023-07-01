@@ -27,6 +27,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#placeholder;
 	#firstLine;
 	#undoManager;
+	#jsonTemplate = {
+		'textNode':'',
+
+	};
 	constructor(
 		components={
 			'free-will-editor-line' : Line
@@ -50,22 +54,22 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}
 	){
 		super();
-		this.#undoManager = new UndoManager(this);
 		this.components = components;
 		this.tools = tools;
 
-		this.componentsMap = Object.entries(this.components).forEach( ([className, Component]) => {
+		this.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Component.toolHandler.defaultClass = className;
 			Component.toolHandler.parentEditor = this;
-			window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
-
-			//obj[Component.constructor.name] = Component;
-			//return obj;
-		})
-		this.toolsMap = Object.entries(this.tools).reduce( (obj, [className, Tool]) => {
+			if( ! window.customElements.get(className)){
+				window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
+			}	
+			total[Component.name] = Component;
+			return total;
+		}, {});
+		this.toolsMap = Object.entries(this.tools).reduce( (total, [className, Tool]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
@@ -93,9 +97,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				attributeOldValue:true
 			})
 			
-			window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
-			obj[Tool.name] = Tool;
-			return obj;
+			if( ! window.customElements.get(className)){
+				window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
+			}
+			total[Tool.name] = Tool;
+			return total;
 		}, {})
 
 		let observer = new MutationObserver( (mutationList, observer) => {
@@ -127,6 +133,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			this.tabIndex = 1;
 			this.focus()
 			this.#startFirstLine();
+			this.#undoManager = new UndoManager(this);
 		}
 	}
 	disconnectedCallback(){
@@ -225,7 +232,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	#removerToos(TargetTool){
 		let selection = window.getSelection();
-		let {isCollapsed,anchorNode, focusNode} = selection;
+		let {isCollapsed, anchorNode, focusNode} = selection;
 		// 범위 선택 x인 경우 넘어가기
 		if(isCollapsed){
 			return;
@@ -233,6 +240,68 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		super.getLineRange(selection).then(({startLine, endLine})=> {
 			console.log(startLine, endLine);
 			startLine.cancelTool(TargetTool, selection, endLine);
+		})
+	}
+	
+	getLowDoseJSON(targetElement = this){
+		return [...targetElement.childNodes]
+			.map((node, index)=>{
+				if(targetElement == this && node.nodeType == Node.TEXT_NODE){
+					return undefined;
+				}
+				return this.#toJSON(node)
+			})
+			.filter(e=>e != undefined);
+	}
+
+	#toJSON(node){
+		let obj = {};
+		if(node.nodeType == Node.TEXT_NODE){
+			obj.type = Node.TEXT_NODE;
+			obj.name = node.constructor.name;
+			obj.text = node.textContent
+		}else if(node.nodeType == Node.ELEMENT_NODE){
+			obj.type = Node.ELEMENT_NODE;
+			obj.name = node.constructor.name;
+			obj.data = Object.assign({}, node.dataset);
+			if(node.hasAttribute('is_cursor')){
+				obj.cursor_offset = node.getAttribute('cursor_offset');
+				obj.cursor_type = node.getAttribute('cursor_type');
+				obj.cursor_index = node.getAttribute('cursor_index');
+				obj.cursor_scroll_x = node.getAttribute('cursor__scroll_x');
+				obj.cursor_scroll_y = node.getAttribute('cursor_scroll_y');
+			}
+			obj.childs = this.getLowDoseJSON(node);
+		}else{
+			return undefined;
+		}
+		return obj;
+	}
+
+	parseLowDoseJSON(json){
+		let jsonObj = json;
+		if(typeof json == 'string'){
+			jsonObj = JSON.parse(json);
+		}
+		if(jsonObj instanceof Array){
+			this.replaceChildren(...this.#toHTML(jsonObj, this).filter(e=> e != undefined));
+		}
+	}
+
+	#toHTML(objList, parent = this){
+		return objList.map(jsonNode => {
+			let EditorTarget = this.componentsMap[jsonNode.name] || this.toolsMap[jsonNode.name] || document.createTextNode('');
+			let element = undefined;
+			if(jsonNode.type == Node.TEXT_NODE){
+				EditorTarget.appendData(jsonNode.text);
+				element = EditorTarget
+			}else if(jsonNode.type == Node.ELEMENT_NODE){
+				element = new EditorTarget(jsonNode.data);
+				if(jsonNode.childs.length != 0){
+					element.append(...this.#toHTML(jsonNode.childs, element));
+				}
+			}
+			return element;
 		})
 	}
 

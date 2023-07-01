@@ -136,7 +136,7 @@ export default class Image extends FreedomInterface {
 			Image.defaultStyle.toggleAttribute('data-is_update');
 		}
 
-        if( ! dataset ){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
@@ -145,9 +145,6 @@ export default class Image extends FreedomInterface {
         }
         
         Image.selectedFile.files = new DataTransfer().files
-
-
-
 
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));

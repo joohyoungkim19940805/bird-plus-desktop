@@ -125,7 +125,6 @@ export default class Code extends FreedomInterface {
 		}
 
         super.disconnectedChildAfterCallBack = () => {
-            console.log(1);
 			let nextLine = Code.toolHandler.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				Code.toolHandler.parentEditor.createLine();

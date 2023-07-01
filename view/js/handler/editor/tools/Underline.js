@@ -82,7 +82,7 @@ export default class Underline extends FreedomInterface {
 			Underline.createDefaultStyle();
 			Underline.defaultStyle.toggleAttribute('data-is_update');
 		}
-		if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Underline.palette.r + ',' + Underline.palette.g + ',' + Underline.palette.b + ',' + Underline.palette.a;
 		}
 		this.style.textDecoration = `underline rgba(${this.dataset.rgba}) 1px`;

@@ -80,7 +80,7 @@ export default class Background extends FreedomInterface {
 			Background.createDefaultStyle();
 			Background.defaultStyle.toggleAttribute('data-is_update');
 		}
-		if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Background.palette.r + ',' + Background.palette.g + ',' + Background.palette.b + ',' + Background.palette.a;
 		}
 		this.style.backgroundColor = `rgba(${this.dataset.rgba})`;

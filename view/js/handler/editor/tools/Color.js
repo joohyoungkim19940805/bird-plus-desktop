@@ -78,7 +78,7 @@ export default class Color extends FreedomInterface {
 			Color.createDefaultStyle();
 			Color.defaultStyle.toggleAttribute('data-is_update');
 		}
-		if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Color.palette.r + ',' + Color.palette.g + ',' + Color.palette.b + ',' + Color.palette.a;
 		}
 		this.style.color = `rgba(${this.dataset.rgba})`;

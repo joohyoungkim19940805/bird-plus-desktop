@@ -35,11 +35,12 @@ export default class UndoManager{
      */
     //레인지를 저장해뒀다가 쓰기
     constructor(targetEditor){
-        this.#editor = targetEditor;    
-
-        this.addCursorMove();
-        this.addUndoKey();
-        this.addUserInput();
+        this.#editor = targetEditor;
+        if(this.#editor.contentEditable == 'true'){
+            this.addCursorMove();
+            this.addUndoKey();
+            this.addUserInput();
+        }
 
     }
 

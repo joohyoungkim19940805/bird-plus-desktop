@@ -16,6 +16,7 @@ class LoginIpcController {
 			}).then(response=>{
 				let status = response.status;
 				let {code, data} = response.data;
+				console.log(11111111111)
 				if((status == '200' || status == '201') && code == '00'){
 					
 					let db = dbConfig.getDB();
@@ -44,10 +45,15 @@ class LoginIpcController {
 					})
 					
 				}
-				return data;
+				return response.data;
 			}).catch(err=>{
-				console.error(err);
-				return err.response.data;
+				console.error('error : ', JSON.stringify(err));
+				if(err.response){
+					return err.response.data;
+				}else{
+					return err.message
+				}
+				
 			})
 		})
 

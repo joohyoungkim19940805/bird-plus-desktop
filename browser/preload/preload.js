@@ -50,6 +50,10 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	event : {
 		electronEventTrigger : electronEventTrigger,
+	},
+
+	chatting : {
+		isChattingReady : () => ipcRenderer.send('isChattingReady')
 	}
 	
 })

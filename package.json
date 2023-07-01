@@ -42,6 +42,7 @@
 		"babylonjs": "^5.46.0",
 		"babylonjs-gui": "^5.46.0",
 		"babylonjs-loaders": "^5.46.0",
+		"eventsource": "^2.0.2",
 		"source-map-support": "^0.5.16",
 		"sqlite3": "^5.1.4"
 	},

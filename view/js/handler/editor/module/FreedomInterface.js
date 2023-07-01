@@ -17,7 +17,6 @@ export default class FreedomInterface extends HTMLElement {
 		});
 		document.addEventListener('mousedown', (event) => {
 			this.lastClickElementPath = event.composedPath();
-			console.log('click!')
 			this.globalClickEventPromiseResolve(event)
 			this.globalClickEventPromise = new Promise(resolve => {
 				this.globalClickEventPromiseResolve = resolve;

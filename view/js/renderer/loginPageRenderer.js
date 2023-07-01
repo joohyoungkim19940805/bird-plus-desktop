@@ -10,9 +10,6 @@ new class LoginPageRenderer{
 				obj[e.name] = e.value
 				return obj;
 			}, {});
-			console.log(window.myAPI.account)
-			console.log(window.myAPI)
-			console.log(window.myAPI.pageChange.changeMainPage());
 			
 			window.myAPI.account.loginProc(param).then(response=>{
 				console.log(response);
@@ -29,6 +26,8 @@ new class LoginPageRenderer{
 					statusText.textContent = '비활성화 된 계정입니다.'
 				}else if(code == 999){
 					statusText.textContent = '알 수 없는 오류입니다. 관리자에게 문의하십시오.';
+				}else{
+					statusText.textContent = '서버로부터 응답이 없습니다.';
 				}
 			});
 

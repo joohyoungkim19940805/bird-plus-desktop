@@ -95,7 +95,7 @@ export default class FontSize extends FreedomInterface {
 			FontSize.createDefaultStyle();
 			FontSize.defaultStyle.toggleAttribute('data-is_update');
 		}
-        if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.font_size = FontSize.fontSizeBox.selectedFont?.style.fontSize;
         }
         this.style.fontSize = this.dataset.font_size

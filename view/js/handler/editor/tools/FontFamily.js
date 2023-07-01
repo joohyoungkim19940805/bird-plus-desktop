@@ -107,7 +107,7 @@ export default class FontFamily extends FreedomInterface {
 			FontFamily.createDefaultStyle();
 			FontFamily.defaultStyle.toggleAttribute('data-is_update');
 		}
-        if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.font_family = FontFamily.fontFamilyBox.selectedFont?.style.fontFamily;
         }
         this.style.fontFamily = this.dataset.font_family

@@ -95,7 +95,7 @@ export default class Sort extends FreedomInterface {
 			Sort.createDefaultStyle();
 			Sort.defaultStyle.toggleAttribute('data-is_update');
 		}
-        if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.text_align = Sort.sortBox.selectedSort?.textContent;
         }
         this.style.textAlign = this.dataset.text_align;

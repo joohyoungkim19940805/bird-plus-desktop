@@ -14,6 +14,12 @@ import Italic from "../handler/editor/tools/Italic"
 import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/video"
 import Code from "../handler/editor/tools/Code"
+
+console.log(window.myAPI);
+console.log(window.myAPI.chatting);
+
+window.myAPI.chatting.isChattingReady();
+
 class Editor extends FreeWillEditor{
 	constructor(){
 
@@ -69,7 +75,7 @@ class Editor extends FreeWillEditor{
 				let line = this.createLine();
 			}else if(key == 'Enter'){
 				event.preventDefault();
-				window.myAPI.regist.sendChatting(this.innerHTML).then(res=>{
+				window.myAPI.regist.sendChatting(JSON.stringify(this.getLowDoseJSON)).then(res=>{
 					console.log(res);
 				})
 			}

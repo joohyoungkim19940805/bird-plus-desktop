@@ -83,7 +83,7 @@ export default class Strikethrough extends FreedomInterface {
 			Strikethrough.createDefaultStyle();
 			Strikethrough.defaultStyle.toggleAttribute('data-is_update');
 		}
-		if( ! dataset){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Strikethrough.palette.r + ',' + Strikethrough.palette.g + ',' + Strikethrough.palette.b + ',' + Strikethrough.palette.a;
 		}
 

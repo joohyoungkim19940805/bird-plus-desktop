@@ -142,7 +142,7 @@ export default class Video extends FreedomInterface {
 			Video.defaultStyle.toggleAttribute('data-is_update');
 		}
 
-        if( ! dataset ){
+		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.files = Video.selectedFile.files;
             this.dataset.url = URL.createObjectURL(this.files[0]);
             this.dataset.name = this.files[0].name;
