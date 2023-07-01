@@ -75,7 +75,13 @@ class Editor extends FreeWillEditor{
 				let line = this.createLine();
 			}else if(key == 'Enter'){
 				event.preventDefault();
-				window.myAPI.regist.sendChatting(JSON.stringify(this.getLowDoseJSON)).then(res=>{
+				/*
+				let test = this.getLowDoseJSON();
+				let test2 = JSON.stringify(test);
+				console.log('test<<< ' , test);
+				console.log('test2<<< ', test2);
+				*/
+				window.myAPI.regist.sendChatting(this.getLowDoseJSON()).then(res=>{
 					console.log(res);
 				})
 			}
