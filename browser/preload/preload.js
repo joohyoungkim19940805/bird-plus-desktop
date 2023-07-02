@@ -72,3 +72,11 @@ ipcRenderer.on('resized', (event, message) => {
 		})
 	}
 })
+
+ipcRenderer.on('chattingAccept', (event, message)=>{
+	if(electronEventTrigger.objectEventListener.hasOwnProperty('chattingAccept')){
+		electronEventTrigger.objectEventListener['chattingAccept'].forEach(callBack=>{
+			callBack(message);
+		})
+	}
+})

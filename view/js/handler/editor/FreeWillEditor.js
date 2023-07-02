@@ -19,6 +19,10 @@ import Video from "./tools/video"
 import Code from "./tools/Code"
 
 export default class FreeWillEditor extends FreeWiilHandler {
+	
+	static componentsMap = {};
+	static toolsMap = {};
+
 	#isLoaded = false;
 	#prevParent;
 	components;
@@ -57,7 +61,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		this.components = components;
 		this.tools = tools;
 
-		this.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
+		FreeWillEditor.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
@@ -69,7 +73,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			total[Component.name] = Component;
 			return total;
 		}, {});
-		this.toolsMap = Object.entries(this.tools).reduce( (total, [className, Tool]) => {
+
+		FreeWillEditor.toolsMap = Object.entries(this.tools).reduce( (total, [className, Tool]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
@@ -82,7 +87,14 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						// 동일한 동작이 수행되지 않도록 추가 2023 05 25
 					//	return;
 					//}
-					let focusNode = window.getSelection().focusNode;
+					let selection = window.getSelection();
+					if(this.contentEditable == 'false'){
+						observer.disconnect();
+						return;
+					}else if( ! selection.containsNode(this, true)){
+						return;
+					}
+					let focusNode = selection.focusNode;
 					if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
 						this.#renderingTools(Tool);
 					}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
@@ -106,7 +118,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
-
+				if(this.contentEditable == 'false'){
+					observer.disconnect();
+					return;
+				}
 				if(this.childElementCount == 0){
 					this.#startFirstLine();
 				}
@@ -129,11 +144,14 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			this.contentEditable = true;
-			this.tabIndex = 1;
-			this.focus()
-			this.#startFirstLine();
-			this.#undoManager = new UndoManager(this);
+			if(this.contentEditable == 'inherit'){
+				this.contentEditable = true;
+				this.tabIndex = 1;
+				this.focus()
+				this.#startFirstLine();
+				this.#undoManager = new UndoManager(this);
+			}
+			
 		}
 	}
 	disconnectedCallback(){
@@ -281,16 +299,19 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	parseLowDoseJSON(json){
 		let jsonObj = json;
 		if(typeof json == 'string'){
+			console.log(1111)
 			jsonObj = JSON.parse(json);
 		}
 		if(jsonObj instanceof Array){
+			console.log(222)
 			this.replaceChildren(...this.#toHTML(jsonObj, this).filter(e=> e != undefined));
 		}
+		console.log(jsonObj instanceof Array)
 	}
 
 	#toHTML(objList, parent = this){
 		return objList.map(jsonNode => {
-			let EditorTarget = this.componentsMap[jsonNode.name] || this.toolsMap[jsonNode.name] || document.createTextNode('');
+			let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name] || document.createTextNode('');
 			let element = undefined;
 			if(jsonNode.type == Node.TEXT_NODE){
 				EditorTarget.appendData(jsonNode.text);

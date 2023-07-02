@@ -1,4 +1,6 @@
+const path = require('path');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const EventSource = require('eventsource');
 class MainIpcController {
@@ -10,6 +12,7 @@ class MainIpcController {
 			this.source = new EventSource(__serverApi + 'api/chatting/stream' + '/bearer-' + axios.defaults.headers.common['Authorization']);
 			console.log("create EventSource");
 			this.source.onmessage = (event) => {
+				mainWindow.webContents.send("chattingAccept", event);
 				console.log('on message: ', event.data);
 			};
 			this.source.onerror = (error) => {

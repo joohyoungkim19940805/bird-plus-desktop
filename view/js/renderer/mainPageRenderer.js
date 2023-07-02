@@ -15,13 +15,33 @@ import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/video"
 import Code from "../handler/editor/tools/Code"
 
-console.log(window.myAPI);
-console.log(window.myAPI.chatting);
-
 window.myAPI.chatting.isChattingReady();
+const chattingLine = document.querySelector('#chatting_read_only');
+window.myAPI.event.electronEventTrigger.addElectronWindowEventListener('chattingAccept', event => {
 
+	let {data, lastEventId, origin, type} = event;
+	let {accountId, accountName, chatting, createAt, createBy, id, roomId, updateAt, updateBy} = JSON.parse(data);
+	/**
+	 * 
+	data:"{\"id\":null,\"accountId\":null,\"accountName\":\"test\",\"roomId\":null,\"chatting\":\"[{\\\"type\\\":1,\\\"name\\\":\\\"Line\\\",\\\"data\\\":{},\\\"cursor_offset\\\":\\\"10\\\",\\\"cursor_type\\\":\\\"3\\\",\\\"cursor_index\\\":\\\"0\\\",\\\"cursor_scroll_x\\\":null,\\\"cursor_scroll_y\\\":\\\"0\\\",\\\"childs\\\":[{\\\"type\\\":3,\\\"name\\\":\\\"Text\\\",\\\"text\\\":\\\"qweasdxzxc\\\"}]}]\",\"createAt\":null,\"createBy\":null,\"updatedAt\":null,\"updatedBy\":null}"
+	lastEventId: ""
+	origin: "http://localhost:8079"
+	type: "message"
+	 */
+	let wrap = Object.assign(document.createElement('div'),{
+
+	});
+
+	let content = new Editor({isReadOnly : true});
+	content.contentEditable = false;
+	console.log('start >>> ',chatting)
+	content.parseLowDoseJSON(chatting);
+
+	wrap.append(content);
+	chattingLine.append(wrap);
+});
 class Editor extends FreeWillEditor{
-	constructor(){
+	constructor({isReadOnly = false} = {}){
 
 		let tools = {
 			'free-will-strong' : Strong,
@@ -63,8 +83,9 @@ class Editor extends FreeWillEditor{
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'
-
-		this.#addEvent();
+		if( ! isReadOnly){
+			this.#addEvent();
+		}
 	}
 	#addEvent(){
 		this.onkeydown = (event) => {
