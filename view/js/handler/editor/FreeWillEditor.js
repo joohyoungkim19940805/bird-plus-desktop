@@ -295,11 +295,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	parseLowDoseJSON(json){
 		let jsonObj = json;
 		if(typeof json == 'string'){
-			console.log(1111)
 			jsonObj = JSON.parse(json);
 		}
 		if(jsonObj instanceof Array){
-			console.log(222)
 			this.replaceChildren(...this.#toHTML(jsonObj, this).filter(e=> e != undefined));
 		}
 		console.log(jsonObj instanceof Array)

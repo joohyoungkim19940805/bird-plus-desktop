@@ -31,7 +31,6 @@ class LoginIpcController {
 						//console.log(data)
 						let {token, issuedAt, expiresAt} = data;
 						//global.__apiToken = token; 
-						/*
 						db.run(`
 							INSERT INTO ACCOUNT_LOG (
 								TOKEN,
@@ -45,7 +44,6 @@ class LoginIpcController {
 							}
 							global.__apiToken = token
 						});
-						*/
 						//console.log(axios.defaults);
 						
 						axios.defaults.headers.common['Authorization'] = token;
