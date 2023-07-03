@@ -3,14 +3,14 @@ const { contextBridge, ipcRenderer } = require('electron')
 //console.log('test<<<', __project_path);
 const electronEventTrigger = {
 	objectEventListener : {},
-	addElectronWindowEventListener : (eventName, callBack) => {
+	addElectronEventListener : (eventName, callBack) => {
 		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
 			electronEventTrigger.objectEventListener[eventName].push(callBack);
 		}else{
 			electronEventTrigger.objectEventListener[eventName] = [callBack];
 		}
 	},
-	removeElectronWindowEventListener : (eventName) => {
+	removeElectronEventListener : (eventName) => {
 		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
 			delete electronEventTrigger.objectEventListener[eventName]
 		}

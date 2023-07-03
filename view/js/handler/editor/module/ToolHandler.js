@@ -6,7 +6,6 @@ export default class ToolHandler{
 	#toolButton;
 	#identity;
 	#connectedFriends = [];
-	#parentEditor;
 
 	/**
 	 * 
@@ -17,10 +16,10 @@ export default class ToolHandler{
 		this.#identity = identity;
 		//다른 부분 선택시에 동작하지 않도록 수정 필요(에디터만 셀렉션체인지인 경우)
 		document.addEventListener("selectionchange", (event) => {
-			if(document.activeElement !== this.#parentEditor){
+			let selection = window.getSelection();
+			if(document.activeElement !== selection.focusNode.parentElement.closest('.free-will-editor')){
 				return;
 			}
-			let selection = window.getSelection();
 			/**
 			 * None 현재 선택된 항목이 없습니다.
 			 * Caret 선택 항목이 축소됩니다(예: 캐럿이 일부 텍스트에 배치되지만 범위가 선택되지 않음).
@@ -109,12 +108,6 @@ export default class ToolHandler{
 		return this.#toolButton;
 	}
 
-	set parentEditor(parentEditor){
-		this.#parentEditor = parentEditor;
-	}
-	get parentEditor(){
-		return this.#parentEditor;
-	}
 	/**
 	 * @param {FreedomInterface}
 	 */

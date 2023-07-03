@@ -71,18 +71,18 @@ export default class Quote extends FreedomInterface {
 
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Quote.toolHandler.connectedFriends.length;
-			let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Quote.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}else{
 				nextLine.lookAtMe();
 			}
 		}
 
         super.disconnectedChildAfterCallBack = () => {
-			let nextLine = Quote.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Quote.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}
         }
 	}

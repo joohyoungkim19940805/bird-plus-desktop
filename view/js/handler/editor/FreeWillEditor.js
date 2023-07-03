@@ -31,10 +31,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#placeholder;
 	#firstLine;
 	#undoManager;
-	#jsonTemplate = {
-		'textNode':'',
-
-	};
 	constructor(
 		components={
 			'free-will-editor-line' : Line
@@ -60,13 +56,13 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		super();
 		this.components = components;
 		this.tools = tools;
-
+		this.classList.add('free-will-editor');
 		FreeWillEditor.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
 			if(className.includes(' ')){
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Component.toolHandler.defaultClass = className;
-			Component.toolHandler.parentEditor = this;
+			//Component.toolHandler.parentEditor = this;
 			if( ! window.customElements.get(className)){
 				window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
 			}	
@@ -79,7 +75,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 			}
 			Tool.toolHandler.defaultClass = className;
-			Tool.toolHandler.parentEditor = this;
+			//Tool.toolHandler.parentEditor = this;
 			this.toolsElement[className] = Tool.toolHandler.toolButton
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
@@ -312,18 +308,28 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#toHTML(objList, parent = this){
 		return objList.map(jsonNode => {
 			let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name] || document.createTextNode('');
-			let element = undefined;
+			
+			let node = undefined;
 			if(jsonNode.type == Node.TEXT_NODE){
-				EditorTarget.appendData(jsonNode.text);
-				element = EditorTarget
+				node = document.createTextNode(jsonNode.text);
 			}else if(jsonNode.type == Node.ELEMENT_NODE){
-				element = new EditorTarget(jsonNode.data);
+				let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name]
+				if(EditorTarget){
+					node = new EditorTarget(jsonNode.data);
+				}else{
+					node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
+				}
+
 				if(jsonNode.childs.length != 0){
-					element.append(...this.#toHTML(jsonNode.childs, element));
+					node.append(...this.#toHTML(jsonNode.childs, node));
 				}
 			}
-			return element;
+			return node;
 		})
+	}
+
+	get isEmpty(){
+		return this.innerText.trim();
 	}
 
 	set placeholder(placeholder){

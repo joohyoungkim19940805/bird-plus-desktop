@@ -102,18 +102,18 @@ export default class Sort extends FreedomInterface {
 
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Sort.toolHandler.connectedFriends.length;
-			let nextLine = Sort.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Sort.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}else{
 				nextLine.lookAtMe();
 			}
 		}
 
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
-			let nextLine = Sort.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Sort.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}
         }
 

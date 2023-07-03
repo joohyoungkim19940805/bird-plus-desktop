@@ -17,7 +17,7 @@ import Code from "../handler/editor/tools/Code"
 
 window.myAPI.chatting.isChattingReady();
 const chattingLine = document.querySelector('#chatting_read_only');
-window.myAPI.event.electronEventTrigger.addElectronWindowEventListener('chattingAccept', event => {
+window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
 
 	let {data, lastEventId, origin, type} = event;
 	let {accountId, accountName, chatting, createAt, createBy, id, roomId, updateAt, updateBy} = JSON.parse(data);

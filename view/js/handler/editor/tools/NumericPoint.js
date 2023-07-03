@@ -74,19 +74,18 @@ export default class NumericPoint extends FreedomInterface {
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
-			this.dataset.index = NumericPoint.toolHandler.connectedFriends.length;
-			let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				NumericPoint.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}else{
 				nextLine.lookAtMe();
 			}
 		}
 
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
-			let nextLine = NumericPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				NumericPoint.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}
         }
 

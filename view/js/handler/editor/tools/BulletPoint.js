@@ -75,18 +75,18 @@ export default class BulletPoint extends FreedomInterface {
 		
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = BulletPoint.toolHandler.connectedFriends.length;
-			let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				BulletPoint.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}else{
 				nextLine.lookAtMe();
 			}
 		}
 
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
-			let nextLine = BulletPoint.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				BulletPoint.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}
         }
 	}

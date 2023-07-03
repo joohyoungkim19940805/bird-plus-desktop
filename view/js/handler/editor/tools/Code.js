@@ -116,18 +116,18 @@ export default class Code extends FreedomInterface {
 
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Code.toolHandler.connectedFriends.length;
-			let nextLine = Code.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Code.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}else{
 				nextLine.lookAtMe();
 			}
 		}
 
         super.disconnectedChildAfterCallBack = () => {
-			let nextLine = Code.toolHandler.parentEditor.getNextLine(this.parentLine);
+			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
-				Code.toolHandler.parentEditor.createLine();
+				this.parentEditor.createLine();
 			}
         }
 	}

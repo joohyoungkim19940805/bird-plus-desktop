@@ -79,7 +79,8 @@ export default class FreedomInterface extends HTMLElement {
 	#connectedChildAfterCallBack = () => {}
 	#disconnectedChildAfterCallBack = () => {}
 	#deleteOption;
-
+	parentEditor;
+	
 	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
 		super();
 		this.#deleteOption = deleteOption;
@@ -90,7 +91,7 @@ export default class FreedomInterface extends HTMLElement {
 				document.removeEventListener('selectionchange', removeFun, true);
 				return;
 			}else if(this.isToolEmpty() || this.childNodes.length == 0){
-				let thisLine = this.constructor.toolHandler.parentEditor.getLine(this);
+				let thisLine = this.parentEditor.getLine(this);
 				this.remove();
 				if(thisLine){
 					thisLine.lookAtMe();
@@ -116,7 +117,7 @@ export default class FreedomInterface extends HTMLElement {
 							let lastItemIndex = undefined;
 							resultList = [...addedNodes].map((e,i)=>{
 								if( ! Line.prototype.isPrototypeOf(e)){
-									let line = this.constructor.toolHandler.parentEditor.createLine();
+									let line = this.parentEditor.createLine();
 									line.replaceChildren(e);
 									this.append(line);
 									if( i == addedNodes.length - 1){
@@ -161,14 +162,15 @@ export default class FreedomInterface extends HTMLElement {
 			
 			this.#isLoaded = true;
 			this.constructor.toolHandler.connectedFriends = this;
-			this.parentLine = this.constructor.toolHandler.parentEditor.getLine(this);
+			this.parentEditor = this.closest('.free-will-editor');
+			this.parentLine = this.parentEditor.getLine(this);
 			
 			if(this.childNodes.length == 0 && this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE && (this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n'))){
 				this.innerText = '\n';
 			}
 
 			if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE && (this.isToolEmpty() || this.childNodes.length == 0)){
-				let thisLine = this.constructor.toolHandler.parentEditor.getLine(this);
+				let thisLine = this.parentEditor.getLine(this);
 				this.remove();
 				if(thisLine){
 					thisLine.lookAtMe();
@@ -179,10 +181,10 @@ export default class FreedomInterface extends HTMLElement {
 				//this.parentLine.prepend(document.createTextNode('\u00A0'));
 				//this.parentLine.prepend(document.createElement('br'));
 				//this.before(document.createElement('br'));
-				this.parentLine.before(this.constructor.toolHandler.parentEditor.createLine());
-				let nextLine = this.constructor.toolHandler.parentEditor.getNextLine(this.parentLine);
+				this.parentLine.before(this.parentEditor.createLine());
+				let nextLine = this.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
-					this.constructor.toolHandler.parentEditor.createLine();
+					this.parentEditor.createLine();
 				}else{
 					nextLine.lookAtMe();
 				}
