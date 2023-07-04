@@ -24,7 +24,7 @@ class LoginIpcController {
 			}).then(response=>{
 				let status = response.status;
 				let {code, data} = response.data;
-				console.log(11111111111)
+
 				if((status == '200' || status == '201') && code == '00'){
 					let db = dbConfig.getDB();
 					db.serialize( () => {
