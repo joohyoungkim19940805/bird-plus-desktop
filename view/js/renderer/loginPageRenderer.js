@@ -15,7 +15,7 @@ new class LoginPageRenderer{
 				console.log(response);
 				let {code} = response;
 				if(code == '00'){
-					window.myAPI.pageChange.changeMainPage();
+					//window.myAPI.pageChange.changeMainPage();
 				}else if(code == 101){
 					statusText.textContent = '해당 기능에 권한이 없습니다.'
 				}else if(code == 102){

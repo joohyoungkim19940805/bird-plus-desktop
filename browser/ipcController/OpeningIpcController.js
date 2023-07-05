@@ -74,7 +74,7 @@ class OpeningIpcController {
 						mainWindow.movable = true;
 						mainWindow.autoHideMenuBar = false;
 						mainWindow.menuBarVisible = true;
-						if(rows[0]){
+						if(false){//rows[0]){
 							//global.__apiToken = rows[0].TOKEN
 							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
 							mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
