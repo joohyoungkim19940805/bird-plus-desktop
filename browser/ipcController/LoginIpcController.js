@@ -9,14 +9,7 @@ class LoginIpcController {
 			console.log('test>>>')
 			console.log(param);
 			console.log(JSON.stringify(param));
-			let test = await axios.post(__serverApi + 'loginProc', JSON.stringify(param), {
-				headers:{
-					'Content-Type': 'application/json'
-				}
-			});
-			console.log('kjh test >>>>>', test);
-			console.log('kjh test >>>>>', test.data);
-			
+
 			return axios.post(__serverApi + 'loginProc', JSON.stringify(param), {
 				headers:{
 					'Content-Type': 'application/json'
