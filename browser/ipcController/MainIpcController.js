@@ -17,6 +17,8 @@ class MainIpcController {
 			};
 			this.source.onerror = (error) => {
 				console.log('on err: ', error);
+				//연결 실패되면 계속 시도하기에 임시 조치로 close
+				this.source.close();
 				//stop();
 			};
 			this.source.onopen = (success) => {
