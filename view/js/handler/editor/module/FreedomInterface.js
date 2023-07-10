@@ -25,6 +25,7 @@ export default class FreedomInterface extends HTMLElement {
 
 	}
 	static isMouseInnerElement(element){
+		if( ! this.globalMouseEvent) return;
 		let {clientX, clientY} = this.globalMouseEvent;
 		let {x, y, width, height} = element.getBoundingClientRect();
 		let isMouseInnerX = ((x + width) >= clientX && x <= clientX);

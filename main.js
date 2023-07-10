@@ -17,9 +17,41 @@ const path = require('path');
 
 const fs = require('fs');
 
+var mainWindow;
+
+//Electron 앱을 시작한 후 예를 들어 사용자 지정 프로토콜이 포함된 URL을 브라우저에 입력하면 "electron-fiddle://open"애플리케이션이 응답하고 
+//오류 대화 상자를 표시하는지 확인할 수 있습니다.
+if(process.defaultApp && process.argv.length >= 2){
+	app.setAsDefaultProtocolClient('bird-plus-desktop', process.execPath, [path.resolve(process.argv[1])])
+}else{
+	app.setAsDefaultProtocolClient('electron-fiddle')
+}
+
+// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
+// window 및 linux인 경우
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+	app.quit();
+}else{
+	app.on('second-instance', (event, commandLine, workingDirectory) => {
+		if(mainWindow) {
+			if(mainWindow.isMinimized()){
+				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
+				mainWindow.restore();
+			}
+			mainWindow.focus();
+		}
+		dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
+	})
+}
+// mac os인 경우
+app.on('open-url', (event, url) => {
+	dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. url : ${url}`);
+})
+
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+	mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 	
 	const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
@@ -46,6 +78,7 @@ app.whenReady().then(()=>{
 			createWindow();
 		}
 	});
+
 });
 
 // 창을 종료하였을 때의 이벤트를 정의한다.

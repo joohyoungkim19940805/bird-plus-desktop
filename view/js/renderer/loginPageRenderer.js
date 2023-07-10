@@ -19,9 +19,9 @@ new class LoginPageRenderer{
 				}else if(code == 101){
 					statusText.textContent = '해당 기능에 권한이 없습니다.'
 				}else if(code == 102){
-					statusText.textContent = '유효하지 않은 비밀번호입니다.'
+					statusText.textContent = '계정 정보가 잘못되었습니다.'
 				}else if(code == 103){
-					statusText.textContent = '존재하지 않는 계정입니다.'
+					statusText.textContent = '계정 정보가 잘못되었습니다.'
 				}else if(code == 104){
 					statusText.textContent = '비활성화 된 계정입니다.'
 				}else if(code == 999){
