@@ -19,7 +19,7 @@ export default class FreeWiilHandler extends HTMLElement{
     static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
             .${this.defaultClass}{
-                height: 100%;
+                height: inherit;
                 overflow: auto;
                 overflow-wrap: anywhere;
                 outline: none;
