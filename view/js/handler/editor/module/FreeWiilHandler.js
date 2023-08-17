@@ -127,8 +127,8 @@ export default class FreeWiilHandler extends HTMLElement{
      */
     createLine(){
         let line = new Line();
-        this.append(line);
-        return line;
+        this.append(line.lineElement);
+        return line.lineElement;
     }
 
     getLineRange(selection = window.getSelection()){
@@ -147,7 +147,6 @@ export default class FreeWiilHandler extends HTMLElement{
                 range.setStart(startAndEndLineObject.startLine.childNodes[0], 0);
                 range.setEnd(endLineChildNodes[endLineChildNodes.length - 1], endLineChildNodes[endLineChildNodes.length - 1].textContent.length);
                 selection.addRange(range);
-                console.log(startAndEndLineObject)
             }else{
                 let anchorNodeLine = Line.getLine(anchorNode);
                 let focusNodeLine = Line.getLine(focusNode);
@@ -163,7 +162,6 @@ export default class FreeWiilHandler extends HTMLElement{
                     return obj;
                 },{})
             }
-            console.log(startAndEndLineObject)
             resolve(startAndEndLineObject);
         })
     }
@@ -197,7 +195,7 @@ export default class FreeWiilHandler extends HTMLElement{
         let nextLine = line.nextElementSibling;
         if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
             if(focus){
-                nextLine.lookAtMe();
+                nextLine.line.lookAtMe();
             }
             return nextLine;
         }
@@ -218,7 +216,7 @@ export default class FreeWiilHandler extends HTMLElement{
         let nextLine = line.previousElementSibling;
         if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
             if(focus){
-                nextLine.lookAtMe();
+                nextLine.line.lookAtMe();
             }
             return nextLine;
         }

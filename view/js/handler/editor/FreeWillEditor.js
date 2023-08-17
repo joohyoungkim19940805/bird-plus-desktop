@@ -32,9 +32,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#firstLine;
 	#undoManager;
 	constructor(
-		components={
-			'free-will-editor-line' : Line
-		},
 		tools={
 			'free-will-editor-strong' : Strong,
 			'free-will-editor-color' : Color,
@@ -54,7 +51,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}
 	){
 		super();
-		this.components = components;
+		
+		this.components = {
+			'free-will-editor-line' : Line
+		};
 		this.tools = tools;
 		this.classList.add('free-will-editor');
 		FreeWillEditor.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
@@ -115,7 +115,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(this.contentEditable == 'false'){
-					observer.disconnect();
 					return;
 				}
 				if(this.childElementCount == 0){
@@ -127,6 +126,21 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				}else{
 					this.#firstLine.removeAttribute('data-placeholder');
 				}
+				
+				//console.log(mutation.target);
+				mutation.addedNodes.forEach(element=>{
+					if(element.nodeType != Node.ELEMENT_NODE) return;
+
+					if(element.classList.contains(Line.toolHandler.defaultClass) && element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n')){
+						element.innerText = '\n';
+						window.getSelection().setPosition(element, 1)
+						element.focus();
+						new Line(element);
+						if( ! element.line){
+							
+						}
+					}
+				})
 				
 			})
 		});
@@ -230,7 +244,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		//}
 		
 		super.getLineRange(selection).then(({startLine, endLine})=> {
-			startLine.applyTool(TargetTool, selection.getRangeAt(0), endLine)
+			console.log(startLine);
+			console.log(endLine);
+			startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine)
 		})
 		/*
 		.then(tool=>{
@@ -253,7 +269,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}
 		super.getLineRange(selection).then(({startLine, endLine})=> {
 			console.log(startLine, endLine);
-			startLine.cancelTool(TargetTool, selection, endLine);
+			startLine.line.cancelTool(TargetTool, selection, endLine);
 		})
 	}
 	

@@ -92,10 +92,10 @@ export default class FreedomInterface extends HTMLElement {
 				document.removeEventListener('selectionchange', removeFun, true);
 				return;
 			}else if(this.isToolEmpty() || this.childNodes.length == 0){
-				let thisLine = this.parentEditor.getLine(this);
+				let thisLine = this.parentEditor?.getLine(this);
 				this.remove();
 				if(thisLine){
-					thisLine.lookAtMe();
+					thisLine.line.lookAtMe();
 				}
 				document.removeEventListener('selectionchange', removeFun, true);
 			}else if( ! this.isConnected){
@@ -128,7 +128,7 @@ export default class FreedomInterface extends HTMLElement {
 								}
 								return e;
 							});
-							resultList[resultList.length - 1].lookAtMe();
+							resultList[resultList.length - 1].line.lookAtMe();
 						}else{
 							resultList = addedNodes;
 						}
@@ -164,7 +164,7 @@ export default class FreedomInterface extends HTMLElement {
 			this.#isLoaded = true;
 			this.constructor.toolHandler.connectedFriends = this;
 			this.parentEditor = this.closest('.free-will-editor');
-			this.parentLine = this.parentEditor.getLine(this);
+			this.parentLine = this.parentEditor?.getLine(this);
 			
 			if(this.childNodes.length == 0 && this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE && (this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n'))){
 				this.innerText = '\n';
@@ -174,7 +174,7 @@ export default class FreedomInterface extends HTMLElement {
 				let thisLine = this.parentEditor.getLine(this);
 				this.remove();
 				if(thisLine){
-					thisLine.lookAtMe();
+					thisLine.line.lookAtMe();
 				}
 			}
 						
@@ -187,7 +187,7 @@ export default class FreedomInterface extends HTMLElement {
 				if( ! nextLine){
 					this.parentEditor.createLine();
 				}else{
-					nextLine.lookAtMe();
+					nextLine.line.lookAtMe();
 				}
 			}
 
