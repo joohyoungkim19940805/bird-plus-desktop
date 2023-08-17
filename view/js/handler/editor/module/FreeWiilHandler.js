@@ -177,7 +177,7 @@ export default class FreeWiilHandler extends HTMLElement{
         if( ! nextLine){
             return false;
         }
-        return Line.prototype.isPrototypeOf(nextLine);
+        return Line.prototype.isPrototypeOf(nextLine.line);
     }
 
     /**
@@ -193,7 +193,7 @@ export default class FreeWiilHandler extends HTMLElement{
         }
         
         let nextLine = line.nextElementSibling;
-        if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
+        if(nextLine && Line.prototype.isPrototypeOf(nextLine.line)){
             if(focus){
                 nextLine.line.lookAtMe();
             }
@@ -214,7 +214,7 @@ export default class FreeWiilHandler extends HTMLElement{
             return undefined;
         }
         let nextLine = line.previousElementSibling;
-        if(nextLine && Line.prototype.isPrototypeOf(nextLine)){
+        if(nextLine && Line.prototype.isPrototypeOf(nextLine.line)){
             if(focus){
                 nextLine.line.lookAtMe();
             }

@@ -74,6 +74,7 @@ export default class NumericPoint extends FreedomInterface {
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
+			console.log('test<<<1')
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();
@@ -83,6 +84,7 @@ export default class NumericPoint extends FreedomInterface {
 		}
 
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
+			console.log('test<<<@22')
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

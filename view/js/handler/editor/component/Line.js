@@ -43,7 +43,7 @@ export default class Line {
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
-		}else if(Line.prototype.isPrototypeOf(element) && ! element.parentElement?.closest(`.${this.toolHandler.defaultClass}`)){
+		}else if(Line.prototype.isPrototypeOf(element.line) && ! element.parentElement?.closest(`.${this.toolHandler.defaultClass}`)){
 			return element;
 		}else if(element.parentElement.classList.contains(this.toolHandler.defaultClass)){
 			line = element.parentElement;
@@ -161,13 +161,9 @@ export default class Line {
 			
 			let nodeList = [];
 			for(let i = startNodeToPrevNodeIndex + 1 ; true ; i += 1){
-				console.log(i);
-				if(i==50){break;}
 				if( ! this.lineElement.childNodes[i] || ! selection.containsNode(this.lineElement.childNodes[i], true)){
-					console.log('break!!!')
 					break;
 				}
-				
 				nodeList.push(this.lineElement.childNodes[i]);
 			}
 			//nodeList.forEach(e=>e.remove())
@@ -179,6 +175,9 @@ export default class Line {
 				let startTarget = this.lineElement.childNodes[startNodeToPrevNodeIndex];
 				startTarget.after(tool);
 			}
+			console.log('tool',tool);
+			console.log('tool.textContent',tool.textContent);
+			
 			/*
 			range.setStart(startContainer, startOffset);
 			range.setEnd(startContainer, startContainer.textContent.length);
@@ -297,7 +296,7 @@ export default class Line {
 				range.surroundContents(middleTargetTool);
 				targetLine = targetLine.nextElementSibling;
 			}
-			if(Line.prototype.isPrototypeOf(endContainer)){
+			if(Line.prototype.isPrototypeOf(endContainer.line)){
 				resolve(( ! middleTargetTool ? tool : middleTargetTool ));
 			}else{
 				let endTool = new TargetTool();

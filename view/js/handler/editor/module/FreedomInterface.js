@@ -94,6 +94,7 @@ export default class FreedomInterface extends HTMLElement {
 			}else if(this.isToolEmpty() || this.childNodes.length == 0){
 				let thisLine = this.parentEditor?.getLine(this);
 				this.remove();
+				console.log(thisLine);
 				if(thisLine){
 					thisLine.line.lookAtMe();
 				}
@@ -110,6 +111,7 @@ export default class FreedomInterface extends HTMLElement {
 
 		let childListObserver = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
+				console.log(mutation);
 				let {addedNodes, removedNodes} = mutation;
 				let connectedChildPromise = new Promise(resolve => {
 					if(addedNodes.length != 0){
@@ -117,7 +119,7 @@ export default class FreedomInterface extends HTMLElement {
 						if( ! this.constructor.toolHandler.isInline){
 							let lastItemIndex = undefined;
 							resultList = [...addedNodes].map((e,i)=>{
-								if( ! Line.prototype.isPrototypeOf(e)){
+								if( ! Line.prototype.isPrototypeOf(e.line)){
 									let line = this.parentEditor.createLine();
 									line.replaceChildren(e);
 									this.append(line);
@@ -138,6 +140,8 @@ export default class FreedomInterface extends HTMLElement {
 				})
 				
 				let disconnectedChildPromise = new Promise(resolve => {
+					console.log('???', removedNodes.length)
+					console.log('???', removedNodes)
 					if(removedNodes.length != 0){
 						this.disconnectedChildAfterCallBack(removedNodes);
 					}
