@@ -78,7 +78,7 @@ export default class NumericPoint extends FreedomInterface {
 			if( ! nextLine){
 				this.parentEditor.createLine();
 			}else{
-				nextLine.lookAtMe();
+				nextLine.line.lookAtMe();
 			}
 		}
 

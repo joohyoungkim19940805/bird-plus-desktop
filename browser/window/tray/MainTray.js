@@ -3,6 +3,8 @@ const path = require('path');
 
 
 const { app, Menu, Tray } = require('electron');
+// 자동 업데이트 모듈 호출
+const {autoUpdater} = require('electron-updater')
 
 /**
  * 메인 tray를 정의한다.
@@ -24,7 +26,7 @@ class MainTray extends Tray{
 			},
 			{ label: 'close', id: 'close_btn', click: ()=> {
 					this.mainWindow.removeAllListeners("close");
-					app.quit();
+					autoUpdater.quitAndInstall();
 				} 
 			},
 		]);

@@ -79,7 +79,7 @@ export default class BulletPoint extends FreedomInterface {
 			if( ! nextLine){
 				this.parentEditor.createLine();
 			}else{
-				nextLine.lookAtMe();
+				nextLine.line.lookAtMe();
 			}
 		}
 

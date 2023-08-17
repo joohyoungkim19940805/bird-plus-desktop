@@ -14,8 +14,10 @@ global.__serverApi = (()=>{
 const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
 // path 모듈 호출
 const path = require('path');
-
+// 파일 모듈 호출
 const fs = require('fs');
+// 자동 업데이트 모듈 호출
+const {autoUpdater} = require('electron-updater')
 
 var mainWindow;
 
@@ -31,6 +33,7 @@ if(process.defaultApp && process.argv.length >= 2){
 // window 및 linux인 경우
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
+	autoUpdater.quitAndInstall();
 	app.quit();
 }else{
 	app.on('second-instance', (event, commandLine, workingDirectory) => {
@@ -78,18 +81,43 @@ app.whenReady().then(()=>{
 			createWindow();
 		}
 	});
-
+	autoUpdater.checkForUpdates();
 });
 
 // 창을 종료하였을 때의 이벤트를 정의한다.
 // 윈도우 및 리눅스의 경우 창을 종료할 시 응용 프로그램이 완전히 종료되어야 한다.
 app.on('window-all-closed', ()=>{
 	//mac os가 아닌 경우... ! darwin
+	//autoUpdater.quitAndInstall();
+	//mac os인 경우
 	if(process.platform !== 'darwin'){
 		// 이 응용 프로그램을 종료시킨다.
-		app.quit();
+		autoUpdater.quitAndInstall();
+		//app.quit();
 	}
 });
+
+/*
+ipcMain.on('app_version', (event) => {
+	event.sender.send('app_version', { version: app.getVersion() });
+});
+*/
+/*
+autoUpdater.on('update-available', () => {
+	//mainWindow.webContents.send('update_available');
+});
+*/
+/*
+autoUpdater.on('update-downloaded', () => {
+	mainWindow.webContents.send('update_downloaded');
+});
+*/
+/*
+ipcMain.on('restart_app', () => {
+	autoUpdater.quitAndInstall();
+});
+*/
+
 //console.log('process', process)
 console.log('hoem ::: ', app.getPath('home'))
 //console.log('hoem showItemInFolder ::: ', shell.showItemInFolder(app.getPath('home')))
@@ -127,7 +155,6 @@ console.log('recent ::: ', app.getPath('recent'))
 
 console.log('logs ::: ', app.getPath('logs'))
 //console.log('crashDumps ::: ', app.getPath('crashDumps'))
-
 
 //console.log('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE'))
 //console.log('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE/test'))

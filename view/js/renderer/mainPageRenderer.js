@@ -88,12 +88,13 @@ class Editor extends FreeWillEditor{
 		}
 	}
 	#addEvent(){
-		this.onkeydown = (event) => {
+		this.onkeyup = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
 			// key == Enter
 			console.log(event);
 			if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
-				let line = this.createLine();
+				// let line = this.createLine();
+				// window.getSelection().getRangeAt(0).insertNode(document.createTextNode('\n'));
 			}else if(key == 'Enter'){
 				event.preventDefault();
 				/*

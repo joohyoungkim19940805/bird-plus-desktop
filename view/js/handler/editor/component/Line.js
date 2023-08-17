@@ -1,6 +1,6 @@
 import ToolHandler from "../module/ToolHandler"
 import FreedomInterface from "../module/FreedomInterface"
-export default class Line extends HTMLDivElement {
+export default class Line {
 	#isLoaded = false;
 	#prevParent;
 
@@ -13,7 +13,7 @@ export default class Line extends HTMLDivElement {
 	});
 
 	static{
-		this.toolHandler.extendsElement = 'div';
+		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-line';
 	}
 
@@ -70,13 +70,30 @@ export default class Line extends HTMLDivElement {
 		}
 		return tool;
 	}
-	constructor(){
-		super();
-		this.classList.add(Line.toolHandler.defaultClass);
-		if(this.isFirstLine == false){
-			this.removeAttribute('placeholder')
-		}
+	
+	lineElement
 
+	constructor(div){
+		//super();
+		if( ! div){
+			this.lineElement = Object.assign(document.createElement('div'),{
+				className : Line.toolHandler.defaultClass
+			})
+		}else{
+			this.lineElement = div;
+			this.lineElement.classList.add(Line.toolHandler.defaultClass);
+		
+		}
+		/*
+		Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(functionName=>{
+			if(functionName == 'constructor') return;
+			this.lineElement[functionName] = this[functionName];
+		});
+		*/
+		if(this.isFirstLine == false){
+			this.lineElement.removeAttribute('placeholder')
+		}
+		this.lineElement.line = this;
 		/*
 		this.onkeyup = (event) => {
 			if(event.key === 'Backspace' && this.innerText.length == 1 && (this.innerText.includes)){
@@ -84,47 +101,25 @@ export default class Line extends HTMLDivElement {
 			}
 		}
 		*/
-	}	
+	}
+	/*
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			//this.textContent = '\u200B'
-			/*
-			console.log(this.innerText)
-			console.log(this.innerText.length)
-			console.log(this.innerText.includes('\n'))
-			console.log(this.innerText.includes('\u200B'));
-			*/
+
 			
 			if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
 				this.innerText = '\n';
 				window.getSelection().setPosition(this, 1)
 				this.focus();
 			}
-			/*
-			let observer = new MutationObserver( (mutationList, observer) => {
-				mutationList.forEach((mutation) => {
-					if(mutation.target.textContent.includes('\u200B') && mutation.target.textContent.length > 1 ){
-						mutation.target.textContent = mutation.target.textContent.replace('\u200B', '');
-						window.getSelection().setPosition(this, this.textContent.length);
-						observer.disconnect();
-					}else if(mutation.target.textContent.includes('\u200B') == false){
-						observer.disconnect();
-					}
-				});
-			});
-			observer.observe(this, {
-				characterData: true,
-				characterDataOldValue: true,
-				childList:true,
-				subtree: true
-			})
-			*/
+
 		}
 	}
 	disconnectedCallback(){
         this.#isLoaded = false;
     }
+	*/
 	/**
 	 * applyTool, cancelTool에서 3가지 경우의 수로 함수를 분기시킬 것 apply mng와 cancel mng class를 새로 만들것, 
 	 * line이 할 일이 아니니 freedomPlusEditor로 옮길 것
@@ -160,24 +155,28 @@ export default class Line extends HTMLDivElement {
 
 			let selection = window.getSelection();
 
-			let startNodeToPrevNodeIndex = [...this.childNodes].findIndex(e=>selection.containsNode(e, true)) - 1;
+			let startNodeToPrevNodeIndex = [...this.lineElement.childNodes].findIndex(e=>selection.containsNode(e, true)) - 1;
 			let isFirstNodeToStart = startNodeToPrevNodeIndex < 0;
 
 			
 			let nodeList = [];
 			for(let i = startNodeToPrevNodeIndex + 1 ; true ; i += 1){
-				if( ! this.childNodes[i] || ! selection.containsNode(this.childNodes[i], true)){
+				console.log(i);
+				if(i==50){break;}
+				if( ! this.lineElement.childNodes[i] || ! selection.containsNode(this.lineElement.childNodes[i], true)){
+					console.log('break!!!')
 					break;
 				}
-				nodeList.push(this.childNodes[i]);
+				
+				nodeList.push(this.lineElement.childNodes[i]);
 			}
 			//nodeList.forEach(e=>e.remove())
 			//prepend
 			tool.append(...nodeList);
 			if(isFirstNodeToStart){
-				this.prepend(tool)
+				this.lineElement.prepend(tool)
 			}else{
-				let startTarget = this.childNodes[startNodeToPrevNodeIndex];
+				let startTarget = this.lineElement.childNodes[startNodeToPrevNodeIndex];
 				startTarget.after(tool);
 			}
 			/*
@@ -220,24 +219,24 @@ export default class Line extends HTMLDivElement {
 			let fragment = range.extractContents();
 			console.log(fragment.childNodes);
 			tool.append(...fragment.childNodes);
-			this.append(tool);
+			this.lineElement.append(tool);
 			resolve(tool);
 		})
 	}
 	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
 		return await new Promise(resolve=>{
-			console.log(tool.shadowRoot)
 			if(tool.shadowRoot || ! TargetTool.toolHandler.isInline){
 				resolve(this.#applyMultipleLineAllBlock(range, tool, TargetTool, endLine));
 				return;
 			}
 			let {startOffset, endOffset, startContainer,endContainer} = range;
-
+			
 			range.setStart(startContainer, startOffset);
 			range.setEnd(startContainer, startContainer.textContent.length);
 			range.surroundContents(tool);
 
 			let targetStartLineItem = startContainer.nextSibling?.nextSibling;
+			console.log('targetStartLineItem', targetStartLineItem);
 			if(targetStartLineItem){
 				let itemRemoveList = [];
 				let itemAppendList = [];
@@ -260,11 +259,28 @@ export default class Line extends HTMLDivElement {
 						itemAppendList.push(targetStartLineItem.textContent);
 						itemRemoveList.push(targetStartLineItem);
 					}
-					targetStartLineItem = targetStartLineItem.nextSibling;
+					targetStartLineItem = targetStartLineItem.nextSibling;	
 				}
+				console.log(itemAppendList);
+				console.log([...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE));
 				[...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
 				itemRemoveList.forEach(e=>e.remove())
 			}
+			
+			if(tool.parentElement != this.lineElement && tool.parentElement?.nextSibling){
+				//20230817 멀티라인일시 첫번쨰 라인 중첩 서식 미동작 현상 수정을 위해 내용 변경
+				let nextTool = new TargetTool();
+				nextTool.append(tool.parentElement.nextSibling);
+				tool.parentElement.after(nextTool);
+				let nextItem = nextTool.nextSibling;
+				while(nextItem){		
+					if(nextTool == nextItem){
+						break;
+					}
+					nextTool.append(nextItem);
+				}
+			}
+			
 			
 			let targetLine = Line.getLine(startContainer).nextElementSibling; 
 			let middleTargetTool;
@@ -346,10 +362,10 @@ export default class Line extends HTMLDivElement {
 					resolve(tool)
 				})
 			}*/
-			if(this.childNodes.length == 1 && this.innerText == '\n' && this.childNodes[0].nodeName == 'BR'){
-				this.childNodes[0].remove();
+			if(this.lineElement.childNodes.length == 1 && this.lineElement.innerText == '\n' && this.lineElement.childNodes[0].nodeName == 'BR'){
+				this.lineElement.childNodes[0].remove();
 			}
-			if(startContainer === endContainer && this.innerText.length != range.toString().length){
+			if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
 				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)
@@ -372,7 +388,7 @@ export default class Line extends HTMLDivElement {
 		return await new Promise(resolve => {
 			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
 			let {startOffset, endOffset, startContainer, endContainer} = range;
-			this.childNodes.forEach(e=>{
+			this.lineElement.childNodes.forEach(e=>{
 				this.#findCancels(e, TargetTool);
 			});
 			resolve();
@@ -450,7 +466,7 @@ export default class Line extends HTMLDivElement {
 			}else if(tool.nextSibling){
 				tool.nextSibling.before(...appendList);
 			}else{
-				this.append(...appendList);
+				this.lineElement.append(...appendList);
 			}
 			/*
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
@@ -519,8 +535,8 @@ export default class Line extends HTMLDivElement {
 			let endPrevSibling = endTool?.previousSibling
 
 			if(startOffset == 0){
-				console.log(1)
-				this.#findCancels(this, TargetTool);
+				//console.log(1)
+				this.#findCancels(this.lineElement, TargetTool);
 			}else
 			if(startPrevSibling && startPrevSibling.nodeType == Node.TEXT_NODE){
 				//console.log(2)
@@ -552,19 +568,20 @@ export default class Line extends HTMLDivElement {
 				tool.remove();
 			}
 
-			let nextLine = this.nextElementSibling
+			let nextLine = this.lineElement.nextElementSibling
 			while(nextLine){
 				if(nextLine == endLine){
 					break;
 				}
 				nextLine.childNodes.forEach(e=>{
+					console.log(4);
 					this.#findCancels(e, TargetTool);
 				})
 				nextLine = nextLine.nextElementSibling;
 			}
 
 			if(endOffset == endContainer.length){
-				//console.log(1)
+				console.log(1)
 				this.#findCancels(endLine, TargetTool);
 			}else
 			if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
@@ -631,7 +648,7 @@ export default class Line extends HTMLDivElement {
 				TargetTool.toolHandler.toolButton.dataset.tool_status = 'connected'
 				resolve();
 			}else{
-				if(startContainer === endContainer && this.innerText.length != range.toString().length){
+				if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
 					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
 						console.log('cancelOnlyOneTool')
 						resolve();
@@ -666,20 +683,22 @@ export default class Line extends HTMLDivElement {
 				}
 				element.remove();
 			}else{
-				element.childNodes.forEach(e=>{
-					this.#findCancels(e, TargetTool);
-				})
+				if(element.nodeType == Node.ELEMENT_NODE){
+					element.childNodes.forEach(e=>{
+						this.#findCancels(e, TargetTool);
+					})
+				}
 			}
 			res();
 		})
 	}
 
 	lookAtMe(){
-		if(this.innerText.length == 0 || (this.innerText.length == 1 && this.innerText.charAt(0) == '\n')){
-			this.innerText = '\n';
+		if(this.lineElement.innerText.length == 0 || (this.lineElement.innerText.length == 1 && this.lineElement.innerText.charAt(0) == '\n')){
+			this.lineElement.innerText = '\n';
 		}
-		window.getSelection().setPosition(this, this.childNodes.length)
-		this.focus()
+		window.getSelection().setPosition(this.lineElement, this.lineElement.childNodes.length)
+		this.lineElement.focus()
 	}
 
 }
