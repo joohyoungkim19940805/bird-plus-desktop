@@ -6,7 +6,7 @@
 global.__project_path = require.main.paths[0].split('node_modules')[0];
 global.__serverApi = (()=>{
 	if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
-		return 'http://localhost:8079/';
+		return 'http://localhost:8079';
 	}
 })();
 
@@ -18,13 +18,19 @@ const path = require('path');
 const fs = require('fs');
 
 var mainWindow;
-
+//myapp:// param
 //Electron 앱을 시작한 후 예를 들어 사용자 지정 프로토콜이 포함된 URL을 브라우저에 입력하면 "electron-fiddle://open"애플리케이션이 응답하고 
 //오류 대화 상자를 표시하는지 확인할 수 있습니다.
 if(process.defaultApp && process.argv.length >= 2){
-	app.setAsDefaultProtocolClient('bird-plus-desktop', process.execPath, [path.resolve(process.argv[1])])
+	console.log(process.execPath);
+	console.log([path.resolve(process.argv[1])]);
+	if( ! app.isDefaultProtocolClient('bird-plus-desktop')){
+		app.setAsDefaultProtocolClient('bird-plus-desktop', process.execPath, [path.resolve(process.argv[1])])
+	}
 }else{
-	app.setAsDefaultProtocolClient('electron-fiddle')
+	if( ! app.isDefaultProtocolClient('bird-plus-desktop')){
+		app.setAsDefaultProtocolClient('bird-plus-desktop')
+	}
 }
 
 // 앱이 이미 켜져있는데 중복실행하여 접근할 경우

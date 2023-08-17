@@ -10,7 +10,7 @@ class LoginIpcController {
 			console.log(param);
 			console.log(JSON.stringify(param));
 
-			return axios.post(__serverApi + 'login-processing', JSON.stringify(param), {
+			return axios.post(__serverApi + '/login-processing', JSON.stringify(param), {
 				headers:{
 					'Content-Type': 'application/json'
 				}
