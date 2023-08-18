@@ -108,6 +108,7 @@ export default class Video extends FreedomInterface {
                 width: auto;
                 transition: height 0.5s ease-in-out;
                 overflow: hidden;
+                position: relative;
             }
             .${this.#defaultStyle.id}.video-contanier video{
                 max-width: 100%;

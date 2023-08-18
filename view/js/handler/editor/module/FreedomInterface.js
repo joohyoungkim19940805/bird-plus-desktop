@@ -140,8 +140,6 @@ export default class FreedomInterface extends HTMLElement {
 				})
 				
 				let disconnectedChildPromise = new Promise(resolve => {
-					console.log('???', removedNodes.length)
-					console.log('???', removedNodes)
 					if(removedNodes.length != 0){
 						this.disconnectedChildAfterCallBack(removedNodes);
 					}
@@ -152,14 +150,6 @@ export default class FreedomInterface extends HTMLElement {
 		});
 		childListObserver.observe(this, {childList:true})
 
-		/* 지웠던 코드인 걸로 기억하는데 남아있어서 오류 발생시 확인해볼 것 2023 06 19
-		let disconnectedObserver = new MutationObserver( (mutationList, observer) => {
-			mutationList.forEach((mutation) => {
-				this.disconnectedChildAfterCallBack();
-			})
-		});
-		disconnectedObserver.observe(this, {childList:true})
-		*/
 	}
 
 	connectedCallback(){

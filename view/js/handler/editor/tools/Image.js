@@ -5,7 +5,7 @@ export default class Image extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);
 
-    static imageBox;// = new ImageBox();
+    static imageBox = new ImageBox();
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-image-style'
@@ -103,8 +103,9 @@ export default class Image extends FreedomInterface {
 
             .${this.#defaultStyle.id}.image-contanier{
                 width: auto;
-                transition: height 0.5s ease-in-out
+                transition: height 0.5s ease-in-out;
                 overflow: hidden;
+                position: relative;
             }
             .${this.#defaultStyle.id}.image-contanier img{
                 max-width: 100%;
@@ -168,7 +169,7 @@ export default class Image extends FreedomInterface {
             //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
             src: this.dataset.url
         });
-
+        
         imageContanier.append(image);
 
         image.onload = () => {
@@ -187,6 +188,8 @@ export default class Image extends FreedomInterface {
 
         super.disconnectedAfterCallback = () => {
         }
+
+        Image.imageBox.addImageHoverEvent(image);
     }
 
     /**
@@ -223,7 +226,6 @@ export default class Image extends FreedomInterface {
                     image.style.opacity = 0;
                     image.style.visibility = 'hidden';
                 }*/
-                
             }else{
                 description.dataset.open_status = '▼';
                 setTimeout(()=>{
