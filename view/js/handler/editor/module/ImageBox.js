@@ -81,6 +81,8 @@ export default class ImageBox {
             console.log(this.#imageBox.isConnected);
             if( ! this.#imageBox.isConnected){
                 image.parentElement.append(this.#imageBox);
+            }else if( ! this.#imageBox.classList.contains('start')){
+                this.#imageBox.remove();
             }
         }
     }
