@@ -183,13 +183,14 @@ export default class Image extends FreedomInterface {
             let description = this.createDescription(image, imageContanier);
 
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
-        
+            
+            Image.imageBox.addImageHoverEvent(image, this.shadowRoot);
         }
 
         super.disconnectedAfterCallback = () => {
         }
 
-        Image.imageBox.addImageHoverEvent(image);
+        return image;
     }
 
     /**
