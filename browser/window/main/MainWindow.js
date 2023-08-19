@@ -53,6 +53,32 @@ class MainWindow extends BrowserWindow{
 		super.on('resize', () => {	
 			mainWindow.webContents.send("resized", super.getSize());
 		});
+
+		super.webContents.setWindowOpenHandler(({url}) => {
+			console.log(url);
+			if(url.includes('blob:file:///')){
+				return {
+					action: 'allow',
+					outlivesOpener: false,
+					overrideBrowserWindowOptions: {
+						frame: true,
+						fullscreenable: true,
+						backgroundColor: 'black',
+						autoHideMenuBar : true,
+						//autoHideMenuBar : false,
+						movable : true,
+						resizable : true,
+						titleBarStyle: 'visible',
+						titleBarOverlay: true,
+						webPreferences: {
+							preload : path.join(__project_path, 'browser/preload/imageAndVideoDetailPreload.js')
+						}
+					}
+				}
+			}
+
+			return { action: 'deny' }
+		});
 	}
 }
 

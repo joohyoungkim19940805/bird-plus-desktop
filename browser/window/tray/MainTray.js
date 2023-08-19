@@ -26,7 +26,8 @@ class MainTray extends Tray{
 			},
 			{ label: 'close', id: 'close_btn', click: ()=> {
 					this.mainWindow.removeAllListeners("close");
-					autoUpdater.quitAndInstall();
+					//autoUpdater.quitAndInstall();
+					app.quit();
 				} 
 			},
 		]);

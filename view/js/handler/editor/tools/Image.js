@@ -170,6 +170,10 @@ export default class Image extends FreedomInterface {
             src: this.dataset.url
         });
         
+        if(this.file.files.length != 0){
+            image.dataset.image_name = this.file.files[0].name;
+        }
+
         imageContanier.append(image);
 
         image.onload = () => {
@@ -184,7 +188,10 @@ export default class Image extends FreedomInterface {
 
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
             
-            Image.imageBox.addImageHoverEvent(image, this.shadowRoot);
+            Image.imageBox.addImageHoverEvent(image);
+            if(this.nextSibling.tagName == 'BR'){
+                this.nextSibling.remove()
+            }
         }
 
         super.disconnectedAfterCallback = () => {
