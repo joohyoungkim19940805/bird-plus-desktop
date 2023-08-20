@@ -1,11 +1,11 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-
+import VideoBox from "../module/VideoBox"
 export default class Video extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);
 
-    static videoBox;// = new VideoBox();
+    static videoBox = new VideoBox();
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-video-style'
