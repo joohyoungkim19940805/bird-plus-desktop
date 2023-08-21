@@ -204,6 +204,11 @@ export default class Video extends FreedomInterface {
             let description = this.createDescription(video, videoContanier);
 
             wrap.append(...[description,videoContanier].filter(e=>e != undefined));
+            
+            Video.videoBox.addVideoHoverEvent(video);
+            if(this.nextSibling.tagName == 'BR'){
+                this.nextSibling.remove()
+            }
         }
 
         super.disconnectedAfterCallback = () => {

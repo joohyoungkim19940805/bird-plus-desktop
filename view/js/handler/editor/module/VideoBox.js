@@ -1,29 +1,40 @@
 import FreedomInterface from "../module/FreedomInterface"
 
-export default class ImageBox {
+export default class VideoBox {
     
     #style = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-image-box'
+		id: 'free-will-editor-video-box'
 	});
 
-    #imageBox = Object.assign(document.createElement('div'), {
-        className: 'image-box-wrap',
-        innerHTML: `
-            <div class="image-resize-container">
-                <div>
-                    <label class="image-box-resize-label" for="image-box-resize-width">width : </label>
-                    <input list="image-box-resize-datalist" class="image-box-resize-input" id="image-box-resize-width" type="number" autocomplete="off"/>
-                </div>
-                <div>
-                    <label class="image-box-resize-label" for="image-box-resize-height">height(auto) : </label>
-                    <input list="image-box-resize-datalist" class="image-box-resize-input" id="image-box-resize-height" type="number" autocomplete="off" disabled/>
-                </div>
+    #videoBox = Object.assign(document.createElement('div'), {
+        className: 'video-box-wrap',
+        
+        innerHTML:`
+            <div class="video-resize-container">
             </div>
-            <div class="image-button-container">
+            <div class="video-button-container">
                 <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
                 <a href="javascript:void(0);" class="new-window-css-gg-path-trim"></a>
             </div>
         `
+        /* 리사이즈 있는 버전 주석처리 20230821
+        innerHTML: `
+            <div class="video-resize-container">
+                <div>
+                    <label class="video-box-resize-label" for="video-box-resize-width">width : </label>
+                    <input list="video-box-resize-datalist" class="video-box-resize-input" id="video-box-resize-width" type="number" autocomplete="off"/>
+                </div>
+                <div>
+                    <label class="video-box-resize-label" for="video-box-resize-height">height(auto) : </label>
+                    <input list="video-box-resize-datalist" class="video-box-resize-input" id="video-box-resize-height" type="number" autocomplete="off" disabled/>
+                </div>
+            </div>
+            <div class="video-button-container">
+                <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
+                <a href="javascript:void(0);" class="new-window-css-gg-path-trim"></a>
+            </div>
+        `
+        */
     });
 
     #removeEventPromiseResolve;
@@ -40,53 +51,55 @@ export default class ImageBox {
         }
         new IntersectionObserver((entries, observer) => {
             entries.forEach(entry =>{
-                if ( ! entry.isIntersecting && this.#imageBox.isConnected && ! this.#imageBox.classList.contains('start')) {
-                    //this.#imageBox.remove();
+                if ( ! entry.isIntersecting && this.#videoBox.isConnected && ! this.#videoBox.classList.contains('start')) {
+                    //this.#videoBox.remove();
                     this.#removeEventPromiseResolve();
                 }
             });
         }, {
             threshold: 0.1,
             root: document
-        }).observe(this.#imageBox);
+        }).observe(this.#videoBox);
     }
 
     /**
      * 
-     * @param {HTMLImageElement} image 
+     * @param {HTMLVideoElement} video 
      */
-    addImageHoverEvent(image){
-        image.parentElement.onmouseover = () => {
-            let root = image.getRootNode();
+    addVideoHoverEvent(video){
+        video.parentElement.onmouseover = () => {
+            let root = video.getRootNode();
             if(root != document){
                 root.append(this.#style);
             }else{
                 document.head.append(this.#style);
             }
 
-            if(image.parentElement && (image.parentElement !== this.#imageBox.parentElement || ! this.#imageBox.classList.contains('start'))){
-                image.parentElement.append(this.#imageBox);
-                //this.#imageBox.ontransitionend = '';
-                //this.#imageBox.classList.remove('start');
-                this.#addRresizeEvent(image),
-                this.#addButtonIconEvent(image)
+            if(video.parentElement && (video.parentElement !== this.#videoBox.parentElement || ! this.#videoBox.classList.contains('start'))){
+                video.parentElement.append(this.#videoBox);
+                //this.#videoBox.ontransitionend = '';
+                //this.#videoBox.classList.remove('start');
+                /* 리사이즈 있는 버전 주석 처리 20230821
+                this.#addRresizeEvent(video),
+                */
+                this.#addButtonIconEvent(video)
                 let appendAwait = setInterval(()=>{
-                    if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement && ! this.#imageBox.classList.contains('start')){
-                        this.#imageBox.classList.add('start');
+                    if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement && ! this.#videoBox.classList.contains('start')){
+                        this.#videoBox.classList.add('start');
                         clearInterval(appendAwait);
                     }
                 }, 50)
             }
 
         }
-        image.parentElement.onmouseleave = () => {
-            this.#imageBox.classList.remove('start');
-            if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
+        video.parentElement.onmouseleave = () => {
+            this.#videoBox.classList.remove('start');
+            if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement){
                 /*
-                this.#imageBox.classList.remove('start');
-                this.#imageBox.ontransitionend = () => {
-                    if(this.#imageBox.isConnected){
-                        this.#imageBox.remove();
+                this.#videoBox.classList.remove('start');
+                this.#videoBox.ontransitionend = () => {
+                    if(this.#videoBox.isConnected){
+                        this.#videoBox.remove();
                     }
                 }
                 */
@@ -96,12 +109,13 @@ export default class ImageBox {
 
     /**
      * 
-     * @param {HTMLImageElement} image 
+     * @param {HTMLVideoElement} video 
      */
-    #addRresizeEvent(image){
+    /* 리사이즈 있는 버전 주석 처리 20230821
+    #addRresizeEvent(video){
         return new Promise(resolve => {
-            let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
-            width.value = image.width, height.value = image.height;
+            let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
+            width.value = video.width, height.value = video.height;
             
             const oninputEvent = (event) => {
                 if(isNaN(Number(event.target.value))){
@@ -114,27 +128,27 @@ export default class ImageBox {
                     width.labels[0].textContent = 'width : ';
                 }
                 let sizeName = event.target.id.includes('width') ? 'width': 'height';
-                image[sizeName] = event.target.value;
+                video[sizeName] = event.target.value;
 
-                width.value = image.width, height.value = image.height;
+                width.value = video.width, height.value = video.height;
             }
             width.oninput = oninputEvent, height.oninput = oninputEvent;
             resolve({width, height});
         });
     }
-
-    #addButtonIconEvent(image){
+    */
+    #addButtonIconEvent(video){
         return new Promise(resolve => {
-            let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')
-            download.href = image.src, newWindow.href = image.src;
-            download.download = image.dataset.image_name;
+            let [download, newWindow] = this.#videoBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')
+            download.href = video.src, newWindow.href = video.src;
+            download.download = video.dataset.video_name;
             newWindow.target = '_blank';
             resolve({download, newWindow});
         })
     }
 
-    get imageBox(){
-        return this.#imageBox;
+    get videoBox(){
+        return this.#videoBox;
     }
 
 	get style(){
@@ -151,7 +165,7 @@ export default class ImageBox {
     
     createStyle(){
         this.#style.textContent = `
-            .image-box-wrap{
+            .video-box-wrap{
                 position: absolute;
                 display: flex;
                 justify-content: space-between;
@@ -163,22 +177,22 @@ export default class ImageBox {
                 opacity: 0;
                 transition: all 1s;
             }
-            .image-box-wrap.start{
+            .video-box-wrap.start{
                 top: 0;
                 opacity: 1;
                 transition: all 0.5s;
             }
-            .image-box-wrap .image-button-container, .image-box-wrap .image-resize-container{
+            .video-box-wrap .video-button-container, .video-box-wrap .video-resize-container{
                 display: flex;
                 gap: 1.5vw;
                 padding: 1.7%;
             }
-            .image-box-wrap .image-resize-container .image-box-resize-label{
+            .video-box-wrap .video-resize-container .video-box-resize-label{
                 background: linear-gradient(to right, #e50bff, #004eff);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .image-box-wrap .image-resize-container .image-box-resize-input{
+            .video-box-wrap .video-resize-container .video-box-resize-input{
                 outline: none;
                 border: none;
                 background-image: linear-gradient(#fff1f1d4, #ffffffeb), linear-gradient(to right, #a189890d 0%,  #ed89b275 100%);
@@ -189,7 +203,7 @@ export default class ImageBox {
                 color: #ffb6b6;
                 text-align: center;
             }
-            .image-box-wrap .image-button-container .download-css-gg-push-down{
+            .video-box-wrap .video-button-container .download-css-gg-push-down{
                 box-sizing: border-box;
                 position: relative;
                 display: block;
@@ -199,7 +213,7 @@ export default class ImageBox {
                 background: currentColor;
                 color: #0000005c;
             }
-            .image-box-wrap .image-button-container .download-css-gg-push-down::after, .image-box-wrap .image-button-container .download-css-gg-push-down::before{
+            .video-box-wrap .video-button-container .download-css-gg-push-down::after, .video-box-wrap .video-button-container .download-css-gg-push-down::before{
                 content: "";
                 display: block;
                 box-sizing: border-box;
@@ -210,7 +224,7 @@ export default class ImageBox {
                 bottom: -5px;
                 left: -5px
             }
-            .image-box-wrap .image-button-container .download-css-gg-push-down::after {
+            .video-box-wrap .video-button-container .download-css-gg-push-down::after {
                 width: 8px;
                 height: 8px;
                 border-right: 2px solid;
@@ -218,7 +232,7 @@ export default class ImageBox {
                 left: -3px;
                 bottom: 0
             }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim {
+            .video-box-wrap .video-button-container .new-window-css-gg-path-trim {
                 display: block;
                 position: relative;
                 box-sizing: border-box;
@@ -227,8 +241,8 @@ export default class ImageBox {
                 height: 14px;
                 color: #0000005c;
             }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::after,
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::before {
+            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::after,
+            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::before {
                 content: "";
                 position: absolute;
                 display: block;
@@ -236,11 +250,11 @@ export default class ImageBox {
                 width: 10px;
                 height: 10px
             }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::after {
+            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::after {
                 border-left: 3px solid;
                 border-top: 3px solid
             }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::before {
+            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::before {
                 background: currentColor;
                 bottom: 0;
                 right: 0

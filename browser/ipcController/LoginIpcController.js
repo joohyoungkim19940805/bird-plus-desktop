@@ -6,9 +6,6 @@ const axios = require('axios');
 class LoginIpcController {
 	constructor() {
 		ipcMain.handle('loginProc', async (event, param) => {
-			console.log('test>>>')
-			console.log(param);
-			console.log(JSON.stringify(param));
 
 			return axios.post(__serverApi + '/login-processing', JSON.stringify(param), {
 				headers:{
@@ -63,7 +60,7 @@ class LoginIpcController {
 			mainWindow.autoHideMenuBar = false;
 			mainWindow.menuBarVisible = true;
 
-			return await mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+			return await mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 				mainWindow.titleBarStyle = 'visibble'
 				mainWindow.show();
 				//mainWindow.webContents.openDevTools();
@@ -73,11 +70,7 @@ class LoginIpcController {
 
 		//this.addIpcMainEvents()
 	}
-	test(){
-		new EventSource()
-	}
-
 
 }
 const loginIpcController = new LoginIpcController();
-module.exports = LoginIpcController
+module.exports = loginIpcController

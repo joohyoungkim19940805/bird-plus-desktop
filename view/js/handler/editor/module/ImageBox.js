@@ -8,6 +8,16 @@ export default class ImageBox {
 
     #imageBox = Object.assign(document.createElement('div'), {
         className: 'image-box-wrap',
+        
+        innerHTML:`
+            <div class="image-resize-container">
+            </div>
+            <div class="image-button-container">
+                <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
+                <a href="javascript:void(0);" class="new-window-css-gg-path-trim"></a>
+            </div>
+        `
+        /* 리사이즈 있는 버전 주석처리 20230821
         innerHTML: `
             <div class="image-resize-container">
                 <div>
@@ -24,6 +34,7 @@ export default class ImageBox {
                 <a href="javascript:void(0);" class="new-window-css-gg-path-trim"></a>
             </div>
         `
+        */
     });
 
     #removeEventPromiseResolve;
@@ -68,7 +79,9 @@ export default class ImageBox {
                 image.parentElement.append(this.#imageBox);
                 //this.#imageBox.ontransitionend = '';
                 //this.#imageBox.classList.remove('start');
+                /* 리사이즈 있는 버전 주석 처리 20230821
                 this.#addRresizeEvent(image),
+                */
                 this.#addButtonIconEvent(image)
                 let appendAwait = setInterval(()=>{
                     if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement && ! this.#imageBox.classList.contains('start')){
@@ -98,6 +111,7 @@ export default class ImageBox {
      * 
      * @param {HTMLImageElement} image 
      */
+    /* 리사이즈 있는 버전 주석 처리 20230821
     #addRresizeEvent(image){
         return new Promise(resolve => {
             let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
@@ -122,7 +136,7 @@ export default class ImageBox {
             resolve({width, height});
         });
     }
-
+    */
     #addButtonIconEvent(image){
         return new Promise(resolve => {
             let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')

@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 //const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+const windowUtil = require(path.join(__project_path,'windowUtil'))
 const axios = require('axios');
 class OpeningIpcController {
 	constructor() {
@@ -74,19 +75,23 @@ class OpeningIpcController {
 						mainWindow.movable = true;
 						mainWindow.autoHideMenuBar = false;
 						mainWindow.menuBarVisible = true;
-						if(false){//rows[0]){
+
+						if(rows[0]){
 							//global.__apiToken = rows[0].TOKEN
 							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
-							mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
-								mainWindow.titleBarStyle = 'visibble'
-								mainWindow.show();
-							})
+							windowUtil.isLogin((result) => {
+								if(result.isLogin){
+									mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+										mainWindow.titleBarStyle = 'visibble'
+										mainWindow.show();
+									})
+								}else{
+									axios.defaults.headers.common['Authorization'] = '';
+									this.moveLoginPage(mainWindow);
+								}
+							});
 						}else{
-							mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
-								mainWindow.titleBarStyle = 'visibble'
-								mainWindow.show();
-								return 'done';
-							})
+							this.moveLoginPage(mainWindow);
 						}
 						resolve(rows[0])
 					})
@@ -96,7 +101,13 @@ class OpeningIpcController {
 
 		//this.addIpcMainEvents()
 	}
-
+	moveLoginPage(mainWindow){
+		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+			mainWindow.titleBarStyle = 'visibble'
+			mainWindow.show();
+			return 'done';
+		})
+	}
 	/*
 	addIpcMainEvents(){
 		

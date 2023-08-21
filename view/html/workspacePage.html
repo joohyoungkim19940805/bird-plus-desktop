@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+		<link rel="stylesheet" type="text/css" href="./../css/header.css">
+		<link rel="stylesheet" type="text/css" href="./../css/main.css">
+		<link rel="stylesheet" type="text/css" href="./../css/loginPage.css">
+		<script type="text/javascript" src="./../js/component/header/HeaderDefault.js"></script>
+	</head>
+	<body>
+		<header-default data-is_no_menu="" data-is_no_search=""></header-default>
+		<div id="container" class="posision_center">
+			<div class="login_wrap">
+				<form id="login_form"></form>
+				<div>
+					<span class='status_text'></span>
+				</div>
+				<div class="login_input_wrap">
+					<input form="login_form" name="accountName" type="text" placeholder="아이디 입력">
+					<input form="login_form" name="password" type="password" placeholder="비밀번호 입력">
+				</div>
+				<div class="login_btn_wrap">
+					<button id="login_btn" type="button">로그인</button>
+					<button>회원가입</button>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript" src="./../js/renderer/loginPageRenderer.js"></script>
+</html>
