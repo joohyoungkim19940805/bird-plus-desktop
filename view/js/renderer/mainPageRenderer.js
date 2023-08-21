@@ -12,7 +12,7 @@ import Sort from "../handler/editor/tools/Sort"
 import FontSize from "../handler/editor/tools/FontSize"
 import Italic from "../handler/editor/tools/Italic"
 import Image from "../handler/editor/tools/Image"
-import Video from "../handler/editor/tools/video"
+import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
 window.myAPI.chatting.isChattingReady();

@@ -54,7 +54,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	chatting : {
 		isChattingReady : () => ipcRenderer.send('isChattingReady'),
-		searchMyWorkspaceList : (param) => ipcRenderer.invoke('searchMyWorkspaceList')
+		searchMyWorkspaceList : (param) => ipcRenderer.invoke('searchMyWorkspaceList', param)
 	}
 	
 })

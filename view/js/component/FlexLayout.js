@@ -158,7 +158,6 @@ class FlexLayout extends HTMLElement {
 	// 세로 모드인 경우 firstElementChild의 리사이즈 제거 필요 
 	constructor(){
 		super();
-		console.log('??')
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				let {addedNodes, removedNodes} = mutation;

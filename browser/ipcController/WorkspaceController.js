@@ -3,7 +3,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
-const windowUtil = require(path.join(__project_path,'windowUtil'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 
 class WorkspaceController {
 	constructor() {
@@ -11,7 +11,7 @@ class WorkspaceController {
         ipcMain.handle('searchMyWorkspaceList', async (event, param = {}) => {
             return windowUtil.isLogin((result) => {
                 if(result.isLogin){
-                    return axios.get(`${__serverApi}/api/chatting/search-workspace-joined?page=${(param.page || 1)}&size=${(page.size || 10)}`, {
+                    return axios.get(`${__serverApi}/api/chatting/search-workspace-joined?page=${param.page}&size=${param.size}`, {
                         headers:{
                             'Content-Type': 'application/json'
                         }

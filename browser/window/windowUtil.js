@@ -10,6 +10,7 @@ class WindowUtil{
                 'Content-Type': 'application/json'
             }
         }).then(response => {
+            console.log('response.statusText ::: ', response.statusText);
             if( ! this.responseIsOk(response)){
                 return callBack({
                     isLogin: false,
@@ -17,17 +18,12 @@ class WindowUtil{
                     statusText: response.statusText
                 });
             }else{
-                return response.json().then(json=>{
-                    if(json.code == 0){
-                        json.isLogin = true;	
-                    }else{
-                        json.isLogin = false;
-                    }
-                    if(json.isLogin){
-                        this.loginSuccessResolve();
-                    }
-                    return callBack(json);
-                });
+                if(response.data.code == 0){
+                    response.data.isLogin = true;	
+                }else{
+                    response.data.isLogin = false;
+                }
+                return callBack(response.data);
             }
         }).catch(error=>{
             return callBack({
