@@ -15,7 +15,7 @@ import Sort from "./tools/Sort"
 import FontSize from "./tools/FontSize"
 import Italic from "./tools/Italic"
 import Image from "./tools/Image"
-import Video from "./tools/video"
+import Video from "./tools/Video"
 import Code from "./tools/Code"
 
 export default class FreeWillEditor extends FreeWiilHandler {

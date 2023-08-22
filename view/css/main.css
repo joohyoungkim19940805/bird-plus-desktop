@@ -1,18 +1,6 @@
-body{
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-	display: inline-flex;
-	flex-direction: column;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-}
 /*
 background: linear-gradient(to right, #EAEAEA -274%, #2B2B2B 96%);
 */
-body::-webkit-scrollbar {
-	display: none;
-}
 
 /*
 div[is="content-block"]{

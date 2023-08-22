@@ -58,10 +58,16 @@ export default class FreedomInterface extends HTMLElement {
 		simpleObserver();
 	}
 	
-
 	static DeleteOption = class DeleteOption{
-		static EMPTY_CONTENT_IS_DELETE = new Option('empty_content_is_delete');
-		static EMPTY_CONTENT_IS_NOT_DELETE = new Option('empty_content_is_not_delete');
+		static #DeleteOptionEnum = class DeleteOptionEnum{
+			value;
+			constructor(value){
+				this.value = value;
+				Object.freeze(this);
+			}
+		}
+		static EMPTY_CONTENT_IS_DELETE = new this.#DeleteOptionEnum('empty_content_is_delete');
+		static EMPTY_CONTENT_IS_NOT_DELETE = new this.#DeleteOptionEnum('empty_content_is_not_delete');
 		value;
 		static{
 			Object.freeze(this);

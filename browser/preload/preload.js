@@ -36,12 +36,9 @@ contextBridge.exposeInMainWorld('myAPI', {
 	scanningUserDirectory : () => ipcRenderer.invoke('scanningUserDirectory'),
 	
 	pageChange : {
-		changeLoginPage : () => ipcRenderer.invoke('changeLoginPage'),
-		changeMainPage : () => ipcRenderer.invoke('changeMainPage'),
-	},
-
-	regist : {
-		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
+		changeLoginPage : () => ipcRenderer.send('changeLoginPage'),
+		changeWokrspacePage : () => ipcRenderer.send('changeWokrspacePage'),
+		changeMainPage : (workspaceId) => ipcRenderer.send('changeMainPage', workspaceId),
 	},
 
 	account : {
@@ -53,13 +50,16 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 
 	chatting : {
-		isChattingReady : () => ipcRenderer.send('isChattingReady'),
+		isChattingReady : () => ipcRenderer.send('chattingReady'),
+		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
+		
+	},
+	
+	workspace : {
 		searchMyWorkspaceList : (param) => ipcRenderer.invoke('searchMyWorkspaceList', param)
 	}
-	
+
 })
-
-
 
 ipcRenderer.on('resized', (event, message) => {
 	//console.log(event);
@@ -74,9 +74,17 @@ ipcRenderer.on('resized', (event, message) => {
 	}
 })
 
-ipcRenderer.on('chattingAccept', (event, message)=>{
+ipcRenderer.on('chattingAccept', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('chattingAccept')){
 		electronEventTrigger.objectEventListener['chattingAccept'].forEach(callBack=>{
+			callBack(message);
+		})
+	}
+})
+
+ipcRenderer.on('workspaceChange', (event, message) => {
+	if(electronEventTrigger.objectEventListener.hasOwnProperty('workspaceChange')){
+		electronEventTrigger.objectEventListener['workspaceChange'].forEach(callBack=>{
 			callBack(message);
 		})
 	}

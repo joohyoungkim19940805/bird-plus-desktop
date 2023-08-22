@@ -1,10 +1,57 @@
 const path = require('path');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 class LoginIpcController {
 	constructor() {
+
+		ipcMain.on('changeLoginPage', async (event) => {
+			//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
+			let db = dbConfig.getDB(dbConfig.sqlite3.OPEN_READONLY);
+			db.serialize( () => {
+				db.all(`
+				SELECT 
+					TOKEN, 
+					ISSUED_AT, 
+					EXPIRES_AT 
+				FROM 
+					ACCOUNT_LOG 
+				WHERE 
+					EXPIRES_AT >= datetime('now','localtime') 
+				LIMIT 1`,[], (err, rows) => {
+					if(err){
+						console.error(err);
+					}
+					mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+					mainWindow.center();
+					mainWindow.resizable = true;
+					mainWindow.movable = true;
+					mainWindow.autoHideMenuBar = false;
+					mainWindow.menuBarVisible = true;
+
+					if(rows[0]){
+						//global.__apiToken = rows[0].TOKEN
+						axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
+						windowUtil.isLogin((result) => {
+							if(result.isLogin){
+								mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+									mainWindow.titleBarStyle = 'visibble'
+									mainWindow.show();
+								})
+							}else{
+								axios.defaults.headers.common['Authorization'] = '';
+								this.moveLoginPage(mainWindow);
+							}
+						});
+					}else{
+						this.moveLoginPage(mainWindow);
+					}
+				})
+			});
+		});
+
 		ipcMain.handle('loginProc', async (event, param) => {
 
 			return axios.post(__serverApi + '/login-processing', JSON.stringify(param), {
@@ -50,27 +97,16 @@ class LoginIpcController {
 				}
 				
 			})
-		})
-
-		ipcMain.handle('changeMainPage', async (event) => {
-			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
-			mainWindow.center();
-			mainWindow.resizable = true;
-			mainWindow.movable = true;
-			mainWindow.autoHideMenuBar = false;
-			mainWindow.menuBarVisible = true;
-
-			return await mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
-				mainWindow.titleBarStyle = 'visibble'
-				mainWindow.show();
-				//mainWindow.webContents.openDevTools();
-				return 'done';
-			})
 		});
-
-		//this.addIpcMainEvents()
 	}
 
+	moveLoginPage(mainWindow){
+		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+			mainWindow.titleBarStyle = 'visibble'
+			mainWindow.show();
+			return 'done';
+		})
+	}
 }
 const loginIpcController = new LoginIpcController();
 module.exports = loginIpcController

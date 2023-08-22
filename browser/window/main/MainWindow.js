@@ -8,6 +8,8 @@ const path = require('path');
  */
 const {BrowserWindow} = require('electron');
 
+const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
+
 /**
  * 메인 윈도우를 정의한다.
  * @author mozu123
@@ -15,6 +17,9 @@ const {BrowserWindow} = require('electron');
  * @extends BrowserWindow
  */
 class MainWindow extends BrowserWindow{
+	
+	#workspaceIdx
+	
 	/**
 	 * 메인 윈도우의 생성자
 	 * @author mozu123
@@ -79,6 +84,16 @@ class MainWindow extends BrowserWindow{
 
 			return { action: 'deny' }
 		});
+	}
+	set workspaceId(workspaceId){
+		if(this.#workspaceId === value){
+            return;
+        }
+		this.#workspaceId = workspaceId;
+		mainWindow.webContents.send("workspaceChange", super.getSize());
+	}
+	get workspaceId(){
+		return this.#workspaceId;
 	}
 }
 

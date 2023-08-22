@@ -5,8 +5,30 @@ const axios = require('axios');
 const EventSource = require('eventsource');
 class MainIpcController {
 	source;
+	workspaceObserver;
 	constructor() {
-		ipcMain.on('isChattingReady', async event => {
+
+		ipcMain.on('changeMainPage', async (event, param) => {
+			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+			mainWindow.center();
+			mainWindow.resizable = true;
+			mainWindow.movable = true;
+			mainWindow.autoHideMenuBar = false;
+			mainWindow.menuBarVisible = true;
+           
+			mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+				mainWindow.titleBarStyle = 'visibble'
+				mainWindow.show();
+				//mainWindow.webContents.openDevTools();
+			}).then(()=>{
+				mainWindow.workspaceId = param.workspaceId;
+			})
+		});
+
+		ipcMain.on('chattingReady', async event => {
+			if(this.source){
+				return;
+			}
 			//console.log('isChattingReady !!', event);
 			//console.log(axios.defaults.headers.common['Authorization']);
 			this.source = new EventSource(__serverApi + '/api/chatting/stream' + '/bearer-' + axios.defaults.headers.common['Authorization']);

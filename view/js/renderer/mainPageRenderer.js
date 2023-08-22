@@ -15,7 +15,13 @@ import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
-window.myAPI.chatting.isChattingReady();
+
+window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
+	console.log(event);
+})
+
+// 채팅 셋팅
+window.myAPI.chatting.chattingReady();
 const chattingLine = document.querySelector('#chatting_read_only');
 window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
 
@@ -34,12 +40,13 @@ window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept
 
 	let content = new Editor({isReadOnly : true});
 	content.contentEditable = false;
-	console.log('start >>> ',chatting)
 	content.parseLowDoseJSON(chatting);
 
 	wrap.append(content);
 	chattingLine.append(wrap);
 });
+
+// 에디터 셋팅
 class Editor extends FreeWillEditor{
 	constructor({isReadOnly = false} = {}){
 
@@ -103,12 +110,11 @@ class Editor extends FreeWillEditor{
 				console.log('test<<< ' , test);
 				console.log('test2<<< ', test2);
 				*/
-				window.myAPI.regist.sendChatting(this.getLowDoseJSON()).then(res=>{
+				window.myAPI.chatting.sendChatting(this.getLowDoseJSON()).then(res=>{
 					console.log(res);
 				})
 			}
 		}
 	}
 }
-
 window.customElements.define('free-will-editor', Editor);

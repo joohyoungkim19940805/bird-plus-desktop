@@ -31,10 +31,17 @@ export default class Palette {
     #applyCallback = () => {}
 
 	static ExampleMode = class ExampleMode{
-		static TEXT_COLOR = new ExampleMode('color');
-		static TEXT_BACKGROUND_COLOR = new ExampleMode('background-color');
-		static TEXT_UNDERLINE = new ExampleMode('text-decoration');
-		static TEXT_LINE_THROUGH = new ExampleMode('text-decoration');
+		static #ExampleModeEnum = class ExampleModeEnum{
+			value;
+			constructor(value){
+				this.value = value;
+				Object.freeze(this);
+			}
+		}
+		static TEXT_COLOR = new this.#ExampleModeEnum('color');
+		static TEXT_BACKGROUND_COLOR = new this.#ExampleModeEnum('background-color');
+		static TEXT_UNDERLINE = new this.#ExampleModeEnum('text-decoration');
+		static TEXT_LINE_THROUGH = new this.#ExampleModeEnum('text-decoration');
 		value;
 		static{
 			Object.freeze(this);
@@ -64,7 +71,7 @@ export default class Palette {
     constructor({
 		openPositionMode = Palette.OpenPositionMode.BUTTON,
 		openPosition,
-		exampleMode = Palette.ExampleMode.TEXT_COLOR
+		exampleMode = Palette.ExampleModeEnum.TEXT_COLOR
 	}={}){
 		
         this.#openPositionMode = openPositionMode;
@@ -774,17 +781,17 @@ export default class Palette {
 	 * @param {Array<Number>} blackOrWhite 
 	 */
 	#applyExampleTextColor(text, color, blackOrWhite){
-		if(this.#exampleMode == Palette.ExampleMode.TEXT_COLOR){
+		if(this.#exampleMode == Palette.ExampleModeEnum.TEXT_COLOR){
 			text.style.color = color
 			if(blackOrWhite && blackOrWhite.length != 0){
 				text.style.backgroundColor = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
 			}
-		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_BACKGROUND_COLOR){
+		}else if(this.#exampleMode == Palette.ExampleModeEnum.TEXT_BACKGROUND_COLOR){
 			text.style.backgroundColor = color
 			if(blackOrWhite && blackOrWhite.length != 0){
 				text.style.color = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
 			}
-		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_UNDERLINE){
+		}else if(this.#exampleMode == Palette.ExampleModeEnum.TEXT_UNDERLINE){
 			text.style.textDecoration = 'underline'
 			text.style.textDecorationColor = color
 			
@@ -798,7 +805,7 @@ export default class Palette {
 				}*/
 			}
 			
-		}else if(this.#exampleMode == Palette.ExampleMode.TEXT_LINE_THROUGH){
+		}else if(this.#exampleMode == Palette.ExampleModeEnum.TEXT_LINE_THROUGH){
 			text.style.textDecoration = 'line-through'
 			text.style.textDecorationColor = color;
 			

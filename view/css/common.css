@@ -1,0 +1,214 @@
+body{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+	display: inline-flex;
+	flex-direction: column;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+body::-webkit-scrollbar {
+	display: none;
+}
+
+body > #container{
+	display: inline-flex;
+	height: 100%;
+	width: 100%;
+	overflow: auto;
+	overflow-wrap: revert-layer;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	justify-content: center;
+    align-items: center;
+}
+
+
+/* a태그 색상 검은색 */
+a.non_color{
+	text-decoration: none;
+    color: black;
+}
+
+
+/* summary 마크 화살표 제거 */
+summary::marker {
+    display: none;
+    /*font-size: 1.5rem;*/
+}
+
+/* summary 마크 화살표 제거 */
+summary{
+    list-style: none ;
+}
+
+/* a태그 색상 검은색 */
+a.non_color{
+	text-decoration: none;
+    color: black;
+}
+
+
+/* summary 마크 화살표 제거 */
+summary::marker {
+    display: none;
+    /*font-size: 1.5rem;*/
+}
+
+/* summary 마크 화살표 제거 */
+summary{
+    list-style: none ;
+}
+
+/* li 표시 제거 */
+ul {
+    list-style: none;
+    padding: 0;
+    display: block;
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-inline-start: 0px;
+}
+
+
+li{
+	display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+.wrap{
+	display: flex;
+}
+
+.side_wrap{
+	justify-content: space-between;
+}
+
+ul.sidebar{
+	position: absolute;
+}
+
+aside{
+	position: absolute;
+}
+aside#left_side{
+	left: 0rem;
+	top: 50%;
+}
+
+aside#right_side{
+	right: 0rem;
+	top: 50%;
+}
+
+label{
+	font-family: serif;
+	font-size: 1.2rem;
+}
+
+input, button{
+	outline: none;
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+p {
+    font-size: 1.3rem;
+}
+
+.direction_up{
+	transform: rotate(-135deg);
+	-webkit-transform: rotate(-135deg);
+}
+.direction_up_right{
+	transform: rotate(-90deg);
+	-webkit-transform: rotate(-90deg);
+}
+.direction_right{
+	transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+}
+.direction_down_right{
+	transform: rotate(-0deg);
+	-webkit-transform: rotate(-0deg);
+}
+.direction_down{
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+}
+
+.direction_down_left{
+	transform: rotate(90deg);
+	-webkit-transform: rotate(135deg);
+}
+.direction_left{
+	transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+}
+.direction_up_left{
+	transform: rotate(180deg);
+	-webkit-transform: rotate(180deg);
+}
+
+.loading_rotate{
+	border: 12px solid #f3f3f3;
+	border-radius: 50%;
+	border-top: 12px solid #3498db;
+	width: 20vmax;
+	height: 20vmax;
+	margin: 0 auto;
+	-webkit-animation: spin 2s linear infinite; /* Safari */
+	animation: spin 2s linear infinite;
+}
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hide_scrollbar{
+	-ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.hide_scrollbar::-webkit-scrollbar{
+	display: none;
+}
+
+@keyframes shake {
+    0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 
+    10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); }
+    30% { -webkit-transform: translate(0px, 2px) rotate(0deg); }
+    40% { -webkit-transform: translate(1px, -1px) rotate(1deg); }
+    50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); }
+    70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); }
+    80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); }
+    90% { -webkit-transform: translate(2px, 2px) rotate(0deg); }
+    100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); }
+}
+.shake {
+    animation-name: shake;
+	animation-duration: 0.5s;
+    transform-origin:50% 50%;
+    animation-iteration-count: infinite;
+}
+
+input[type="checkbox"]{
+	accent-color: black !important;
+    width: 2vw !important;
+    height: 3vh !important;
+}
+
+.pointer{
+	cursor: pointer;
+}

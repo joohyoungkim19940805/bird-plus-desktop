@@ -8,6 +8,20 @@ const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.j
 class WorkspaceController {
 	constructor() {
         
+        ipcMain.on('changeWokrspacePage', async (event) => {
+            mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
+			mainWindow.center();
+			mainWindow.resizable = true;
+			mainWindow.movable = true;
+			mainWindow.autoHideMenuBar = false;
+			mainWindow.menuBarVisible = true;
+
+			mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+				mainWindow.titleBarStyle = 'visibble'
+				mainWindow.show();
+			})
+        })
+
         ipcMain.handle('searchMyWorkspaceList', async (event, param = {}) => {
             return windowUtil.isLogin((result) => {
                 if(result.isLogin){
@@ -40,6 +54,7 @@ class WorkspaceController {
                 }
             }) 
         })
+
     }
 
 }
