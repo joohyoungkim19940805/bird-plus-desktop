@@ -16,7 +16,7 @@ import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
 
-window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
+window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
 	console.log(event);
 })
 

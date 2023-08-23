@@ -18,7 +18,7 @@ const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObse
  */
 class MainWindow extends BrowserWindow{
 	
-	#workspaceIdx
+	#workspaceId
 	
 	/**
 	 * 메인 윈도우의 생성자
@@ -86,11 +86,11 @@ class MainWindow extends BrowserWindow{
 		});
 	}
 	set workspaceId(workspaceId){
-		if(this.#workspaceId === value){
+		if(this.#workspaceId === workspaceId){
             return;
         }
 		this.#workspaceId = workspaceId;
-		mainWindow.webContents.send("workspaceChange", super.getSize());
+		mainWindow.webContents.send("workspaceChange", {workspaceId: this.#workspaceId});
 	}
 	get workspaceId(){
 		return this.#workspaceId;
