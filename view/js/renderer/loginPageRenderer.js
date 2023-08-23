@@ -10,8 +10,8 @@ new class LoginPageRenderer{
 				obj[e.name] = e.value
 				return obj;
 			}, {});
-			
-			window.myAPI.account.loginProc(param).then(response=>{
+
+			window.myAPI.account.loginProcessing(param).then(response=>{
 				console.log(response);
 				let {code} = response;
 				if(code == '00'){

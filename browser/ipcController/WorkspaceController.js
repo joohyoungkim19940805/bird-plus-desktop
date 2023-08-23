@@ -25,7 +25,7 @@ class WorkspaceController {
         ipcMain.handle('searchMyWorkspaceList', async (event, param = {}) => {
             return windowUtil.isLogin((result) => {
                 if(result.isLogin){
-                    return axios.get(`${__serverApi}/api/chatting/search-workspace-joined?page=${param.page}&size=${param.size}`, {
+                    return axios.get(`${__serverApi}/api/workspace/search-workspace-joined?page=${param.page}&size=${param.size}`, {
                         headers:{
                             'Content-Type': 'application/json'
                         }

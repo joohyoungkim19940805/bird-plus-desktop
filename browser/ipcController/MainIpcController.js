@@ -31,7 +31,7 @@ class MainIpcController {
 			}
 			//console.log('isChattingReady !!', event);
 			//console.log(axios.defaults.headers.common['Authorization']);
-			this.source = new EventSource(__serverApi + '/api/chatting/stream' + '/bearer-' + axios.defaults.headers.common['Authorization']);
+			this.source = new EventSource(__serverApi + '/api/chatting/emission-stream' + '/bearer-' + axios.defaults.headers.common['Authorization']);
 			console.log("create EventSource");
 			this.source.onmessage = (event) => {
 				mainWindow.webContents.send("chattingAccept", event);
@@ -76,9 +76,9 @@ class MainIpcController {
 			});
 
 		})
-		ipcMain.handle('sendChatting', async (event, param) => {
+		ipcMain.handle('sendStream', async (event, param) => {
 			//console.log('param!!!!',param);
-			return axios.post(__serverApi + '/api/chatting/stream', JSON.stringify(param), {
+			return axios.post(__serverApi + '/api/chatting/send-stream', JSON.stringify(param), {
 				headers:{
 					'Content-Type': 'application/json'
 				}

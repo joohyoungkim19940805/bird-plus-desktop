@@ -54,7 +54,7 @@ class LoginIpcController {
 			});
 		});
 
-		ipcMain.handle('loginProc', async (event, param) => {
+		ipcMain.handle('loginProcessing', async (event, param) => {
 
 			return axios.post(__serverApi + '/login-processing', JSON.stringify(param), {
 				headers:{

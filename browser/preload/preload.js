@@ -42,7 +42,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 
 	account : {
-		loginProc : (param) => ipcRenderer.invoke('loginProc', param),
+		loginProcessing : (param) => ipcRenderer.invoke('loginProcessing', param),
 	},
 	
 	event : {

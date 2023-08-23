@@ -8,7 +8,13 @@ div[is="content-block"]{
 	min-width: 100%;
 }
 */
-
+.content{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    justify-content: space-around;
+}
 /*content wrapper 크기 조절*/
 .content_wrapper{
 	position: relative;
@@ -20,6 +26,16 @@ div[is="content-block"]{
 }
 .content_wrapper.rooms_wrapper{
     background-color: antiquewhite;
+}
+.content_wrapper.rooms_wrapper .content{
+    display: inline-flex;
+    overflow: auto;
+    overflow-wrap: revert-layer;
+}
+.content_wrapper.rooms_wrapper .content #room-menu-wrapper,
+.content_wrapper.rooms_wrapper .content #room-list-wrapper,
+.content_wrapper.rooms_wrapper .content #room-messenger-wrapper{
+    overflow-y: auto;
 }
 .content_wrapper.chating_wrapper{
     background-color: #f3f3f3;
