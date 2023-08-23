@@ -20,6 +20,8 @@ class LoginIpcController {
 					ACCOUNT_LOG 
 				WHERE 
 					EXPIRES_AT >= datetime('now','localtime') 
+				ORDER BY 
+					EXPIRES_AT DESC
 				LIMIT 1`,[], (err, rows) => {
 					if(err){
 						console.error(err);
