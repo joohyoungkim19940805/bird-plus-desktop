@@ -213,9 +213,10 @@ export default class Palette {
 		let colorPaintSelectedPointer = Object.assign(document.createElement('div'), {
 			className: 'paint-selected-pointer'
 		})
-
+		colorPaintSelectedPointer.append(Object.assign(document.createElement('div'),{
+			className: 'paint-selected-pointer-child'
+		}));
 		colorPaint.__colorPaintSelectedPointer = colorPaintSelectedPointer
-
 
 		return colorPaint;
 	}
@@ -230,6 +231,9 @@ export default class Palette {
 		let colorBrightnessSelectedPointer = Object.assign(document.createElement('div'), {
 			className: 'brightness-selected-pointer'
 		});
+		colorBrightnessSelectedPointer.append(Object.assign(document.createElement('div'), {
+			className: 'brightness-selected-pointer-child'
+		}));
 		colorBrightness.__colorBrightnessSelectedPointer = colorBrightnessSelectedPointer;
 		colorBrightnessWrap.append(colorBrightness, colorBrightness.__colorBrightnessSelectedPointer)
 
@@ -484,9 +488,9 @@ export default class Palette {
 			this.#applyExampleTextColor(selectionRgbText, selectedColor, blackOrWhite);
 
 			if(this.#a < 0.75){
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = 'white';
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = 'solid 1px white';
 			}else{
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = `solid 1px rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
 			}
 
 			this.#changeColorBrightness(colorBrightness.getContext('2d', { willReadFrequently: true }), [this.#r, this.#g, this.#b]);
@@ -545,7 +549,7 @@ export default class Palette {
 				colorPaint.__colorPaintSelectedPointer.style.left = colorPaintRect.x + 'px';
 				colorPaint.__colorPaintSelectedPointer.style.width = colorPaintRect.width + 'px';
 				let [r,g,b] = this.#blackOrWhite(...this.#lastPaintRgb);
-				colorPaint.__colorPaintSelectedPointer.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
+				colorPaint.__colorPaintSelectedPointer.children[0].style.border = `solid 1px rgb(${r}, ${g}, ${b})`
 			},200));
 		});
 	}
@@ -597,12 +601,12 @@ export default class Palette {
 
 			let blackOrWhite = this.#blackOrWhite(r,g,b);
 
-			colorPaint.__colorPaintSelectedPointer.style.backgroundColor = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+			colorPaint.__colorPaintSelectedPointer.children[0].style.border = `solid 1px rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
 
 			if(this.#a < 0.75){
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = 'white';
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = 'solid 1px white';
 			}else{
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = `solid 1px rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
 			}
 
 			
@@ -658,7 +662,7 @@ export default class Palette {
 				
 				colorBrightness.__colorBrightnessSelectedPointer.style.top = colorBrightnessRect.y + 'px';
 				colorBrightness.__colorBrightnessSelectedPointer.style.height = colorBrightnessRect.height + 'px';
-                colorBrightness.__colorBrightnessSelectedPointer.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
+                colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = `solid 1px rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`
             }, 200)
 			
 			resolve();
@@ -715,11 +719,11 @@ export default class Palette {
 			selectionRgbBg.style.background = this.selectedColor;
 
 			selectionRgbText.style.color = this.selectedColor;
-			this.#applyExampleTextColor(selectionRgbText, this.selectedColor);
+			this.#applyExampleTextColor(selectionRgbText, this.selectedColor, blackOrWhite);
 			if(this.#a < 0.75){
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = 'white';
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = 'solid 1px white';
 			}else{
-				colorBrightness.__colorBrightnessSelectedPointer.style.background = `rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
+				colorBrightness.__colorBrightnessSelectedPointer.children[0].style.border = `solid 1px rgb(${blackOrWhite[0]}, ${blackOrWhite[1]}, ${blackOrWhite[2]})`;
 			}
 
 			resolve()
@@ -753,9 +757,14 @@ export default class Palette {
 		}
 	}
 
+	/**
+	 * @see https://stackoverflow.com/a/3943023
+	 * @param  {...any} rgb 
+	 * @returns 
+	 */
     #blackOrWhite(...rgb){
 		let [r,g,b] = rgb;
-		return (r * 0.299 + g * 0.587 + b * 0.114) > 150
+		return (r * 0.299 + g * 0.587 + b * 0.114) > 186
             ? [0, 0, 0]
             : [255, 255, 255];
 	}
@@ -953,6 +962,16 @@ export default class Palette {
 			.palette-wrap .color-wrap .paint-selected-pointer{
 				position: fixed;
 				height: 1px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #faebd700;
+			}
+			.palette-wrap .color-wrap .paint-selected-pointer-child{
+				position: absolute;
+				border: solid 1px;
+				height: 2px;
+				width: inherit;
 			}
 			/* 컬러 영역 영역 [E] */
 
@@ -972,6 +991,17 @@ export default class Palette {
 			.palette-wrap .brightness-wrap .brightness-selected-pointer{
 				position: fixed;
 				width: 1px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #faebd700;
+			}
+			.palette-wrap .brightness-wrap .brightness-selected-pointer-child{
+				position: absolute;
+				border: solid 1px;
+				height: inherit;
+				width: 2px;
+				background: inherit;
 			}
 			/* 투명도 영역 [E] */
 

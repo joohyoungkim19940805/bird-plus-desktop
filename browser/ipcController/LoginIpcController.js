@@ -92,6 +92,7 @@ class LoginIpcController {
 				return response.data;
 			}).catch(err=>{
 				console.error('error : ', JSON.stringify(err));
+				axios.defaults.headers.common['Authorization'] = '';
 				if(err.response){
 					return err.response.data;
 				}else{

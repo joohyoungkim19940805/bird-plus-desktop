@@ -13,7 +13,6 @@ div[is="content-block"]{
     flex-direction: column;
     height: 100%;
     width: 100%;
-    justify-content: space-around;
 }
 /*content wrapper 크기 조절*/
 .content_wrapper{
