@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import Palette from "../module/Palette"
+import Palette from "../component/Palette"
 
 export default class Strikethrough extends FreedomInterface {
 

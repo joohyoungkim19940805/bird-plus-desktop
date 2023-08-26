@@ -15,10 +15,23 @@ import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
+import RoomContainer from "../component/room/RoomContainer"
 
-window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
-	console.log(event);
-})
+window.addEventListener("DOMContentLoaded", (event) => {
+	window.myAPI.workspace.getWorkspaceId().then(workspaceId=>{
+		console.log('workspaceId', workspaceId)
+		const roomContainer = new RoomContainer(document.querySelector('.rooms_wrapper .content_wrapper'))
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
+			console.log('test event', event);
+			let newWorkspaceId = event.workspaceId
+			if(workspaceId == newWorkspaceId){
+				return;
+			}
+			//event.workspaceId
+		})
+	})
+
+});
 
 // 채팅 셋팅
 window.myAPI.chatting.chattingReady();

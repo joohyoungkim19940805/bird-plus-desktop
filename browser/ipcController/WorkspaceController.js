@@ -4,13 +4,14 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
+const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
 class WorkspaceController {
 	constructor() {
         
         ipcMain.on('changeWokrspacePage', async (event) => {
-            mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
-			mainWindow.center();
+            birdPlusOptions.setLastWindowSize(mainWindow);
+			birdPlusOptions.setLastWindowPosition(mainWindow);
 			mainWindow.resizable = true;
 			mainWindow.movable = true;
 			mainWindow.autoHideMenuBar = false;

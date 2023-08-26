@@ -3,14 +3,14 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const EventSource = require('eventsource');
+const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 class MainIpcController {
 	source;
 	workspaceObserver;
 	constructor() {
-
 		ipcMain.on('changeMainPage', async (event, param) => {
-			mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
-			mainWindow.center();
+			birdPlusOptions.setLastWindowSize(mainWindow);
+			birdPlusOptions.setLastWindowPosition(mainWindow);
 			mainWindow.resizable = true;
 			mainWindow.movable = true;
 			mainWindow.autoHideMenuBar = false;
@@ -74,7 +74,7 @@ class MainIpcController {
 			this.source.addEventListener("message", (e) => {
 				console.log('message !!!!! : ', e.data);
 			});
-
+			
 		})
 		ipcMain.handle('sendStream', async (event, param) => {
 			//console.log('param!!!!',param);
@@ -94,6 +94,9 @@ class MainIpcController {
 				console.error(err);
 				return err.response.data;
 			})
+		})
+		ipcMain.handle('getWorkspaceId', async () => {
+			return mainWindow.workspaceId;
 		})
 	}
 

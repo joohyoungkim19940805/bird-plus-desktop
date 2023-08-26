@@ -56,7 +56,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 	
 	workspace : {
-		searchMyWorkspaceList : (param) => ipcRenderer.invoke('searchMyWorkspaceList', param)
+		searchMyWorkspaceList : (param) => ipcRenderer.invoke('searchMyWorkspaceList', param),
+		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId')
 	}
 
 })

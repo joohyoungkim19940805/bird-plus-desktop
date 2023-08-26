@@ -10,16 +10,30 @@ global.__serverApi = (()=>{
 	}
 })();
 
+const path = require('path');
+const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+//global.__birdPlusOptions = 
+
 // 일렉트론 모듈 호출
 const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
 // path 모듈 호출
-const path = require('path');
+
 // 파일 모듈 호출
 const fs = require('fs');
 // 자동 업데이트 모듈 호출
-const {autoUpdater} = require('electron-updater')
+const {autoUpdater} = require('electron-updater');
+if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
+	const { default: electronReload } = require('electron-reload');
+	require('electron-reload')(__project_path, {
+		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
+		hardResetMethod: 'exit'
+	});
+	require('electron-reloader')(module, {
+		debug: false,
+		watchRenderer: true
+	});
+}
 
-var mainWindow;
 //myapp:// param
 //Electron 앱을 시작한 후 예를 들어 사용자 지정 프로토콜이 포함된 URL을 브라우저에 입력하면 "electron-fiddle://open"애플리케이션이 응답하고 
 //오류 대화 상자를 표시하는지 확인할 수 있습니다.
@@ -35,24 +49,7 @@ if(process.defaultApp && process.argv.length >= 2){
 	}
 }
 
-// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
-// window 및 linux인 경우
-const gotTheLock = app.requestSingleInstanceLock()
-if (!gotTheLock) {
-	autoUpdater.quitAndInstall();
-	app.quit();
-}else{
-	app.on('second-instance', (event, commandLine, workingDirectory) => {
-		if(mainWindow) {
-			if(mainWindow.isMinimized()){
-				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
-				mainWindow.restore();
-			}
-			mainWindow.focus();
-		}
-		dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
-	})
-}
+
 // mac os인 경우
 app.on('open-url', (event, url) => {
 	dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. url : ${url}`);
@@ -60,8 +57,25 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
-	
+	const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+	// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
+	// window 및 linux인 경우
+	const gotTheLock = app.requestSingleInstanceLock()
+	if (!gotTheLock) {
+		autoUpdater.quitAndInstall();
+		app.quit();
+	}else{
+		app.on('second-instance', (event, commandLine, workingDirectory) => {
+			if(mainWindow) {
+				if(mainWindow.isMinimized()){
+					// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
+					mainWindow.restore();
+				}
+				mainWindow.focus();
+			}
+			dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
+		})
+	}
 	const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
 	const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))

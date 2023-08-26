@@ -5,13 +5,14 @@
 	"main": "main.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "tsc && webpack && electron .",
+		"start": "electron .",
 		"//start": "electron-forge start",
 		"package": "electron-forge package",
 		"make": "electron-forge make",
 		"//deploy": "electron-builder --windows nsis:ia32",
 		"deploy": "electron-builder build --win --publish always",
-		"build": "tsc && webpack "
+		"dev-build": "tsc && webpack --watch ",
+		"dev-watch": "nodemon --exec electron ."
 	},
 	"repository": {
 		"type": "git",
@@ -31,6 +32,9 @@
 		"@electron-forge/maker-zip": "^6.0.4",
 		"electron": "^22.3.21",
 		"electron-builder": "^24.6.3",
+		"electron-reload": "^2.0.0-alpha.1",
+		"electron-reloader": "^1.2.3",
+		"nodemon": "^3.0.1",
 		"ts-loader": "^9.4.2",
 		"typescript": "^4.9.5",
 		"webpack": "^5.75.0",
@@ -46,7 +50,8 @@
 		"electron-updater": "^6.1.1",
 		"eventsource": "^2.0.2",
 		"source-map-support": "^0.5.16",
-		"sqlite3": "^5.1.4"
+		"sqlite3": "^5.1.4",
+		"webpack-dev-server": "^4.15.1"
 	},
 	"keywords": [
 		"bird",

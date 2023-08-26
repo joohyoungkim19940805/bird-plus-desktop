@@ -247,12 +247,11 @@ class FlexLayout extends HTMLElement {
 	 */
 	#addResizePanelEvent(resizePanel){
 		
-		resizePanel.onmousedown = (event) => {
+		resizePanel.addEventListener('mousedown', () => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 			document.body.style.cursor = this.getCursor;
-		}
-
+		})
 		window.addEventListener('mouseup', (event) => {
 			if( resizePanel.hasAttribute('data-is_mouse_down')) {
 				resizePanel.removeAttribute('data-is_mouse_down');
@@ -265,10 +264,9 @@ class FlexLayout extends HTMLElement {
 			}
 		})
 		
-		resizePanel.onmouseup = (event) => {
+		resizePanel.addEventListener('mouseup', () => {
 			resizePanel.removeAttribute('data-is_mouse_down');
-		}
-
+		})
 		window.addEventListener('mousemove', (event) => {
 			if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
 				return;

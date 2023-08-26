@@ -10,6 +10,8 @@ const {BrowserWindow} = require('electron');
 
 const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
 
+const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+
 /**
  * 메인 윈도우를 정의한다.
  * @author mozu123
@@ -44,7 +46,9 @@ class MainWindow extends BrowserWindow{
 				y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 			},
 		});
-		super.setTitleBarOverlay
+
+		//super.setTitleBarOverlay
+		
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
 			//console.log(e)
 			super.webContents.openDevTools();
@@ -55,10 +59,16 @@ class MainWindow extends BrowserWindow{
 			event.preventDefault(); // prevent quit process
 		})
 
-		super.on('resize', () => {	
+		super.on('resize', (event) => {
 			mainWindow.webContents.send("resized", super.getSize());
+			birdPlusOptions.size = super.getSize();
 		});
 
+		super.on('move' , (event) => {
+			birdPlusOptions.position = super.getPosition();
+		})
+
+		//새창 팝업 열릴시 트리거(파일인 경우만)
 		super.webContents.setWindowOpenHandler(({url}) => {
 			console.log(url);
 			if(url.includes('blob:file:///')){
@@ -84,6 +94,7 @@ class MainWindow extends BrowserWindow{
 
 			return { action: 'deny' }
 		});
+
 	}
 	set workspaceId(workspaceId){
 		if(this.#workspaceId === workspaceId){

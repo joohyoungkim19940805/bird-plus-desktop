@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import FontSizeBox from "../module/FontSizeBox";
+import FontSizeBox from "../component/FontSizeBox";
 
 export default class FontSize extends FreedomInterface {
     static toolHandler = new ToolHandler(this);

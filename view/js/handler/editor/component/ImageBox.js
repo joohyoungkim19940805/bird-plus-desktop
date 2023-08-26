@@ -67,7 +67,8 @@ export default class ImageBox {
      * @param {HTMLImageElement} image 
      */
     addImageHoverEvent(image){
-        image.parentElement.onmouseover = () => {
+        //image.parentElement.onmouseover = () => {
+        image.parentElement.onmouseenter = () => {
             let root = image.getRootNode();
             if(root != document){
                 root.append(this.#style);

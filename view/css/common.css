@@ -212,3 +212,9 @@ input[type="checkbox"]{
 .pointer{
 	cursor: pointer;
 }
+
+.custom_details{
+	border: none;
+    outline: none;
+    background: none;
+}

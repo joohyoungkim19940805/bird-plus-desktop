@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import FontFamilyBox from "../module/FontFamilyBox";
+import FontFamilyBox from "../component/FontFamilyBox";
 
 export default class FontFamily extends FreedomInterface {
     static toolHandler = new ToolHandler(this);

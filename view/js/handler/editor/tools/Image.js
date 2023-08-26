@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import ImageBox from "../module/ImageBox"
+import ImageBox from "../component/ImageBox"
 export default class Image extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);

@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import SortBox from "../module/SortBox";
+import SortBox from "../component/SortBox";
 
 export default class Sort extends FreedomInterface {
     static toolHandler = new ToolHandler(this);

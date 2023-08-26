@@ -23,19 +23,7 @@ div[is="content-block"]{
 .content_wrapper.options_wrapper{
     background-color: aliceblue;
 }
-.content_wrapper.rooms_wrapper{
-    background-color: antiquewhite;
-}
-.content_wrapper.rooms_wrapper .content{
-    display: inline-flex;
-    overflow: auto;
-    overflow-wrap: revert-layer;
-}
-.content_wrapper.rooms_wrapper .content #room-menu-wrapper,
-.content_wrapper.rooms_wrapper .content #room-list-wrapper,
-.content_wrapper.rooms_wrapper .content #room-messenger-wrapper{
-    overflow-y: auto;
-}
+
 .content_wrapper.chating_wrapper{
     background-color: #f3f3f3;
 }

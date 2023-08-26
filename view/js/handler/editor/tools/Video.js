@@ -1,6 +1,6 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import VideoBox from "../module/VideoBox"
+import VideoBox from "../component/VideoBox"
 export default class Video extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);

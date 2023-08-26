@@ -2,14 +2,15 @@ const path = require('path');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
-const dbConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
+const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 class LoginIpcController {
 	constructor() {
 
 		ipcMain.on('changeLoginPage', async (event) => {
 			//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
-			let db = dbConfig.getDB(dbConfig.sqlite3.OPEN_READONLY);
+			let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY);
 			db.serialize( () => {
 				db.all(`
 				SELECT 
@@ -26,8 +27,8 @@ class LoginIpcController {
 					if(err){
 						console.error(err);
 					}
-					mainWindow.setSize(1024, 768, true /* maxOS 전용애니메이션 true*/);
-					mainWindow.center();
+					birdPlusOptions.setLastWindowSize(mainWindow);
+					birdPlusOptions.setLastWindowPosition(mainWindow);
 					mainWindow.resizable = true;
 					mainWindow.movable = true;
 					mainWindow.autoHideMenuBar = false;
@@ -65,7 +66,7 @@ class LoginIpcController {
 				let {code, data} = response.data;
 
 				if((status == '200' || status == '201') && code == '00'){
-					let db = dbConfig.getDB();
+					let db = DBConfig.getDB();
 					db.serialize( () => {
 						//console.log(data)
 						let {token, issuedAt, expiresAt} = data;

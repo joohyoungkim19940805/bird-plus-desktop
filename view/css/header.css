@@ -4,7 +4,6 @@ header-default #header_content{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 0.6vh;
     padding-left: 1vw;
     padding-right: 1vw;
 }
