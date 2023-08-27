@@ -38,6 +38,33 @@ export default class RoomContainer{
 		return wrapper;
 	})();
 	
+	#roomFavorites =  (()=>{
+		let wrapper = Object.assign(document.createElement('div'), {
+			id: 'room-favorites-wrapper',
+			innerHTML: `
+				<div class="room_container list_scroll list_scroll-y">
+					<div class="room_sticky">
+						<div>
+							추가
+							<button>+</button>
+							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
+						</div>
+						<div>
+							<input type="text " placeholder="search">
+						</div>
+					</div>
+					<ul class="room_content_list">
+						<li>room1</li>
+						<li>room2</li>
+						<li>room3</li>
+					</ul>
+				</div>
+			`
+		});
+		wrapper.dataset.is_resize = true;
+		return wrapper;
+	})();
+
 	#roomListWrapper = (() => {
 		let wrapper = Object.assign(document.createElement('div'), {
 			id: 'room-list-wrapper',
