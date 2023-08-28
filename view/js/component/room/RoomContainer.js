@@ -1,3 +1,5 @@
+import RoomMenuItems from "./room_item/RoomMenuItems"
+
 export default class RoomContainer{
 	
 	#workspaceId;
@@ -8,7 +10,7 @@ export default class RoomContainer{
 			innerHTML: `
 				<div class="room_container list_scroll list_scroll-y">
 					<div class="room_sticky">
-						<div>
+						<div class="custom_details_summary">
 							추가
 							<button>+</button>
 							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
@@ -38,13 +40,13 @@ export default class RoomContainer{
 		return wrapper;
 	})();
 	
-	#roomFavorites =  (()=>{
+	#roomFavoritesWrapper =  (()=>{
 		let wrapper = Object.assign(document.createElement('div'), {
 			id: 'room-favorites-wrapper',
 			innerHTML: `
 				<div class="room_container list_scroll list_scroll-y">
 					<div class="room_sticky">
-						<div>
+						<div class="custom_details_summary">
 							추가
 							<button>+</button>
 							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
@@ -71,7 +73,7 @@ export default class RoomContainer{
 			innerHTML: `
 				<div class="room_container list_scroll list_scroll-y">
 					<div class="room_sticky">
-						<div>
+						<div class="custom_details_summary">
 							추가
 							<button>+</button>
 							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
@@ -110,7 +112,7 @@ export default class RoomContainer{
 			innerHTML: `
 				<div class="room_container list_scroll list_scroll-y">
 					<div class="room_sticky">
-						<div>
+						<div class="custom_details_summary">
 							추가
 							<button>+</button>
 							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
@@ -145,20 +147,21 @@ export default class RoomContainer{
 		wrapper.dataset.is_resize = true;
 		return wrapper;
 	})();
-	#contentWrapperList = [this.#roomMenuWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
+	#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
 	constructor(contentWrapper){
 		if( ! contentWrapper){
 			throw new Error('contentWrapper is not defined')
 		}
 		//console.log(this.#roomMenuWrapper)
 		//console.log(this.#roomMenuWrapper.childNodes)
-		contentWrapper.replaceChildren(this.#roomMenuWrapper, this.#roomListWrapper, this.#roomMessengerWrapper)
+		contentWrapper.replaceChildren(...this.#contentWrapperList)
 		this.#contentWrapperList.forEach(wrap => {
 			let [
 				roomSticky, roomContentList, scrollbar
 			] = wrap.querySelectorAll('.room_sticky, .room_content_list, .room_scrollbar'); 
 			let roomContainerListScroll = wrap.querySelector('.room_container.list_scroll')
 			let customDetails = wrap.querySelector('.custom_details');
+			let customDetailsSummary = customDetails.closest('.custom_details_summary')
 			/*
 			roomContentList.parentElement.onmouseenter = () => {
 			}
@@ -168,7 +171,7 @@ export default class RoomContainer{
 			}
 			*/
 			//'▼'; '▶';
-			let minHeight = customDetails.parentElement.getBoundingClientRect().height;
+			let minHeight = customDetailsSummary.getBoundingClientRect().height;
 			wrap.style.minHeight = minHeight + 'px';
 			wrap.ontransitionend = () => {
 				wrap.style.transition = '';
@@ -179,7 +182,7 @@ export default class RoomContainer{
 					customDetails.textContent = customDetails.dataset.close_status;
 					customDetails.dataset.previous_flex = wrap.style.flex;
 					wrap.style.transition = 'flex 0.5s';
-					wrap.style.minHeight = customDetails.parentElement.getBoundingClientRect().height + 'px';
+					wrap.style.minHeight = customDetailsSummary.getBoundingClientRect().height + 'px';
 					wrap.style.flex = '0 1 0%';
 					roomContainerListScroll.style.overflow = 'hidden';
 					customDetails.removeAttribute('data-is_open');
@@ -212,7 +215,7 @@ export default class RoomContainer{
 			}, {
 				threshold: 0.01,
 				root: wrap
-			}).observe(customDetails.parentElement.nextElementSibling);
+			}).observe(customDetailsSummary.nextElementSibling);
 			//wrap.__resizePanel
 		})
 	}
