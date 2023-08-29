@@ -18,17 +18,32 @@ import Code from "../handler/editor/tools/Code"
 import RoomContainer from "../component/room/RoomContainer"
 
 window.addEventListener("DOMContentLoaded", (event) => {
+	let workspaceIdResolve;
+	let workspaceIdPromise = new Promise(resolve=>{
+		workspaceIdResolve = resolve;
+	})
 	window.myAPI.workspace.getWorkspaceId().then(workspaceId=>{
 		console.log('workspaceId', workspaceId)
-		const roomContainer = new RoomContainer(document.querySelector('.rooms_wrapper .content_wrapper'))
+		if(workspaceId != undefined){
+			workspaceIdResolve(workspaceId);
+		}
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
 			console.log('test event', event);
 			let newWorkspaceId = event.workspaceId
 			if(workspaceId == newWorkspaceId){
 				return;
 			}
+			if(newWorkspaceId != undefined){
+				workspaceIdResolve(newWorkspaceId)
+			}
 			//event.workspaceId
 		})
+	})
+	workspaceIdPromise.then(workspaceId => {
+		const roomContainer = new RoomContainer(
+			document.querySelector('.rooms_wrapper .content_wrapper'),
+			workspaceId
+		)
 	})
 
 });

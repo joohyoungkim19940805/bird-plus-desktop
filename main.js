@@ -82,6 +82,8 @@ app.whenReady().then(()=>{
 	const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
 	const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
 	const workspaceController = require(path.join(__project_path, 'browser/ipcController/WorkspaceController.js'));
+	const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
+	const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
 	
 /*
     let icons = new BrowserWindow({

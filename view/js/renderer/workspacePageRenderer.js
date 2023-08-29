@@ -1,6 +1,6 @@
 
 new class WorkspacePageRenderer{
-	page = 1;
+	page = 0;
 	size = 10;
 	workspaceListUl = document.querySelector('#joined_workspace_list');
 	liList = [];
@@ -24,9 +24,7 @@ new class WorkspacePageRenderer{
 			if (entry.isIntersecting){
 				this.page += 1;
 				this.callData(this.page, this.size).then(data=>{
-					console.log(this.page, this.size);
-					this.createPage(data)
-						.then(liList=>this.addListItemVisibleEvent(liList));
+					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.lastItemVisibleObserver.disconnect();
 					}
@@ -40,21 +38,21 @@ new class WorkspacePageRenderer{
 
 	constructor(){
 		this.callData(this.page, this.size).then(data=>{
-			this.createPage(data)
-				.then(liList=>this.addListItemVisibleEvent(liList));
+			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 		})
 	}
 
 	callData(page = 1, size = 10){
-		return window.myAPI.workspace.searchMyWorkspaceList({page, size}).then(data=>{
-			return data;
+		return window.myAPI.workspace.searchWorkspaceMyJoined({
+			page, size
+		}).then((data = {})=>{
+			return data.data;
 		});
 	}
 
 	createPage(data){
 		return new Promise(resolve=>{
-			let {content} = data;
-			console.log(content);
+			let {content = []} = data || {};
 			let liList = content.map(item=>{
 				let {accessFilter,
 					isEnabled,
@@ -103,5 +101,13 @@ new class WorkspacePageRenderer{
 			this.lastItemVisibleObserver.observe(liList[liList.length - 1]);
 			resolve(liList);
 		})
+	}
+
+	reset(){
+		this.page = 1;
+		this.liList = [];
+		this.visibleObserver.disconnect();
+		this.lastItemVisibleObserver.disconnect();
+		this.workspaceListUl.replaceChildren();
 	}
 }();

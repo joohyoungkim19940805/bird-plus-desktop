@@ -10,28 +10,29 @@ class WindowUtil{
                 'Content-Type': 'application/json'
             }
         }).then(response => {
-            console.log('response.statusText ::: ', response.statusText);
+
             if( ! this.responseIsOk(response)){
+                console.log('response111', response);
                 return callBack({
                     isLogin: false,
                     status: response.status,
                     statusText: response.statusText
                 });
             }else{
+                console.log('response222',response);
                 if(response.data.code == 0){
                     response.data.isLogin = true;	
+                }else if(response.data.code == 100 || response.data.code == 105 || response.data.code == 106 || response.data.code == 107){
+                    response.data.isLogin = false;
                 }else{
                     response.data.isLogin = false;
                 }
                 return callBack(response.data);
             }
         }).catch(error=>{
-            return callBack({
-                isLogin: false,
-                message: error.message,
-                stack: error.stack
-            });
-        });
+            console.error(error);
+            throw error;
+        })
     }
 
     responseIsOk({status}){

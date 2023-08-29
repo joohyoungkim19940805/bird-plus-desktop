@@ -3,7 +3,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
-const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
 class WorkspaceController {
@@ -23,10 +23,10 @@ class WorkspaceController {
 			})
         })
 
-        ipcMain.handle('searchMyWorkspaceList', async (event, param = {}) => {
+        ipcMain.handle('searchWorkspaceMyJoined', async (event, param = {}) => {
             return windowUtil.isLogin((result) => {
                 if(result.isLogin){
-                    return axios.get(`${__serverApi}/api/workspace/search-my-workspace-joined?page=${param.page}&size=${param.size}`, {
+                    return axios.get(`${__serverApi}/api/workspace/search-workspace-my-joined?page=${param.page}&size=${param.size}`, {
                         headers:{
                             'Content-Type': 'application/json'
                         }
@@ -35,9 +35,10 @@ class WorkspaceController {
                         let {code, data} = response.data;
         
                         if((status == '200' || status == '201') && code == '00'){
-                            return data;
+                            return response.data;
                         }else{
-                            return {content: []};
+                            //return {content: []};
+                            return undefined;
                         }
                     }).catch(err=>{
                         console.error('error : ', JSON.stringify(err));
@@ -51,9 +52,13 @@ class WorkspaceController {
                         }
                     })
                 }else{
-                    return undefined;
+                    return {'isLogin': false};
                 }
-            }) 
+            }).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
         })
 
     }

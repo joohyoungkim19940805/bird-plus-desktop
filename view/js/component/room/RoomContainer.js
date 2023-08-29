@@ -1,4 +1,5 @@
 import RoomMenuItems from "./room_item/RoomMenuItems"
+import RoomList from "./room_item/RoomList"
 
 export default class RoomContainer{
 	
@@ -67,44 +68,7 @@ export default class RoomContainer{
 		return wrapper;
 	})();
 
-	#roomListWrapper = (() => {
-		let wrapper = Object.assign(document.createElement('div'), {
-			id: 'room-list-wrapper',
-			innerHTML: `
-				<div class="room_container list_scroll list_scroll-y">
-					<div class="room_sticky">
-						<div class="custom_details_summary">
-							추가
-							<button>+</button>
-							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
-						</div>
-						<div>
-							<input type="text " placeholder="search">
-						</div>
-					</div>
-					<ul class="room_content_list">
-						<li>room1</li>
-						<li>room2</li>
-						<li>room3</li>
-						<li>room4</li>
-						<li>room5</li>
-						<li>room1</li>
-						<li>room2</li>
-						<li>room3</li>
-						<li>room4</li>
-						<li>room5</li>
-						<li>room1</li>
-						<li>room2</li>
-						<li>room3</li>
-						<li>room4</li>
-						<li>room5</li>
-					</ul>
-				</div>
-			` 
-		})
-		wrapper.dataset.is_resize = true;
-		return wrapper;
-	})();
+	#roomListWrapper;
 
 	#roomMessengerWrapper = (() => {
 		let wrapper = Object.assign(document.createElement('div'), {
@@ -147,11 +111,21 @@ export default class RoomContainer{
 		wrapper.dataset.is_resize = true;
 		return wrapper;
 	})();
-	#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
-	constructor(contentWrapper){
+	#contentWrapperList // = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
+	#contentWrapper;
+	#roomList;
+	constructor(contentWrapper, workspaceId){
 		if( ! contentWrapper){
-			throw new Error('contentWrapper is not defined')
+			throw new Error('contentWrapper is not defined');
 		}
+		if( ! workspaceId ){
+			throw new Error('workspaceId is undefined');
+		}
+		this.#workspaceId = workspaceId;
+		this.#roomList = new RoomList(workspaceId);
+		this.#roomListWrapper = this.#roomList.element;
+		this.#roomListWrapper.dataset.is_resize = true;
+		this.#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
 		//console.log(this.#roomMenuWrapper)
 		//console.log(this.#roomMenuWrapper.childNodes)
 		contentWrapper.replaceChildren(...this.#contentWrapperList)
