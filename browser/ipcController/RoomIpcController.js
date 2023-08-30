@@ -46,7 +46,38 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
-
+		ipcMain.handle('updateRoomInAccout', async (event, param = {}) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.post(`${__serverApi}/api/room/update-room-in-account`, JSON.stringify(param), {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					}).then(response => {
+						let status = response.status;
+						let {code, data} = response.data;
+						if((status == '200' || status == '201') && code == '00'){
+						
+						}
+						return response.data
+					}).catch(err=>{
+						console.error('IPC createRoom error : ', JSON.stringify(err));
+						axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
 		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){

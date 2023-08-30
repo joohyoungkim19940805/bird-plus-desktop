@@ -16,7 +16,7 @@ export default class RoomMenuItems{
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu-search" data-bind_name="menuSearch">
-							<input type="text" placeholder="search" class="search_name" name="searchName" data-bind_name="searchName">
+							<input type="text" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
 						</form>
 					</div>
 				</div>
@@ -54,7 +54,8 @@ export default class RoomMenuItems{
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.#page += 1;
-				this.callData(this.#page, this.#size, this.#workspaceId).then(data=>{
+				let roomName = this.#elementMap.searchName.value;
+				this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
@@ -64,7 +65,7 @@ export default class RoomMenuItems{
 		})
 	}, {
 		threshold: 0.1,
-		root: this.#elementMap.roomContentList
+		root: document//this.#elementMap.roomContentList
 	});
 
 
@@ -76,12 +77,37 @@ export default class RoomMenuItems{
 		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
 			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 		})
+
+		this.#elementMap.menuSearch.onsubmit = (event) => {
+			event.preventDefault();
+			let roomName = this.#elementMap.searchName.value;
+			this.reset();
+			this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
+				this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+			});
+		}
+		this.#elementMap.searchName.oninput = (event) => {
+			if(this.#elementMap.searchName.value == ''){
+				this.reset();
+				this.callData(this.#page, this.#size, this.#workspaceId, undefined).then(data => {
+					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+				});
+			}
+		}
 	}
 
-	callData(page, size, workspaceId){
-		return window.myAPI.room.searchRoomMyJoined({
-			page, size, workspaceId
-		}).then((data = {}) =>{
+	callData(page, size, workspaceId, roomName){
+		let searchPromise;
+		if(roomName && roomName != ''){
+			searchPromise = window.myAPI.room.searchRoomMyJoinedName({
+				page, size, workspaceId, roomName, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
+			})
+		}else{
+			searchPromise = window.myAPI.room.searchRoomMyJoined({
+				page, size, workspaceId, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
+			})
+		}
+		return searchPromise.then((data = {}) =>{
 			console.log(data)
 			return data.data;
 		});
@@ -151,7 +177,7 @@ export default class RoomMenuItems{
 	}
 
 	reset(){
-		this.#page = 1;
+		this.#page = 0;
 		this.#liList = [];
 		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
