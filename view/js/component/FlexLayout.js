@@ -156,6 +156,12 @@ class FlexLayout extends HTMLElement {
 	
 	// 가로 모드인 경우 lastElementChild의 리사이즈 제거 필요
 	// 세로 모드인 경우 firstElementChild의 리사이즈 제거 필요 
+	#growChangeObserver = new MutationObserver( (mutationList, observer) => {
+		mutationList.forEach((mutation) => {
+			console.log(mutation)
+			mutation.target.style.flex = `${parseFloat(mutation.target.dataset.grow)} 1 0%`;
+		});
+	})
 	constructor(){
 		super();
 		let observer = new MutationObserver( (mutationList, observer) => {
@@ -182,6 +188,9 @@ class FlexLayout extends HTMLElement {
 				new Promise(resolve => {
 					let notGrowList = [];
 					let remain = forResizeList.reduce((t,e,i)=>{
+						this.#growChangeObserver.observe(e, {
+							attributeFilter:['data-grow'],
+						})
 						if(e.hasAttribute('data-grow') == false){
 							notGrowList.push(e);
 							return t;

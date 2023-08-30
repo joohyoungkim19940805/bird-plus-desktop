@@ -41,6 +41,10 @@
 	top: 0;
 }
 
+.content_wrapper.rooms_wrapper .room_container .search_name{
+	width: 10vw
+}
+
 .content_wrapper.rooms_wrapper .room_container .room_content_list_scroll .room_scrollbar{
 	position: absolute;
 	width: 10%;

@@ -1,4 +1,13 @@
 #joined_workspace_list{
-    height:29%;
+    height: 29%;
     overflow-y: auto;
+    z-index: 1;
+    background-color: #6aa8df99;
 }
+#renderCanvas{
+	position: fixed;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+

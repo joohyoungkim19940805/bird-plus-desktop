@@ -35,6 +35,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	scanningUserDirectory : () => ipcRenderer.invoke('scanningUserDirectory'),
 	
+	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
+
 	pageChange : {
 		changeLoginPage : () => ipcRenderer.send('changeLoginPage'),
 		changeWokrspacePage : () => ipcRenderer.send('changeWokrspacePage'),

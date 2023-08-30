@@ -15,7 +15,8 @@ const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 //global.__birdPlusOptions = 
 
 // 일렉트론 모듈 호출
-const { app, BrowserWindow /*, ipcMain, dialog, shell*/ } = require('electron');
+const { app, BrowserWindow, ipcMain/*, ipcMain, dialog, shell*/ } = require('electron');
+
 // path 모듈 호출
 
 // 파일 모듈 호출
@@ -84,7 +85,10 @@ app.whenReady().then(()=>{
 	const workspaceController = require(path.join(__project_path, 'browser/ipcController/WorkspaceController.js'));
 	const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
 	const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
-	
+	ipcMain.handle('getProjectPath', (event) => {
+		console.log('test <<< ?????' + global.__project_path)
+		return global.__project_path;
+	})
 /*
     let icons = new BrowserWindow({
         show: false, webPreferences: {offscreen: true}});

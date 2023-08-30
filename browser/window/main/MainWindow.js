@@ -94,7 +94,7 @@ class MainWindow extends BrowserWindow{
 
 			return { action: 'deny' }
 		});
-
+	
 	}
 	set workspaceId(workspaceId){
 		if(this.#workspaceId === workspaceId){

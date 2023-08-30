@@ -121,7 +121,14 @@ class RoomIpcController {
 				if(result.isLogin){
 					let queryString = Object.entries(param)
 						.filter(([k,v]) => v != undefined && v != '')
-						.map(([k,v]) => `${k}=${v}`).join('&')
+						.map(([k,v]) => {
+							if(v instanceof Array){
+								v = v.map(val=>`${k}=${val}`).join('&')
+								return v;
+							}
+							return `${k}=${v}`
+						}).join('&')
+						
 					return axios.get(`${__serverApi}/api/room/search-room-my-joined?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'

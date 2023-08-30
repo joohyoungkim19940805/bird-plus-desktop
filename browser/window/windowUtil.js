@@ -12,14 +12,12 @@ class WindowUtil{
         }).then(response => {
 
             if( ! this.responseIsOk(response)){
-                console.log('response111', response);
                 return callBack({
                     isLogin: false,
                     status: response.status,
                     statusText: response.statusText
                 });
             }else{
-                console.log('response222',response);
                 if(response.data.code == 0){
                     response.data.isLogin = true;	
                 }else if(response.data.code == 100 || response.data.code == 105 || response.data.code == 106 || response.data.code == 107){
