@@ -64,11 +64,14 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	room : {
 		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
-		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
 		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
+		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
+		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
 		searchRoom : (param) => ipcRenderer.invoke('searchRoom', param),
 		searchRoomMyJoined : (param) => ipcRenderer.invoke('searchRoomMyJoined', param),
-		searchRoomMyJoinedName : (param) => ipcRenderer.invoke('searchRoomMyJoinedName', param)
+		searchRoomMyJoinedName : (param) => ipcRenderer.invoke('searchRoomMyJoinedName', param),
+		searchRoomFavoritesMyJoined : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoined', param),
+		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param)
 	}
 
 })

@@ -2,6 +2,7 @@ export default class PositionChanger{
 	#wrapper;
 	#targetItem;
 	#childList = [];
+	#onDropEndChangePositionCallback = (changeList) => {};
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');
@@ -71,7 +72,7 @@ export default class PositionChanger{
 						}
 						res();
 					}).then(()=>{
-						window.myAPI.room.updateRoomInAccout(
+						this.#onDropEndChangePositionCallback(
 							child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort).map(e=>{
 								return {
 									id: e.dataset.id, 
@@ -79,9 +80,7 @@ export default class PositionChanger{
 									orderSort: e.dataset.order_sort,
 								};
 							})
-						).then(data=>{
-							console.log(data);
-						})
+						)
 					})
 					/*console.log(child);
 					console.log(index);
@@ -114,7 +113,10 @@ export default class PositionChanger{
 		});
 	}
 
-	addDropTargetEvent(childList){
-
+	set onDropEndChangePositionCallback(callBack){
+		this.#onDropEndChangePositionCallback = callBack;
+	}
+	get onDropEndChangePositionCallback(){
+		return this.#onDropEndChangePositionCallback;
 	}
 }

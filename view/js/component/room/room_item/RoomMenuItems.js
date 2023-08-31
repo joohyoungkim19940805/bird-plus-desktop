@@ -1,5 +1,6 @@
+import PositionChanger from "../../../handler/PositionChangeer";
 
-export default class RoomMenuList{
+export default class RoomList{
 	#workspaceId
 	#roomId
 	#page = 0;
@@ -32,6 +33,7 @@ export default class RoomMenuList{
 			return total;
 		}, {})
 	})();
+	#positionChanger;
 
 	#liList = [];
 
@@ -73,6 +75,9 @@ export default class RoomMenuList{
 		if( ! workspaceId){
 			throw new Error('workspaceId is undefined');
 		}
+		
+		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
+
 		this.#workspaceId = workspaceId;
 		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
 			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
@@ -121,7 +126,9 @@ export default class RoomMenuList{
 			console.log(content);
 			let liList = content.map(item => {
 				let {
+					id,
 					roomId,
+					orderSort,
 					roomCode,
 					roomName,
 					isEnabled,
@@ -144,10 +151,15 @@ export default class RoomMenuList{
 					`
 				});
 				Object.assign(li.dataset, {
+					id,
+					room_id: roomId,
+					prev_order_sort: orderSort,
+					order_sort: orderSort,
 					room_code: roomCode,
-					room_id : roomId,
-					workspace_id : workspaceId,
-					room_type : roomType 
+					room_name: roomName,
+					is_enabled: isEnabled,
+					workspace_id: workspaceId,
+					room_type: roomType
 				});
 				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
@@ -155,12 +167,16 @@ export default class RoomMenuList{
 			});
 			this.#liList.push(...liList);
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+			this.#positionChanger.addPositionChangeEvent(...this.#liList);
 			resolve(liList);
 		});
 	}
 
 	#addItemEvent(li){
 		return new Promise(resolve => {
+			li.onclick = () => {
+				this.roomId = li.dataset.room_id;
+			}
 			resolve(li);
 		});
 	}
@@ -186,6 +202,11 @@ export default class RoomMenuList{
 
 	set workspaceId(workspaceId){
 		this.#workspaceId = workspaceId;
+		let roomName = this.#elementMap.searchName.value;
+		this.reset();
+		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
+			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+		});
 	}
 	get workspaceId(){
 		return this.#workspaceId;
@@ -193,6 +214,20 @@ export default class RoomMenuList{
 
 	set roomId(roomId){
 		this.#roomId = roomId;
+		new Promise(resolve => {
+			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
+				let itemRoomId = Number(item.dataset.room_id);
+				if(isNaN(itemRoomId)){
+					return;
+				}else if(roomId == itemRoomId){
+					return;
+				}
+				item.style.fontWeight = '';
+			})
+			resolve();
+		})
+		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
+		targetRoom.style.fontWeight = 'bold';
 	}
 	get roomId(){
 		return this.#roomId;

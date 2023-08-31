@@ -30,7 +30,7 @@ class RoomIpcController {
 						return response.data
 					}).catch(err=>{
 						console.error('IPC createRoom error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -62,7 +62,7 @@ class RoomIpcController {
 						return response.data
 					}).catch(err=>{
 						console.error('IPC createRoom error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -94,7 +94,7 @@ class RoomIpcController {
 						return response.data
 					}).catch(err=>{
 						console.error('IPC createRoomFavorites error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -110,7 +110,38 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
-
+		ipcMain.handle('updateRoomFavorites', async (event, param = {}) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.post(`${__serverApi}/api/room/update-room-favorites`, JSON.stringify(param), {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					}).then(response => {
+						let status = response.status;
+						let {code, data} = response.data;
+						if((status == '200' || status == '201') && code == '00'){
+						
+						}
+						return response.data
+					}).catch(err=>{
+						console.error('IPC createRoom error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
         ipcMain.handle('searchRoom', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
@@ -131,7 +162,7 @@ class RoomIpcController {
 						return undefined;
 					}).catch(err=>{
 						console.error('IPC searchRoom error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -173,7 +204,7 @@ class RoomIpcController {
 						return undefined;
 					}).catch(err=>{
 						console.error('IPC searchRoomMyJoined error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -208,7 +239,7 @@ class RoomIpcController {
 						return undefined;
 					}).catch(err=>{
 						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
-						axios.defaults.headers.common['Authorization'] = '';
+						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
 						}else{
@@ -224,6 +255,85 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
+
+		ipcMain.handle('searchRoomFavoritesMyJoined', async (event, param = {}) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					let queryString = Object.entries(param)
+						.filter(([k,v]) => v != undefined && v != '')
+						.map(([k,v]) => {
+							if(v instanceof Array){
+								v = v.map(val=>`${k}=${val}`).join('&')
+								return v;
+							}
+							return `${k}=${v}`
+						}).join('&')
+						
+					return axios.get(`${__serverApi}/api/room/search-room-favorites-my-joined?${queryString}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					}).then(response => {
+						let status = response.status;
+						let {code, data} = response.data;
+						if((status == '200' || status == '201') && code == '00'){
+							return response.data
+						}
+						return undefined;
+					}).catch(err=>{
+						console.error('IPC searchRoomMyJoined error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
+		ipcMain.handle('searchRoomFavoritesMyJoinedName', async (event, param = {}) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					let queryString = Object.entries(param)
+						.filter(([k,v]) => v != undefined && v != '')
+						.map(([k,v]) => `${k}=${v}`).join('&')
+					return axios.get(`${__serverApi}/api/room/search-room-favorites-my-joined-name?${queryString}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					}).then(response => {
+						let status = response.status;
+						let {code, data} = response.data;
+						if((status == '200' || status == '201') && code == '00'){
+							return response.data
+						}
+						return undefined;
+					}).catch(err=>{
+						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
+
     }
 
 }

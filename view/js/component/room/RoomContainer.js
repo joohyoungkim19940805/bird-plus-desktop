@@ -1,5 +1,7 @@
 import RoomMenuItems from "./room_item/RoomMenuItems"
 import RoomList from "./room_item/RoomList"
+import RoomFavoritesList from "./room_item/RoomFavoritesList"
+import RoomMessengerList from "./room_item/RoomMessengerList"
 
 export default class RoomContainer{
 	
@@ -41,79 +43,18 @@ export default class RoomContainer{
 		return wrapper;
 	})();
 	
-	#roomFavoritesWrapper =  (()=>{
-		let wrapper = Object.assign(document.createElement('div'), {
-			id: 'room-favorites-wrapper',
-			innerHTML: `
-				<div class="room_container list_scroll list_scroll-y">
-					<div class="room_sticky">
-						<div class="custom_details_summary">
-							추가
-							<button>+</button>
-							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
-						</div>
-						<div>
-							<input type="text " placeholder="search">
-						</div>
-					</div>
-					<ul class="room_content_list">
-						<li>room1</li>
-						<li>room2</li>
-						<li>room3</li>
-					</ul>
-				</div>
-			`
-		});
-		wrapper.dataset.is_resize = true;
-		return wrapper;
-	})();
+	#roomFavoritesList
+	#roomFavoritesListWrapper;
 
+	#roomList;
 	#roomListWrapper;
 
-	#roomMessengerWrapper = (() => {
-		let wrapper = Object.assign(document.createElement('div'), {
-			id: 'room-messenger-wrapper',
-			innerHTML: `
-				<div class="room_container list_scroll list_scroll-y">
-					<div class="room_sticky">
-						<div class="custom_details_summary">
-							추가
-							<button>+</button>
-							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
-						</div>
-						<div>
-							<input type="text " placeholder="search">
-						</div>
-					</div>
-					<ul class="room_content_list">
-						<li>김주형1</li>
-						<li>김주형2</li>
-						<li>김주형3</li>
-						<li>김주형4</li>
-						<li>김주형5</li>
-						<li>김주형6</li>
-						<li>김주형1</li>
-						<li>김주형2</li>
-						<li>김주형3</li>
-						<li>김주형4</li>
-						<li>김주형5</li>
-						<li>김주형6</li>
-						<li>김주형1</li>
-						<li>김주형2</li>
-						<li>김주형3</li>
-						<li>김주형4</li>
-						<li>김주형5</li>
-						<li>김주형6</li>
-					</ul>
-				</div>
-			`
-		})
-		wrapper.dataset.is_resize = true;
-		return wrapper;
-	})();
+	#roomMessngerList;
+	#roomMessngerListWrapper;
+
 	#contentWrapperList // = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
 	#contentWrapper;
-	#roomList;
+
 	constructor(contentWrapper, workspaceId){
 		if( ! contentWrapper){
 			throw new Error('contentWrapper is not defined');
@@ -125,7 +66,17 @@ export default class RoomContainer{
 		this.#roomList = new RoomList(workspaceId);
 		this.#roomListWrapper = this.#roomList.element;
 		this.#roomListWrapper.dataset.is_resize = true;
-		this.#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
+		
+		this.#roomFavoritesList = new RoomFavoritesList(workspaceId);
+		this.#roomFavoritesListWrapper = this.#roomFavoritesList.element;
+		this.#roomFavoritesListWrapper.dataset.is_resize = true;
+		
+		
+		this.#roomMessngerList = new RoomMessengerList(workspaceId);
+		this.#roomMessngerListWrapper = this.#roomMessngerList.element;
+		this.#roomMessngerListWrapper.dataset.is_resize = true;
+		
+		this.#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesListWrapper, this.#roomListWrapper, this.#roomMessngerListWrapper]
 		//console.log(this.#roomMenuWrapper)
 		//console.log(this.#roomMenuWrapper.childNodes)
 		contentWrapper.replaceChildren(...this.#contentWrapperList)

@@ -77,7 +77,11 @@ export default class RoomList{
 		}
 		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
-
+		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
+			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
+				console.log(data);
+			})
+		}
 		this.#workspaceId = workspaceId;
 		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
 			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));

@@ -1,11 +1,12 @@
+import PositionChanger from "../../../handler/PositionChangeer";
 
-export default class RoomMenuItems{
+export default class RoomList{
 	#workspaceId
 	#roomId
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
-		id: 'room-list-wrapper',
+		id: 'room-messenger-wrapper',
 		innerHTML: `
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
@@ -32,6 +33,7 @@ export default class RoomMenuItems{
 			return total;
 		}, {})
 	})();
+	#positionChanger;
 
 	#liList = [];
 
@@ -73,6 +75,13 @@ export default class RoomMenuItems{
 		if( ! workspaceId){
 			throw new Error('workspaceId is undefined');
 		}
+		
+		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
+		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
+			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
+				console.log(data);
+			})
+		}
 		this.#workspaceId = workspaceId;
 		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
 			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
@@ -100,11 +109,11 @@ export default class RoomMenuItems{
 		let searchPromise;
 		if(roomName && roomName != ''){
 			searchPromise = window.myAPI.room.searchRoomMyJoinedName({
-				page, size, workspaceId, roomName, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
+				page, size, workspaceId, roomName, roomType: ['SELF','MESSENGER']
 			})
 		}else{
 			searchPromise = window.myAPI.room.searchRoomMyJoined({
-				page, size, workspaceId, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
+				page, size, workspaceId, roomType: ['SELF','MESSENGER']
 			})
 		}
 		return searchPromise.then((data = {}) =>{
@@ -121,7 +130,9 @@ export default class RoomMenuItems{
 			console.log(content);
 			let liList = content.map(item => {
 				let {
+					id,
 					roomId,
+					orderSort,
 					roomCode,
 					roomName,
 					isEnabled,
@@ -144,10 +155,15 @@ export default class RoomMenuItems{
 					`
 				});
 				Object.assign(li.dataset, {
+					id,
+					room_id: roomId,
+					prev_order_sort: orderSort,
+					order_sort: orderSort,
 					room_code: roomCode,
-					room_id : roomId,
-					workspace_id : workspaceId,
-					room_type : roomType 
+					room_name: roomName,
+					is_enabled: isEnabled,
+					workspace_id: workspaceId,
+					room_type: roomType
 				});
 				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
@@ -155,12 +171,16 @@ export default class RoomMenuItems{
 			});
 			this.#liList.push(...liList);
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+			this.#positionChanger.addPositionChangeEvent(...this.#liList);
 			resolve(liList);
 		});
 	}
 
 	#addItemEvent(li){
 		return new Promise(resolve => {
+			li.onclick = () => {
+				this.roomId = li.dataset.room_id;
+			}
 			resolve(li);
 		});
 	}
@@ -186,6 +206,11 @@ export default class RoomMenuItems{
 
 	set workspaceId(workspaceId){
 		this.#workspaceId = workspaceId;
+		let roomName = this.#elementMap.searchName.value;
+		this.reset();
+		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
+			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+		});
 	}
 	get workspaceId(){
 		return this.#workspaceId;
@@ -193,6 +218,20 @@ export default class RoomMenuItems{
 
 	set roomId(roomId){
 		this.#roomId = roomId;
+		new Promise(resolve => {
+			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
+				let itemRoomId = Number(item.dataset.room_id);
+				if(isNaN(itemRoomId)){
+					return;
+				}else if(roomId == itemRoomId){
+					return;
+				}
+				item.style.fontWeight = '';
+			})
+			resolve();
+		})
+		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
+		targetRoom.style.fontWeight = 'bold';
 	}
 	get roomId(){
 		return this.#roomId;
