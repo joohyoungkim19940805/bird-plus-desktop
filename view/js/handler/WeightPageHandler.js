@@ -320,7 +320,7 @@ class PageHandler {
 				}, 1000);
 				
 			}else{
-
+				
 				this.content.querySelectorAll('.search_options').forEach(e=>{
 					//e.style.top = e.getBoundingClientRect().y + 'px'
 					let logicOptionElement = e.querySelector('[name=logicOptionCode]');

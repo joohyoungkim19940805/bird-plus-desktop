@@ -6,7 +6,7 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
-class WorkspaceController {
+class WorkspaceIpcController {
 	constructor() {
         
         ipcMain.on('changeWokrspacePage', async (event) => {
@@ -60,9 +60,43 @@ class WorkspaceController {
 				return undefined;
 			})
         })
-
+		ipcMain.handle('searchWorkspaceInAccount', async (event, param = {}) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					let queryString = Object.entries(param)
+						.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
+						.map(([k,v]) => `${k}=${v}`).join('&')
+					return axios.get(`${__serverApi}/api/workspace/search-workspace-in-account/${param.workspaceId}?${queryString}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					}).then(response => {
+						let status = response.status;
+						let {code, data} = response.data;
+						if((status == '200' || status == '201') && code == '00'){
+							return response.data
+						}
+						return undefined;
+					}).catch(err=>{
+						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
     }
 
 }
-const workspaceController = new WorkspaceController();
-module.exports = workspaceController
+const workspaceIpcController = new WorkspaceIpcController();
+module.exports = workspaceIpcController

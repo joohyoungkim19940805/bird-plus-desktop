@@ -3,6 +3,7 @@ export default class PositionChanger{
 	#targetItem;
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
+	#onDropDocumentOutCallback = (target) => {}; 
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');
@@ -26,8 +27,12 @@ export default class PositionChanger{
 				item.ondragstart = (event) => {
 					this.#targetItem = item;
 				}
-				item.ondragend = () => {
+				item.ondragend = (event) => {
 					console.log('end!');
+					console.log(event);
+					if(event.x < 0 || event.y < 0){
+						this.#onDropDocumentOutCallback(item);
+					}
 					this.#targetItem = undefined;
 				}
 				item.ondragover = (event) => {
@@ -119,4 +124,12 @@ export default class PositionChanger{
 	get onDropEndChangePositionCallback(){
 		return this.#onDropEndChangePositionCallback;
 	}
+
+	set onDropDocumentOutCallback(callBack){
+		this.#onDropDocumentOutCallback = callBack;
+	}
+	get onDropDocumentOutCallback(){
+		return this.#onDropDocumentOutCallback;
+	}
+
 }

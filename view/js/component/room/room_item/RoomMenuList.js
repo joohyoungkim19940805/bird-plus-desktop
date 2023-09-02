@@ -1,22 +1,23 @@
 import PositionChanger from "../../../handler/PositionChangeer";
+import CreateRoomView from "./CreateRoomView";
 
-export default class RoomList{
+export default class RoomMenuList{
 	#workspaceId
 	#roomId
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
-		id: 'room-list-wrapper',
+		id: 'room_menu_list_wrapper',
 		innerHTML: `
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						추가
+						<b><i>Menu</i></b>
 						<button>+</button>
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
-						<form id="menu-search" data-bind_name="menuSearch">
+						<form id="menu_search" data-bind_name="menuSearch">
 							<input type="text" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
 						</form>
 					</div>
@@ -118,12 +119,15 @@ export default class RoomList{
 		});
 	}
 
-	createPage(data){
+	createPage(data, roomName = ''){
 		return new Promise(resolve => {
 			console.log(data);
 			console.log(data.content)
 			let {content = []} = data || {};
 			console.log(content);
+			if(content.length == 0){
+				return;
+			}
 			let liList = content.map(item => {
 				let {
 					id,
@@ -167,7 +171,16 @@ export default class RoomList{
 			});
 			this.#liList.push(...liList);
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
-			this.#positionChanger.addPositionChangeEvent(...this.#liList);
+			if(roomName == ''){
+				this.#positionChanger.addPositionChangeEvent(...this.#liList);
+			}else{
+				this.#liList.forEach(async (e)=>{
+					new Promise(resolve=>{
+						e.draggable = true;
+						resolve();
+					})
+				})
+			}
 			resolve(liList);
 		});
 	}

@@ -1,4 +1,5 @@
-import PositionChanger from "../../../handler/PositionChangeer";
+import PositionChanger from "./../../../handler/PositionChangeer";
+import CreateRoomView from "./CreateRoomView";
 
 export default class RoomList{
 	#workspaceId
@@ -6,17 +7,17 @@ export default class RoomList{
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
-		id: 'room-list-wrapper',
+		id: 'room_list_wrapper',
 		innerHTML: `
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						추가
-						<button>+</button>
+						<b><i>Room</i></b>
+						<button class="add_button" data-bind_name="addButton">+</button>
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
-						<form id="menu-search" data-bind_name="menuSearch">
+						<form id="menu_search" data-bind_name="menuSearch">
 							<input type="text" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
 						</form>
 					</div>
@@ -33,7 +34,6 @@ export default class RoomList{
 			return total;
 		}, {})
 	})();
-	#positionChanger;
 
 	#liList = [];
 
@@ -59,7 +59,7 @@ export default class RoomList{
 				let roomName = this.#elementMap.searchName.value;
 				this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-					if(this.page >= data.totalPages){
+					if(this.#page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
 					}
 				})
@@ -70,7 +70,8 @@ export default class RoomList{
 		root: document//this.#elementMap.roomContentList
 	});
 
-
+	#positionChanger;
+	#createRoomView;
 	constructor(workspaceId, roomId){
 		if( ! workspaceId){
 			throw new Error('workspaceId is undefined');
@@ -82,6 +83,9 @@ export default class RoomList{
 				console.log(data);
 			})
 		}
+
+		this.#createRoomView = new CreateRoomView(workspaceId);
+
 		this.#workspaceId = workspaceId;
 		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
 			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
@@ -92,7 +96,7 @@ export default class RoomList{
 			let roomName = this.#elementMap.searchName.value;
 			this.reset();
 			this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
-				this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+				this.createPage(data, roomName).then(liList=> this.addListItemVisibleEvent(liList))
 			});
 		}
 		this.#elementMap.searchName.oninput = (event) => {
@@ -102,6 +106,10 @@ export default class RoomList{
 					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
 				});
 			}
+		}
+
+		this.#elementMap.addButton.onclick = () =>{
+			this.#createRoomView.open();
 		}
 	}
 
@@ -122,12 +130,13 @@ export default class RoomList{
 		});
 	}
 
-	createPage(data){
+	createPage(data, roomName = ''){
 		return new Promise(resolve => {
-			console.log(data);
-			console.log(data.content)
 			let {content = []} = data || {};
-			console.log(content);
+			if(content.length == 0){
+				resolve(content);
+				return;
+			}
 			let liList = content.map(item => {
 				let {
 					id,
@@ -171,7 +180,17 @@ export default class RoomList{
 			});
 			this.#liList.push(...liList);
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
-			this.#positionChanger.addPositionChangeEvent(...this.#liList);
+			console.log(roomName);
+			if(roomName == ''){
+				this.#positionChanger.addPositionChangeEvent(...this.#liList);
+			}else{
+				this.#liList.forEach(async (e)=>{
+					new Promise(resolve=>{
+						e.draggable = true;
+						resolve();
+					})
+				})
+			}
 			resolve(liList);
 		});
 	}
@@ -222,8 +241,10 @@ export default class RoomList{
 			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
 				let itemRoomId = Number(item.dataset.room_id);
 				if(isNaN(itemRoomId)){
+					resolve();
 					return;
 				}else if(roomId == itemRoomId){
+					resolve();
 					return;
 				}
 				item.style.fontWeight = '';

@@ -1,6 +1,6 @@
-import RoomMenuItems from "./room_item/RoomMenuItems"
-import RoomList from "./room_item/RoomList"
+import RoomMenuList from "./room_item/RoomMenuList"
 import RoomFavoritesList from "./room_item/RoomFavoritesList"
+import RoomList from "./room_item/RoomList"
 import RoomMessengerList from "./room_item/RoomMessengerList"
 
 export default class RoomContainer{
@@ -9,7 +9,7 @@ export default class RoomContainer{
 
 	#roomMenuWrapper = (()=>{
 		let wrapper = Object.assign(document.createElement('div'), {
-			id: 'room-menu-wrapper',
+			id: 'room_menu_list_wrapper',
 			innerHTML: `
 				<div class="room_container list_scroll list_scroll-y">
 					<div class="room_sticky">

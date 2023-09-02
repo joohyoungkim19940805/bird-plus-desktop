@@ -59,13 +59,15 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	workspace : {
 		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
+		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
 		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId')
 	},
 
 	room : {
 		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
-		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
+		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
 		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
+		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
 		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
 		searchRoom : (param) => ipcRenderer.invoke('searchRoom', param),
 		searchRoomMyJoined : (param) => ipcRenderer.invoke('searchRoomMyJoined', param),
