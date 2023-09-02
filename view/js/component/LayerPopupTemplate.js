@@ -82,9 +82,16 @@ export default class LayerPopupTemplate{
 	 * @returns {Function} callBakcFunction
 	 */
 	close(onOpenCloseCallBack){
-		this.#dim.removeAttribute('open');
+
 		this.#containerBox.style.opacity = '';
 		this.#dim.style.opacity = '';
+		this.#containerBox.ontransitionend = () => {
+			this.#dim.ontransitionend = () => {
+				this.#dim.removeAttribute('open');
+				this.#containerBox.ontransitionend = '';
+				this.#dim.ontransitionend = '';
+			}
+		}
 	}
 	/**
 	 * 이 레이어를 여는 함수

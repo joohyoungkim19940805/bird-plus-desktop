@@ -127,6 +127,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		super.onOpenCloseCallBack = (status) => {
 			console.log(status);
 			if(status == 'open'){
+				this.reset();
 				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				}).catch(e=>console.error(e))
@@ -167,8 +168,8 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				} = item;
 				
 				let departmentHtml = department ? `<small class="create_room_view_department">${department}</small>` : '';
-				let separatorHtml = jobGrade ? `<span class="create_room_view_separator">/&nbsp</span>` : '';
-				let jobGradeHtml = department && jobGrade ? `${separatorHtml}<small class="create_room_view_job_grade">${jobGrade}</small>` : '';
+				let separatorHtml = department && jobGrade ? `<span class="create_room_view_separator">/&nbsp</span>` : '';
+				let jobGradeHtml = jobGrade ? `${separatorHtml}<small class="create_room_view_job_grade">${jobGrade}</small>` : '';
 				
 				let li = Object.assign(document.createElement('li'), {
 					className: 'pointer',
