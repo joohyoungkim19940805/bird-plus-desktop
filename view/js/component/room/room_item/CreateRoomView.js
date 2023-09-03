@@ -142,7 +142,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		};
 		super.open();
 	}
-
+	
 	callData(page, size, workspaceId, fullName){
 		return window.myAPI.workspace.searchWorkspaceInAccount({
 			page, size, workspaceId, fullName

@@ -85,9 +85,11 @@ export default class LayerPopupTemplate{
 
 		this.#containerBox.style.opacity = '';
 		this.#dim.style.opacity = '';
+		this.#containerBox.ontransitionend = '';
+		this.#dim.ontransitionend = '';
 		this.#containerBox.ontransitionend = () => {
+			this.#dim.removeAttribute('open');
 			this.#dim.ontransitionend = () => {
-				this.#dim.removeAttribute('open');
 				this.#containerBox.ontransitionend = '';
 				this.#dim.ontransitionend = '';
 			}
