@@ -58,7 +58,6 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	console.log('kjh test check',DBConfig.loadEndPromise);
 	DBConfig.loadEndPromise.then(() => {
 		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
@@ -88,7 +87,6 @@ app.whenReady().then(()=>{
 		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
 		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
 		ipcMain.handle('getProjectPath', (event) => {
-			console.log('test <<< ?????' + global.__project_path)
 			return global.__project_path;
 		})
 	/*
