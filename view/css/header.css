@@ -6,6 +6,7 @@ header-default #header_content{
     align-items: center;
     padding-left: 1vw;
     padding-right: 1vw;
+    min-height: 40px;
 }
 
 header-default #left_wrapper img{

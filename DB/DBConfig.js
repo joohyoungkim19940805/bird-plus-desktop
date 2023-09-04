@@ -8,6 +8,10 @@ const { app } = require('electron');
 	console.log(row.id + ": " + row.name);
 });*/
 class DBConfig{
+	static #loadEndPromiseResolve;
+	static loadEndPromise = new Promise(resolve => {
+		this.#loadEndPromiseResolve = resolve;
+	});
 	static #columnInfo;
 	static #columnRegex = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
 	/**
@@ -123,6 +127,7 @@ class DBConfig{
 				})
 				let column = this.getColumnInfo(tableName);
 				let dbPragmaPromise = new Promise(resolve => {
+					console.log(111111111111111)
 					createTablePromise.then(() => {
 						db.all(`PRAGMA table_info(${tableName})`, (err, dataList) => {
 							if(err){
@@ -133,6 +138,7 @@ class DBConfig{
 					})
 				})
 				let promise = new Promise(resolve => {
+					console.log(22222222222)
 					let dbColumnMapper = {};
 					dbPragmaPromise.then(dataList => {
 						let alterTablePromiseList = dataList.map( async data=>{
@@ -157,11 +163,12 @@ class DBConfig{
 				});
 				
 				promise.then(dbColumnMapper => {
+					console.log(333333333333333333123123123)
 					/**
 					 * columnInfo로 정의되었으나 테이블에는 없는 컬럼은 추가
 					 */
 					return Promise.all(Object.entries(column.info).map(([key,value])=>{
-						let pormise = new Promise(res=>{
+						let allPormise = new Promise(res=>{
 							if( ! dbColumnMapper[key]){
 								db.run(`ALTER TABLE ${tableName} ADD COLUMN ${key} ${value.type} DEFAULT '${value.default}'`, (err)=>{
 									if(err){
@@ -170,14 +177,21 @@ class DBConfig{
 									res();
 								})
 							}
+							res();
 						})
-						return pormise;
+						return allPormise;
 					}))
 				}).then(()=>{
-					db.close((err) => {
-						if(err){
-							console.error(err.message)
-						}
+					console.log('???????')
+					return new Promise(res=>{
+						db.close((err) => {
+							if(err){
+								console.error(err.message)
+							}
+							console.log('44444444444444')
+							this.#loadEndPromiseResolve();
+							res();
+						})
 					})
 				})
 				

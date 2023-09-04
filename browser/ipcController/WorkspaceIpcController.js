@@ -20,6 +20,7 @@ class WorkspaceIpcController {
 			mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 				mainWindow.titleBarStyle = 'visibble'
 				mainWindow.show();
+				mainWindow.isOpening = false;
 			})
         })
 

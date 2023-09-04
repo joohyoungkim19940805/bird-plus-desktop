@@ -33,6 +33,7 @@ class BirdPlusOptions{
 				`, [], (err, rows) => {
 					if(err){
 						console.error(err);
+						return;
 					}
 
 					if(rows[0]){
@@ -56,6 +57,7 @@ class BirdPlusOptions{
 				`, [], (err, rows) => {
 					if(err){
 						console.error(err);
+						return;
 					}
 
 					if(rows[0]){
@@ -77,13 +79,14 @@ class BirdPlusOptions{
 	}
 	
 	setLastWindowSize(window){
-		if(this.isSize){
-			let rect = {
-				x: this.#position.x, 
-				y: this.#position.y, 
-				width: this.#size.w, 
-				height: this.#size.h
-			}
+		let rect = {
+			x: this.#position.x, 
+			y: this.#position.y, 
+			width: this.#size.w, 
+			height: this.#size.h
+		}
+		if( this.isSize && ! Object.entries(rect).some(([k,v]) => v == undefined) ){
+
 			//console.log('getAllDisplays',screen.getAllDisplays());
 			//console.log('getPrimaryDisplay', screen.getPrimaryDisplay())
 			//console.log('getPrimaryDisplay', screen.getDisplayNearestPoint(this.#position))
@@ -162,6 +165,8 @@ class BirdPlusOptions{
 	}
 
 	setLastWindowPosition(window){
+		console.log('kjh test 123123123', this.isPosition);
+		console.log('kjh test 567567567', this.position)
 		if(this.isPosition){
 			window.setPosition(this.#position.x, this.#position.y);
 		}else{
@@ -218,11 +223,15 @@ class BirdPlusOptions{
 	}
 
 	get isSize(){
-		return (
+		if (
 			this.#size &&
 			this.#size.w &&
 			this.#size.h
-		)
+		){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	set position([x,y]){
@@ -273,11 +282,15 @@ class BirdPlusOptions{
 	}
 
 	get isPosition(){
-		return (
+		if(
 			this.#position &&
 			this.#position.x &&
 			this.#position.y
-		)
+		){
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
 const birdPlusOptions = new BirdPlusOptions();

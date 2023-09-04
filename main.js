@@ -58,57 +58,60 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
-	// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
-	// window 및 linux인 경우
-	const gotTheLock = app.requestSingleInstanceLock()
-	if (!gotTheLock) {
-		autoUpdater.quitAndInstall();
-		app.quit();
-	}else{
-		app.on('second-instance', (event, commandLine, workingDirectory) => {
-			if(mainWindow) {
-				if(mainWindow.isMinimized()){
-					// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
-					mainWindow.restore();
+	console.log('kjh test check',DBConfig.loadEndPromise);
+	DBConfig.loadEndPromise.then(() => {
+		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
+		// window 및 linux인 경우
+		const gotTheLock = app.requestSingleInstanceLock()
+		if (!gotTheLock) {
+			autoUpdater.quitAndInstall();
+			app.quit();
+		}else{
+			app.on('second-instance', (event, commandLine, workingDirectory) => {
+				if(mainWindow) {
+					if(mainWindow.isMinimized()){
+						// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
+						mainWindow.restore();
+					}
+					mainWindow.focus();
 				}
-				mainWindow.focus();
-			}
-			dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
-		})
-	}
-	const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
+				dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
+			})
+		}
+		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
-	const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
-	const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
-	const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
-	const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
-	const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
-	const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
-	ipcMain.handle('getProjectPath', (event) => {
-		console.log('test <<< ?????' + global.__project_path)
-		return global.__project_path;
+		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
+		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
+		const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
+		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
+		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
+		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
+		ipcMain.handle('getProjectPath', (event) => {
+			console.log('test <<< ?????' + global.__project_path)
+			return global.__project_path;
+		})
+	/*
+		let icons = new BrowserWindow({
+			show: false, webPreferences: {offscreen: true}});
+		icons.loadURL("https://trends.google.com/trends/hottrends/visualize");
+		icons.webContents.on("paint", (event, dirty, image) => {
+			if (mainTray) {
+				mainTray.setImage(image.resize({width: 16, height: 16}));
+			}
+		});
+	*/
+		//앱이 활성화 되었을 때의 이벤트를 정의한다.
+		//mac os 의 경우 창이 열려있지 않아도 백그라운드에서 계속 실행 상태이다.
+		app.on('activate', ()=>{
+			// 가용 가능한 창이 없을 경우..
+			if(BrowserWindow.getAllWindows().length === 0){
+				// 창을 띄운다.
+				createWindow();
+			}
+		});
+		autoUpdater.checkForUpdates();
 	})
-/*
-    let icons = new BrowserWindow({
-        show: false, webPreferences: {offscreen: true}});
-    icons.loadURL("https://trends.google.com/trends/hottrends/visualize");
-    icons.webContents.on("paint", (event, dirty, image) => {
-        if (mainTray) {
-			mainTray.setImage(image.resize({width: 16, height: 16}));
-		}
-    });
-*/
-	//앱이 활성화 되었을 때의 이벤트를 정의한다.
-	//mac os 의 경우 창이 열려있지 않아도 백그라운드에서 계속 실행 상태이다.
-	app.on('activate', ()=>{
-		// 가용 가능한 창이 없을 경우..
-		if(BrowserWindow.getAllWindows().length === 0){
-			// 창을 띄운다.
-			createWindow();
-		}
-	});
-	autoUpdater.checkForUpdates();
 });
 
 // 창을 종료하였을 때의 이벤트를 정의한다.

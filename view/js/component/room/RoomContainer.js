@@ -7,42 +7,9 @@ export default class RoomContainer{
 	
 	#workspaceId;
 
-	#roomMenuWrapper = (()=>{
-		let wrapper = Object.assign(document.createElement('div'), {
-			id: 'room_menu_list_wrapper',
-			innerHTML: `
-				<div class="room_container list_scroll list_scroll-y">
-					<div class="room_sticky">
-						<div class="custom_details_summary">
-							추가
-							<button>+</button>
-							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="">▼</button>
-						</div>
-						<div>
-							<input type="text " placeholder="search">
-						</div>
-					</div>
-					<ul class="room_content_list">
-						<li>최근 메시지 1</li>
-						<li>스크랩</li>
-						<li>반응 및 댓글</li>
-						<li>즐겨찾기</li>
-						<li>최근 메시지</li>
-						<li>스크랩</li>
-						<li>반응 및 댓글</li>
-						<li>즐겨찾기</li>
-						<li>최근 메시지</li>
-						<li>스크랩</li>
-						<li>반응 및 댓글</li>
-						<li>즐겨찾기 0</li>
-					</ul>
-				</div>
-			`
-		});
-		wrapper.dataset.is_resize = true;
-		return wrapper;
-	})();
-	
+	#roomMenuList
+	#roomMenuListWrapper;
+
 	#roomFavoritesList
 	#roomFavoritesListWrapper;
 
@@ -63,6 +30,11 @@ export default class RoomContainer{
 			throw new Error('workspaceId is undefined');
 		}
 		this.#workspaceId = workspaceId;
+
+		this.#roomMenuList = new RoomMenuList(workspaceId);
+		this.#roomMenuListWrapper = this.#roomMenuList.element;
+		this.#roomMenuListWrapper.dataset.is_resize = true;
+
 		this.#roomList = new RoomList(workspaceId);
 		this.#roomListWrapper = this.#roomList.element;
 		this.#roomListWrapper.dataset.is_resize = true;
@@ -76,9 +48,8 @@ export default class RoomContainer{
 		this.#roomMessngerListWrapper = this.#roomMessngerList.element;
 		this.#roomMessngerListWrapper.dataset.is_resize = true;
 		
-		this.#contentWrapperList = [this.#roomMenuWrapper, this.#roomFavoritesListWrapper, this.#roomListWrapper, this.#roomMessngerListWrapper]
-		//console.log(this.#roomMenuWrapper)
-		//console.log(this.#roomMenuWrapper.childNodes)
+		this.#contentWrapperList = [this.#roomMenuListWrapper, this.#roomFavoritesListWrapper, this.#roomListWrapper, this.#roomMessngerListWrapper]
+
 		contentWrapper.replaceChildren(...this.#contentWrapperList)
 		this.#contentWrapperList.forEach(wrap => {
 			let [

@@ -42,6 +42,7 @@ class LoginIpcController {
 								mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 									mainWindow.titleBarStyle = 'visibble'
 									mainWindow.show();
+									mainWindow.isOpening = false;
 								})
 							}else{
 								axios.defaults.headers.common['Authorization'] = '';
@@ -112,6 +113,7 @@ class LoginIpcController {
 		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
 			mainWindow.titleBarStyle = 'visibble'
 			mainWindow.show();
+			mainWindow.isOpening = false;
 			return 'done';
 		})
 	}

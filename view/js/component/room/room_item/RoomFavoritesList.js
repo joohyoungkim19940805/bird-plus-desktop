@@ -18,7 +18,7 @@ export default class RoomFavoritesList{
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">
-							<input type="text" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
+							<input type="search" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
 						</form>
 					</div>
 				</div>

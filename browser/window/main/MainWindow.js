@@ -21,7 +21,7 @@ const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 class MainWindow extends BrowserWindow{
 	
 	#workspaceId
-	
+	isOpening = true;
 	/**
 	 * 메인 윈도우의 생성자
 	 * @author mozu123
@@ -46,11 +46,12 @@ class MainWindow extends BrowserWindow{
 				y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 			},
 		});
-
+		
 		//super.setTitleBarOverlay
 		
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
 			//console.log(e)
+			this.isOpening = true;
 			super.webContents.openDevTools();
 		});
 
@@ -60,11 +61,17 @@ class MainWindow extends BrowserWindow{
 		})
 
 		super.on('resize', (event) => {
+			if(this.isOpening){
+				return;
+			}
 			mainWindow.webContents.send("resized", super.getSize());
 			birdPlusOptions.size = super.getSize();
 		});
 
 		super.on('move' , (event) => {
+			if(this.isOpening){
+				return;
+			}
 			birdPlusOptions.position = super.getPosition();
 		})
 

@@ -18,11 +18,23 @@ export default class RoomMenuList{
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">
-							<input type="text" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
+							<input type="search" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
 						</form>
 					</div>
 				</div>
 				<ul class="room_content_list" data-bind_name="roomContentList">
+					<li class="pointer">최근 메시지</li>
+					<li class="pointer">스크랩</li>
+					<li class="pointer">반응 및 댓글</li>
+					<li class="pointer">즐겨찾기</li>
+					<li class="pointer">최근 메시지</li>
+					<li class="pointer">스크랩</li>
+					<li class="pointer">반응 및 댓글</li>
+					<li class="pointer">즐겨찾기</li>
+					<li class="pointer">최근 메시지</li>
+					<li class="pointer">스크랩</li>
+					<li class="pointer">반응 및 댓글</li>
+					<li class="pointer">즐겨찾기</li>
 				</ul>
 			</div>
 		` 
@@ -76,7 +88,7 @@ export default class RoomMenuList{
 		if( ! workspaceId){
 			throw new Error('workspaceId is undefined');
 		}
-		
+		/*
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 
 		this.#workspaceId = workspaceId;
@@ -100,6 +112,7 @@ export default class RoomMenuList{
 				});
 			}
 		}
+		*/
 	}
 
 	callData(page, size, workspaceId, roomName){

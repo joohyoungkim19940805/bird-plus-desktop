@@ -24,8 +24,35 @@ export default class CreateRoomView extends LayerPopupTemplate{
 					overflow-y: auto;
 					max-height: 1%;
 				}
+
+				#create_room_view_account_list::-webkit-scrollbar{
+					display: none;
+				}
+				#create_room_view_account_list:hover::-webkit-scrollbar{
+					display: initial;
+					width: 8px;
+				}
+				#create_room_view_account_list::-webkit-scrollbar-track{
+					background: #00000000;
+				}
+				#create_room_view_account_list::-webkit-scrollbar-thumb {
+					background: #d8a1b6;
+					border-radius: 100px;
+					box-shadow: inset 0 0 5px #000000;
+				}
+				#create_room_view_account_list::-webkit-scrollbar-thumb:hover {
+					/*background: #44070757;*/
+					background: #893e3e
+				}
+
 				#create_room_view_account_list > li{
 					border-top: outset 1px;
+					position: relative;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+				#create_room_view_account_list > li > input.add_account_check{
 				}
 				#create_room_view_account_list > li .create_room_view_department, 
 				#create_room_view_account_list > li .create_room_view_job_grade,
@@ -44,9 +71,11 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				#create_room_view_account_list > li .create_room_view_separator{
 					font-weight: bold;
 				}
-				
 				#create_room_view_account_list > li .create_room_view_full_name{
 					color: #789bb9b8;
+				}
+				#create_room_view_account_list > li .create_room_view_account_info{
+					width: 100%
 				}
 			</style>
 			<form id="create_room_view">
@@ -57,8 +86,8 @@ export default class CreateRoomView extends LayerPopupTemplate{
 					<input name="roomName" id="create_room_name" />
 				</div>
 				<div>
-					<label for"create_room_search_user">Please enter the users you want to invite.</label>
-					<input type="text" name="fullName"/>
+					<label for="create_room_search_user">Please enter the users you want to invite.</label>
+					<input type="search" id="create_room_search_user" name="fullName"/>
 				</div>
 				<ul id="create_room_view_account_list">
 				</ul>
@@ -68,7 +97,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 					</label>
 				</div>
 				<div>
-					<button type="submit">Create</button>
+					<button type="button" id="create_room_view_button">Create</button>
 				</div>
 			</from>
 		`
@@ -117,29 +146,53 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		root: document//this.#elementMap.roomContentList
 	});
 
+	inviteAccountMapper = {};
+
 	constructor(workspaceId){
 		super();
 		this.#workspaceId = workspaceId;
-		console.log()
 		this.#form = this.#layerContent.querySelector('#create_room_view');
 		super.container.append(this.#layerContent)
 
 		super.onOpenCloseCallBack = (status) => {
-			console.log(status);
 			if(status == 'open'){
 				this.reset();
 				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-				}).catch(e=>console.error(e))
-
+				});
 			}else{
-
+				this.reset();
 			}
 		}
 
 		this.#form.onsubmit = (event) => {
 			event.preventDefault();
+			let fullName = this.#form.create_room_search_user.value;
+			this.reset();
+			this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, fullName).then(data => {
+				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
+			});
 		};
+		this.#form.create_room_search_user.oninput = (event) => {
+			if(this.#form.create_room_search_user.value == ''){
+				this.reset();
+				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId).then(data => {
+					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
+				});
+			}
+		}
+
+		this.#form.create_room_view_button.onclick = (event) => {
+			let createRoomParam = {
+				roomName : this.#form.roomName.value,
+				workspaceId : this.#workspaceId,
+				roomType : this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
+			}
+			window.myAPI.room.createRoom(createRoomParam).then((event)=>{
+				console.log(event);
+			});
+		}
+
 		super.open();
 	}
 	
@@ -157,7 +210,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 			if(content.length == 0){
 				resolve(content);
 			}
-			console.log(content);
+
 			let liList = content.map(item => {
 				let {
 					accountName,
@@ -174,14 +227,17 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				let li = Object.assign(document.createElement('li'), {
 					className: 'pointer',
 					innerHTML: `
-						<div>
-							<span class="create_room_view_full_name">${fullName}</span>
-							<span class="create_room_view_account_name">(${accountName})</span>
+						<div class="create_room_view_account_info">
+							<div>
+								<span class="create_room_view_full_name">${fullName}</span>
+								<span class="create_room_view_account_name">(${accountName})</span>
+							</div>
+							<div>
+								${departmentHtml}
+								${jobGradeHtml}
+							</div>
 						</div>
-						<div>
-							${departmentHtml}
-							${jobGradeHtml}
-						</div>
+						<input type="checkbox" name="add_account_check" class="add_account_check pointer"/>
 					`
 				});
 				Object.assign(li.dataset,{
@@ -203,7 +259,6 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	}
 
 	addListItemVisibleEvent(liList){
-		console.log(liList);
 		return new  Promise(resolve => {
 			if(liList.length == 0){
 				resolve(liList);
@@ -215,8 +270,13 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	}
 	#addItemEvent(li){
 		return new Promise(resolve => {
+			let checkbox = li.querySelector('[name="add_account_check"]');
 			li.onclick = () => {
 				console.log(li);
+				checkbox.click();
+			}
+			checkbox.onchange = (event) => {
+				console.log(event);
 			}
 			resolve(li);
 		});

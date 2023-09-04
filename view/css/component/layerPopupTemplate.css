@@ -42,12 +42,10 @@
 }
 .layer_dim > .layer_container_box:hover::-webkit-scrollbar{
 	display: initial;
-    width: 1vw;
+    width: 14px;
 }
 .layer_dim > .layer_container_box::-webkit-scrollbar-track{
-
     background: #00000000;
-
 }
 .layer_dim > .layer_container_box::-webkit-scrollbar-thumb {
     background: #ad6d6d;
