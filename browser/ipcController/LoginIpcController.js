@@ -61,7 +61,12 @@ class LoginIpcController {
 		});
 
 		ipcMain.handle('loginProcessing', async (event, param) => {
-
+			param = Object.entries(param).reduce((total, [k,v]) => {
+				if(v != undefined && v != ''){
+					total[k] = v;
+				}
+				return total;
+			},{});
 			return axios.post(__serverApi + '/login-processing', JSON.stringify(param), {
 				headers:{
 					'Content-Type': 'application/json'

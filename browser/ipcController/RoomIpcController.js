@@ -17,6 +17,12 @@ class RoomIpcController {
 		ipcMain.handle('createRoom', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
+					param = Object.entries(param).reduce((total, [k,v]) => {
+						if(v != undefined && v != ''){
+							total[k] = v;
+						}
+						return total;
+					},{});
 					return axios.post(`${__serverApi}/api/room/create-room`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
@@ -46,17 +52,18 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
-		/*
-		ipcMain.handle('createRoomInAccount', async (event, param = {}) => {
+		
+		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
-					return axios.post(`${__serverApi}/api/room/create-room-favorites`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/create-room-in-account`, JSON.stringify(param), {
 						headers:{
-							'Content-Type': 'text/event-stream',
+							'Content-Type': 'application/json',
 							'Accept': 'text/event-stream',
 						},
 						responseType: 'stream'
 					}).then(response => {
+						console.log('kjh !!!!!!!!!!!!!!!!!!!!!!!!!!!!', response);
 						let status = response.status;
 						let {code, data} = response.data;
 						if((status == '200' || status == '201') && code == '00'){
@@ -80,10 +87,17 @@ class RoomIpcController {
 				console.error('error stack :::', error.stack)
 				return undefined;
 			})
-		})*/
+		})
+
 		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
+					param = Object.entries(param).reduce((total, [k,v]) => {
+						if(v != undefined && v != ''){
+							total[k] = v;
+						}
+						return total;
+					},{});
 					return axios.post(`${__serverApi}/api/room/create-room-favorites`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
@@ -116,6 +130,12 @@ class RoomIpcController {
 		ipcMain.handle('updateRoomInAccout', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
+					param = Object.entries(param).reduce((total, [k,v]) => {
+						if(v != undefined && v != ''){
+							total[k] = v;
+						}
+						return total;
+					},{});
 					return axios.post(`${__serverApi}/api/room/update-room-in-account`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
@@ -149,6 +169,12 @@ class RoomIpcController {
 		ipcMain.handle('updateRoomFavorites', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
+					param = Object.entries(param).reduce((total, [k,v]) => {
+						if(v != undefined && v != ''){
+							total[k] = v;
+						}
+						return total;
+					},{});
 					return axios.post(`${__serverApi}/api/room/update-room-favorites`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'

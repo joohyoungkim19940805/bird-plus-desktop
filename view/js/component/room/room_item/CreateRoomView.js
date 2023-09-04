@@ -146,7 +146,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		root: document//this.#elementMap.roomContentList
 	});
 
-	inviteAccountMapper = {};
+	#inviteAccountMapper = {};
 
 	constructor(workspaceId){
 		super();
@@ -166,13 +166,24 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		}
 
 		this.#form.onsubmit = (event) => {
+			//console.log(event);
 			event.preventDefault();
+			/*let fullName = this.#form.create_room_search_user.value;
+			this.reset();
+			this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, fullName).then(data => {
+				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
+			});*/
+		};
+		this.#form.create_room_search_user.onkeydown = (event) => {
+			if(event.key != 'Enter'){
+				return;
+			}
 			let fullName = this.#form.create_room_search_user.value;
 			this.reset();
 			this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
-		};
+		}
 		this.#form.create_room_search_user.oninput = (event) => {
 			if(this.#form.create_room_search_user.value == ''){
 				this.reset();
@@ -188,8 +199,26 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				workspaceId : this.#workspaceId,
 				roomType : this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
 			}
-			window.myAPI.room.createRoom(createRoomParam).then((event)=>{
-				console.log(event);
+			console.log(this.#inviteAccountMapper);
+			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
+				console.log(createRoomEvent);
+				if(createRoomEvent.code == 0){
+					window.myAPI.room.createRoomInAccount(
+						Object.values(this.#inviteAccountMapper).map(e=>{	
+							return {
+								roomId: createRoomEvent.data.id,
+								accountName: e.account_name,
+								fullName: e.fullName,
+								workspaceId: e.workspace_id,
+								jobGrade: e.jobGrade,
+								department: e.department,
+								roomType: this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC'	
+							};
+						})
+					).then(createRoomInAccountEvent=>{
+						console.log(createRoomInAccountEvent)
+					})
+				}
 			});
 		}
 
@@ -223,7 +252,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				let departmentHtml = department ? `<small class="create_room_view_department">${department}</small>` : '';
 				let separatorHtml = department && jobGrade ? `<span class="create_room_view_separator">/&nbsp</span>` : '';
 				let jobGradeHtml = jobGrade ? `${separatorHtml}<small class="create_room_view_job_grade">${jobGrade}</small>` : '';
-				
+				console.log(this.#inviteAccountMapper.hasOwnProperty(accountName))
 				let li = Object.assign(document.createElement('li'), {
 					className: 'pointer',
 					innerHTML: `
@@ -237,7 +266,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 								${jobGradeHtml}
 							</div>
 						</div>
-						<input type="checkbox" name="add_account_check" class="add_account_check pointer"/>
+						<input type="checkbox" name="add_account_check" class="add_account_check pointer" ${this.#inviteAccountMapper.hasOwnProperty(accountName) ? 'checked' : ''}/>
 					`
 				});
 				Object.assign(li.dataset,{
@@ -271,12 +300,18 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			let checkbox = li.querySelector('[name="add_account_check"]');
-			li.onclick = () => {
-				console.log(li);
+			li.onclick = (event) => {
+				if(event.target === checkbox){
+					return;
+				}
 				checkbox.click();
 			}
 			checkbox.onchange = (event) => {
-				console.log(event);
+				if(checkbox.checked){
+					this.#inviteAccountMapper[li.dataset.account_name] = Object.assign({}, li.dataset)
+				}else{
+					delete this.#inviteAccountMapper[li.dataset.account_name]
+				}
 			}
 			resolve(li);
 		});
