@@ -135,15 +135,9 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
-		ipcMain.handle('updateRoomInAccout', async (event, param = {}) => {
+		ipcMain.handle('updateRoomInAccout', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
-					param = Object.entries(param).reduce((total, [k,v]) => {
-						if(v != undefined && v != ''){
-							total[k] = v;
-						}
-						return total;
-					},{});
 					return axios.post(`${__serverApi}/api/room/update-room-in-account`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'

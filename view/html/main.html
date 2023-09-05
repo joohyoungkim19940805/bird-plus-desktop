@@ -23,7 +23,7 @@
 			<div class="content_wrapper options_wrapper" data-is_resize="true" data-grow="0.28" data-info="기능 옵션 도구">
 				<div class="content" data-is_no_resize="">aaaaaaa</div>
 			</div>
-			<div class="content_wrapper rooms_wrapper" data-is_resize="true" data-grow="0.5" data-info="채널과 방 등">
+			<div class="content_wrapper rooms_wrapper" id="room" data-is_resize="true" data-grow="0.5" data-info="채널과 방 등">
 				<div class="content">
 					<flex-layout class="content_wrapper" data-direction="column">
 					</flex-layout>
@@ -31,7 +31,7 @@
 			</div>
 			<div class="content_wrapper chating_wrapper" data-is_resize="true" data-grow="3" data-info="채팅 관련">
 				<div class="content">
-					<flex-layout class="chating_block content_wrapper" data-direction="column">
+					<flex-layout class="chating_block content_wrapper" id="chatting" data-direction="column">
 						<div class="chating_summary" data-grow="0.15" data-is_resize="true">
 							<div class="content">a</div>
 						</div>
@@ -52,10 +52,10 @@
 					</flex-layout>
 				</div>
 			</div>
-			<div class="content_wrapper thread_wrapper" data-is_resize="true" data-info="스레드 같은 거">
+			<div class="content_wrapper thread_wrapper" id="thread" data-is_resize="true" data-info="스레드 같은 거">
 				<div is="content-block" data-direction="x" class="content" data-is_no_resize="" data-is_last_child="">abcdefghijk</div>
 			</div>
-		</main-layout>
+		</flex-layout>
 		<script type="text/javascript" src="./../js/dist/mainPageRenderer.js"></script>
 	</body>
 </html>

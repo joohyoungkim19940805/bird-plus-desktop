@@ -1,3 +1,4 @@
+import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import LayerPopupTemplate from "./../../LayerPopupTemplate"
 
 export default class CreateRoomView extends LayerPopupTemplate{
@@ -107,12 +108,12 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	 * full 네임으로 검색 ex) ${fullName}(${accountName}) 형식
 	 */
 	#createRoomviewAccountList = this.#layerContent.querySelector('#create_room_view_account_list');
-	#accountListPage = 0;
-	#accountListSize = 10;
+	page = 0;
+	size = 10;
 	#liList = [];
 	#workspaceId;
-	#form = this.#layerContent.querySelector('#create_room_view');
-
+	form = this.#layerContent.querySelector('#create_room_view');
+	roomId;
 	#visibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -131,11 +132,11 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
-				this.#accountListPage += 1;
-				let roomName = this.#form.fullName.value;
-				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, roomName).then(data=>{
+				this.page += 1;
+				let roomName = this.form.fullName.value;
+				this.callData(this.page, this.size, this.#workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-					if(this.#accountListPage >= data.totalPages){
+					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
 					}
 				})
@@ -148,61 +149,54 @@ export default class CreateRoomView extends LayerPopupTemplate{
 
 	#inviteAccountMapper = {};
 
-	constructor(workspaceId){
-		super();
-		this.#workspaceId = workspaceId;
-		this.#form = this.#layerContent.querySelector('#create_room_view');
+	constructor(owner){
+		super(owner);
+		this.form = this.#layerContent.querySelector('#create_room_view');
 		super.container.append(this.#layerContent)
-
-		super.onOpenCloseCallBack = (status) => {
-			if(status == 'open'){
-				this.reset();
-				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId).then(data => {
-					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-				});
-			}else{
-				this.reset();
-			}
+		workspaceHandler.addWorkspaceIdChangedListener = {
+			name: 'createRoomView',
+			callBack: (workspace) => {
+				this.workspaceId = workspace.id
+			},
+			runTheFirst: true
 		}
-
-		this.#form.onsubmit = (event) => {
+		this.form.onsubmit = (event) => {
 			//console.log(event);
 			event.preventDefault();
-			/*let fullName = this.#form.create_room_search_user.value;
+			/*let fullName = this.form.create_room_search_user.value;
 			this.reset();
-			this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, fullName).then(data => {
+			this.callData(this.page, this.size, this.#workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});*/
 		};
-		this.#form.create_room_search_user.onkeydown = (event) => {
+		this.form.create_room_search_user.onkeydown = (event) => {
 			if(event.key != 'Enter'){
 				return;
 			}
-			let fullName = this.#form.create_room_search_user.value;
+			let fullName = this.form.create_room_search_user.value;
 			this.reset();
-			this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId, fullName).then(data => {
+			this.callData(this.page, this.size, this.#workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
 		}
-		this.#form.create_room_search_user.oninput = (event) => {
-			if(this.#form.create_room_search_user.value == ''){
+		this.form.create_room_search_user.oninput = (event) => {
+			if(this.form.create_room_search_user.value == ''){
 				this.reset();
-				this.callData(this.#accountListPage, this.#accountListSize, this.#workspaceId).then(data => {
+				this.callData(this.page, this.size, this.#workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				});
 			}
 		}
 
-		this.#form.create_room_view_button.onclick = (event) => {
+		this.form.create_room_view_button.onclick = (event) => {
 			let createRoomParam = {
-				roomName : this.#form.roomName.value,
+				roomName : this.form.roomName.value,
 				workspaceId : this.#workspaceId,
-				roomType : this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
+				roomType : this.form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
 			}
-			console.log(this.#inviteAccountMapper);
 			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
-				console.log(createRoomEvent);
 				if(createRoomEvent.code == 0){
+					console.log(createRoomEvent);
 					window.myAPI.room.createRoomInAccount(
 						Object.values(this.#inviteAccountMapper).map(e=>{	
 							return {
@@ -212,25 +206,17 @@ export default class CreateRoomView extends LayerPopupTemplate{
 								workspaceId: e.workspace_id,
 								jobGrade: e.jobGrade,
 								department: e.department,
-								roomType: this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC'	
+								roomType: this.form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC'	
 							};
 						})
-					).then(createRoomInAccountEventStream => {
-						console.log(createRoomInAccountEventStream.constructor);
-						createRoomInAccountEventStream.on('data', data => {
-							console.log(data);
-							console.log(String(data));
-							console.log(JSON.stringify(String(data)));
-						})
-						createRoomInAccountEventStream.on('end', () => {
-							console.log('end!!!');
-						})
-					})
+					)
+					this.roomId = createRoomEvent.data.id;
+					super.close();
+					return;
 				}
+				alert(createRoomEvent.message);
 			});
 		}
-
-		super.open();
 	}
 	
 	callData(page, size, workspaceId, fullName){
@@ -325,10 +311,17 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		});
 	}
 	reset(){
-		this.#accountListPage = 0;
+		this.page = 0;
 		this.#liList = [];
 		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#createRoomviewAccountList.replaceChildren();
+	}
+
+	set workspaceId(workspaceId){
+		this.#workspaceId = workspaceId;
+	}
+	get workspaceId(){
+		return this.#workspaceId;
 	}
 }

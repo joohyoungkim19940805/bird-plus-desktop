@@ -1,7 +1,7 @@
 import PositionChanger from "../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
-export default class RoomMenuList{
+export default new class RoomMenuList{
 	#workspaceId
 	#roomId
 	#page = 0;
@@ -84,10 +84,7 @@ export default class RoomMenuList{
 	});
 
 
-	constructor(workspaceId, roomId){
-		if( ! workspaceId){
-			throw new Error('workspaceId is undefined');
-		}
+	constructor(){
 		/*
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 

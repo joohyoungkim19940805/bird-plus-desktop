@@ -127,7 +127,6 @@ class DBConfig{
 				})
 				let column = this.getColumnInfo(tableName);
 				let dbPragmaPromise = new Promise(resolve => {
-					console.log(111111111111111)
 					createTablePromise.then(() => {
 						db.all(`PRAGMA table_info(${tableName})`, (err, dataList) => {
 							if(err){
@@ -138,7 +137,6 @@ class DBConfig{
 					})
 				})
 				let promise = new Promise(resolve => {
-					console.log(22222222222)
 					let dbColumnMapper = {};
 					dbPragmaPromise.then(dataList => {
 						let alterTablePromiseList = dataList.map( async data=>{

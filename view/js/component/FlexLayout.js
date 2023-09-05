@@ -149,6 +149,10 @@ class FlexLayout extends HTMLElement {
 		return this.#resizePanelClass;
 	}
 
+	static get observedAttributes() {
+		return ['data-direction'];
+	}
+
 	#isLoaded = false;
 	#growLimit = 0; 
 	//#shrinkDefault = 1;
@@ -158,10 +162,30 @@ class FlexLayout extends HTMLElement {
 	// 세로 모드인 경우 firstElementChild의 리사이즈 제거 필요 
 	#growChangeObserver = new MutationObserver( (mutationList, observer) => {
 		mutationList.forEach((mutation) => {
-			console.log(mutation)
 			mutation.target.style.flex = `${parseFloat(mutation.target.dataset.grow)} 1 0%`;
 		});
 	})
+
+	#visibleObserver = new MutationObserver((mutationList, observer) => {
+		// 정해진 방향의 사이즈만(width or height) 0일뿐 다른 다른 방향 사이즈는 그대로여서 
+		// intersection observer가 미동작함
+		mutationList.forEach((mutation) => {
+			let currentFlexGrow = parseFloat(mutation.target.style.flex.split(' ')[0]);
+			let currentSize = parseFloat(window.getComputedStyle(mutation.target)[this.sizeName]);
+			if( ! isNaN(currentFlexGrow) && currentFlexGrow == 0 && currentSize == 0){
+			
+			}else{
+				
+			}
+		});
+	});
+
+	xy;
+	targetDirection;
+	nextElementDirection;
+	sizeName;
+	resizeCursor;
+
 	constructor(){
 		super();
 		let observer = new MutationObserver( (mutationList, observer) => {
@@ -180,6 +204,10 @@ class FlexLayout extends HTMLElement {
 						childElement.after(resizePanel);
 						
 						resizePanel.__resizeTarget = childElement; 
+						this.#visibleObserver.observe(childElement, {
+							attributeFilter:['style'],
+							attributeOldValue:true
+						});
 					}
 				});
 				let forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
@@ -259,7 +287,7 @@ class FlexLayout extends HTMLElement {
 		resizePanel.addEventListener('mousedown', () => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
-			document.body.style.cursor = this.getCursor;
+			document.body.style.cursor = this.resizeCursor;
 		})
 		window.addEventListener('mouseup', (event) => {
 			if( resizePanel.hasAttribute('data-is_mouse_down')) {
@@ -285,53 +313,51 @@ class FlexLayout extends HTMLElement {
 			let targetRect = resizePanel.__resizeTarget.getBoundingClientRect();
 			let nextElementRect = resizePanel.nextElementSibling.getBoundingClientRect();
 
-			let xy;
-			let targetDirection;
-			let nextElementDirection;
-			let sizeName;
-			let parentSize;
-			if(this.dataset.direction == 'row'){
-				xy = 'x';
-				targetDirection = 'left';
-				nextElementDirection = 'right'
-				sizeName = 'width'
-				parentSize = this.getBoundingClientRect().width;
-			}else{
-				xy = 'y';
-				targetDirection = 'top';
-				nextElementDirection = 'bottom';
-				sizeName = 'height';
-				parentSize = this.getBoundingClientRect().height;
+			let parentSize = this.getBoundingClientRect()[this.sizeName];
+
+			let minSizeName = 'min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1);
+			let targetMinSize = parseInt(window.getComputedStyle(resizePanel.__resizeTarget)[minSizeName]);
+			let nextElementMinSize = parseInt(window.getComputedStyle(resizePanel.nextElementSibling)[minSizeName]);
+
+			let targetSize = event[this.xy] - targetRect[this.targetDirection];
+			let nextElementSize = nextElementRect[this.nextElementDirection] - event[this.xy];
+			
+			if(targetSize <= 0 || (isNaN(targetMinSize) ? false : targetMinSize >= targetSize)){
+				targetSize = 0
+				//nextElementWidth = targetRect.width + nextElementRect[sizeName]
+				nextElementSize = nextElementRect[this.sizeName]
+			}else if(nextElementSize <= 0 || (isNaN(nextElementMinSize) ? false : nextElementMinSize >= nextElementSize)){
+				//targetWidth = targetRect[sizeName] + nextElementRect.width;
+				targetSize = targetRect[this.sizeName];
+				nextElementSize = 0
 			}
-
-			let targetWidth = event[xy] - targetRect[targetDirection];
-			let nextElementWidth = nextElementRect[nextElementDirection] - event[xy];
-
-			if(targetWidth < 0){
-				targetWidth = 0
-				nextElementWidth = /*targetRect.width +*/ nextElementRect[sizeName]
-			}else if(nextElementWidth < 0){
-				targetWidth = targetRect[sizeName] /*+ nextElementRect.width*/;
-				nextElementWidth = 0
-			}
-
-			let targetFlexGrow = (targetWidth / parentSize) * this.#growLimit;
-			let nextElementFlexGrow = (nextElementWidth / parentSize) * this.#growLimit;
+			
+			let targetFlexGrow = (targetSize / parentSize) * this.#growLimit;
+			let nextElementFlexGrow = (nextElementSize / parentSize) * this.#growLimit;
 
 			resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
 			resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
 
 		})
 	}
-	get getCursor(){
-		let resizeCursor;
-		if(this.dataset.direction == 'row'){
-			resizeCursor = 'ew-resize';
-		}else{
+
+	attributeChangedCallback(name, oldValue, newValue){
+		if(newValue == 'row'){
+			this.xy = 'x';
+			this.targetDirection = 'left';
+			this.nextElementDirection = 'right';
+			this.sizeName = 'width';
+			this.resizeCursor = 'ew-resize';
+		}else if(newValue == 'column'){
 			//is ::: this.dataset.direction == 'column'
-			resizeCursor = 'ns-resize';
+			this.xy = 'y';
+			this.targetDirection = 'top';
+			this.nextElementDirection = 'bottom';
+			this.sizeName = 'height';
+			this.resizeCursor = 'ns-resize';
+		}else {
+			throw new Error('direction is "row" or "column" required value');
 		}
-		return resizeCursor;
 	}
 }
 

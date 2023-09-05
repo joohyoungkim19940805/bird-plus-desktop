@@ -136,7 +136,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						window.getSelection().setPosition(element, 1)
 						element.focus();
 						new Line(element);
-						console.log(element);
 						if( ! element.line){
 							
 						}

@@ -1,7 +1,7 @@
-import RoomMenuList from "./room_item/RoomMenuList"
-import RoomFavoritesList from "./room_item/RoomFavoritesList"
-import RoomList from "./room_item/RoomList"
-import RoomMessengerList from "./room_item/RoomMessengerList"
+import roomMenuList from "./room_item/RoomMenuList"
+import roomFavoritesList from "./room_item/RoomFavoritesList"
+import roomList from "./room_item/RoomList"
+import roomMessengerList from "./room_item/RoomMessengerList"
 
 export default class RoomContainer{
 	
@@ -31,24 +31,15 @@ export default class RoomContainer{
 		}
 		this.#workspaceId = workspaceId;
 
-		this.#roomMenuList = new RoomMenuList(workspaceId);
-		this.#roomMenuListWrapper = this.#roomMenuList.element;
-		this.#roomMenuListWrapper.dataset.is_resize = true;
+		roomMenuList.element.dataset.is_resize = true;
 
-		this.#roomList = new RoomList(workspaceId);
-		this.#roomListWrapper = this.#roomList.element;
-		this.#roomListWrapper.dataset.is_resize = true;
+		roomFavoritesList.element.dataset.is_resize = true;
 		
-		this.#roomFavoritesList = new RoomFavoritesList(workspaceId);
-		this.#roomFavoritesListWrapper = this.#roomFavoritesList.element;
-		this.#roomFavoritesListWrapper.dataset.is_resize = true;
+		roomList.element.dataset.is_resize = true;
 		
+		roomMessengerList.element.dataset.is_resize = true;
 		
-		this.#roomMessngerList = new RoomMessengerList(workspaceId);
-		this.#roomMessngerListWrapper = this.#roomMessngerList.element;
-		this.#roomMessngerListWrapper.dataset.is_resize = true;
-		
-		this.#contentWrapperList = [this.#roomMenuListWrapper, this.#roomFavoritesListWrapper, this.#roomListWrapper, this.#roomMessngerListWrapper]
+		this.#contentWrapperList = [roomMenuList.element, roomFavoritesList.element, roomList.element, roomMessengerList.element]
 
 		contentWrapper.replaceChildren(...this.#contentWrapperList)
 		this.#contentWrapperList.forEach(wrap => {

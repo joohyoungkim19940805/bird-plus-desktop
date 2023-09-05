@@ -1,7 +1,7 @@
+import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
-
-export default class RoomList{
+export default new class RoomList{
 	#workspaceId
 	#roomId
 	#page = 0;
@@ -72,25 +72,28 @@ export default class RoomList{
 
 	#positionChanger;
 	#createRoomView;
-	constructor(workspaceId, roomId){
-		if( ! workspaceId){
-			throw new Error('workspaceId is undefined');
-		}
-		
+	constructor(){
+
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
+			console.log(changeList);
 			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
 				console.log(data);
 			})
 		}
 
-		this.#createRoomView = new CreateRoomView(workspaceId);
-
-		this.#workspaceId = workspaceId;
-		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
-			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-		})
-
+		this.#createRoomView = new CreateRoomView(this);
+		workspaceHandler.addWorkspaceIdChangedListener = {
+			name: 'roomList',
+			callBack: (workspace) => {
+				this.workspaceId = workspace.id
+			},
+			runTheFirst: true
+		}
+		setTimeout(()=>{
+			console.log('start!')
+			workspaceHandler.workspaceId = 2
+		}, 5000)
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();
 			let roomName = this.#elementMap.searchName.value;
@@ -105,6 +108,20 @@ export default class RoomList{
 				this.callData(this.#page, this.#size, this.#workspaceId, undefined).then(data => {
 					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
 				});
+			}
+		}
+
+		this.#createRoomView.onOpenCloseCallBack = (status) => {
+			this.#createRoomView.reset();
+			if(status == 'open'){
+				this.#createRoomView.callData(this.#createRoomView.page, this.#createRoomView.size, this.#workspaceId, this.#createRoomView.form.fullName.value)
+				.then(data => {
+					this.#createRoomView.createPage(data).then(liList => {
+						this.addListItemVisibleEvent(liList);
+					})
+				})
+			}else{
+				this.roomId = this.#createRoomView.roomId;
 			}
 		}
 
@@ -163,6 +180,9 @@ export default class RoomList{
 						</div>
 					`
 				});
+				if(this.#roomId && roomId == this.#roomId){
+					li.style.fontWeight = 'bold';
+				}
 				Object.assign(li.dataset, {
 					id,
 					room_id: roomId,
@@ -180,7 +200,6 @@ export default class RoomList{
 			});
 			this.#liList.push(...liList);
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
-			console.log(roomName);
 			if(roomName == ''){
 				this.#positionChanger.addPositionChangeEvent(...this.#liList);
 			}else{
@@ -224,10 +243,10 @@ export default class RoomList{
 	}
 
 	set workspaceId(workspaceId){
+		this.#createRoomView.workspaceId = workspaceId;
 		this.#workspaceId = workspaceId;
-		let roomName = this.#elementMap.searchName.value;
 		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
+		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
 			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
 		});
 	}
@@ -252,6 +271,14 @@ export default class RoomList{
 			resolve();
 		})
 		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
+		if(! targetRoom){
+			this.reset();
+			this.#elementMap.searchName.value = '';
+			this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
+				this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+			});
+			return;
+		}
 		targetRoom.style.fontWeight = 'bold';
 	}
 	get roomId(){

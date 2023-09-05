@@ -1,7 +1,8 @@
+import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
-export default class RoomMessengerList{
+export default new class RoomMessengerList{
 	#workspaceId
 	#roomId
 	#page = 0;
@@ -72,10 +73,7 @@ export default class RoomMessengerList{
 	});
 
 
-	constructor(workspaceId, roomId){
-		if( ! workspaceId){
-			throw new Error('workspaceId is undefined');
-		}
+	constructor(){
 		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
@@ -83,10 +81,13 @@ export default class RoomMessengerList{
 				console.log(data);
 			})
 		}
-		this.#workspaceId = workspaceId;
-		this.callData(this.#page, this.#size, this.#workspaceId).then(data => {
-			this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-		})
+		workspaceHandler.addWorkspaceIdChangedListener = {
+			name: 'roomMessengerList',
+			callBack: (workspace) => {
+				this.workspaceId = workspace.id
+			},
+			runTheFirst: true
+		};
 
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();

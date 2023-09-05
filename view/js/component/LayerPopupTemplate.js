@@ -78,10 +78,9 @@ export default class LayerPopupTemplate{
 
 	/**
 	 * 이 레이어를 닫는 함수
-	 * @param {Function} onOpenCloseCallBack : 이 레이어를 닫은 후 실행 할 콜백 함수 
-	 * @returns {Function} callBakcFunction
+	 * @param {Function} callBack : 이 레이어를 닫은 후 실행 할 콜백 함수 
 	 */
-	close(onOpenCloseCallBack){
+	close(callback){
 
 		this.#containerBox.style.opacity = '';
 		this.#dim.style.opacity = '';
@@ -97,10 +96,9 @@ export default class LayerPopupTemplate{
 	}
 	/**
 	 * 이 레이어를 여는 함수
-	 * @param {Function} onOpenCloseCallBack : 이 레이어를 연 후 실행 할 콜백 함수
-	 * @returns {Function} onOpenCloseCallBack
+	 * @param {Function} callBack : 이 레이어를 연 후 실행 할 콜백 함수
 	 */
-	open(onOpenCloseCallBack){
+	open(callback){
 		this.#dim.setAttribute('open', '')
 	}
 	
