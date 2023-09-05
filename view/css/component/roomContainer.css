@@ -43,6 +43,11 @@
 .content_wrapper.rooms_wrapper .room_container .room_sticky{
 	position: sticky;
 	top: 0;
+	background-color: #c3c3c3;
+    box-shadow: inset 0 0 6px #c381818f;
+}
+.content_wrapper.rooms_wrapper .room_container .room_sticky .room_functions{
+	box-shadow: 0px 3px 10px #00000029;
 }
 .content_wrapper.rooms_wrapper .room_container .room_sticky .custom_details_summary{
     width: 100%;

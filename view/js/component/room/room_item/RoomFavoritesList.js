@@ -82,8 +82,8 @@ export default new class RoomFavoritesList{
 		}
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomFavoritesList',
-			callBack: (workspace) => {
-				this.workspaceId = workspace.id
+			callBack: (handler) => {
+				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true
 		};

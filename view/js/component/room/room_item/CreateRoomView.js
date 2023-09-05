@@ -155,8 +155,8 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'createRoomView',
-			callBack: (workspace) => {
-				this.workspaceId = workspace.id
+			callBack: (handler) => {
+				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true
 		}
@@ -196,7 +196,8 @@ export default class CreateRoomView extends LayerPopupTemplate{
 			}
 			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
 				if(createRoomEvent.code == 0){
-					console.log(createRoomEvent);
+					this.roomId = createRoomEvent.data.id;
+					super.close();
 					window.myAPI.room.createRoomInAccount(
 						Object.values(this.#inviteAccountMapper).map(e=>{	
 							return {
@@ -210,8 +211,6 @@ export default class CreateRoomView extends LayerPopupTemplate{
 							};
 						})
 					)
-					this.roomId = createRoomEvent.data.id;
-					super.close();
 					return;
 				}
 				alert(createRoomEvent.message);

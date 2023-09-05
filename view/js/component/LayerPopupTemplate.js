@@ -17,17 +17,14 @@ export default class LayerPopupTemplate{
 		return container;
 	})();
 	#onOpenCloseCallBack = () => {}
+	#dimIsClick = false;
 	constructor(){
 		new MutationObserver( (mutationList)=> {
 			mutationList.forEach( (mutation) => {
 				if( ! mutation.target.hasAttribute('open')){
 					this.#dim.remove();
-					if(this.onOpenCloseCallBack instanceof Function){
-						this.onOpenCloseCallBack('close');
-					}
 				}else{
 					document.body.append(this.#dim);
-					console.log(this.#dim);
 					let openWait = setInterval(() => {
 						if(this.#dim.isConnected){
 							this.#dim.style.opacity = 1;
@@ -51,11 +48,11 @@ export default class LayerPopupTemplate{
 				this.close();
 			}
 		}
-
 		this.#dim.onclick = (event) => {
-			if(event.composedPath().some(e=>e==this.#containerBox)){
+			if(this.#dimIsClick || event.composedPath().some(e=>e==this.#containerBox)){
 				return;
 			}
+			this.#dimIsClick = true;
 			this.close();
 		}
 
@@ -78,14 +75,26 @@ export default class LayerPopupTemplate{
 
 	/**
 	 * 이 레이어를 닫는 함수
-	 * @param {Function} callBack : 이 레이어를 닫은 후 실행 할 콜백 함수 
+	 * @param {Function} callback : 이 레이어를 닫은 후 실행 할 콜백 함수 
 	 */
 	close(callback){
-
 		this.#containerBox.style.opacity = '';
 		this.#dim.style.opacity = '';
-		this.#containerBox.ontransitionend = '';
+		//this.#containerBox.ontransitionend = '';
 		this.#dim.ontransitionend = '';
+		new Promise(res=>{
+			if(callback instanceof Function){
+				callback();
+			}
+			res();
+		});
+		new Promise(res=>{
+			if(this.onOpenCloseCallBack instanceof Function){
+				this.onOpenCloseCallBack('close');
+			}
+			res();
+		})
+		/*
 		this.#containerBox.ontransitionend = () => {
 			this.#dim.removeAttribute('open');
 			this.#dim.ontransitionend = () => {
@@ -93,13 +102,26 @@ export default class LayerPopupTemplate{
 				this.#dim.ontransitionend = '';
 			}
 		}
+		*/
+		this.#dim.ontransitionend = () => {
+			this.#dim.removeAttribute('open');
+			this.#containerBox.ontransitionend = '';
+			this.#dim.ontransitionend = '';
+			this.#dimIsClick = false;
+		}
 	}
 	/**
 	 * 이 레이어를 여는 함수
-	 * @param {Function} callBack : 이 레이어를 연 후 실행 할 콜백 함수
+	 * @param {Function} callback : 이 레이어를 연 후 실행 할 콜백 함수
 	 */
 	open(callback){
 		this.#dim.setAttribute('open', '')
+		new Promise(res=>{
+			if(callback instanceof Function){
+				callback();
+			}
+			res();
+		});
 	}
 	
 

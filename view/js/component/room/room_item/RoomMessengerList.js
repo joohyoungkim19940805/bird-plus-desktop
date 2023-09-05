@@ -83,8 +83,8 @@ export default new class RoomMessengerList{
 		}
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomMessengerList',
-			callBack: (workspace) => {
-				this.workspaceId = workspace.id
+			callBack: (handler) => {
+				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true
 		};

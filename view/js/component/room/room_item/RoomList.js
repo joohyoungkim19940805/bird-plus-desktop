@@ -85,15 +85,12 @@ export default new class RoomList{
 		this.#createRoomView = new CreateRoomView(this);
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomList',
-			callBack: (workspace) => {
-				this.workspaceId = workspace.id
+			callBack: (handler) => {
+				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true
 		}
-		setTimeout(()=>{
-			console.log('start!')
-			workspaceHandler.workspaceId = 2
-		}, 5000)
+
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();
 			let roomName = this.#elementMap.searchName.value;
@@ -117,7 +114,7 @@ export default new class RoomList{
 				this.#createRoomView.callData(this.#createRoomView.page, this.#createRoomView.size, this.#workspaceId, this.#createRoomView.form.fullName.value)
 				.then(data => {
 					this.#createRoomView.createPage(data).then(liList => {
-						this.addListItemVisibleEvent(liList);
+						this.#createRoomView.addListItemVisibleEvent(liList);
 					})
 				})
 			}else{

@@ -1,9 +1,6 @@
 
 export default new class WorkspaceHandler{
     #workspaceId;
-    workspace = {
-        id: this.workspaceId
-    }
     #addWorkspaceIdChangedListener = {};
     constructor(){
         window.addEventListener("DOMContentLoaded", (event) => {
@@ -28,10 +25,8 @@ export default new class WorkspaceHandler{
             })
             workspaceIdPromise.then(workspaceId => {
                 this.#workspaceId = workspaceId;
-                this.workspace.id = workspaceId;
-                console.log(Object.values(this.#addWorkspaceIdChangedListener));
                 Object.values(this.#addWorkspaceIdChangedListener).forEach(callBack => {
-                    callBack(this.workspace);
+                    callBack(this);
                 })
             })
         });
@@ -40,13 +35,22 @@ export default new class WorkspaceHandler{
     set addWorkspaceIdChangedListener({name, callBack, runTheFirst}){
         this.#addWorkspaceIdChangedListener[name] = callBack;
         if(runTheFirst && this.workspaceId){
-            callBack(this.workspace);
+            callBack(this);
         }
     }
     get addWorkspaceIdChangedListener(){
         this.#addWorkspaceIdChangedListener;
     }
 
+    set workspaceId(workspaceId){
+        this.#workspaceId = workspaceId;
+        Object.values(this.#addWorkspaceIdChangedListener).forEach(callBack => {
+            callBack(this);
+        })
+    }
+    get workspaceId(){
+        return this.#workspaceId;
+    }
     removeWorkspaceIdChangedListener(name){
         delete this.#addWorkspaceIdChangedListener(name);
     }
