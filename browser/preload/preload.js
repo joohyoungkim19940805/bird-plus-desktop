@@ -65,7 +65,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	room : {
 		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
-		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
+		createRoomInAccount : (param) => ipcRenderer.send('createRoomInAccount', param),
 		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
 		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
 		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
@@ -102,6 +102,14 @@ ipcRenderer.on('chattingAccept', (event, message) => {
 ipcRenderer.on('workspaceChange', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('workspaceChange')){
 		electronEventTrigger.objectEventListener['workspaceChange'].forEach(callBack=>{
+			callBack(message);
+		})
+	}
+})
+
+ipcRenderer.on('roomInAccountCallBack', (event, message) => {
+	if(electronEventTrigger.objectEventListener.hasOwnProperty('roomInAccountCallBack')){
+		electronEventTrigger.objectEventListener['roomInAccountCallBack'].forEach(callBack=>{
 			callBack(message);
 		})
 	}

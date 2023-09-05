@@ -53,7 +53,7 @@ class RoomIpcController {
 			})
 		})
 		
-		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
+		ipcMain.on('createRoomInAccount', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
 					return axios.post(`${__serverApi}/api/room/create-room-in-account`, JSON.stringify(param), {
@@ -63,10 +63,8 @@ class RoomIpcController {
 						},
 						responseType: 'stream'
 					}).then(response => {
-						console.log('kjh !!!!!!!!!!!!!!!!!!!!!!!!!!!!', response);
 						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
+						if((status == '200' || status == '201')){
 						
 						}
 						return response.data
@@ -78,6 +76,16 @@ class RoomIpcController {
 						}else{
 							return err.message
 						}
+					}).then(stream => {
+						stream.on('data', bufferArr => {
+							let obj = JSON.stringify(String(bufferArr));
+							console.log('bufferArr', bufferArr);
+							console.log('obj', obj)
+							mainWindow.webContents.send('roomInAccountCallBack', obj);
+						})
+						stream.on('end', () => {
+							console.log('end stream ::: ')
+						})
 					})
 				}else{
 					return {'isLogin': false};

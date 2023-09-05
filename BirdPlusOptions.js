@@ -165,8 +165,6 @@ class BirdPlusOptions{
 	}
 
 	setLastWindowPosition(window){
-		console.log('kjh test 123123123', this.isPosition);
-		console.log('kjh test 567567567', this.position)
 		if(this.isPosition){
 			window.setPosition(this.#position.x, this.#position.y);
 		}else{

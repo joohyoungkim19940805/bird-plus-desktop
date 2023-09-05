@@ -215,8 +215,16 @@ export default class CreateRoomView extends LayerPopupTemplate{
 								roomType: this.#form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC'	
 							};
 						})
-					).then(createRoomInAccountEvent=>{
-						console.log(createRoomInAccountEvent)
+					).then(createRoomInAccountEventStream => {
+						console.log(createRoomInAccountEventStream.constructor);
+						createRoomInAccountEventStream.on('data', data => {
+							console.log(data);
+							console.log(String(data));
+							console.log(JSON.stringify(String(data)));
+						})
+						createRoomInAccountEventStream.on('end', () => {
+							console.log('end!!!');
+						})
 					})
 				}
 			});

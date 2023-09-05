@@ -151,7 +151,7 @@ export default class RoomList{
 				let roomTypeMark;
 				if(roomType == 'ROOM_PUBLIC'){
 					roomTypeMark = '@';
-				}else if(roomTypeMark == 'ROOM_PRIVATE'){
+				}else if(roomType == 'ROOM_PRIVATE'){
 					roomTypeMark = '#';
 				}
 				let li = Object.assign(document.createElement('li'), {

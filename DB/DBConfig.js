@@ -163,7 +163,6 @@ class DBConfig{
 				});
 				
 				promise.then(dbColumnMapper => {
-					console.log(333333333333333333123123123)
 					/**
 					 * columnInfo로 정의되었으나 테이블에는 없는 컬럼은 추가
 					 */
@@ -182,13 +181,11 @@ class DBConfig{
 						return allPormise;
 					}))
 				}).then(()=>{
-					console.log('???????')
 					return new Promise(res=>{
 						db.close((err) => {
 							if(err){
 								console.error(err.message)
 							}
-							console.log('44444444444444')
 							this.#loadEndPromiseResolve();
 							res();
 						})
