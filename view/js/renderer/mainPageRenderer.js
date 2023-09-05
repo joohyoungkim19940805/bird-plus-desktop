@@ -16,7 +16,6 @@ import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
 import RoomContainer from "./../component/room/RoomContainer"
-import chattingHead from "./../component/chatting/ChattingHead"
 window.addEventListener("DOMContentLoaded", (event) => {
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{
