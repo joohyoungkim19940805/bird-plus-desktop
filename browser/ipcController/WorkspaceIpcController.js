@@ -27,7 +27,7 @@ class WorkspaceIpcController {
         ipcMain.handle('searchWorkspaceMyJoined', async (event, param = {}) => {
             return windowUtil.isLogin((result) => {
                 if(result.isLogin){
-                    return axios.get(`${__serverApi}/api/workspace/search-workspace-my-joined?page=${param.page}&size=${param.size}`, {
+                    return axios.get(`${__serverApi}/api/workspace/search/workspace-my-joined-list?page=${param.page}&size=${param.size}`, {
                         headers:{
                             'Content-Type': 'application/json'
                         }
@@ -67,7 +67,7 @@ class WorkspaceIpcController {
 					let queryString = Object.entries(param)
 						.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
 						.map(([k,v]) => `${k}=${v}`).join('&')
-					return axios.get(`${__serverApi}/api/workspace/search-workspace-in-account/${param.workspaceId}?${queryString}`, {
+					return axios.get(`${__serverApi}/api/workspace/search/workspace-in-account-list/${param.workspaceId}?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -95,6 +95,31 @@ class WorkspaceIpcController {
 				console.error('error stack :::', error.stack)
 				return undefined;
 			})
+		})
+
+		ipcMain.handle('getWorkspaceDetail', async (event, param) => {
+			if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
+				console.error(`workspaceId is ::: ${param.workspaceId}`);
+				return undefined;
+			}
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.get(`${__serverApi}/api/workspace/search/workspace-detail/${param.workspaceId}`, {
+						headers: {
+							'Content-Type' : 'application/json'
+						}
+					}).then(response => {
+						let {status, data} = response
+						let {code, data: content} = data;
+						if((status == '200' || status == '201') && code == '00'){
+							return content;
+						}
+						return undefined;
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			});
 		})
     }
 

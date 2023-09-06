@@ -4,32 +4,13 @@ import roomList from "./room_item/RoomList"
 import roomMessengerList from "./room_item/RoomMessengerList"
 
 export default class RoomContainer{
-	
-	#workspaceId;
 
-	#roomMenuList
-	#roomMenuListWrapper;
+	#contentWrapperList 
 
-	#roomFavoritesList
-	#roomFavoritesListWrapper;
-
-	#roomList;
-	#roomListWrapper;
-
-	#roomMessngerList;
-	#roomMessngerListWrapper;
-
-	#contentWrapperList // = [this.#roomMenuWrapper, this.#roomFavoritesWrapper, this.#roomListWrapper, this.#roomMessengerWrapper]
-	#contentWrapper;
-
-	constructor(contentWrapper, workspaceId){
+	constructor(contentWrapper){
 		if( ! contentWrapper){
 			throw new Error('contentWrapper is not defined');
 		}
-		if( ! workspaceId ){
-			throw new Error('workspaceId is undefined');
-		}
-		this.#workspaceId = workspaceId;
 
 		roomMenuList.element.dataset.is_resize = true;
 
@@ -49,15 +30,7 @@ export default class RoomContainer{
 			let roomContainerListScroll = wrap.querySelector('.room_container.list_scroll')
 			let customDetails = wrap.querySelector('.custom_details');
 			let customDetailsSummary = customDetails.closest('.custom_details_summary')
-			/*
-			roomContentList.parentElement.onmouseenter = () => {
-			}
-			roomContentList.parentElement.onmouseleave = () => {
-			}
-			roomContentList.parentElement.onscroll = (event) => {
-			}
-			*/
-			//'▼'; '▶';
+
 			let minHeight = customDetailsSummary.getBoundingClientRect().height;
 			wrap.style.minHeight = minHeight + 'px';
 			wrap.ontransitionend = () => {
@@ -103,15 +76,7 @@ export default class RoomContainer{
 				threshold: 0.01,
 				root: wrap
 			}).observe(customDetailsSummary.nextElementSibling);
-			//wrap.__resizePanel
 		})
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-	}
-	get workspaceId(){
-		return workspaceId;
 	}
 
 }

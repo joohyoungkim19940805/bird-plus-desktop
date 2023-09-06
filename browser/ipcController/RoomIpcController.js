@@ -23,7 +23,7 @@ class RoomIpcController {
 						}
 						return total;
 					},{});
-					return axios.post(`${__serverApi}/api/room/create-room`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/create/room`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -56,7 +56,7 @@ class RoomIpcController {
 		ipcMain.on('createRoomInAccount', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
-					return axios.post(`${__serverApi}/api/room/create-room-in-account`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/create/room-in-account`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json',
 							'Accept': 'text/event-stream',
@@ -78,10 +78,13 @@ class RoomIpcController {
 						}
 					}).then(stream => {
 						stream.on('data', bufferArr => {
-							let obj = JSON.stringify(String(bufferArr));
-							console.log('bufferArr', bufferArr);
-							console.log('obj', obj)
-							mainWindow.webContents.send('roomInAccountCallBack', obj);
+							let obj;
+							try{
+								obj = JSON.parse(String(bufferArr));
+								mainWindow.webContents.send('roomInAccountCallBack', obj);
+							}catch(ignore){
+								//console.error(err);
+							}
 						})
 						stream.on('end', () => {
 							console.log('end stream ::: ')
@@ -106,7 +109,7 @@ class RoomIpcController {
 						}
 						return total;
 					},{});
-					return axios.post(`${__serverApi}/api/room/create-room-favorites`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/create/room-favorites`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -138,7 +141,7 @@ class RoomIpcController {
 		ipcMain.handle('updateRoomInAccout', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
-					return axios.post(`${__serverApi}/api/room/update-room-in-account`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/update/room-in-account-order`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -177,7 +180,7 @@ class RoomIpcController {
 						}
 						return total;
 					},{});
-					return axios.post(`${__serverApi}/api/room/update-room-favorites`, JSON.stringify(param), {
+					return axios.post(`${__serverApi}/api/room/update/room-favorites-order`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -213,7 +216,7 @@ class RoomIpcController {
 					let queryString = Object.entries(param)
 						.filter(([k,v]) => v != undefined && v != '')
 						.map(([k,v]) => `${k}=${v}`).join('&')
-					return axios.get(`${__serverApi}/api/room/search-room?${queryString}`, {
+					return axios.get(`${__serverApi}/api/room/search/room-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -255,7 +258,7 @@ class RoomIpcController {
 							return `${k}=${v}`
 						}).join('&')
 						
-					return axios.get(`${__serverApi}/api/room/search-room-my-joined?${queryString}`, {
+					return axios.get(`${__serverApi}/api/room/search/room-my-joined-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -296,7 +299,7 @@ class RoomIpcController {
 							}
 							return `${k}=${v}`
 						}).join('&')
-					return axios.get(`${__serverApi}/api/room/search-room-my-joined-name?${queryString}`, {
+					return axios.get(`${__serverApi}/api/room/search/room-my-joined-name-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -339,7 +342,7 @@ class RoomIpcController {
 							return `${k}=${v}`
 						}).join('&')
 						
-					return axios.get(`${__serverApi}/api/room/search-room-favorites-my-joined?${queryString}`, {
+					return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -375,7 +378,7 @@ class RoomIpcController {
 					let queryString = Object.entries(param)
 						.filter(([k,v]) => v != undefined && v != '')
 						.map(([k,v]) => `${k}=${v}`).join('&')
-					return axios.get(`${__serverApi}/api/room/search-room-favorites-my-joined-name?${queryString}`, {
+					return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-name-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'
 						}
@@ -403,6 +406,31 @@ class RoomIpcController {
 				console.error('error stack :::', error.stack)
 				return undefined;
 			})
+		})
+
+		ipcMain.handle('getRoomDetail', async (event, param) => {
+			if( ! param.roomId || isNaN(parseInt(param.roomId))){
+				console.error(`roomId is ::: ${param.roomId}`);
+				return undefined;
+			}
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.get(`${__serverApi}/api/room/search/room-detail/${param.roomId}`, {
+						headers: {
+							'Content-Type' : 'application/json'
+						}
+					}).then(response => {
+						let {status, data} = response
+						let {code, data: content} = data;
+						if((status == '200' || status == '201') && code == '00'){
+							return content;
+						}
+						return undefined;
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			});
 		})
     }
 

@@ -1,8 +1,10 @@
 
 export default new class WorkspaceHandler{
+    #workspace;
     #workspaceId;
     #addWorkspaceIdChangedListener = {};
     constructor(){
+        let isLoadEnd = false;
         window.addEventListener("DOMContentLoaded", (event) => {
             let workspaceIdResolve;
             let workspaceIdPromise = new Promise(resolve=>{
@@ -17,17 +19,27 @@ export default new class WorkspaceHandler{
                     if(workspaceId == newWorkspaceId){
                         return;
                     }
-                    if(newWorkspaceId != undefined){
+                    
+                    if( ! isLoadEnd && newWorkspaceId != undefined){
                         workspaceIdResolve(newWorkspaceId)
+                    }else if(isLoadEnd){
+                        this.workspaceId = newWorkspaceId;
                     }
                     //event.workspaceId
                 })
             })
             workspaceIdPromise.then(workspaceId => {
                 this.#workspaceId = workspaceId;
-                Object.values(this.#addWorkspaceIdChangedListener).forEach(callBack => {
-                    callBack(this);
-                })
+                window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
+                    this.#workspace = workspace;
+                });
+                Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
+                    new Promise(res => {
+                        callBack(this);
+                        res();
+                    });
+                });
+                isLoadEnd = true;
             })
         });
     }
@@ -39,17 +51,26 @@ export default new class WorkspaceHandler{
         }
     }
     get addWorkspaceIdChangedListener(){
-        this.#addWorkspaceIdChangedListener;
+        return this.#addWorkspaceIdChangedListener;
     }
 
     set workspaceId(workspaceId){
         this.#workspaceId = workspaceId;
-        Object.values(this.#addWorkspaceIdChangedListener).forEach(callBack => {
-            callBack(this);
-        })
+        window.myAPI.getWorkspaceDetail({workspaceId}).then((workspace) => {
+            this.#workspace = workspace;
+        });
+        Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
+            new Promise(res => {
+                callBack(this);
+                res();
+            });
+        });
     }
     get workspaceId(){
         return this.#workspaceId;
+    }
+    get workspace(){
+        return this.#workspace;
     }
     removeWorkspaceIdChangedListener(name){
         delete this.#addWorkspaceIdChangedListener(name);

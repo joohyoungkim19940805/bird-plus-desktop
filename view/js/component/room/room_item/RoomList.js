@@ -76,7 +76,6 @@ export default new class RoomList{
 
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			console.log(changeList);
 			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
 				console.log(data);
 			})

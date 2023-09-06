@@ -5,7 +5,7 @@ class WindowUtil{
 
     }
     async isLogin(callBack = () => {}){
-        return axios.get(__serverApi + '/api/account/is-login', {
+        return axios.get(__serverApi + '/api/account/search/is-login', {
             headers:{
                 'Content-Type': 'application/json'
             }

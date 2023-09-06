@@ -60,7 +60,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	workspace : {
 		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
 		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
-		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId')
+		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId'),
+		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param)
 	},
 
 	room : {
@@ -73,7 +74,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchRoomMyJoined : (param) => ipcRenderer.invoke('searchRoomMyJoined', param),
 		searchRoomMyJoinedName : (param) => ipcRenderer.invoke('searchRoomMyJoinedName', param),
 		searchRoomFavoritesMyJoined : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoined', param),
-		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param)
+		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param),
+		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param)
 	}
 
 })

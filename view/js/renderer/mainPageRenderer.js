@@ -16,6 +16,7 @@ import Video from "../handler/editor/tools/Video"
 import Code from "../handler/editor/tools/Code"
 
 import RoomContainer from "./../component/room/RoomContainer"
+import ChattingContainer from "./../component/chatting/ChattingContainer"
 window.addEventListener("DOMContentLoaded", (event) => {
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{
@@ -38,11 +39,12 @@ window.addEventListener("DOMContentLoaded", (event) => {
 	})
 	workspaceIdPromise.then(workspaceId => {
 		const roomContainer = new RoomContainer(
-			document.querySelector('.rooms_wrapper .content_wrapper'),
-			workspaceId
+			document.querySelector('#room')
+		)
+		const chattingContainer = new ChattingContainer(
+			document.querySelector('#chatting')
 		)
 	})
-
 });
 
 // 채팅 셋팅
