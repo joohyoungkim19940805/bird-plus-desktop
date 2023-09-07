@@ -53,7 +53,7 @@ class RoomIpcController {
 			})
 		})
 		
-		ipcMain.on('createRoomInAccount', async (event, param = []) => {
+		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
 					return axios.post(`${__serverApi}/api/room/create/room-in-account`, JSON.stringify(param), {
@@ -77,18 +77,25 @@ class RoomIpcController {
 							return err.message
 						}
 					}).then(stream => {
+						let streamEndResolve;
+						let promise = new Promise(res=>{
+							streamEndResolve = res;
+						})
 						stream.on('data', bufferArr => {
 							let obj;
 							try{
 								obj = JSON.parse(String(bufferArr));
 								mainWindow.webContents.send('roomInAccountCallBack', obj);
+								console.log(obj);
 							}catch(ignore){
 								//console.error(err);
 							}
 						})
 						stream.on('end', () => {
 							console.log('end stream ::: ')
+							streamEndResolve('done');
 						})
+						return promise;
 					})
 				}else{
 					return {'isLogin': false};
@@ -408,9 +415,67 @@ class RoomIpcController {
 			})
 		})
 
+		ipcMain.handle('searchRoomInAccountAllList', async (event, param = {}) => {
+			console.log(param);
+			if( ! param.roomId || isNaN(parseInt(param.roomId))){
+				console.error(`searchRoomInAccountAllList roomId is ::: ${param.roomId}`);
+				return undefined;
+			}
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.get(`${__serverApi}/api/room/search/room-in-account-all-list/${param.roomId}`, {
+						headers:{
+							'Content-Type': 'application/json',
+							'Accept': 'text/event-stream',
+						},
+						responseType: 'stream'
+					}).then(response => {
+						let status = response.status;
+						if((status == '200' || status == '201')){
+						
+						}
+						return response.data
+					}).catch(err=>{
+						console.error('IPC createRoomFavorites error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					}).then(stream => {
+						let streamEndResolve;
+						let promise = new Promise(res=>{
+							streamEndResolve = res;
+						})
+						stream.on('data', bufferArr => {
+							let obj;
+							try{
+								obj = JSON.parse(String(bufferArr));
+								mainWindow.webContents.send('roomInAccountCallBack', obj);
+							}catch(ignore){
+								//console.error(err);
+							}
+						})
+						stream.on('end', () => {
+							console.log('end stream ::: ')
+							streamEndResolve();
+						})
+						return promise.then(()=>'done');
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
+
 		ipcMain.handle('getRoomDetail', async (event, param) => {
 			if( ! param.roomId || isNaN(parseInt(param.roomId))){
-				console.error(`roomId is ::: ${param.roomId}`);
+				console.error(`getRoomDetail roomId is ::: ${param.roomId}`);
 				return undefined;
 			}
 			return windowUtil.isLogin( result => {
@@ -432,6 +497,7 @@ class RoomIpcController {
 				}
 			});
 		})
+
     }
 
 }

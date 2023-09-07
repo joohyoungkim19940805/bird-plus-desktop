@@ -113,7 +113,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	#liList = [];
 	#workspaceId;
 	form = this.#layerContent.querySelector('#create_room_view');
-	roomId;
+	#roomId;
 	#visibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -187,7 +187,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				});
 			}
 		}
-
+		
 		this.form.create_room_view_button.onclick = (event) => {
 			let createRoomParam = {
 				roomName : this.form.roomName.value,
@@ -195,6 +195,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 				roomType : this.form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
 			}
 			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
+				console.log(createRoomEvent);
 				if(createRoomEvent.code == 0){
 					this.roomId = createRoomEvent.data.id;
 					super.close();
@@ -315,6 +316,18 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#createRoomviewAccountList.replaceChildren();
+	}
+
+	set roomId(roomId){
+		if( ! roomId){
+			console.error('roomId is undefined');
+            return;
+        }
+		this.#roomId = roomId;
+	}
+
+	get roomId(){
+		return this.#roomId;
 	}
 
 	set workspaceId(workspaceId){

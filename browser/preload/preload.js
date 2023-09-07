@@ -54,19 +54,19 @@ contextBridge.exposeInMainWorld('myAPI', {
 	chatting : {
 		chattingReady : () => ipcRenderer.send('chattingReady'),
 		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
-		
 	},
 	
 	workspace : {
 		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
 		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
 		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId'),
-		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param)
+		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
+		resetWorkspaceId : () => ipcRenderer.invoke('resetWorkspaceId')
 	},
 
 	room : {
 		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
-		createRoomInAccount : (param) => ipcRenderer.send('createRoomInAccount', param),
+		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
 		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
 		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
 		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
@@ -75,6 +75,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchRoomMyJoinedName : (param) => ipcRenderer.invoke('searchRoomMyJoinedName', param),
 		searchRoomFavoritesMyJoined : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoined', param),
 		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param),
+		searchRoomInAccountAllList : (param) => ipcRenderer.invoke('searchRoomInAccountAllList', param),
 		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param)
 	}
 

@@ -96,7 +96,7 @@ class WorkspaceIpcController {
 				return undefined;
 			})
 		})
-
+		
 		ipcMain.handle('getWorkspaceDetail', async (event, param) => {
 			if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
 				console.error(`workspaceId is ::: ${param.workspaceId}`);

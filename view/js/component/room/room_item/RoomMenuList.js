@@ -236,6 +236,10 @@ export default new class RoomMenuList{
 	}
 
 	set roomId(roomId){
+		if( ! roomId){
+			console.error('roomId is undefined');
+            return;
+        }
 		this.#roomId = roomId;
 		new Promise(resolve => {
 			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {

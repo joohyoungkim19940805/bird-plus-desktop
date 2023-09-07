@@ -5,7 +5,7 @@ export default new class WorkspaceHandler{
     #addWorkspaceIdChangedListener = {};
     constructor(){
         let isLoadEnd = false;
-        window.addEventListener("DOMContentLoaded", (event) => {
+        //window.addEventListener("DOMContentLoaded", (event) => {
             let workspaceIdResolve;
             let workspaceIdPromise = new Promise(resolve=>{
                 workspaceIdResolve = resolve;
@@ -41,7 +41,7 @@ export default new class WorkspaceHandler{
                 });
                 isLoadEnd = true;
             })
-        });
+        //});
     }
 
     set addWorkspaceIdChangedListener({name, callBack, runTheFirst}){
@@ -56,7 +56,7 @@ export default new class WorkspaceHandler{
 
     set workspaceId(workspaceId){
         this.#workspaceId = workspaceId;
-        window.myAPI.getWorkspaceDetail({workspaceId}).then((workspace) => {
+        window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
             this.#workspace = workspace;
         });
         Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {

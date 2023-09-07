@@ -9,7 +9,7 @@ export default new class ChattingHandler{
     set addRoomIdChangeListener({name, callBack, runTheFirst}){
         this.#addRoomIdChangeListener[name] = callBack;
         if(runTheFirst && this.#roomId){
-            callBack();
+            callBack(this);
         }
     }
 
@@ -18,19 +18,27 @@ export default new class ChattingHandler{
     }
 
     set roomId(roomId){
+        if( ! roomId){
+            console.error('roomId is undefined');
+            return;
+        }
         this.#roomId = roomId;
-        window.myAPI.getRoomDetail({roomId}).then(room => {
+        window.myAPI.room.getRoomDetail({roomId}).then(room => {
             this.#room = room;
-        });
-        Object.values(this.#addRoomIdChangeListener).forEach(async callBack => {
-            new Promise(res => {
-                callBack(this);
-                res();
-            })
+            Object.values(this.#addRoomIdChangeListener).forEach(async callBack => {
+                new Promise(res => {
+                    callBack(this);
+                    res();
+                })
+            });
         });
     }
 
     get roomId(){
         return this.#roomId;
+    }
+
+    get room(){
+        return this.#room;
     }
 }

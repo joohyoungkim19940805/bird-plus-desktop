@@ -33,7 +33,7 @@
 }
 
 .content_wrapper.rooms_wrapper .room_container .room_sticky .custom_details_summary > *:nth-child(1){
-    width: 10vw;
+    width: 12vw;
     min-width: fit-content;
 }
 

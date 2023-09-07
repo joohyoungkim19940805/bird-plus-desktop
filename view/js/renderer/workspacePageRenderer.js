@@ -86,7 +86,9 @@ new class WorkspacePageRenderer{
 	addItemEvent(li, workspaceId){
 		return new Promise(resolve => {
 			li.onclick = (event) => {
-				window.myAPI.pageChange.changeMainPage({workspaceId});
+				window.myAPI.workspace.resetWorkspaceId().then(()=>{
+					window.myAPI.pageChange.changeMainPage({workspaceId});
+				});
 			}
 			resolve(li);
 		});

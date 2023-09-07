@@ -28,6 +28,9 @@ class MainIpcController {
 		ipcMain.handle('getWorkspaceId', async () => {
 			return mainWindow.workspaceId;
 		})
+		ipcMain.handle('resetWorkspaceId', async () => {
+			mainWindow.resetWorkspace();
+		})
 	}
 
 }

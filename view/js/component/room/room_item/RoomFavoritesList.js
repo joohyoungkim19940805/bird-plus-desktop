@@ -1,4 +1,5 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
+import chattingHandler from "../../../handler/chatting/ChattingHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
@@ -38,7 +39,7 @@ export default new class RoomFavoritesList{
 	#positionChanger;
 
 	#liList = [];
-
+	#liMap = {};
 	#visibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -104,6 +105,41 @@ export default new class RoomFavoritesList{
 					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
 				});
 			}
+		}
+
+		chattingHandler.addRoomIdChangeListener = {
+			name: 'roomFavoritesList',
+			callBack: (handler) => {
+				/*if(this.#roomId == handler.roomId){
+					return;
+				}*/
+				this.#roomId = handler.roomId;
+				new Promise(resolve => {
+					this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
+						let itemRoomId = Number(item.dataset.room_id);
+						if(isNaN(itemRoomId)){
+							resolve();
+							return;
+						}else if(handler.roomId == itemRoomId){
+							resolve();
+							return;
+						}
+						item.style.fontWeight = '';
+					})
+					resolve();
+				})
+				let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${handler.roomId}"]`);
+				if(! targetRoom){
+					this.reset();
+					this.#elementMap.searchName.value = '';
+					this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
+						this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+					});
+					return;
+				}
+				targetRoom.style.fontWeight = 'bold';
+			},
+			runTheFirst: false
 		}
 	}
 
@@ -220,23 +256,12 @@ export default new class RoomFavoritesList{
 	}
 
 	set roomId(roomId){
+		if( ! roomId){
+			console.error('roomId is undefined');
+            return;
+        }
 		this.#roomId = roomId;
-		new Promise(resolve => {
-			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
-				let itemRoomId = Number(item.dataset.room_id);
-				if(isNaN(itemRoomId)){
-					resolve();
-					return;
-				}else if(roomId == itemRoomId){
-					resolve();
-					return;
-				}
-				item.style.fontWeight = '';
-			})
-			resolve();
-		})
-		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
-		targetRoom.style.fontWeight = 'bold';
+		chattingHandler.roomId = roomId;
 	}
 	get roomId(){
 		return this.#roomId;

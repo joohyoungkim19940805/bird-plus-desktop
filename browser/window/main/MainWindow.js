@@ -113,6 +113,9 @@ class MainWindow extends BrowserWindow{
 	get workspaceId(){
 		return this.#workspaceId;
 	}
+	resetWorkspace(){
+		this.#workspaceId = undefined;
+	}
 }
 
 const mainWindow = new MainWindow();
