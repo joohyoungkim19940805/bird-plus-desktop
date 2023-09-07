@@ -2,6 +2,7 @@ import chattingHandler from "./../../../handler/chatting/ChattingHandler"
 
 export default new class ChattingHead{
     members = {};
+    //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_head_wrapper',
         innerHTML: `
@@ -96,6 +97,17 @@ export default new class ChattingHead{
             this.members[event.roomId][event.accountName] = this.createLiElement(event);
 
             if(event.roomId == this.#roomId){
+                new Promise(res => {
+                    let optionList = Object.values(this.members[event.roomId]).map(li => {
+                        let option = Object.assign(document.createElement('option'), {
+                            value : li.dataset.full_name,
+                            textContent: li.dataset.department
+                        })
+                        return option;
+                    })
+                    this.#elementMap.searchMemberList.replaceChildren(...optionList);
+                    res();
+                })
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[event.roomId]));
             }
         })
@@ -129,8 +141,8 @@ export default new class ChattingHead{
 
                 this.#roomId = handler.roomId;
                 this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
-                window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(e=>{
-                    console.log(e);
+                window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
+                    console.log(result);
                 })
 			},
 			runTheFirst: false
