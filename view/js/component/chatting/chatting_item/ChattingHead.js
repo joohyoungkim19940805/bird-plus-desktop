@@ -13,8 +13,8 @@ export default new class ChattingHead{
                 </div>
                 <div class="chatting_head_button_container">
                     <div class="chatting_head_info_search_container">
-                        <input type="search" placeholder="search members" list="chatting_head_search_member_list" id="chatting_head_search_members" class="chatting_head_search_members" data-bind_name="searchMembers"/>
-                        <datalist id="chatting_head_search_member_list" class="chatting_head_search_member_list" data-bind_name="searchMemberList">
+                        <input type="search" placeholder="search members" list="chatting_head_member_list" class="chatting_head_search_members" data-bind_name="searchMembers"/>
+                        <datalist id="chatting_head_member_list" class="chatting_head_search_member_list" data-bind_name="searchMemberList">
                             <option value="abc">test</option>
                             <option value="greh">test</option>
                             <option value="etrtabc">test</option>
