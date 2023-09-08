@@ -134,7 +134,7 @@ export default new class RoomList{
 				}*/
 				this.#roomId = handler.roomId;
 				new Promise(resolve => {
-					this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
+					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);
 						if(isNaN(itemRoomId)){
 							resolve();

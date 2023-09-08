@@ -1,4 +1,6 @@
 import chattingHandler from "./../../../handler/chatting/ChattingHandler"
+import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
+import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
 
 export default new class ChattingHead{
     members = {};
@@ -7,7 +9,7 @@ export default new class ChattingHead{
         id: 'chatting_head_wrapper',
         innerHTML: `
         <div class="chatting_head_container" data-bind_name="chattingHeadContainer">
-            <div class="chatting_head_info_wrapper">
+            <div class="chatting_head_info_wrapper list_scroll list_scroll-x" data-bind_name="chattingHeadInfoWrapper">
                 <div class="chatting_head_info_container">
                     <h3 class="chatting_head_title" data-bind_name="chattingHeadTitle"></h3>
                     <span class="chatting_head_joined_count" data-bind_name="chattingHeadJounedCount"></span>
@@ -39,6 +41,21 @@ export default new class ChattingHead{
 		}, {})
 	})();
 
+	#visibleObserver = new IntersectionObserver((entries, observer) => {
+		entries.forEach(entry =>{
+			if (entry.isIntersecting){
+				entry.target.style.visibility = '';
+				entry.target.style.opacity = '';
+			}else{
+				entry.target.style.visibility = 'hidden';
+				entry.target.style.opacity = 0;
+			}
+		})
+	}, {
+		threshold: 0.1,
+		root: this.#elementMap.chattingHeadJoinedMembers
+	});
+
     #roomId
 
     constructor(){
@@ -47,44 +64,47 @@ export default new class ChattingHead{
         chattingHeadJoinedMembers
         ul.onwheel = (event)=>console.log(event)
         */
-        document.addEventListener('keydown',(event)=>{
-            if(this.#elementMap.chattingHeadJoinedMembers.hasAttribute('data-is_shft')){
-                return;
-            }
-            let {key} = event;
-            if(key === 'Shift'){
-                this.#elementMap.chattingHeadJoinedMembers.dataset.is_shft = '';
-            }
-        })
+       [this.#elementMap.chattingHeadJoinedMembers, this.#elementMap.chattingHeadInfoWrapper].forEach(scrollTarget=>{
+            document.addEventListener('keydown',(event)=>{
+                if(scrollTarget.hasAttribute('data-is_shft')){
+                    return;
+                }
+                let {key} = event;
+                if(key === 'Shift'){
+                    scrollTarget.dataset.is_shft = '';
+                }
+            })
 
-        document.addEventListener('keyup', (event)=>{
-            if( ! this.#elementMap.chattingHeadJoinedMembers.hasAttribute('data-is_shft')){
-                return;
-            }    
-            let {key} = event;
-            if(key === 'Shift'){
-                this.#elementMap.chattingHeadJoinedMembers.removeAttribute('data-is_shft');
-            }
-        })
-        
-        this.#elementMap.chattingHeadJoinedMembers.onwheel = (event) => {
-            if(this.#elementMap.chattingHeadJoinedMembers.hasAttribute('data-is_shft')){
-                return;
-            }
-            let {deltaY} = event;
-
+            document.addEventListener('keyup', (event)=>{
+                if( ! scrollTarget.hasAttribute('data-is_shft')){
+                    return;
+                }    
+                let {key} = event;
+                if(key === 'Shift'){
+                    scrollTarget.removeAttribute('data-is_shft');
+                }
+            })
             
-            this.#elementMap.chattingHeadJoinedMembers.scrollTo(
-                this.#elementMap.chattingHeadJoinedMembers.scrollLeft + deltaY, undefined
-            );
-            /*
-            this.#elementMap.chattingHeadJoinedMembers.scrollTo(
-            {
-                left: this.#elementMap.chattingHeadJoinedMembers.scrollLeft + deltaY,
-                behavior: 'smooth'
-            });
-            */
-        }
+            scrollTarget.onwheel = (event) => {
+                if(scrollTarget.hasAttribute('data-is_shft')){
+                    return;
+                }
+                let {deltaY} = event;
+
+                
+                scrollTarget.scrollTo(
+                    scrollTarget.scrollLeft + deltaY, undefined
+                );
+                /*
+                this.#elementMap.chattingHeadJoinedMembers.scrollTo(
+                {
+                    left: this.#elementMap.chattingHeadJoinedMembers.scrollLeft + deltaY,
+                    behavior: 'smooth'
+                });
+                */
+            }
+        })
+
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountCallBack', event => {
             if( ! this.members.hasOwnProperty(event.roomId)){
@@ -97,34 +117,24 @@ export default new class ChattingHead{
             this.members[event.roomId][event.accountName] = this.createLiElement(event);
 
             if(event.roomId == this.#roomId){
+                let memberList = Object.values(this.members[event.roomId]);
                 new Promise(res => {
-                    let optionList = Object.values(this.members[event.roomId]).map(li => {
+                    let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
                             value : li.dataset.full_name,
                             textContent: li.dataset.department
                         })
+                        option.__target_member = li;
                         return option;
                     })
                     this.#elementMap.searchMemberList.replaceChildren(...optionList);
                     res();
                 })
-                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[event.roomId]));
-            }
-        })
-
-        let memeberAddObserver = new MutationObserver( (mutationList, observer) => {
-			mutationList.forEach((mutation) => {
-                if(this.#elementMap.chattingHeadJoinedMembers.childElementCount == 0){
-                    this.#elementMap.chattingHeadJounedCount.textContent = '';
-                    return;
-                }
+                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
+                
                 this.#elementMap.chattingHeadJounedCount.textContent = 
-                    `(${this.#elementMap.chattingHeadJoinedMembers.childElementCount} members)`
-            })
-        } );
-        memeberAddObserver.observe(this.#elementMap.chattingHeadJoinedMembers, {
-			childList: true,
-            subtree: false
+                    `(${memberList.length} members)`
+            }
         })
 
         chattingHandler.addRoomIdChangeListener = {
@@ -143,13 +153,50 @@ export default new class ChattingHead{
                 this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
                 window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
                     console.log(result);
-                })
+                });
+                
+                let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
+                if(favoritesTarget){
+                    this.#elementMap.favoritesAddButton.classList.add('apply')
+                    this.#elementMap.favoritesAddButton.textContent = '★'
+                }else{
+                    this.#elementMap.favoritesAddButton.classList.remove('apply')
+                    this.#elementMap.favoritesAddButton.textContent = '☆'
+                }
 			},
 			runTheFirst: false
 		}
 
-        this.#elementMap.favoritesAddButton.onclick = () => {
+        this.#elementMap.searchMembers.oninput = () => {
+            let searchText = this.#elementMap.searchMembers.value;
+            if(searchText.value == ''){
+                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[this.#roomId]));  
+            }
+            this.#elementMap.chattingHeadJoinedMembers.replaceChildren(
+                ...[...this.#elementMap.searchMembers.list.options].map(option => {
+                    if(option.value.includes(searchText) || option.textContent.includes(searchText)){
+                        return option.__target_member;
+                    }
+                    return undefined;
+                }).filter(e=>e)
+            );
             
+        }
+
+        this.#elementMap.favoritesAddButton.onclick = () => {
+            window.myAPI.room.createRoomFavorites({
+                roomId: this.#roomId,
+                workspaceId: workspaceHandler.workspaceId
+            }).then((result)=>{
+                if(! result || result == ''){
+                    this.#elementMap.favoritesAddButton.classList.remove('apply')
+                    this.#elementMap.favoritesAddButton.textContent = '☆'
+                }else if(result.code == 0){
+                    this.#elementMap.favoritesAddButton.classList.add('apply')
+                    this.#elementMap.favoritesAddButton.textContent = '★'
+                }
+                workspaceHandler.workspaceId = workspaceHandler.workspaceId;
+            })
         }
     }
 
@@ -172,6 +219,8 @@ export default new class ChattingHead{
             create_mils: createMils,
             update_mils: updateMils
         });
+
+        this.#visibleObserver.observe(li)
         return li
     }
 

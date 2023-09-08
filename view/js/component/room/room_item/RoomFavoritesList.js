@@ -115,7 +115,7 @@ export default new class RoomFavoritesList{
 				}*/
 				this.#roomId = handler.roomId;
 				new Promise(resolve => {
-					this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
+					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);
 						if(isNaN(itemRoomId)){
 							resolve();
@@ -181,7 +181,7 @@ export default new class RoomFavoritesList{
 				let roomTypeMark;
 				if(roomType == 'ROOM_PUBLIC'){
 					roomTypeMark = '@';
-				}else if(roomTypeMark == 'ROOM_PRIVATE'){
+				}else if(roomType == 'ROOM_PRIVATE'){
 					roomTypeMark = '#';
 				}
 				let li = Object.assign(document.createElement('li'), {
@@ -193,6 +193,9 @@ export default new class RoomFavoritesList{
 						</div>
 					`
 				});
+				if(this.#roomId && roomId == this.#roomId){
+					li.style.fontWeight = 'bold';
+				}
 				Object.assign(li.dataset, {
 					id,
 					room_id: roomId,
@@ -245,9 +248,8 @@ export default new class RoomFavoritesList{
 
 	set workspaceId(workspaceId){
 		this.#workspaceId = workspaceId;
-		let roomName = this.#elementMap.searchName.value;
 		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
+		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
 			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
 		});
 	}
