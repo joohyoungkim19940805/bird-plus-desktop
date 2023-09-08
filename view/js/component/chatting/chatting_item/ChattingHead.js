@@ -1,6 +1,7 @@
 import chattingHandler from "./../../../handler/chatting/ChattingHandler"
 import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
 import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
+import AccountInviteRoomView from "../../room/room_item/AccountInviteRoomView";
 
 export default new class ChattingHead{
     members = {};
@@ -58,13 +59,23 @@ export default new class ChattingHead{
 
     #roomId
 
+    #accountInviteRoomView
+
     constructor(){
-        /*
-        ul.scrollWidth - ul.offsetWidth
-        chattingHeadJoinedMembers
-        ul.onwheel = (event)=>console.log(event)
-        */
-       [this.#elementMap.chattingHeadJoinedMembers, this.#elementMap.chattingHeadInfoWrapper].forEach(scrollTarget=>{
+        
+        this.#accountInviteRoomView = new AccountInviteRoomView(this);
+		this.#accountInviteRoomView.onOpenCloseCallBack = (status) => {
+			this.#accountInviteRoomView.reset();
+			if(status == 'open'){
+				this.#accountInviteRoomView.callData(this.#accountInviteRoomView.page, this.#accountInviteRoomView.size, workspaceHandler.workspaceId, this.#accountInviteRoomView.form.fullName.value)
+				.then(data => {
+					this.#accountInviteRoomView.createPage(data).then(liList => {
+						this.#accountInviteRoomView.addListItemVisibleEvent(liList);
+					})
+				})
+			}
+		}
+        [this.#elementMap.chattingHeadJoinedMembers, this.#elementMap.chattingHeadInfoWrapper].forEach(scrollTarget=>{
             document.addEventListener('keydown',(event)=>{
                 if(scrollTarget.hasAttribute('data-is_shft')){
                     return;
@@ -198,6 +209,9 @@ export default new class ChattingHead{
                 roomFavoritesList.refresh();
                 //workspaceHandler.workspaceId = workspaceHandler.workspaceId;
             })
+        }
+        this.#elementMap.memberAddButton.onclick = () => {
+            this.#accountInviteRoomView.open();
         }
     }
 
