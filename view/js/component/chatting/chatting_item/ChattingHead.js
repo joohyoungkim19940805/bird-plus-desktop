@@ -195,7 +195,8 @@ export default new class ChattingHead{
                     this.#elementMap.favoritesAddButton.classList.add('apply')
                     this.#elementMap.favoritesAddButton.textContent = '★'
                 }
-                workspaceHandler.workspaceId = workspaceHandler.workspaceId;
+                roomFavoritesList.refresh();
+                //workspaceHandler.workspaceId = workspaceHandler.workspaceId;
             })
         }
     }

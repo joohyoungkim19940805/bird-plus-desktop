@@ -93,18 +93,11 @@ export default new class RoomList{
 
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();
-			let roomName = this.#elementMap.searchName.value;
-			this.reset();
-			this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
-				this.createPage(data, roomName).then(liList=> this.addListItemVisibleEvent(liList))
-			});
+			this.refresh()
 		}
 		this.#elementMap.searchName.oninput = (event) => {
 			if(this.#elementMap.searchName.value == ''){
-				this.reset();
-				this.callData(this.#page, this.#size, this.#workspaceId, undefined).then(data => {
-					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-				});
+				this.refresh()
 			}
 		}
 
@@ -149,11 +142,8 @@ export default new class RoomList{
 				})
 				let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${handler.roomId}"]`);
 				if(! targetRoom){
-					this.reset();
 					this.#elementMap.searchName.value = '';
-					this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
-						this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-					});
+					this.refresh();
 					return;
 				}
 				targetRoom.style.fontWeight = 'bold';
@@ -267,6 +257,13 @@ export default new class RoomList{
 		})
 	}
 
+	refresh(){
+		this.reset();
+		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
+			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+		});
+	}
+
 	reset(){
 		this.#page = 0;
 		this.#liList = [];
@@ -278,10 +275,7 @@ export default new class RoomList{
 	set workspaceId(workspaceId){
 		this.#createRoomView.workspaceId = workspaceId;
 		this.#workspaceId = workspaceId;
-		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
-			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-		});
+		this.refresh();
 	}
 	get workspaceId(){
 		return this.#workspaceId;
