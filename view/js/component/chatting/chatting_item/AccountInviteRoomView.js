@@ -1,6 +1,6 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import LayerPopupTemplate from "./../../LayerPopupTemplate"
-import chattingHandler from "./../../../handler/chatting/ChattingHandler"
+import LayerPopupTemplate from "../../LayerPopupTemplate"
+import chattingHandler from "../../../handler/chatting/ChattingHandler"
 
 export default class AccountInviteRoomView extends LayerPopupTemplate{
 
@@ -17,7 +17,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 					position: relative;
 				}
 				#account_invite_room_view_account_list{
-					width: 50vw;
+					width: 30vw;
 					height: 50vh;
 					overflow-y: auto;
 					max-height: 1%;
@@ -100,20 +100,6 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 	#workspaceId;
 	form = this.#layerContent.querySelector('#account_invite_room_view');
 	#roomId;
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#accountInviteRoomViewAccountList
-	});
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
@@ -175,6 +161,10 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		
 		this.form.account_invite_room_view_button.onclick = (event) => {
 			super.close();
+			if( ! chattingHandler.room || ! chattingHandler.roomId){
+				console.error('room is undefined', chattingHandler);
+				return;
+			}
 			console.log(chattingHandler.room);
 			window.myAPI.room.createRoomInAccount(
 				Object.values(this.#inviteAccountMapper).map(e=>{	
@@ -243,7 +233,6 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 					job_grade: jobGrade,
 					department
 				});
-				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
 				return li;
 			})
@@ -286,7 +275,6 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 	reset(){
 		this.page = 0;
 		this.#liList = [];
-		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#accountInviteRoomViewAccountList.replaceChildren();
 	}

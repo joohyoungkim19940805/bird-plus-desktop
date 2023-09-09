@@ -27,15 +27,44 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoom error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				console.error('error ::: ', error.message)
+				console.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
+
+		ipcMain.handle('createMySelfRoom', async (event, param = {})=> {
+			if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
+				console.error(`createMySelfRoom workspaceId is ::: ${param.workspaceId}`);
+				return undefined;
+			}
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.post(`${__serverApi}/api/room/create/my-self-room/${param.workspaceId}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
+						console.error('IPC createMySelfRoom error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
@@ -62,13 +91,10 @@ class RoomIpcController {
 							'Accept': 'text/event-stream',
 						},
 						responseType: 'stream'
-					}).then(response => {
-						let status = response.status;
-						if((status == '200' || status == '201')){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoomFavorites error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -86,7 +112,6 @@ class RoomIpcController {
 							try{
 								obj = JSON.parse(String(bufferArr));
 								mainWindow.webContents.send('roomInAccountCallBack', obj);
-								console.log(obj);
 							}catch(ignore){
 								//console.error(err);
 							}
@@ -120,14 +145,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoomFavorites error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -152,14 +173,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoom error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -191,14 +208,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoom error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -227,14 +240,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC searchRoom error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -269,15 +278,11 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
-					}).catch(err=>{
-						console.error('IPC searchRoomMyJoined error : ', JSON.stringify(err));
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
+						console.error('IPC searchRoomMyJoined error : ', err.message);
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
@@ -310,14 +315,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -353,14 +354,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC searchRoomMyJoined error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -389,14 +386,10 @@ class RoomIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -429,13 +422,10 @@ class RoomIpcController {
 							'Accept': 'text/event-stream',
 						},
 						responseType: 'stream'
-					}).then(response => {
-						let status = response.status;
-						if((status == '200' || status == '201')){
-						
-						}
-						return response.data
-					}).catch(err=>{
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
 						console.error('IPC createRoomFavorites error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
@@ -484,14 +474,9 @@ class RoomIpcController {
 						headers: {
 							'Content-Type' : 'application/json'
 						}
-					}).then(response => {
-						let {status, data} = response
-						let {code, data: content} = data;
-						if((status == '200' || status == '201') && code == '00'){
-							return content;
-						}
-						return undefined;
 					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
 				}else{
 					return {'isLogin': false};
 				}

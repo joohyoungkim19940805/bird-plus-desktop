@@ -23,8 +23,8 @@ export default new class ChattingHandler{
             return;
         }
         this.#roomId = roomId;
-        window.myAPI.room.getRoomDetail({roomId}).then(room => {
-            this.#room = room;
+        window.myAPI.room.getRoomDetail({roomId}).then(result => {
+            this.#room = result.data;
             Object.values(this.#addRoomIdChangeListener).forEach(async callBack => {
                 new Promise(res => {
                     callBack(this);

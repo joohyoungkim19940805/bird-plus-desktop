@@ -31,16 +31,10 @@ class WorkspaceIpcController {
                         headers:{
                             'Content-Type': 'application/json'
                         }
-                    }).then(response=>{
-                        let status = response.status;
-                        let {code, data} = response.data;
-        
-                        if((status == '200' || status == '201') && code == '00'){
-                            return response.data;
-                        }else{
-                            //return {content: []};
-                            return undefined;
-                        }
+                    })
+					.then(windowUtil.responseCheck)
+					.then(response=>{
+						return response.data;
                     }).catch(err=>{
                         console.error('error : ', JSON.stringify(err));
                         if(err.response){
@@ -71,13 +65,10 @@ class WorkspaceIpcController {
 						headers:{
 							'Content-Type': 'application/json'
 						}
-					}).then(response => {
-						let status = response.status;
-						let {code, data} = response.data;
-						if((status == '200' || status == '201') && code == '00'){
-							return response.data
-						}
-						return undefined;
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => {
+						return response.data
 					}).catch(err=>{
 						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
@@ -108,13 +99,10 @@ class WorkspaceIpcController {
 						headers: {
 							'Content-Type' : 'application/json'
 						}
-					}).then(response => {
-						let {status, data} = response
-						let {code, data: content} = data;
-						if((status == '200' || status == '201') && code == '00'){
-							return content;
-						}
-						return undefined;
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => {
+						return response.data.data;
 					})
 				}else{
 					return {'isLogin': false};

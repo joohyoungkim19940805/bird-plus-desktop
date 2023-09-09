@@ -4,6 +4,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const EventSource = require('eventsource');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 class ChattingIpcController {
 	source;
 	workspaceObserver;
@@ -66,12 +67,9 @@ class ChattingIpcController {
 				headers:{
 					'Content-Type': 'application/json'
 				}
-			}).then(response => {
-				let status = response.status;
-				let {code, data} = response.data;
-				if((status == '200' || status == '201') && code == '00'){
-					console.log('success :: ', data);
-				}
+			})
+			.then(windowUtil.responseCheck)
+			.then(response => {
 				//console.log('response ::: ??? ', response);
 				return response.data;
 			}).catch(err=>{

@@ -294,6 +294,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}else if(node.nodeType == Node.ELEMENT_NODE){
 			obj.type = Node.ELEMENT_NODE;
 			obj.name = node.constructor.name;
+			obj.tagName = node.tagName.toLowerCase();
 			obj.data = Object.assign({}, node.dataset);
 			if(node.hasAttribute('is_cursor')){
 				obj.cursor_offset = node.getAttribute('cursor_offset');
@@ -322,8 +323,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	#toHTML(objList, parent = this){
 		return objList.map(jsonNode => {
-			let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name] || document.createTextNode('');
-			
 			let node = undefined;
 			if(jsonNode.type == Node.TEXT_NODE){
 				node = document.createTextNode(jsonNode.text);
@@ -331,6 +330,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name]
 				if(EditorTarget){
 					node = new EditorTarget(jsonNode.data);
+				}else if(jsonNode.name == HTMLDivElement.name){
+					let line = new Line(document.createElement(jsonNode.tagName));
+					node = line.lineElement
 				}else{
 					node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
 				}

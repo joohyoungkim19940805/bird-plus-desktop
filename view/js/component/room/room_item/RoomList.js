@@ -38,21 +38,6 @@ export default new class RoomList{
 
 	#liList = [];
 
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#elementMap.roomContentList
-	});
-
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -74,7 +59,7 @@ export default new class RoomList{
 	#positionChanger;
 	#createRoomView;
 	constructor(){
-
+		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
 			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
@@ -83,6 +68,7 @@ export default new class RoomList{
 		}
 
 		this.#createRoomView = new CreateRoomView(this);
+		
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomList',
 			callBack: (handler) => {
@@ -217,7 +203,6 @@ export default new class RoomList{
 					workspace_id: workspaceId,
 					room_type: roomType
 				});
-				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
 				return li;
 			});
@@ -267,7 +252,6 @@ export default new class RoomList{
 	reset(){
 		this.#page = 0;
 		this.#liList = [];
-		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
 	}

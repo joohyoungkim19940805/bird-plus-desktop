@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	account : {
 		loginProcessing : (param) => ipcRenderer.invoke('loginProcessing', param),
+		getAccountInfo : () => ipcRenderer.invoke('getAccountInfo')
 	},
 	
 	event : {
@@ -66,6 +67,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	room : {
 		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
+		createMySelfRoom : (param)=> ipcRenderer.invoke('createMySelfRoom', param),
 		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
 		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
 		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),

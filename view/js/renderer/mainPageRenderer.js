@@ -17,6 +17,58 @@ import Code from "../handler/editor/tools/Code"
 
 import RoomContainer from "./../component/room/RoomContainer"
 import ChattingContainer from "./../component/chatting/ChattingContainer"
+
+import chattingHandler from "../handler/chatting/ChattingHandler"
+
+
+const visibleObserver = new IntersectionObserver((entries, observer) => {
+	entries.forEach(entry =>{
+		let {isIntersecting, target} = entry;
+		if (isIntersecting){
+			target.style.visibility = '';
+			target.style.opacity = '';
+		}else{
+			target.style.visibility = 'hidden';
+			target.style.opacity = 0;
+		}
+	})
+}, {
+	threshold: 0.1,
+	root: document
+});
+new MutationObserver( (mutationList, observer) => {
+	mutationList.forEach((mutation) => {
+		let {addedNodes, removedNodes} = mutation;
+		new Promise(resolve=> {
+			addedNodes.forEach(async e => {
+				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target'))){
+					return;
+				}
+				new Promise(res=>{
+					visibleObserver.observe(e);
+					res();
+				})
+			})
+			resolve();
+		})
+		new Promise(resolve=> {
+			removedNodes.forEach(async e => {
+				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target'))){
+					return;
+				}
+				new Promise(res=>{
+					visibleObserver.unobserve(e);
+					res();
+				})
+			})
+			resolve();
+		})
+	})
+}).observe(document, {
+	childList: true,
+	subtree: true
+})
+
 window.addEventListener("DOMContentLoaded", (event) => {
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{
@@ -44,6 +96,13 @@ window.addEventListener("DOMContentLoaded", (event) => {
 		const chattingContainer = new ChattingContainer(
 			document.querySelector('#chatting')
 		)
+		window.myAPI.room.createMySelfRoom({workspaceId}).then(result => {
+			// 사용자가 초대되어서 입장한 건지 뭔지 구분하기 귀찮으니 
+			// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
+			if(result.code == 0){
+				chattingHandler.roomId = result.data.id;
+			}
+		})
 	})
 });
 
@@ -54,6 +113,7 @@ window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept
 
 	let {data, lastEventId, origin, type} = event;
 	let {accountId, accountName, chatting, createAt, createBy, id, roomId, updateAt, updateBy} = JSON.parse(data);
+	console.log(data)
 	/**
 	 * 
 	data:"{\"id\":null,\"accountId\":null,\"accountName\":\"test\",\"roomId\":null,\"chatting\":\"[{\\\"type\\\":1,\\\"name\\\":\\\"Line\\\",\\\"data\\\":{},\\\"cursor_offset\\\":\\\"10\\\",\\\"cursor_type\\\":\\\"3\\\",\\\"cursor_index\\\":\\\"0\\\",\\\"cursor_scroll_x\\\":null,\\\"cursor_scroll_y\\\":\\\"0\\\",\\\"childs\\\":[{\\\"type\\\":3,\\\"name\\\":\\\"Text\\\",\\\"text\\\":\\\"qweasdxzxc\\\"}]}]\",\"createAt\":null,\"createBy\":null,\"updatedAt\":null,\"updatedBy\":null}"

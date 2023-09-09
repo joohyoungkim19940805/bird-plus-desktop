@@ -50,21 +50,6 @@ export default new class RoomMenuList{
 
 	#liList = [];
 
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#elementMap.roomContentList
-	});
-
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -175,7 +160,6 @@ export default new class RoomMenuList{
 					workspace_id: workspaceId,
 					room_type: roomType
 				});
-				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
 				return li;
 			});
@@ -218,7 +202,6 @@ export default new class RoomMenuList{
 	reset(){
 		this.#page = 0;
 		this.#liList = [];
-		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
 	}

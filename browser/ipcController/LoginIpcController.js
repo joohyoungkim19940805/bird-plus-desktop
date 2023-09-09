@@ -5,6 +5,7 @@ const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.j
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+
 class LoginIpcController {
 	constructor() {
 
@@ -71,38 +72,32 @@ class LoginIpcController {
 				headers:{
 					'Content-Type': 'application/json'
 				}
-			}).then(response=>{
-				let status = response.status;
-				let {code, data} = response.data;
-
-				if((status == '200' || status == '201') && code == '00'){
-					let db = DBConfig.getDB();
-					db.serialize( () => {
-						//console.log(data)
-						let {token, issuedAt, expiresAt} = data;
-						//global.__apiToken = token; 
-						db.run(`
-							INSERT INTO ACCOUNT_LOG (
-								TOKEN,
-								ISSUED_AT,
-								EXPIRES_AT
-							)
-							VALUES (?,?,?)
-						`,[token, issuedAt, expiresAt], (err) => {
-							if(err){
-								console.error('login account log insert error', err);
-							}
-							global.__apiToken = token
-						});
-						//console.log(axios.defaults);
-						
-						axios.defaults.headers.common['Authorization'] = token;
-					})
+			})
+			.then(windowUtil.responseCheck)
+			.then(response=>{
+				let db = DBConfig.getDB();
+				db.serialize( () => {
+					let {token, issuedAt, expiresAt} = response.data.data;
+					//global.__apiToken = token; 
+					db.run(`
+						INSERT INTO ACCOUNT_LOG (
+							TOKEN,
+							ISSUED_AT,
+							EXPIRES_AT
+						)
+						VALUES (?,?,?)
+					`,[token, issuedAt, expiresAt], (err) => {
+						if(err){
+							console.error('login account log insert error', err);
+						}
+						global.__apiToken = token
+					});
+					axios.defaults.headers.common['Authorization'] = token;
+				})
 					
-				}
 				return response.data;
 			}).catch(err=>{
-				console.error('error : ', JSON.stringify(err));
+				console.error('loginProcessing error : ', err.message);
 				axios.defaults.headers.common['Authorization'] = '';
 				if(err.response){
 					return err.response.data;
@@ -112,6 +107,31 @@ class LoginIpcController {
 				
 			})
 		});
+
+		ipcMain.handle('getAccountInfo', async (event) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.get(`${__serverApi}/api/account/search/get-account-info`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response=>response.data)
+					.catch(err=>{
+						console.error('IPC getAccountInfo error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			});
+		})
 	}
 
 	moveLoginPage(mainWindow){

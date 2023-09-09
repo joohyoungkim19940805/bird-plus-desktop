@@ -1,7 +1,7 @@
 import chattingHandler from "./../../../handler/chatting/ChattingHandler"
 import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
 import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
-import AccountInviteRoomView from "../../room/room_item/AccountInviteRoomView";
+import AccountInviteRoomView from "./AccountInviteRoomView";
 
 export default new class ChattingHead{
     members = {};
@@ -19,9 +19,6 @@ export default new class ChattingHead{
                     <div class="chatting_head_info_search_container">
                         <input type="search" placeholder="search members" list="chatting_head_member_list" class="chatting_head_search_members" data-bind_name="searchMembers"/>
                         <datalist id="chatting_head_member_list" class="chatting_head_search_member_list" data-bind_name="searchMemberList">
-                            <option value="abc">test</option>
-                            <option value="greh">test</option>
-                            <option value="etrtabc">test</option>
                         </datalist>
                     </div>
                     <button type="button" class="favorites_add_button pointer" data-bind_name="favoritesAddButton">☆</button>
@@ -41,21 +38,6 @@ export default new class ChattingHead{
 			return total;
 		}, {})
 	})();
-
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#elementMap.chattingHeadJoinedMembers
-	});
 
     #roomId
 
@@ -148,6 +130,7 @@ export default new class ChattingHead{
             }
         })
 
+        const memberAddButton = this.#elementMap.memberAddButton;
         chattingHandler.addRoomIdChangeListener = {
 			name: 'chattingHead',
 			callBack: (handler) => {
@@ -173,6 +156,13 @@ export default new class ChattingHead{
                 }else{
                     this.#elementMap.favoritesAddButton.classList.remove('apply')
                     this.#elementMap.favoritesAddButton.textContent = '☆'
+                }
+
+                console.log(handler.room);
+                if(handler.room.roomType == 'SELF'){
+                    memberAddButton.remove();
+                }else{
+                    this.#elementMap.favoritesAddButton.after(memberAddButton);
                 }
 			},
 			runTheFirst: false
@@ -235,7 +225,6 @@ export default new class ChattingHead{
             update_mils: updateMils
         });
 
-        this.#visibleObserver.observe(li)
         return li
     }
 

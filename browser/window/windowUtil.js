@@ -10,7 +10,6 @@ class WindowUtil{
                 'Content-Type': 'application/json'
             }
         }).then(response => {
-
             if( ! this.responseIsOk(response)){
                 return callBack({
                     isLogin: false,
@@ -29,6 +28,7 @@ class WindowUtil{
             }
         }).catch(error=>{
             console.error(error);
+            console.error('isLogin error callBack ::: ', callBack.toString());
             throw error;
         })
     }
@@ -36,6 +36,21 @@ class WindowUtil{
     responseIsOk({status}){
         return (status == '200' || status == '201') ;
     }
+
+    responseCheck(response){
+		let status = response.status;
+		let {code, data} = response.data;
+        if(status == '200' || status == '201'){
+			if( ! code || (code && code == 0)){
+				return response
+			}else{
+				throw new Error(JSON.stringify(data));
+			}
+		}else{
+			throw new Error(JSON.stringify({status}));
+		}
+	}
+
 }
 const windowUtil = new WindowUtil();
 module.exports = windowUtil;

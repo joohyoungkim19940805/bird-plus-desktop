@@ -15,7 +15,6 @@ export default new class RoomFavoritesList{
 				<div class="room_sticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
 						<b><i>Favorites</i></b>
-						<button class="add_button">+</button>
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
@@ -40,20 +39,6 @@ export default new class RoomFavoritesList{
 
 	#liList = [];
 	#liMap = {};
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#elementMap.roomContentList
-	});
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
@@ -173,6 +158,8 @@ export default new class RoomFavoritesList{
 					roomTypeMark = '@';
 				}else if(roomType == 'ROOM_PRIVATE'){
 					roomTypeMark = '#';
+				}else{
+					roomTypeMark = '$'
 				}
 				let li = Object.assign(document.createElement('li'), {
 					className: 'pointer',
@@ -197,7 +184,7 @@ export default new class RoomFavoritesList{
 					workspace_id: workspaceId,
 					room_type: roomType
 				});
-				this.#visibleObserver.observe(li);
+
 				this.#addItemEvent(li);
 				return li;
 			});
@@ -238,7 +225,6 @@ export default new class RoomFavoritesList{
 	reset(){
 		this.#page = 0;
 		this.#liList = [];
-		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
 	}

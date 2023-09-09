@@ -1,6 +1,7 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
+import chattingHandler from "../../../handler/chatting/ChattingHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
-import CreateRoomView from "./CreateRoomView";
+import CreateMessengerView from "../../messenger/CreateMessengerView";
 
 export default new class RoomMessengerList{
 	#workspaceId
@@ -14,7 +15,7 @@ export default new class RoomMessengerList{
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
 						<b><i>Messenger</i></b>
-						<button>+</button>
+						<button class="add_button" data-bind_name="addButton">+</button>
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
@@ -39,21 +40,6 @@ export default new class RoomMessengerList{
 
 	#liList = [];
 
-	#visibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				entry.target.style.visibility = '';
-				entry.target.style.opacity = '';
-			}else{
-				entry.target.style.visibility = 'hidden';
-				entry.target.style.opacity = 0;
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: this.#elementMap.roomContentList
-	});
-
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -72,7 +58,7 @@ export default new class RoomMessengerList{
 		root: document//this.#elementMap.roomContentList
 	});
 
-
+	#createMessengerView;
 	constructor(){
 		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
@@ -81,6 +67,9 @@ export default new class RoomMessengerList{
 				console.log(data);
 			})
 		}
+
+		this.#createMessengerView = new CreateMessengerView(this);
+
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomMessengerList',
 			callBack: (handler) => {
@@ -91,20 +80,64 @@ export default new class RoomMessengerList{
 
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();
-			let roomName = this.#elementMap.searchName.value;
-			this.reset();
-			this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
-				this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-			});
+			this.refresh();
 		}
 		this.#elementMap.searchName.oninput = (event) => {
 			if(this.#elementMap.searchName.value == ''){
-				this.reset();
-				this.callData(this.#page, this.#size, this.#workspaceId, undefined).then(data => {
-					this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-				});
+				this.refresh();
 			}
 		}
+
+		this.#createMessengerView.onOpenCloseCallBack = (status) => {
+			this.#createMessengerView.reset();
+			if(status == 'open'){
+				this.#createMessengerView.callData(this.#createMessengerView.page, this.#createMessengerView.size, this.#workspaceId, this.#createMessengerView.form.fullName.value)
+				.then(data => {
+					this.#createMessengerView.createPage(data).then(liList => {
+						this.#createMessengerView.addListItemVisibleEvent(liList);
+					})
+				})
+			}else{
+				this.roomId = this.#createMessengerView.roomId;
+			}
+		}
+
+		this.#elementMap.addButton.onclick = () =>{
+			this.#createMessengerView.open();
+		}
+
+		chattingHandler.addRoomIdChangeListener = {
+			name: 'roomMessengerList',
+			callBack: (handler) => {
+				/*if(this.#roomId == handler.roomId){
+					return;
+				}*/
+				this.#roomId = handler.roomId;
+				new Promise(resolve => {
+					this.#liList.forEach((item) => {
+						let itemRoomId = Number(item.dataset.room_id);
+						if(isNaN(itemRoomId)){
+							resolve();
+							return;
+						}else if(handler.roomId == itemRoomId){
+							resolve();
+							return;
+						}
+						item.style.fontWeight = '';
+					})
+					resolve();
+				})
+				let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${handler.roomId}"]`);
+				if(! targetRoom){
+					this.#elementMap.searchName.value = '';
+					this.refresh();
+					return;
+				}
+				targetRoom.style.fontWeight = 'bold';
+			},
+			runTheFirst: false
+		}
+
 	}
 
 	callData(page, size, workspaceId, roomName){
@@ -119,7 +152,6 @@ export default new class RoomMessengerList{
 			})
 		}
 		return searchPromise.then((data = {}) =>{
-			console.log(data)
 			return data.data;
 		});
 	}
@@ -142,8 +174,9 @@ export default new class RoomMessengerList{
 					workspaceId,
 					roomType
 				} = item;
+				
+				let roomTypeMark = '$';
 				/*
-				let roomTypeMark;
 				if(roomType == 'ROOM_PUBLIC'){
 					roomTypeMark = '@';
 				}else if(roomTypeMark == 'ROOM_PRIVATE'){
@@ -154,10 +187,14 @@ export default new class RoomMessengerList{
 					className: 'pointer',
 					innerHTML: `
 						<div>
+							<span>${roomTypeMark}</span>
 							<span>${roomName}</span>
 						</div>
 					`
 				});
+				if(this.#roomId && roomId == this.#roomId){
+					li.style.fontWeight = 'bold';
+				}
 				Object.assign(li.dataset, {
 					id,
 					room_id: roomId,
@@ -169,7 +206,6 @@ export default new class RoomMessengerList{
 					workspace_id: workspaceId,
 					room_type: roomType
 				});
-				this.#visibleObserver.observe(li);
 				this.#addItemEvent(li);
 				return li;
 			});
@@ -209,21 +245,23 @@ export default new class RoomMessengerList{
 		})
 	}
 
+	refresh(){
+		this.reset();
+		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
+			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
+		});
+	}
+
 	reset(){
 		this.#page = 0;
 		this.#liList = [];
-		this.#visibleObserver.disconnect();
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
 	}
 
 	set workspaceId(workspaceId){
 		this.#workspaceId = workspaceId;
-		let roomName = this.#elementMap.searchName.value;
-		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
-			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-		});
+		this.refresh();
 	}
 	get workspaceId(){
 		return this.#workspaceId;
@@ -235,22 +273,7 @@ export default new class RoomMessengerList{
             return;
         }
 		this.#roomId = roomId;
-		new Promise(resolve => {
-			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
-				let itemRoomId = Number(item.dataset.room_id);
-				if(isNaN(itemRoomId)){
-					resolve();
-					return;
-				}else if(roomId == itemRoomId){
-					resolve();
-					return;
-				}
-				item.style.fontWeight = '';
-			})
-			resolve();
-		})
-		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
-		targetRoom.style.fontWeight = 'bold';
+		chattingHandler.roomId = roomId;
 	}
 	get roomId(){
 		return this.#roomId;

@@ -4,6 +4,8 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const EventSource = require('eventsource');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+
 class MainIpcController {
 	source;
 	workspaceObserver;
