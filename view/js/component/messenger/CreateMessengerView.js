@@ -1,6 +1,6 @@
 import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
 import LayerPopupTemplate from "./../LayerPopupTemplate"
-import chattingHandler from "./../../handler/chatting/ChattingHandler";
+import roomHandler from "./../../handler/room/RoomHandler";
 
 export default class CreateMessengerView extends LayerPopupTemplate{
 

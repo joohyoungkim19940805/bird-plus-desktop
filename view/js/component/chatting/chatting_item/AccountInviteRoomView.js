@@ -1,6 +1,6 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import LayerPopupTemplate from "../../LayerPopupTemplate"
-import chattingHandler from "../../../handler/chatting/ChattingHandler"
+import roomHandler from "../../../handler/room/RoomHandler"
 
 export default class AccountInviteRoomView extends LayerPopupTemplate{
 
@@ -161,21 +161,21 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		
 		this.form.account_invite_room_view_button.onclick = (event) => {
 			super.close();
-			if( ! chattingHandler.room || ! chattingHandler.roomId){
-				console.error('room is undefined', chattingHandler);
+			if( ! roomHandler.room || ! roomHandler.roomId){
+				console.error('room is undefined', roomHandler);
 				return;
 			}
-			console.log(chattingHandler.room);
+			console.log(roomHandler.room);
 			window.myAPI.room.createRoomInAccount(
 				Object.values(this.#inviteAccountMapper).map(e=>{	
 					return {
-						roomId: chattingHandler.roomId,
+						roomId: roomHandler.roomId,
 						accountName: e.account_name,
 						fullName: e.fullName,
 						workspaceId: e.workspace_id,
 						jobGrade: e.jobGrade,
 						department: e.department,
-						roomType: chattingHandler.room.roomType	
+						roomType: roomHandler.room.roomType	
 					};
 				})
 			)

@@ -235,7 +235,7 @@ export default class Line {
 			range.surroundContents(tool);
 
 			let targetStartLineItem = startContainer.nextSibling?.nextSibling;
-			console.log('targetStartLineItem', targetStartLineItem);
+			
 			if(targetStartLineItem){
 				let itemRemoveList = [];
 				let itemAppendList = [];
@@ -245,23 +245,13 @@ export default class Line {
 							break;
 						}
 						tool.append(targetStartLineItem);
-						/*let firstTextNode = [...targetStartLineItem.childNodes].find(e=>e.nodeType == Node.TEXT_NODE);
-						[...tool.childNodes].filter(e=>e.nodeType == Node.TEXT_NODE).forEach(e=>{
-							//firstTextNode.appendData(e.data);
-							e.appendData(firstTextNode.textContent);
-							firstTextNode.remove();
-							firstTextNode = e;
-						})
-						targetStartLineItem.append(firstTextNode)
-						*/
+						
 					}else{
 						itemAppendList.push(targetStartLineItem.textContent);
 						itemRemoveList.push(targetStartLineItem);
 					}
 					targetStartLineItem = targetStartLineItem.nextSibling;	
 				}
-				console.log(itemAppendList);
-				console.log([...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE));
 				[...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
 				itemRemoveList.forEach(e=>e.remove())
 			}

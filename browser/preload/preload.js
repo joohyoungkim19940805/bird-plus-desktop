@@ -53,7 +53,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 
 	chatting : {
-		chattingReady : () => ipcRenderer.send('chattingReady'),
+		chattingReady : (param) => ipcRenderer.send('chattingReady', param),
 		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
 	},
 	

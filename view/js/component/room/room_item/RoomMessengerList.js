@@ -1,5 +1,5 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import chattingHandler from "../../../handler/chatting/ChattingHandler";
+import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateMessengerView from "../../messenger/CreateMessengerView";
 
@@ -106,7 +106,7 @@ export default new class RoomMessengerList{
 			this.#createMessengerView.open();
 		}
 
-		chattingHandler.addRoomIdChangeListener = {
+		roomHandler.addRoomIdChangeListener = {
 			name: 'roomMessengerList',
 			callBack: (handler) => {
 				/*if(this.#roomId == handler.roomId){
@@ -273,7 +273,7 @@ export default new class RoomMessengerList{
             return;
         }
 		this.#roomId = roomId;
-		chattingHandler.roomId = roomId;
+		roomHandler.roomId = roomId;
 	}
 	get roomId(){
 		return this.#roomId;

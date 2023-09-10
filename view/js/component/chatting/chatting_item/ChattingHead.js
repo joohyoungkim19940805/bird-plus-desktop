@@ -1,4 +1,4 @@
-import chattingHandler from "./../../../handler/chatting/ChattingHandler"
+import roomHandler from "./../../../handler/room/RoomHandler"
 import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
 import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
@@ -131,7 +131,7 @@ export default new class ChattingHead{
         })
 
         const memberAddButton = this.#elementMap.memberAddButton;
-        chattingHandler.addRoomIdChangeListener = {
+        roomHandler.addRoomIdChangeListener = {
 			name: 'chattingHead',
 			callBack: (handler) => {
                 if(this.#roomId != handler.roomId){
