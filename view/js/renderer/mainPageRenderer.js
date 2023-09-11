@@ -94,6 +94,5 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
 		window.myAPI.chatting.chattingReady({workspaceId});
 
-		document.querySelector('.chating_info').append(chattingHandler.chattingLineElement);
 	})
 });

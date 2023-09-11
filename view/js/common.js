@@ -8,7 +8,6 @@ export default new class Common{
 	 */
 	async getProjectPathPromise(){
 		return await window.myAPI.getProjectPath().then((data) => {
-			console.log('???',data);
 			return data;
 		}).catch(error=>{
 			console.error(error);

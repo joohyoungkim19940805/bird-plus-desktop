@@ -4,10 +4,6 @@ export default new class ChattingHandler{
 	#lastChattingId;
 	#lastChatting;
     #addChattingEventListener = {};
-	chattingLineElement = Object.assign(document.createElement('div'),{
-		className: 'content',
-		id: 'chatting_read_only'
-	});
     constructor(){
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
 			let {data, lastEventId, origin, type} = event;

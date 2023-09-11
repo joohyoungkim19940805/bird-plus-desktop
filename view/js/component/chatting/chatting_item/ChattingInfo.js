@@ -27,15 +27,13 @@ export default new class ChattingInfo{
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
-                let wrap = Object.assign(document.createElement('div'),{
+                let wrap = Object.assign(document.createElement('div'), {
 		
                 });
                 let content = new EditorHandler({isReadOnly : true});
                 content.contentEditable = false;
                 content.parseLowDoseJSON(chattingData.chatting);
                 wrap.append(content);
-                console.log(this.#elementMap);
-                console.log(this.#elementMap.chattingInfoContainer)
                 this.#elementMap.chattingInfoContainer.append(wrap);
             }
         }

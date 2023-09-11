@@ -83,7 +83,6 @@ export default new class ChattingHead{
                     return;
                 }
                 let {deltaY} = event;
-
                 
                 scrollTarget.scrollTo(
                     scrollTarget.scrollLeft + deltaY, undefined
