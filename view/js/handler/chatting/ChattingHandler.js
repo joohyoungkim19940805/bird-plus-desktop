@@ -9,10 +9,10 @@ export default new class ChattingHandler{
 		id: 'chatting_read_only'
 	});
     constructor(){
-		alert();
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', event => {
 			let {data, lastEventId, origin, type} = event;
-			let {id, accountId, accountName, chatting, createAt, createBy, roomId, updateAt, updateBy} = JSON.parse(data);
+			data = JSON.parse(data);
+			let {id, accountId, accountName, chatting, createAt, createBy, roomId, updateAt, updateBy} = data;
 			this.#lastChattingId = id;
 			this.#lastChatting = data;
 			console.log(data);
@@ -22,19 +22,6 @@ export default new class ChattingHandler{
 			origin: "http://localhost:8079"
 			type: "message"
 			*/
-			//여기부터
-			let wrap = Object.assign(document.createElement('div'),{
-		
-			});
-		
-			let content = new EditorHandler({isReadOnly : true});
-			console.log(chatting)
-			content.contentEditable = false;
-			content.parseLowDoseJSON(chatting);
-		
-			wrap.append(content);
-			this.chattingLineElement.append(wrap);
-			//여기까지 챗팅 인포 list 클래스에서 해결 할 것
 
 			Object.values(this.#addChattingEventListener).forEach(async callBack => {
                 new Promise(res => {

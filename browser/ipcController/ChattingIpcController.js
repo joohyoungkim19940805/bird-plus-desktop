@@ -20,7 +20,7 @@ class ChattingIpcController {
 			//console.log(axios.defaults.headers.common['Authorization']);
 			console.log('param.workspaceId ::: ', param.workspaceId);
 			console.log('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
-			this.source = new EventSource(`${__serverApi}/api/chatting/emission-stream/${param.workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
+			this.source = new EventSource(`${__serverApi}/api/chatting/search/emission-stream/${param.workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
 			this.#isConnectSource = true;
 			console.log("create EventSource");
 			this.source.onmessage = (event) => {
@@ -70,7 +70,7 @@ class ChattingIpcController {
 		})
 		ipcMain.handle('sendChatting', async (event, param) => {
 			//console.log('param!!!!',param);
-			return axios.post(`${__serverApi}/api/chatting/send-stream`, JSON.stringify(param), {
+			return axios.post(`${__serverApi}/api/chatting/create/send-stream`, JSON.stringify(param), {
 				headers:{
 					'Content-Type': 'application/json'
 				}
