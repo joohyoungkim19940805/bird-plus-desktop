@@ -96,7 +96,22 @@ class ChattingIpcController {
 				return err.response.data;
 			})
 		})
-
+		ipcMain.handle('searchChatting', async(event, param) => {
+			return axios.post(`${__serverApi}/api/chatting/search/chatting-list`, JSON.stringify(param), {
+				headers:{
+					'Content-Type': 'application/json'
+				}
+			})
+			.then(windowUtil.responseCheck)
+			.then(response => {
+				//console.log('response ::: ??? ', response);
+				return response.data;
+			}).catch(err=>{
+				console.error(err);
+				return err.response.data;
+			})
+		})
+		
 	}
 
 }
