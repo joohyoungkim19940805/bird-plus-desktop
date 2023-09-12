@@ -12,7 +12,7 @@ class ChattingIpcController {
 	constructor() {
 
 		ipcMain.on('chattingReady', async (event, param) => {
-			if(this.#isConnectSource){
+			if(this.source?.connectionInProgress){
 				return;
 			}
 			console.log(this.#isConnectSource)
@@ -21,6 +21,11 @@ class ChattingIpcController {
 			console.log('param.workspaceId ::: ', param.workspaceId);
 			console.log('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
 			this.source = new EventSource(`${__serverApi}/api/chatting/search/emission-stream/${param.workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
+			/*
+			this.source = new EventSource(`${__serverApi}/api/chatting/search/emission-stream/${param.workspaceId}`,{
+				headers : {Authorization: axios.defaults.headers.common}
+			});
+			*/
 			this.#isConnectSource = true;
 			console.log("create EventSource");
 			this.source.onmessage = (event) => {
@@ -29,15 +34,22 @@ class ChattingIpcController {
 			};
 			this.source.onerror = (error) => {
 				console.log('on stream err: ', error);
+				console.log('source ::: ', this.source);
 				//연결 실패되면 계속 시도하기에 임시 조치로 close
 				this.#isConnectSource = false;
-				this.source.close();
+				//this.source.close();
 				//stop();
 			};
 			this.source.onopen = (success) => {
 				console.log('on success: ', success)
 				this.#isConnectSource = true
-			} 
+			}
+			this.source.onnotice = (notice) => {
+				console.log('on notice ::: ' , notice);
+			}
+			this.source.onupdate = (update) => {
+				console.log('on update ::: ', update);
+			}
 			/*
 			* This will listen only for events
 			* similar to the following:

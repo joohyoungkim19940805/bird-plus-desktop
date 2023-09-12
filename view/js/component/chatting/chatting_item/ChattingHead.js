@@ -133,21 +133,18 @@ export default new class ChattingHead{
         roomHandler.addRoomIdChangeListener = {
 			name: 'chattingHead',
 			callBack: (handler) => {
-                if(this.#roomId != handler.roomId){
+                this.#roomId = handler.roomId;
+                this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
+                if( ! this.members.hasOwnProperty(handler.roomId)){
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
-                    if(this.members[handler.roomId]){
-                        Object.keys(this.members[handler.roomId]).forEach(k=>delete this.members[handler.roomId][k])
-                    }
+                    window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
+                        console.log(result);
+                    });
                 }else{
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[handler.roomId]));
                 }
+                this.#elementMap.chattingHeadJounedCount.textContent = `(${Object.keys(this.members[handler.roomId]).length} members)`
 
-                this.#roomId = handler.roomId;
-                this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
-                window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
-                    console.log(result);
-                });
-                
                 let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
                 if(favoritesTarget){
                     this.#elementMap.favoritesAddButton.classList.add('apply')
@@ -157,7 +154,6 @@ export default new class ChattingHead{
                     this.#elementMap.favoritesAddButton.textContent = '☆'
                 }
 
-                console.log(handler.room);
                 if(handler.room.roomType == 'SELF'){
                     memberAddButton.remove();
                 }else{
