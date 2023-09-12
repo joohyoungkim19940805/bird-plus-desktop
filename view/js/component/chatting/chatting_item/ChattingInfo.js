@@ -93,7 +93,7 @@ export default new class ChattingInfo{
             content.parseLowDoseJSON(chatting);
             li.append(content);
             Object.assign(li.dataset, {
-                chatting_id: chatting,
+                chatting_id: chattingId,
                 room_id: roomId,
                 workpsace_id: workspaceId,
                 create_mils: createMils,
