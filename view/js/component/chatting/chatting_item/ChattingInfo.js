@@ -1,4 +1,5 @@
 import chattingHandler from "../../../handler/chatting/ChattingHandler"
+import roomHandler from "../../../handler/room/RoomHandler"
 import EditorHandler from "../../../handler/editor/EditorHandler"
 
 export default new class ChattingInfo{
@@ -39,7 +40,9 @@ export default new class ChattingInfo{
                 content.contentEditable = false;
                 content.parseLowDoseJSON(chattingData.chatting);
                 wrap.append(content);
-                this.#elementMap.chattingInfoContainer.append(wrap);
+                this.#elementMap.chattingContentList.replaceChildren(
+                    ...chattingMemory[roomHandler.roomId]
+                )
             }
         }
     }
@@ -48,11 +51,11 @@ export default new class ChattingInfo{
 		let searchPromise;
 		if(chatting && chatting != ''){
 			searchPromise = window.myAPI.chatting.searchChattingList({
-				page, size, workspaceId, roomId, chatting
+				page, size, workspaceId, roomId, undefined
 			})
 		}else{
-			searchPromise = window.myAPI.chatting.searchRoomMyJoined({
-				page, size, workspaceId, roomId, chatting
+			searchPromise = window.myAPI.chatting.searchChattingList({
+				page, size, workspaceId, roomId, undefined
 			})
 		}
 		return searchPromise.then((data = {}) =>{
@@ -68,13 +71,15 @@ export default new class ChattingInfo{
                 resolve(content);
                 return;
             }
-            let liList = content.map(item => {
-
-            })
+            let liList = content.map(item => 
+                this.createLiElement(item)
+            );
+            
         })
     }
 
-    createLiElement({
+    createLiElement(data){
+        let {
             chattingId,
             roomId,
             workspaceId,
@@ -83,7 +88,7 @@ export default new class ChattingInfo{
             updatedMils,
             fullName,
             accountName
-    }){
+        } = data;
         new Promise(resolve => {
             let li = Object.assign(document.createElement('div'), {
 
@@ -93,7 +98,7 @@ export default new class ChattingInfo{
             content.parseLowDoseJSON(chatting);
             li.append(content);
             Object.assign(li.dataset, {
-                chatting_id: chatting,
+                chatting_id: chattingId,
                 room_id: roomId,
                 workpsace_id: workspaceId,
                 create_mils: createMils,
@@ -102,6 +107,7 @@ export default new class ChattingInfo{
                 account_name: accountName
             });
             li.__editor = content;
+            chattingMemory[roomHandler.roomId][chattingId] = Object.assign({}, li.dataset);
             resolve(li);
         })
     }
