@@ -37,12 +37,16 @@ export default new class ChattingInfo{
                 })
                 .then(liList => {
                     this.#liList.push(...liList);
+                    let lastItem = this.#elementMap.chattingContentList.children[this.#elementMap.chattingContentList.children.length - 1];
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    if(this.#page > 2){
-                        this.#elementMap.chattingContentList.scrollBy(undefined, 
-                            liList[liList.length - 1].getBoundingClientRect().y
-                        )
-                    }
+                    this.#elementMap.chattingContentList.scrollBy(undefined,
+                        lastItem.getBoundingClientRect().y
+                    )
+                    /*
+                    this.#elementMap.chattingContentList.scrollBy(undefined, 
+                        liList[liList.length - 1].getBoundingClientRect().y
+                    )
+                    */
                 });
 			}
 		})
@@ -66,18 +70,13 @@ export default new class ChattingInfo{
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
-                let wrap = Object.assign(document.createElement('li'), {
-		
+                this.createLiElement(chattingData).then(liElement => {
+                    this.#elementMap.chattingContentList.prepend(liElement);
+                    this.#addChattingMemory(liElement)
+                    this.#elementMap.chattingContentList.scrollBy(undefined, 
+                        this.#elementMap.chattingContentList.scrollHeight
+                    )
                 });
-                let content = new EditorHandler({isReadOnly : true});
-                content.contentEditable = false;
-                content.parseLowDoseJSON(chattingData.chatting);
-                wrap.append(content);
-                this.#elementMap.chattingContentList.prepend(wrap);
-                this.#addChattingMemory(wrap)
-                this.#elementMap.chattingContentList.scrollBy(undefined, 
-                    this.#elementMap.chattingContentList.scrollHeight
-                )
             }
         }
         roomHandler.addRoomIdChangeListener = {
@@ -154,9 +153,19 @@ export default new class ChattingInfo{
             fullName,
             accountName
         } = data;
+        console.log(data);
         return new Promise(resolve => {
             let li = Object.assign(document.createElement('li'), {
-                
+                innerHTML: `
+                    <div class="chatting_content_description_wrapper">
+                        <div class="chatting_content_description_profile">
+                        </div>
+                        <div class="chatting_content_description_name_wrapper">
+                            <div class="chatting_content_description_name">${fullName}</div>
+                        </div>
+                        <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
+                    </div>
+                `
             });
             let content = new EditorHandler({isReadOnly : true});
             content.contentEditable = false;
@@ -196,8 +205,8 @@ export default new class ChattingInfo{
         this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][chattingId] = data;
     }
 
-    #processingTimeText(){
-
+    #processingTimeText(createMils){
+        return new Date(createMils).toLocaleTimeString();
     }
 
     reset(){

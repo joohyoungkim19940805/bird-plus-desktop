@@ -111,4 +111,14 @@
     padding-bottom: 0.35%;
     border-top: solid 2px #00000012;
 }
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper{
+    display: flex;
+    gap: 0.7vw;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_name{
+    font-weight: bold;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_time{
+    color: #c5c5c5;
+}
 /* chatting info(body) [S]*/

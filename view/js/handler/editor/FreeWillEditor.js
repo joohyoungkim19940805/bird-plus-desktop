@@ -338,7 +338,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					let line = new Line(document.createElement(jsonNode.tagName));
 					node = line.lineElement
 				}else{
-					console.log(jsonNode);
 					node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
 				}
 

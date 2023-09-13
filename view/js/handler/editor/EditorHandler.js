@@ -69,7 +69,7 @@ export default class EditorHandler extends FreeWillEditor{
 	#addEvent(){
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
-			if(key == 'Enter' && altKey){
+			if(key == 'Enter' && altKey && this.innerText.replaceAll('\n', '') != ''){
 				console.log(workspaceHandler);
 				window.myAPI.chatting.sendChatting({
 					workspaceId: workspaceHandler.workspaceId,
