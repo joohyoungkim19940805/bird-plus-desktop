@@ -130,7 +130,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				//console.log(mutation.target);
 				mutation.addedNodes.forEach(element=>{
 					if(element.nodeType != Node.ELEMENT_NODE) return;
-					
+					let sty = window.getComputedStyle(element);
+					if(sty.visibility == 'hidden' || sty.opacity == 0){
+						return;
+					}
 					if(element.classList.contains(Line.toolHandler.defaultClass) && (element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n'))){
 						element.innerText = '\n';
 						window.getSelection().setPosition(element, 1)
@@ -295,6 +298,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			obj.type = Node.ELEMENT_NODE;
 			obj.name = node.constructor.name;
 			obj.tagName = node.tagName.toLowerCase();
+			console.log()
 			obj.data = Object.assign({}, node.dataset);
 			if(node.hasAttribute('is_cursor')){
 				obj.cursor_offset = node.getAttribute('cursor_offset');
@@ -330,10 +334,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name]
 				if(EditorTarget){
 					node = new EditorTarget(jsonNode.data);
-				}else if(jsonNode.name == HTMLDivElement.name){
+				}else if(jsonNode.data.hasOwnProperty('is_line')){
 					let line = new Line(document.createElement(jsonNode.tagName));
 					node = line.lineElement
 				}else{
+					console.log(jsonNode);
 					node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
 				}
 

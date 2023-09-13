@@ -76,6 +76,7 @@ export default class EditorHandler extends FreeWillEditor{
 					roomId: roomHandler.roomId,
 					chatting: JSON.stringify(this.getLowDoseJSON())
 				}).then(res=>{
+					this.innerText = '';
 					console.log(res);
 				});
 			}

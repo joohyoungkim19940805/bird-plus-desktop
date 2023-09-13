@@ -142,8 +142,9 @@ export default new class ChattingHead{
                     });
                 }else{
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[handler.roomId]));
+                    this.#elementMap.chattingHeadJounedCount.textContent = `(${Object.keys(this.members[handler.roomId]).length} members)`
+
                 }
-                this.#elementMap.chattingHeadJounedCount.textContent = `(${Object.keys(this.members[handler.roomId]).length} members)`
 
                 let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
                 if(favoritesTarget){
@@ -171,6 +172,8 @@ export default new class ChattingHead{
             this.#elementMap.chattingHeadJoinedMembers.replaceChildren(
                 ...[...this.#elementMap.searchMembers.list.options].map(option => {
                     if(option.value.includes(searchText) || option.textContent.includes(searchText)){
+                        option.__target_member.style.visibility = ''
+                        option.__target_member.style.opacity = '';
                         return option.__target_member;
                     }
                     return undefined;

@@ -82,8 +82,8 @@ export default class Line {
 		}else{
 			this.lineElement = div;
 			this.lineElement.classList.add(Line.toolHandler.defaultClass);
-		
 		}
+		this.lineElement.dataset.is_line = '';
 		/*
 		Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(functionName=>{
 			if(functionName == 'constructor') return;
@@ -683,6 +683,10 @@ export default class Line {
 	}
 
 	lookAtMe(){
+		let sty = window.getComputedStyle(this.lineElement);
+		if(sty.visibility == 'hidden' || sty.opacity == 0){
+			return;
+		}
 		if(this.lineElement.innerText.length == 0 || (this.lineElement.innerText.length == 1 && this.lineElement.innerText.charAt(0) == '\n')){
 			this.lineElement.innerText = '\n';
 		}

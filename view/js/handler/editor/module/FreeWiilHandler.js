@@ -167,6 +167,10 @@ export default class FreeWiilHandler extends HTMLElement{
     }
 
     isLineEmpty(line){
+        let sty = window.getComputedStyle(this.lineElement);
+		if(sty.visibility == 'hidden' || sty.opacity == 0){
+			return false;
+		}
         return line.innerText.length == 0 || (line.innerText.length == 1 && (line.innerText == '\n' || line.innerText == '\u200B'));
     }
 

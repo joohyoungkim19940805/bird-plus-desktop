@@ -227,13 +227,13 @@ input[type="checkbox"]{
 
 .list_scroll.list_scroll-y{
 	position: relative;
-	overflow-y: scroll;
+	overflow-y: auto;
 	overflow-x: clip;
 }
 .list_scroll.list_scroll-x{
 	position: relative;
 	overflow-y: clip;
-	overflow-x: scroll;
+	overflow-x: auto;
 }
 .list_scroll::-webkit-scrollbar{
 	display: none;

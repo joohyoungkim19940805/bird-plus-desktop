@@ -43,10 +43,13 @@ export default class BulletPoint extends FreedomInterface {
 			}
 
 			.${this.toolHandler.defaultClass} {
-				display: list-item;
+				display: block;
 				padding-left: 1em;
 				margin-inline: 2.5em;
 				list-style-type: disc;
+			}
+			.${this.toolHandler.defaultClass} > *{
+				display: list-item;
 			}
 		`
 		return this.#defaultStyle;

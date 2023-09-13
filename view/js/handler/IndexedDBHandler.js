@@ -34,7 +34,7 @@ export default class IndexedDBHandler{
 		columnInfo = undefined,
 		storeName = undefined
 	}){
-		if( ! dbName || ! columnInfo || ! storeName ){
+		if( ! dbName ){
 			throw new Error('dbName is undefined');
 		}else if( ! columnInfo ){
 			throw new Error('columnInfo is undefined');

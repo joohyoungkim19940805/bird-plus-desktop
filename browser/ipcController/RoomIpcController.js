@@ -382,6 +382,7 @@ class RoomIpcController {
 					let queryString = Object.entries(param)
 						.filter(([k,v]) => v != undefined && v != '')
 						.map(([k,v]) => `${k}=${v}`).join('&')
+					console.log('kjh test <<< ', queryString);
 					return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-name-list?${queryString}`, {
 						headers:{
 							'Content-Type': 'application/json'

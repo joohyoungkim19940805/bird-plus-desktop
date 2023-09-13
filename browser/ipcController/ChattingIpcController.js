@@ -12,7 +12,7 @@ class ChattingIpcController {
 	constructor() {
 
 		ipcMain.on('chattingReady', async (event, param) => {
-			if(this.source?.connectionInProgress){
+			if(this.source?.connectionInProgress || this.#isConnectSource){
 				return;
 			}
 			console.log(this.#isConnectSource)
@@ -36,7 +36,6 @@ class ChattingIpcController {
 				console.log('on stream err: ', error);
 				console.log('source ::: ', this.source);
 				//연결 실패되면 계속 시도하기에 임시 조치로 close
-				this.#isConnectSource = false;
 				//this.source.close();
 				//stop();
 			};
@@ -82,36 +81,57 @@ class ChattingIpcController {
 		})
 		ipcMain.handle('sendChatting', async (event, param) => {
 			//console.log('param!!!!',param);
-			return axios.post(`${__serverApi}/api/chatting/create/send-stream`, JSON.stringify(param), {
-				headers:{
-					'Content-Type': 'application/json'
+			windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.post(`${__serverApi}/api/chatting/create/send-stream`, JSON.stringify(param), {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => {
+						//console.log('response ::: ??? ', response);
+						return response.data;
+					}).catch(err=>{
+						console.error('IPC sendChatting error', err);
+						return err.response.data;
+					})
+				}else{
+					return {'isLogin': false};
 				}
-			})
-			.then(windowUtil.responseCheck)
-			.then(response => {
-				//console.log('response ::: ??? ', response);
-				return response.data;
-			}).catch(err=>{
-				console.error(err);
-				return err.response.data;
+			}).catch(error=>{
+				console.error('sendChatting login error ::: ', error.message);
+				console.error('sendChatting login error stack ::: ', error.stack);
+				return undefined;
 			})
 		})
-		ipcMain.handle('searchChatting', async(event, param) => {
-			return axios.post(`${__serverApi}/api/chatting/search/chatting-list`, JSON.stringify(param), {
-				headers:{
-					'Content-Type': 'application/json'
+		ipcMain.handle('searchChattingList', async(event, param) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					let queryString = Object.entries(param)
+						.filter(([k,v]) => v != undefined && v != '')
+						.map(([k,v]) => `${k}=${v}`).join('&')
+					return axios.get(`${__serverApi}/api/chatting/search/chatting-list?${queryString}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => {
+						return response.data;
+					}).catch(err=>{
+						console.error('IPC searchChatting error' , err);
+						return err.response.data;
+					})
+				}else{
+					return {'isLogin': false};
 				}
-			})
-			.then(windowUtil.responseCheck)
-			.then(response => {
-				//console.log('response ::: ??? ', response);
-				return response.data;
-			}).catch(err=>{
-				console.error(err);
-				return err.response.data;
+			}).catch(error=>{
+				console.error('searchChatting login error ::: ', error.message);
+				console.error('searchChatting login error stack ::: ', error.stack);
+				return undefined;
 			})
 		})
-		
 	}
 
 }

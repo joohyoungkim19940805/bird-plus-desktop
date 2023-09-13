@@ -144,6 +144,11 @@ export default class Image extends FreedomInterface {
             this.dataset.size = Image.selectedFile.files[0].size;
             this.file.files = Image.selectedFile.files;
         }
+        console.log(this.file.files);
+        if( ! this.file.files){
+            this.remove();
+            throw new Error(`this file is ${this.file.files}`);
+        }
         
         Image.selectedFile.files = new DataTransfer().files
 
