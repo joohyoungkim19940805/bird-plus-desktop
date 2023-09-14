@@ -5,7 +5,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
-
+const log = require('electron-log');
 class WorkspaceIpcController {
 	constructor() {
         
@@ -36,7 +36,7 @@ class WorkspaceIpcController {
 					.then(response=>{
 						return response.data;
                     }).catch(err=>{
-                        console.error('error : ', JSON.stringify(err));
+                        log.error('error : ', JSON.stringify(err));
                         if(err.response){
                             if( ! err.response.data.content){
                                 err.response.data.content = [];
@@ -50,8 +50,8 @@ class WorkspaceIpcController {
                     return {'isLogin': false};
                 }
             }).catch(error=>{
-				console.error('error ::: ', error.message)
-				console.error('error stack :::', error.stack)
+				log.error('error ::: ', error.message)
+				log.error('error stack :::', error.stack)
 				return undefined;
 			})
         })
@@ -70,7 +70,7 @@ class WorkspaceIpcController {
 					.then(response => {
 						return response.data
 					}).catch(err=>{
-						console.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
+						log.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;
@@ -82,15 +82,15 @@ class WorkspaceIpcController {
 					return {'isLogin': false};
 				}
 			}).catch(error=>{
-				console.error('error ::: ', error.message)
-				console.error('error stack :::', error.stack)
+				log.error('error ::: ', error.message)
+				log.error('error stack :::', error.stack)
 				return undefined;
 			})
 		})
 		
 		ipcMain.handle('getWorkspaceDetail', async (event, param) => {
 			if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
-				console.error(`workspaceId is ::: ${param.workspaceId}`);
+				log.error(`workspaceId is ::: ${param.workspaceId}`);
 				return undefined;
 			}
 			return windowUtil.isLogin( result => {

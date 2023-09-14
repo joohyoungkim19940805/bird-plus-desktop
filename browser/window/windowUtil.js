@@ -1,4 +1,5 @@
 const axios = require('axios');
+const log = require('electron-log');
 
 class WindowUtil{
     constructor(){
@@ -27,8 +28,8 @@ class WindowUtil{
                 return callBack(response.data);
             }
         }).catch(error=>{
-            console.error(error);
-            console.error('isLogin error callBack ::: ', callBack.toString());
+            log.error(error);
+            log.error('isLogin error callBack ::: ', callBack.toString());
             throw error;
         })
     }

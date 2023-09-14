@@ -9,7 +9,7 @@ global.__serverApi = (()=>{
 		return 'http://localhost:8079';
 	}
 })();
-
+const log = require('electron-log');
 const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 //global.__birdPlusOptions = 
@@ -21,6 +21,7 @@ const { app, BrowserWindow, ipcMain/*, ipcMain, dialog, shell*/ } = require('ele
 
 // 파일 모듈 호출
 const fs = require('fs');
+
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 
@@ -40,8 +41,8 @@ if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 //Electron 앱을 시작한 후 예를 들어 사용자 지정 프로토콜이 포함된 URL을 브라우저에 입력하면 "electron-fiddle://open"애플리케이션이 응답하고 
 //오류 대화 상자를 표시하는지 확인할 수 있습니다.
 if(process.defaultApp && process.argv.length >= 2){
-	console.log(process.execPath);
-	console.log([path.resolve(process.argv[1])]);
+	log.debug(process.execPath);
+	log.debug([path.resolve(process.argv[1])]);
 	if( ! app.isDefaultProtocolClient('bird-plus-desktop')){
 		app.setAsDefaultProtocolClient('bird-plus-desktop', process.execPath, [path.resolve(process.argv[1])])
 	}
@@ -59,13 +60,14 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
+	
 	DBConfig.loadEndPromise.then(() => {
 		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
 		// window 및 linux인 경우
 		const gotTheLock = app.requestSingleInstanceLock()
 		if (!gotTheLock) {
-			autoUpdater.quitAndInstall();
+			//autoUpdater.quitAndInstall();
 			app.quit();
 		}else{
 			app.on('second-instance', (event, commandLine, workingDirectory) => {
@@ -109,20 +111,6 @@ app.whenReady().then(()=>{
 				createWindow();
 			}
 		});
-		autoUpdater.checkForUpdates().then(result=>{
-			mainWindow.webContents.send('checkForUpdates', result)
-		});
-
-		autoUpdater.on('update-available', (event) => {
-			console.log('update-available',event);
-			mainWindow.webContents.send('updateAvailable');
-		});
-
-
-		autoUpdater.on('update-downloaded', (event) => {
-			console.log('update-downloaded', event);
-			mainWindow.webContents.send('updateDownloaded');
-		});
 	})
 });
 
@@ -134,8 +122,8 @@ app.on('window-all-closed', ()=>{
 	//mac os인 경우
 	if(process.platform !== 'darwin'){
 		// 이 응용 프로그램을 종료시킨다.
-		autoUpdater.quitAndInstall();
-		//app.quit();
+		//autoUpdater.quitAndInstall();
+		app.quit();
 	}
 });
 
@@ -151,54 +139,54 @@ ipcMain.on('restart_app', () => {
 });
 */
 
-//console.log('process', process)
-console.log('hoem ::: ', app.getPath('home'))
-//console.log('hoem showItemInFolder ::: ', shell.showItemInFolder(app.getPath('home')))
+//log.debug('process', process)
+log.debug('hoem ::: ', app.getPath('home'))
+//log.debug('hoem showItemInFolder ::: ', shell.showItemInFolder(app.getPath('home')))
 
-console.log('appData ::: ', app.getPath('appData'))
-//console.log('appData showItemInFolder ::: ', shell.showItemInFolder(app.getPath('appData')))
+log.debug('appData ::: ', app.getPath('appData'))
+//log.debug('appData showItemInFolder ::: ', shell.showItemInFolder(app.getPath('appData')))
 
-console.log('userData ::: ', app.getPath('userData'))
-//console.log('userData showItemInFolder ::: ', shell.showItemInFolder(app.getPath('userData')))
+log.debug('userData ::: ', app.getPath('userData'))
+//log.debug('userData showItemInFolder ::: ', shell.showItemInFolder(app.getPath('userData')))
 
-console.log('sessionData ::: ', app.getPath('sessionData'))
-console.log('exe ::: ', app.getPath('exe'))
-console.log('module ::: ', app.getPath('module'))
+log.debug('sessionData ::: ', app.getPath('sessionData'))
+log.debug('exe ::: ', app.getPath('exe'))
+log.debug('module ::: ', app.getPath('module'))
 
-console.log('desktop ::: ', app.getPath('desktop'))
-//console.log('desktop showItemInFolder ::: ', shell.showItemInFolder(app.getPath('desktop')))
+log.debug('desktop ::: ', app.getPath('desktop'))
+//log.debug('desktop showItemInFolder ::: ', shell.showItemInFolder(app.getPath('desktop')))
 
-console.log('documents ::: ', app.getPath('documents'))
-//console.log('documents showItemInFolder ::: ', shell.showItemInFolder(app.getPath('documents')))
+log.debug('documents ::: ', app.getPath('documents'))
+//log.debug('documents showItemInFolder ::: ', shell.showItemInFolder(app.getPath('documents')))
 
-console.log('downloads ::: ', app.getPath('downloads'))
-//console.log('downloads showItemInFolder ::: ', shell.showItemInFolder(app.getPath('downloads')))
+log.debug('downloads ::: ', app.getPath('downloads'))
+//log.debug('downloads showItemInFolder ::: ', shell.showItemInFolder(app.getPath('downloads')))
 
-console.log('music ::: ', app.getPath('music'))
-//console.log('music showItemInFolder ::: ', shell.showItemInFolder(app.getPath('music')))
+log.debug('music ::: ', app.getPath('music'))
+//log.debug('music showItemInFolder ::: ', shell.showItemInFolder(app.getPath('music')))
 
-console.log('pictures ::: ', app.getPath('pictures'))
-//console.log('music pictures ::: ', shell.showItemInFolder(app.getPath('pictures')))
+log.debug('pictures ::: ', app.getPath('pictures'))
+//log.debug('music pictures ::: ', shell.showItemInFolder(app.getPath('pictures')))
 
-console.log('videos ::: ', app.getPath('videos'))
-//console.log('videos pictures ::: ', shell.showItemInFolder(app.getPath('videos')))
+log.debug('videos ::: ', app.getPath('videos'))
+//log.debug('videos pictures ::: ', shell.showItemInFolder(app.getPath('videos')))
 
-console.log('recent ::: ', app.getPath('recent'))
-//console.log('recent pictures ::: ', shell.showItemInFolder(app.getPath('recent')))
+log.debug('recent ::: ', app.getPath('recent'))
+//log.debug('recent pictures ::: ', shell.showItemInFolder(app.getPath('recent')))
 
-console.log('logs ::: ', app.getPath('logs'))
-//console.log('crashDumps ::: ', app.getPath('crashDumps'))
+log.debug('logs ::: ', app.getPath('logs'))
+//log.debug('crashDumps ::: ', app.getPath('crashDumps'))
 
-//console.log('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE'))
-//console.log('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE/test'))
-//console.log('recent pictures ::: ', shell.openPath('C:/dev/sts-4.6.1.RELEASE/SpringToolSuite4.exe'))
+//log.debug('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE'))
+//log.debug('recent pictures ::: ', shell.showItemInFolder('C:/dev/sts-4.6.1.RELEASE/test'))
+//log.debug('recent pictures ::: ', shell.openPath('C:/dev/sts-4.6.1.RELEASE/SpringToolSuite4.exe'))
 
 
 
 /*
 // Callback
 fs.readdir(app.getPath('downloads'), (err, files) => {
-    console.log(files);
+    log.debug(files);
 })
 // Sync
 fs.readdirSync(app.getPath('downloads'))
@@ -207,28 +195,28 @@ fs.readdirSync(app.getPath('downloads'))
 //const roots = fs.readdirSync('/')
 /*
 roots.then((error, result)=>{
-	console.log(result);
+	log.debug(result);
 })
 */
 
 //let list = []
 
-//console.log('list 1 :::',list);
+//log.debug('list 1 :::',list);
 /*
 fs.readdir('C:/', {encoding : 'utf8'}, (err, files) => {
-	console.log('err:::',err);
-    console.log('files:::',files);
-	console.log('files:::',files[files.length - 1]);
-	console.log('files is 새 폴더 == ', files[files.length - 1] === '새 폴더')
+	log.debug('err:::',err);
+    log.debug('files:::',files);
+	log.debug('files:::',files[files.length - 1]);
+	log.debug('files is 새 폴더 == ', files[files.length - 1] === '새 폴더')
 	fs.readdir('C:/'+files[files.length - 1], (err,files)=>{
-		console.log(files)
-		console.log(fs.Stats)
+		log.debug(files)
+		log.debug(fs.Stats)
 	})
-	//console.log('files[0]:::',files[0]);
-	//console.log(fs.statSync('C:/'+files[0]).isDirectory())
+	//log.debug('files[0]:::',files[0]);
+	//log.debug(fs.statSync('C:/'+files[0]).isDirectory())
 })
 */
 
 //const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 
-//allDirectoryPathScanning.scaninngStart().then(()=>console.log('done22222'));
+//allDirectoryPathScanning.scaninngStart().then(()=>log.debug('done22222'));

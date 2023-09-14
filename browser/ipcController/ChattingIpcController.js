@@ -5,6 +5,7 @@ const axios = require('axios');
 const EventSource = require('eventsource');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+const log = require('electron-log');
 class ChattingIpcController {
 	source;
 	#isConnectSource = false;
@@ -15,11 +16,11 @@ class ChattingIpcController {
 			if(this.source?.connectionInProgress || this.#isConnectSource){
 				return;
 			}
-			console.log(this.#isConnectSource)
-			//console.log('isChattingReady !!', event);
-			//console.log(axios.defaults.headers.common['Authorization']);
-			console.log('param.workspaceId ::: ', param.workspaceId);
-			console.log('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
+			log.debug(this.#isConnectSource)
+			//log.debug('isChattingReady !!', event);
+			//log.debug(axios.defaults.headers.common['Authorization']);
+			log.debug('param.workspaceId ::: ', param.workspaceId);
+			log.debug('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
 			this.source = new EventSource(`${__serverApi}/api/chatting/search/emission-stream/${param.workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
 			/*
 			this.source = new EventSource(`${__serverApi}/api/chatting/search/emission-stream/${param.workspaceId}`,{
@@ -27,27 +28,27 @@ class ChattingIpcController {
 			});
 			*/
 			this.#isConnectSource = true;
-			console.log("create EventSource");
+			log.debug("create EventSource");
 			this.source.onmessage = (event) => {
 				mainWindow.webContents.send("chattingAccept", event);
-				console.log('on message: ', event.data);
+				log.debug('on message: ', event.data);
 			};
 			this.source.onerror = (error) => {
-				console.log('on stream err: ', error);
-				console.log('source ::: ', this.source);
+				log.debug('on stream err: ', error);
+				log.debug('source ::: ', this.source);
 				//연결 실패되면 계속 시도하기에 임시 조치로 close
 				//this.source.close();
 				//stop();
 			};
 			this.source.onopen = (success) => {
-				console.log('on success: ', success)
+				log.debug('on success: ', success)
 				this.#isConnectSource = true
 			}
 			this.source.onnotice = (notice) => {
-				console.log('on notice ::: ' , notice);
+				log.debug('on notice ::: ' , notice);
 			}
 			this.source.onupdate = (update) => {
-				console.log('on update ::: ', update);
+				log.debug('on update ::: ', update);
 			}
 			/*
 			* This will listen only for events
@@ -58,14 +59,14 @@ class ChattingIpcController {
 			* id: someid
 			*/
 			this.source.addEventListener("notice", (e) => {
-				console.log('event notice', e.data);
+				log.debug('event notice', e.data);
 			});
 			/*
 			* Similarly, this will listen for events
 			* with the field `event: update`
 			*/
 			this.source.addEventListener("update", (e) => {
-				console.log('event update ::: ',e.data);
+				log.debug('event update ::: ',e.data);
 			});
 			/*
 			* The event "message" is a special case, as it
@@ -75,12 +76,12 @@ class ChattingIpcController {
 			* other event type.
 			*/
 			this.source.addEventListener("message", (e) => {
-				console.log('message !!!!! : ', e.data);
+				log.debug('message !!!!! : ', e.data);
 			});
 			
 		})
 		ipcMain.handle('sendChatting', async (event, param) => {
-			//console.log('param!!!!',param);
+			//log.debug('param!!!!',param);
 			windowUtil.isLogin( result => {
 				if(result.isLogin){
 					return axios.post(`${__serverApi}/api/chatting/create/send-stream`, JSON.stringify(param), {
@@ -90,18 +91,18 @@ class ChattingIpcController {
 					})
 					.then(windowUtil.responseCheck)
 					.then(response => {
-						//console.log('response ::: ??? ', response);
+						//log.debug('response ::: ??? ', response);
 						return response.data;
 					}).catch(err=>{
-						console.error('IPC sendChatting error', err);
+						log.error('IPC sendChatting error', err);
 						return err.response.data;
 					})
 				}else{
 					return {'isLogin': false};
 				}
 			}).catch(error=>{
-				console.error('sendChatting login error ::: ', error.message);
-				console.error('sendChatting login error stack ::: ', error.stack);
+				log.error('sendChatting login error ::: ', error.message);
+				log.error('sendChatting login error stack ::: ', error.stack);
 				return undefined;
 			})
 		})
@@ -120,15 +121,15 @@ class ChattingIpcController {
 					.then(response => {
 						return response.data;
 					}).catch(err=>{
-						console.error('IPC searchChatting error' , err);
+						log.error('IPC searchChatting error' , err);
 						return err.response.data;
 					})
 				}else{
 					return {'isLogin': false};
 				}
 			}).catch(error=>{
-				console.error('searchChatting login error ::: ', error.message);
-				console.error('searchChatting login error stack ::: ', error.stack);
+				log.error('searchChatting login error ::: ', error.message);
+				log.error('searchChatting login error stack ::: ', error.stack);
 				return undefined;
 			})
 		})

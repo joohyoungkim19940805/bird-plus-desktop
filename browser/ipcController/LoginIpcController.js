@@ -5,10 +5,10 @@ const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.j
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
-
+const log = require('electron-log');
 class LoginIpcController {
 	constructor() {
-
+		
 		ipcMain.on('changeLoginPage', async (event) => {
 			//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
 			let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY);
@@ -26,7 +26,7 @@ class LoginIpcController {
 					EXPIRES_AT DESC
 				LIMIT 1`,[], (err, rows) => {
 					if(err){
-						console.error(err);
+						log.error(err);
 					}
 					birdPlusOptions.setLastWindowSize(mainWindow);
 					birdPlusOptions.setLastWindowPosition(mainWindow);
@@ -50,8 +50,8 @@ class LoginIpcController {
 								this.moveLoginPage(mainWindow);
 							}
 						}).catch(error=>{
-							console.error('error ::: ', error.message)
-							console.error('error stack :::', error.stack)
+							log.error('error ::: ', error.message)
+							log.error('error stack :::', error.stack)
 							return undefined;
 						});
 					}else{
@@ -88,7 +88,7 @@ class LoginIpcController {
 						VALUES (?,?,?)
 					`,[token, issuedAt, expiresAt], (err) => {
 						if(err){
-							console.error('login account log insert error', err);
+							log.error('login account log insert error', err);
 						}
 						global.__apiToken = token
 					});
@@ -97,7 +97,7 @@ class LoginIpcController {
 					
 				return response.data;
 			}).catch(err=>{
-				console.error('loginProcessing error : ', err.message);
+				log.error('loginProcessing error : ', err.message);
 				axios.defaults.headers.common['Authorization'] = '';
 				if(err.response){
 					return err.response.data;
@@ -119,7 +119,7 @@ class LoginIpcController {
 					.then(windowUtil.responseCheck)
 					.then(response=>response.data)
 					.catch(err=>{
-						console.error('IPC getAccountInfo error : ', JSON.stringify(err));
+						log.error('IPC getAccountInfo error : ', JSON.stringify(err));
 						//axios.defaults.headers.common['Authorization'] = '';
 						if(err.response){
 							return err.response.data;

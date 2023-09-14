@@ -121,21 +121,21 @@ ipcRenderer.on('roomInAccountCallBack', (event, message) => {
 	}
 })
 
-ipcRenderer.on('checkForUpdates', (event) => {
+ipcRenderer.on('checkForUpdates', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('checkForUpdates')){
 		electronEventTrigger.objectEventListener['checkForUpdates'].forEach(callBack=>{
 			callBack(event, message);
 		})
 	}
 })
-ipcRenderer.on('updateAvailable', (event) => {
+ipcRenderer.on('updateAvailable', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('updateAvailable')){
 		electronEventTrigger.objectEventListener['updateAvailable'].forEach(callBack=>{
 			callBack(event, message);
 		})
 	}
 })
-ipcRenderer.on('updateDownloaded', (event) => {
+ipcRenderer.on('updateDownloaded', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('updateDownloaded')){
 		electronEventTrigger.objectEventListener['updateDownloaded'].forEach(callBack=>{
 			callBack(event, message);

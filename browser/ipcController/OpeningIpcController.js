@@ -6,7 +6,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const axios = require('axios');
-
+const log = require('electron-log');
 class OpeningIpcController {
 	constructor() {
 		/**
@@ -14,12 +14,12 @@ class OpeningIpcController {
 		 * 코드 가독성에 도움이 되는 네임스페이스 역할만 합니다.
 		 */
 		ipcMain.handle(/*dialog:openFile*/'scanningUserDirectory', async (event) => {
-			console.log(app.getPath('home').replace(/\\/g, '/'))
+			log.debug(app.getPath('home').replace(/\\/g, '/'))
 			//return allDirectoryPathScanning.allDirtoryScaninng(app.getPath('home').replace(/\\/g,'/'))
 			return await allDirectoryPathScanning.allDriveScaninng()
 			//return allDirectoryPathScanning.allDirtoryScaninng('C:/')
 			.then(()=>{
-				console.log('done !!!!! ::: ', allDirectoryPathScanning.userDirtoryList.length);
+				log.debug('done !!!!! ::: ', allDirectoryPathScanning.userDirtoryList.length);
 				
 
 				allDirectoryPathScanning.userDirtoryMapper = Object.entries( allDirectoryPathScanning.userDirtoryMapper );
@@ -34,6 +34,8 @@ class OpeningIpcController {
 				return allDirectoryPathScanning.userDirtoryList.length;
 			});
 		})
+
+
 	}
 
 	testFunWord2Vec(){
@@ -74,7 +76,7 @@ class OpeningIpcController {
 			}
 		}
 		// training data end
-		console.log(data);
+		log.debug(data);
 		//prepare training data
 		let x_train_data = [];
 		let y_train_data = [];
@@ -88,8 +90,8 @@ class OpeningIpcController {
 		let x_train = tf.stack(x_train_data);
 		let y_train = tf.stack(y_train_data);
 
-		console.log(x_train.shape);
-		console.log(y_train.shape);
+		log.debug(x_train.shape);
+		log.debug(y_train.shape);
 		
 		//vocab_size,vocab_size
 		//build_model
@@ -120,12 +122,12 @@ class OpeningIpcController {
 			bufferSize,
 			shuffle: true,
 		});
-		console.log('Training complete')
+		log.debug('Training complete')
 		//model.getLayer('embedding').getWeights[0]
 		let layer = model.getLayer('embedding');
 		let weights = layer.getWeights();
-		console.log('layer>>>>> ', layer);
-		console.log('weights>>>>> ', weights);
+		log.debug('layer>>>>> ', layer);
+		log.debug('weights>>>>> ', weights);
 
 	}
 }

@@ -12,6 +12,9 @@ const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObse
 
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
+// 자동 업데이트 모듈 호출
+const {autoUpdater} = require('electron-updater');
+const log = require('electron-log');
 /**
  * 메인 윈도우를 정의한다.
  * @author mozu123
@@ -21,7 +24,9 @@ const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 class MainWindow extends BrowserWindow{
 	
 	#workspaceId
-	isOpening = true;
+	#isOpening = true;
+	#isOpeningCallbackList = [];
+
 	/**
 	 * 메인 윈도우의 생성자
 	 * @author mozu123
@@ -46,12 +51,28 @@ class MainWindow extends BrowserWindow{
 				y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 			},
 		});
-		
+		super.webContents.openDevTools();
 		//super.setTitleBarOverlay
 		
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
 			//console.log(e)
-			this.isOpening = true;
+			this.#isOpening = true;
+			
+			autoUpdater.checkForUpdates().then(result=>{
+				log.debug('checkForUpdates ::: ',result);
+				super.webContents.send('checkForUpdates', result)
+			});
+	
+			autoUpdater.on('update-available', (event) => {
+				log.debug('update-available',event);
+				super.webContents.send('updateAvailable');
+			});
+	
+	
+			autoUpdater.on('update-downloaded', (event) => {
+				log.debug('update-downloaded', event);
+				super.webContents.send('updateDownloaded');
+			});
 		});
 
 		super.on('close', event => {
@@ -60,7 +81,7 @@ class MainWindow extends BrowserWindow{
 		})
 
 		super.on('resize', (event) => {
-			if(this.isOpening){
+			if(this.#isOpening){
 				return;
 			}
 			mainWindow.webContents.send("resized", super.getSize());
@@ -68,7 +89,7 @@ class MainWindow extends BrowserWindow{
 		});
 
 		super.on('move' , (event) => {
-			if(this.isOpening){
+			if(this.#isOpening){
 				return;
 			}
 			birdPlusOptions.position = super.getPosition();
@@ -76,7 +97,7 @@ class MainWindow extends BrowserWindow{
 
 		//새창 팝업 열릴시 트리거(파일인 경우만)
 		super.webContents.setWindowOpenHandler(({url}) => {
-			console.log(url);
+			log.debug(url);
 			if(url.includes('blob:file:///')){
 				return {
 					action: 'allow',
@@ -112,6 +133,12 @@ class MainWindow extends BrowserWindow{
 	get workspaceId(){
 		return this.#workspaceId;
 	}
+
+	set isOpening(isOpening){
+		this.#isOpening = isOpening;
+
+	}
+
 	resetWorkspace(){
 		this.#workspaceId = undefined;
 	}

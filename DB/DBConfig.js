@@ -1,11 +1,12 @@
 const fs = require('fs');
 const { app } = require('electron');
+const log = require('electron-log');
 /**
  * sql Lite3 관련 코드
  */
 //db.run("INSERT INTO Foo (name) VALUES ('bar')");
 /*db.each("SELECT id, name FROM Foo", function(err, row) {
-	console.log(row.id + ": " + row.name);
+	log.debug(row.id + ": " + row.name);
 });*/
 class DBConfig{
 	static #loadEndPromiseResolve;
@@ -101,7 +102,7 @@ class DBConfig{
 			fs.writeFileSync(this.#dbDir + this.#dbName, '', {flag:'wx'});
 		}catch(err){
 			if(err.code !=='EEXIST'){
-				console.error('db open error', err);
+				log.error('db open error', err);
 			} 
 		}
 		
@@ -130,7 +131,7 @@ class DBConfig{
 					createTablePromise.then(() => {
 						db.all(`PRAGMA table_info(${tableName})`, (err, dataList) => {
 							if(err){
-								console.error(err);
+								log.error(err);
 							}
 							resolve(dataList);
 						})
@@ -146,7 +147,7 @@ class DBConfig{
 								if( ! column.info[data.name]){
 									db.run(`ALTER TABLE ${tableName} DROP COLUMN ${data.name}`, (err)=>{
 										if(err){
-											console.error('column delete trying but failed', err)
+											log.error('column delete trying but failed', err)
 										}
 									})
 								}
@@ -169,7 +170,7 @@ class DBConfig{
 							if( ! dbColumnMapper[key]){
 								db.run(`ALTER TABLE ${tableName} ADD COLUMN ${key} ${value.type} DEFAULT '${value.default}'`, (err)=>{
 									if(err){
-										console.error('add column trying but failed', err)
+										log.error('add column trying but failed', err)
 									}
 									res();
 								})
@@ -182,7 +183,7 @@ class DBConfig{
 					return new Promise(res=>{
 						db.close((err) => {
 							if(err){
-								console.error(err.message)
+								log.error(err.message)
 							}
 							this.#loadEndPromiseResolve();
 							res();
@@ -209,7 +210,7 @@ class DBConfig{
 	 */
 	static assignColumn(obj, column){
 		if( ! column instanceof this.Column ){
-			console.error('type error')
+			log.error('type error')
 			throw new Error('type error')
 		}
 
@@ -217,7 +218,7 @@ class DBConfig{
 			let processColumnName = this.#processingColumn(columnName);
 			let targetColumnInfo = this.#columnInfo[column.tableName][processColumnName]
 			if( ! targetColumnInfo){
-				console.error('not found column name')
+				log.error('not found column name')
 				throw new Error('not found column name')
 			}
 
@@ -248,7 +249,7 @@ class DBConfig{
 		}
 		let db = new this.sqlite3.Database(this.#dbDir + this.#dbName, mode, (err) => {
             if(err){
-                console.error(err.message);
+                log.error(err.message);
             }
         });
 		return db;
@@ -257,7 +258,7 @@ class DBConfig{
 	static closeDB(db){
 		db.close((err) => {
 			if(err){
-				console.error(err.message)
+				log.error(err.message)
 			}
 		})
 	}

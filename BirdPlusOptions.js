@@ -2,6 +2,7 @@
 const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'));
 const { screen } = require('electron');
+const log = require('electron-log');
 class BirdPlusOptions{
 
 	#size = {w : 1024, h : 768};
@@ -32,7 +33,7 @@ class BirdPlusOptions{
 						OPTION_NAME = 'size'
 				`, [], (err, rows) => {
 					if(err){
-						console.error(err);
+						log.error(err);
 						return;
 					}
 

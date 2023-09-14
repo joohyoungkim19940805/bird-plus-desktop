@@ -1,5 +1,5 @@
 const path = require('path');
-//console.log('test2===',__dirname)
+
 /**
  * 프로덕션 배포시 = 
  * mdoe : production
