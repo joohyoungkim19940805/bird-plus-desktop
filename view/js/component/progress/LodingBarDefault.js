@@ -2,7 +2,7 @@
  * 프로그레스 바 기본타입 : 프로그래스 바 커스텀라이징
  */
 
-class LodingBarDefault extends HTMLDivElement {
+class LodingBarDefault extends HTMLElement {
 	#isLoaded = false;
 
 	constructor(){
@@ -34,4 +34,4 @@ class LodingBarDefault extends HTMLDivElement {
     }
 }
 
-window.customElements.define('loding-bar-default', LodingBarDefault, {extends : 'div'});
+window.customElements.define('loding-bar-default', LodingBarDefault);

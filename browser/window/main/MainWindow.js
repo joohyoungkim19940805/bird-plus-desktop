@@ -52,7 +52,6 @@ class MainWindow extends BrowserWindow{
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
 			//console.log(e)
 			this.isOpening = true;
-			super.webContents.openDevTools();
 		});
 
 		super.on('close', event => {

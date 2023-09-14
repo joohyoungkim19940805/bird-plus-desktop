@@ -5,7 +5,7 @@
  */
 global.__project_path = require.main.paths[0].split('node_modules')[0];
 global.__serverApi = (()=>{
-	if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
+	if(process.env.MY_SERVER_PROFILES == 'local'){
 		return 'http://localhost:8079';
 	}
 })();
@@ -23,7 +23,8 @@ const { app, BrowserWindow, ipcMain/*, ipcMain, dialog, shell*/ } = require('ele
 const fs = require('fs');
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
-if(! process.env.MY_SERVER_PROFILES || process.env.MY_SERVER_PROFILES == 'local'){
+
+if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
@@ -108,7 +109,20 @@ app.whenReady().then(()=>{
 				createWindow();
 			}
 		});
-		autoUpdater.checkForUpdates();
+		autoUpdater.checkForUpdates().then(result=>{
+			mainWindow.webContents.send('checkForUpdates', result)
+		});
+
+		autoUpdater.on('update-available', (event) => {
+			console.log('update-available',event);
+			mainWindow.webContents.send('updateAvailable');
+		});
+
+
+		autoUpdater.on('update-downloaded', (event) => {
+			console.log('update-downloaded', event);
+			mainWindow.webContents.send('updateDownloaded');
+		});
 	})
 });
 
@@ -130,16 +144,7 @@ ipcMain.on('app_version', (event) => {
 	event.sender.send('app_version', { version: app.getVersion() });
 });
 */
-/*
-autoUpdater.on('update-available', () => {
-	//mainWindow.webContents.send('update_available');
-});
-*/
-/*
-autoUpdater.on('update-downloaded', () => {
-	mainWindow.webContents.send('update_downloaded');
-});
-*/
+
 /*
 ipcMain.on('restart_app', () => {
 	autoUpdater.quitAndInstall();

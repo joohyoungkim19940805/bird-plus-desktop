@@ -21,6 +21,7 @@ class MainIpcController {
 			mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
 				mainWindow.titleBarStyle = 'visibble'
 				mainWindow.show();
+				mainWindow.webContents.openDevTools();
 				//mainWindow.webContents.openDevTools();
 			}).then(()=>{
 				mainWindow.workspaceId = param.workspaceId;

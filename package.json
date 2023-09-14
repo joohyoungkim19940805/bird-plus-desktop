@@ -1,6 +1,6 @@
 {
 	"name": "bird-plus-desktop",
-	"version": "1.0.0",
+	"version": "1.0.5",
 	"description": "bird-plus-desktop",
 	"main": "main.js",
 	"scripts": {
@@ -10,7 +10,7 @@
 		"package": "electron-forge package",
 		"make": "electron-forge make",
 		"//deploy": "electron-builder --windows nsis:ia32",
-		"deploy": "electron-builder build --win --publish always",
+		"deploy": "tsc && webpack && electron-builder build --win --publish always",
 		"dev-build": "tsc && webpack --watch ",
 		"dev-tsc-build": "webpack && tsc --watch",
 		"dev-watch": "nodemon --exec electron ."
@@ -26,8 +26,8 @@
 	},
 	"homepage": "https://github.com/joohyoungkim19940805/radcns-bird-plus-desktop.git#readme",
 	"devDependencies": {
-		"@babylonjs/core": "^6.18.0",
-		"@babylonjs/loaders": "^6.18.0",
+		"electron-reload": "^2.0.0-alpha.1",
+		"electron-reloader": "^1.2.3",
 		"@electron-forge/cli": "^6.0.4",
 		"@electron-forge/maker-deb": "^6.0.4",
 		"@electron-forge/maker-rpm": "^6.0.4",
@@ -35,16 +35,17 @@
 		"@electron-forge/maker-zip": "^6.0.4",
 		"electron": "^23.0.0",
 		"electron-builder": "^24.6.3",
-		"electron-reload": "^2.0.0-alpha.1",
-		"electron-reloader": "^1.2.3",
 		"nodemon": "^3.0.1",
 		"ts-loader": "^9.4.2",
 		"typescript": "^4.9.5",
 		"webpack": "^5.75.0",
-		"webpack-cli": "^5.0.1"
+		"webpack-cli": "^5.0.1",
+		"webpack-dev-server": "^4.15.1"
 	},
 	"dependencies": {
+		"@babylonjs/core": "^6.18.0",
 		"@babylonjs/gui": "^6.18.0",
+		"@babylonjs/loaders": "^6.18.0",
 		"@tensorflow-models/mobilenet": "^2.0.4",
 		"@tensorflow/tfjs": "^4.2.0",
 		"axios": "^1.3.2",
@@ -54,8 +55,7 @@
 		"electron-updater": "^6.1.1",
 		"eventsource": "^2.0.2",
 		"source-map-support": "^0.5.16",
-		"sqlite3": "^5.1.4",
-		"webpack-dev-server": "^4.15.1"
+		"sqlite3": "^5.1.4"
 	},
 	"keywords": [
 		"bird",
@@ -72,12 +72,18 @@
 	"build": {
 		"productName": "bird-plus-desktop",
 		"appId": "com.radcns.bird-plus.desktop",
-		"asar": true,
+		"asar": false,
 		"protocols": {
 			"name": "bird-plus-desktop",
 			"schemes": [
 				"bird plus"
 			]
+		},
+		"mac": {
+			"target": [
+				"default"
+			],
+			"icon": "./view/image/icon.ico"
 		},
 		"win": {
 			"target": [
@@ -88,7 +94,9 @@
 		},
 		"nsis": {
 			"oneClick": false,
-			"allowToChangeInstallationDirectory": true
+			"allowToChangeInstallationDirectory": true,
+			"installerIcon": "./view/image/icon.ico",
+			"createDesktopShortcut": true
 		},
 		"directories": {
 			"buildResources": "./resources/installer/",
