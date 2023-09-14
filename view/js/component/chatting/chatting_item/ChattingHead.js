@@ -209,6 +209,7 @@ export default new class ChattingHead{
             department, createMils, updateMils
         } = obj;
         let li = Object.assign(document.createElement('li'), {
+            className: 'pointer',
             innerHTML: `
                 <span>${fullName}</span>
             `

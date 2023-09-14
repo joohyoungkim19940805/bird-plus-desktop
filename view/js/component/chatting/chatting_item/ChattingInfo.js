@@ -21,7 +21,8 @@ export default new class ChattingInfo{
         `
     })
     
-    
+    likeAndScrapWrapper;
+
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
@@ -185,24 +186,39 @@ export default new class ChattingInfo{
             });
             li.__editor = content;
             this.#addChattingMemory(li, id);
+            this.#addLiEvent(li);
             resolve(li);
         })
     }
 
+    #addLiEvent(li){
+        new Promise(resolve=> {
+            let likeAndScrapWrapper;
+            li.onmouseenter = (event) => {
+            }
+            li.onmouseleave = (event) => {
+            }
+            resolve();
+        })
+    }
+
     #addChattingMemory(data, chattingId){
-        if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-            this.#chattingMemory[workspaceHandler.workspaceId] = {};
-        }
-        if( ! this.#chattingMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
-        }
-        if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
-        }
-        if(this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page].hasOwnProperty(chattingId)){
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
-        }
-        this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][chattingId] = data;
+        return new Promise(resolve => {
+            if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
+                this.#chattingMemory[workspaceHandler.workspaceId] = {};
+            }
+            if( ! this.#chattingMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
+                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
+            }
+            if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
+                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
+            }
+            if(this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page].hasOwnProperty(chattingId)){
+                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
+            }
+            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][chattingId] = data;
+            resolve();
+        })
     }
 
     #processingTimeText(createMils){
