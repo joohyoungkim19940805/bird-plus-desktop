@@ -57,7 +57,7 @@ class BirdPlusOptions{
 					OPTION_NAME = 'position'
 				`, [], (err, rows) => {
 					if(err){
-						console.error(err);
+						log.error(err);
 						return;
 					}
 
@@ -71,7 +71,7 @@ class BirdPlusOptions{
 			Promise.all([loadSizePromise, loadPositionPromise]).then(()=>{
 				db.close((err)=>{
 					if(err){
-						console.error(err.message);
+						log.error(err.message);
 					}
 				})
 			})
@@ -88,9 +88,9 @@ class BirdPlusOptions{
 		}
 		if( this.isSize && ! Object.entries(rect).some(([k,v]) => v == undefined) ){
 
-			//console.log('getAllDisplays',screen.getAllDisplays());
-			//console.log('getPrimaryDisplay', screen.getPrimaryDisplay())
-			//console.log('getPrimaryDisplay', screen.getDisplayNearestPoint(this.#position))
+			//log.log('getAllDisplays',screen.getAllDisplays());
+			//log.log('getPrimaryDisplay', screen.getPrimaryDisplay())
+			//log.log('getPrimaryDisplay', screen.getDisplayNearestPoint(this.#position))
 			/*
 				getAllDisplays [
 					{
@@ -152,8 +152,8 @@ class BirdPlusOptions{
 			let matchingMonitor = screen.getDisplayMatching(rect);
 			let isWidthFullSize = this.#size.w / matchingMonitor.size.width >= 0.95;
 			let isHeightFuulSize = this.#size.h / matchingMonitor.size.height >= 0.95;
-			console.log('isWidthFullSize',isWidthFullSize)
-			console.log('isHeightFuulSize',isHeightFuulSize)
+			log.log('isWidthFullSize',isWidthFullSize)
+			log.log('isHeightFuulSize',isHeightFuulSize)
 			
 			if(isWidthFullSize && isHeightFuulSize){
 				window.maximize();
@@ -203,14 +203,14 @@ class BirdPlusOptions{
 					UPDATE_AT = ${new Date().getTime()}
 			`, (err) => {
 				if(err){
-					console.error(err);
+					log.error(err);
 				}
 				setTimeout(() => {
 					this.#isUpsertSizeDelay = false;
 				}, this.#upsertSizeDelay)
 				db.close((err)=>{
 					if(err){
-						console.error(err.message);
+						log.error(err.message);
 					}
 				})
 			})
@@ -262,14 +262,14 @@ class BirdPlusOptions{
 					UPDATE_AT = ${new Date().getTime()}
 			`, (err) => {
 				if(err){
-					console.error(err);
+					log.error(err);
 				}
 				setTimeout(()=>{
 					this.#isUpsertPositionDelay = false;
 				}, this.#upsertPositionDelay)
 				db.close((err)=>{
 					if(err){
-						console.error(err.message);
+						log.error(err.message);
 					}
 				})
 			})

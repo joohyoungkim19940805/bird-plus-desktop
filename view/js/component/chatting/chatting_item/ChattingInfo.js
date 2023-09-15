@@ -27,27 +27,35 @@ export default new class ChattingInfo{
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.#page += 1;
-                this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
-                .then(data=> {
-                    return this.createPage(data).then(liList => {        
-                        if(this.#page >= data.totalPages){
-                            this.#lastItemVisibleObserver.disconnect();
-                        }
-                        return liList;
-                    })
-                })
-                .then(liList => {
+                let promise;
+                let memory = Object.values(this.#chattingMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
+                if(memory && memory.length != 0){
+                    promise = Promise.resolve(
+                        memory
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                    );
+                }else{
+                    promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
+                        .then(async data=> 
+                            this.createPage(data).then(liList => {        
+                                if(this.#page >= data.totalPages){
+                                    this.#lastItemVisibleObserver.disconnect();
+                                }
+                                return liList;
+                            })
+                        )
+                }
+                
+                promise.then(liList => {
+                    this.#lastItemVisibleObserver.disconnect();
+                    let lastVisibleTarget = liList[liList.length - 1];
+                    if(lastVisibleTarget){
+                        this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                    }
                     this.#liList.push(...liList);
                     let lastItem = this.#elementMap.chattingContentList.children[this.#elementMap.chattingContentList.children.length - 1];
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    this.#elementMap.chattingContentList.scrollBy(undefined,
-                        lastItem.getBoundingClientRect().y
-                    )
-                    /*
-                    this.#elementMap.chattingContentList.scrollBy(undefined, 
-                        liList[liList.length - 1].getBoundingClientRect().y
-                    )
-                    */
+                    lastItem.previousElementSibling.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
                 });
 			}
 		})
@@ -68,10 +76,11 @@ export default new class ChattingInfo{
     #liList = [];
 
     constructor(){
+
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
-                this.createLiElement(chattingData).then(liElement => {
+                this.createItemElement(chattingData).then(liElement => {
                     this.#elementMap.chattingContentList.prepend(liElement);
                     this.#addChattingMemory(liElement)
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
@@ -84,14 +93,36 @@ export default new class ChattingInfo{
             name: 'chattingInfo',
             callBack: () => {
                 this.reset();
-                this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
-                .then(data=>this.createPage(data))
-                .then(liList => {
+                let promise;
+                let memory = Object.values(this.#chattingMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                if(memory && memory.length != 0){
+                    promise = Promise.resolve(
+                        memory.flatMap(e=>Object.values(e))
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                    );
+                }else{
+                    promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
+                    .then(async data=> 
+                        this.createPage(data)
+                        .then(liList => {        
+                            if(this.#page >= data.totalPages){
+                                this.#lastItemVisibleObserver.disconnect();
+                            }
+                            return liList;
+                        })
+                    )
+                }
+                promise.then(liList => {
                     this.#liList.push(...liList);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
                         this.#elementMap.chattingContentList.scrollHeight
                     )
+                    this.#lastItemVisibleObserver.disconnect();
+                    let lastVisibleTarget = liList[liList.length - 1];
+                    if(lastVisibleTarget){
+                        this.#lastItemVisibleObserver.observe(lastVisibleTarget)
+                    }
                 })
             },
             runTheFirst: false
@@ -125,20 +156,18 @@ export default new class ChattingInfo{
                 return;
             }
            return Promise.all(content.map(item => 
-                this.createLiElement(item)
+                this.createItemElement(item)
             )).then((liList = [])=>{
                 console.log(liList);
                 if(liList.length == 0){
                     resolve(liList);
                 }
-                this.#lastItemVisibleObserver.disconnect();
-                this.#lastItemVisibleObserver.observe(liList[liList.length - 1])
-                resolve(liList);
+               resolve(liList);
             });
         })
     }
 
-    createLiElement(data){
+    createItemElement(data){
         if( ! data){
             return;
         }
@@ -186,12 +215,12 @@ export default new class ChattingInfo{
             });
             li.__editor = content;
             this.#addChattingMemory(li, id);
-            this.#addLiEvent(li);
+            this.#addItemEvent(li);
             resolve(li);
         })
     }
 
-    #addLiEvent(li){
+    #addItemEvent(li){
         new Promise(resolve=> {
             let likeAndScrapWrapper;
             li.onmouseenter = (event) => {
@@ -202,7 +231,7 @@ export default new class ChattingInfo{
         })
     }
 
-    #addChattingMemory(data, chattingId){
+    #addChattingMemory(data, id){
         return new Promise(resolve => {
             if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
                 this.#chattingMemory[workspaceHandler.workspaceId] = {};
@@ -213,10 +242,7 @@ export default new class ChattingInfo{
             if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
                 this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
             }
-            if(this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page].hasOwnProperty(chattingId)){
-                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
-            }
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][chattingId] = data;
+            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
             resolve();
         })
     }
