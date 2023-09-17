@@ -13,9 +13,11 @@ const visibleObserver = new IntersectionObserver((entries, observer) => {
 		if (isIntersecting){
 			target.style.visibility = '';
 			target.style.opacity = '';
+			target.dataset.visibility = 'v';
 		}else{
 			target.style.visibility = 'hidden';
 			target.style.opacity = 0;
+			target.dataset.visibility = 'h';
 		}
 	})
 }, {

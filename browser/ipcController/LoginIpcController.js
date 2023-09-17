@@ -39,7 +39,7 @@ class LoginIpcController {
 						//global.__apiToken = rows[0].TOKEN
 						axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
 						windowUtil.isLogin((result) => {
-							if(!result.isLogin){
+							if(result.isLogin){
 								mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 									mainWindow.titleBarStyle = 'visibble'
 									mainWindow.show();

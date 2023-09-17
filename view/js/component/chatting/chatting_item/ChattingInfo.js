@@ -53,9 +53,9 @@ export default new class ChattingInfo{
                         this.#lastItemVisibleObserver.observe(lastVisibleTarget);
                     }
                     this.#liList.push(...liList);
-                    let lastItem = this.#elementMap.chattingContentList.children[this.#elementMap.chattingContentList.children.length - 1];
+                    let visibilityLastItem = this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]');
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    lastItem.previousElementSibling.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+                    visibilityLastItem[visibilityLastItem.length - 1].previousElementSibling.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                 });
 			}
 		})
@@ -96,6 +96,7 @@ export default new class ChattingInfo{
                 let promise;
                 let memory = Object.values(this.#chattingMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                 if(memory && memory.length != 0){
+                    this.#page = memory.length - 1;
                     promise = Promise.resolve(
                         memory.flatMap(e=>Object.values(e))
                         .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
@@ -183,7 +184,6 @@ export default new class ChattingInfo{
             fullName,
             accountName
         } = data;
-        console.log(data);
         return new Promise(resolve => {
             let li = Object.assign(document.createElement('li'), {
                 innerHTML: `

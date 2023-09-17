@@ -115,8 +115,11 @@ ipcRenderer.on('workspaceChange', (event, message) => {
 
 ipcRenderer.on('roomInAccountCallBack', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('roomInAccountCallBack')){
-		electronEventTrigger.objectEventListener['roomInAccountCallBack'].forEach(callBack=>{
-			callBack(message);
+		electronEventTrigger.objectEventListener['roomInAccountCallBack'].forEach(async callBack=>{
+			new Promise(res=>{
+				callBack(message);
+				res();
+			})
 		})
 	}
 })

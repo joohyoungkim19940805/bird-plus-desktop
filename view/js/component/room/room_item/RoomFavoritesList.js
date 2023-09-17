@@ -4,6 +4,9 @@ import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
 export default new class RoomFavoritesList{
+
+	#roomFavoritesMemory = {};
+
 	#workspaceId
 	#roomId
 	#page = 0;
@@ -38,17 +41,37 @@ export default new class RoomFavoritesList{
 	#positionChanger;
 
 	#liList = [];
-	#liMap = {};
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.#page += 1;
-				let roomName = this.#elementMap.searchName.value;
-				this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data=>{
-					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-					if(this.#page >= data.totalPages){
-						this.#lastItemVisibleObserver.disconnect();
+				let promise;
+				let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
+				if(memory && memory.length != 0){
+					promise = Promise.resolve(
+						memory
+						.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
+					);
+				}else{
+					promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+					then(data => 
+						this.createPage(data)
+						.then(liList => {        
+							if(this.#page >= data.totalPages){
+								this.#lastItemVisibleObserver.disconnect();
+							}
+							return liList;
+						})
+					)
+				}
+				promise.then(liList => {
+					this.#liList.push(...liList);
+					this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+					this.#lastItemVisibleObserver.disconnect();
+					let lastVisibleTarget = liList[liList.length - 1];
+					if(lastVisibleTarget){
+						this.#lastItemVisibleObserver.observe(lastVisibleTarget)
 					}
 				})
 			}
@@ -135,66 +158,77 @@ export default new class RoomFavoritesList{
 		});
 	}
 
-	createPage(data){
+	createPage(data, roomName){
 		return new Promise(resolve => {
 			let {content = []} = data || {};
 			if(content.length == 0){
 				resolve(content);
 				return;
 			}
-			let liList = content.map(item => {
-				let {
-					id,
-					roomId,
-					orderSort,
-					roomCode,
-					roomName,
-					isEnabled,
-					workspaceId,
-					roomType
-				} = item;
-				let roomTypeMark;
-				if(roomType == 'ROOM_PUBLIC'){
-					roomTypeMark = '@';
-				}else if(roomType == 'ROOM_PRIVATE'){
-					roomTypeMark = '#';
-				}else{
-					roomTypeMark = '$'
+			return Promise.all(content.map(item => 
+                this.createItemElement(item)
+            )).then((liList = [])=>{
+				if(liList.length == 0){
+                    resolve(liList);
+                }
+				this.#liList.push(...liList);
+				this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+				if(roomName == ''){
+					this.#positionChanger.addPositionChangeEvent(...this.#liList);
 				}
-				let li = Object.assign(document.createElement('li'), {
-					className: 'pointer',
-					innerHTML: `
-						<div>
-							<span>${roomTypeMark}</span>
-							<span>${roomName}</span>
-						</div>
-					`
-				});
-				if(this.#roomId && roomId == this.#roomId){
-					li.style.fontWeight = 'bold';
-				}
-				Object.assign(li.dataset, {
-					id,
-					room_id: roomId,
-					prev_order_sort: orderSort,
-					order_sort: orderSort,
-					room_code: roomCode,
-					room_name: roomName,
-					is_enabled: isEnabled,
-					workspace_id: workspaceId,
-					room_type: roomType
-				});
-
-				this.#addItemEvent(li);
-				return li;
-			});
-			this.#liList.push(...liList);
-			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
-			this.#positionChanger.addPositionChangeEvent(...this.#liList);
-			resolve(liList);
+               resolve(liList);
+            });
 		});
 	}
-
+	createItemElement(item){
+		let {
+			id,
+			roomId,
+			orderSort,
+			roomCode,
+			roomName,
+			isEnabled,
+			workspaceId,
+			roomType
+		} = item;
+		return new Promise(resolve=>{
+			let roomTypeMark = '$';
+			if(roomType == 'ROOM_PUBLIC'){
+				roomTypeMark = '@';
+			}else if(roomType == 'ROOM_PRIVATE'){
+				roomTypeMark = '#';
+			}else{
+				roomTypeMark = '$'
+			}
+			let li = Object.assign(document.createElement('li'), {
+				className: 'pointer',
+				innerHTML: `
+					<div>
+						<span>${roomTypeMark}</span>
+						<span>${roomName}</span>
+					</div>
+				`
+			});
+			if(this.#roomId && roomId == this.#roomId){
+				li.style.fontWeight = 'bold';
+			}
+			Object.assign(li.dataset, {
+				id,
+				room_id: roomId,
+				prev_order_sort: orderSort,
+				order_sort: orderSort,
+				room_code: roomCode,
+				room_name: roomName,
+				is_enabled: isEnabled,
+				workspace_id: workspaceId,
+				room_type: roomType
+			});
+			li.draggable = true;
+			this.#addRoomFavoritesMemory(li, roomId);
+			this.#addItemEvent(li);
+			resolve(li);
+		});
+	}
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
@@ -204,22 +238,50 @@ export default new class RoomFavoritesList{
 		});
 	}
 
-	addListItemVisibleEvent(liList){
-		return new  Promise(resolve => {
-			if(liList.length == 0){
-				resolve(liList);
-			}
-			this.#lastItemVisibleObserver.disconnect();
-			this.#lastItemVisibleObserver.observe(liList[liList.length - 1]);
-			resolve(liList);
-		})
-	}
+	#addRoomFavoritesMemory(data, roomId){
+		if( ! this.#roomFavoritesMemory.hasOwnProperty(workspaceHandler.workspaceId)){
+			this.#roomFavoritesMemory[workspaceHandler.workspaceId] = {};
+		}
+		if( ! this.#roomFavoritesMemory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
+			this.#roomFavoritesMemory[workspaceHandler.workspaceId][this.#page] = {};
+		}
+		if( ! data || ! roomId){
+			return ;
+		}
+		this.#roomFavoritesMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+    }
 	
 	refresh(){
 		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).then(data => {
-			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-		});
+		let promise;
+		let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId] || {});
+		if(memory && memory.length != 0 && this.#elementMap.searchName.value == ''){
+			this.#page = memory.length - 1;
+			promise = Promise.resolve(
+				memory.flatMap(e=>Object.values(e))
+				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
+			);
+		}else{
+			promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+			then(data => 
+				this.createPage(data)
+				.then(liList => {        
+					if(this.#page >= data.totalPages){
+						this.#lastItemVisibleObserver.disconnect();
+					}
+					return liList;
+				})
+			)
+		}
+		promise.then(liList => {
+			this.#liList.push(...liList);
+			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+			this.#lastItemVisibleObserver.disconnect();
+			let lastVisibleTarget = liList[liList.length - 1];
+			if(lastVisibleTarget){
+				this.#lastItemVisibleObserver.observe(lastVisibleTarget)
+			}
+		})
 	}
 
 	reset(){

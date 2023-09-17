@@ -267,6 +267,9 @@ export default new class RoomList{
 		if( ! this.#roomMemory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
 			this.#roomMemory[workspaceHandler.workspaceId][this.#page] = {};
 		}
+		if( ! data || ! roomId){
+			return ;
+		}
 		this.#roomMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
     }
 
@@ -274,8 +277,8 @@ export default new class RoomList{
 		this.reset();
 		let promise;
 		let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId] || {});
-		console.log(memory.flatMap(e=>Object.values(e)))
-		if(memory && memory.length != 0){
+		if(memory && memory.length != 0 && this.#elementMap.searchName.value == ''){
+			this.#page = memory.length - 1;
 			promise = Promise.resolve(
 				memory.flatMap(e=>Object.values(e))
 				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))

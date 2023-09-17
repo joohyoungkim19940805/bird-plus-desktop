@@ -74,7 +74,6 @@ export default class NumericPoint extends FreedomInterface {
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
-			console.log('test<<<1')
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

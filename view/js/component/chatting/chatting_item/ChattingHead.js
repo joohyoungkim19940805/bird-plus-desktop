@@ -4,7 +4,7 @@ import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
 export default new class ChattingHead{
-    members = {};
+    #chattingHeadMemory = {};
     //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_head_wrapper',
@@ -44,7 +44,7 @@ export default new class ChattingHead{
     #accountInviteRoomView
 
     constructor(){
-        
+		
         this.#accountInviteRoomView = new AccountInviteRoomView(this);
 		this.#accountInviteRoomView.onOpenCloseCallBack = (status) => {
 			this.#accountInviteRoomView.reset();
@@ -99,17 +99,12 @@ export default new class ChattingHead{
 
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountCallBack', event => {
-            if( ! this.members.hasOwnProperty(event.roomId)){
-                this.members[event.roomId] = {};
-            }
-            if(this.members[event.roomId].hasOwnProperty(event.accountName)){
-                return;
-            }
-
-            this.members[event.roomId][event.accountName] = this.createLiElement(event);
+            
+            this.#addChattingHeadMemory(this.createLiElement(event), event.roomId);
 
             if(event.roomId == this.#roomId){
-                let memberList = Object.values(this.members[event.roomId]);
+                console.log(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId])
+                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId]);
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -135,15 +130,15 @@ export default new class ChattingHead{
 			callBack: (handler) => {
                 this.#roomId = handler.roomId;
                 this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
-                if( ! this.members.hasOwnProperty(handler.roomId)){
+                if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId]?.hasOwnProperty(handler.roomId)){
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
                     window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
                         console.log(result);
                     });
                 }else{
-                    this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[handler.roomId]));
-                    this.#elementMap.chattingHeadJounedCount.textContent = `(${Object.keys(this.members[handler.roomId]).length} members)`
-
+                    let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][handler.roomId])
+                    this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
+                    this.#elementMap.chattingHeadJounedCount.textContent = `(${memberList.length} members)`
                 }
 
                 let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
@@ -167,7 +162,7 @@ export default new class ChattingHead{
         this.#elementMap.searchMembers.oninput = () => {
             let searchText = this.#elementMap.searchMembers.value;
             if(searchText.value == ''){
-                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.members[this.#roomId]));  
+                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][this.#roomId]));  
             }
             this.#elementMap.chattingHeadJoinedMembers.replaceChildren(
                 ...[...this.#elementMap.searchMembers.list.options].map(option => {
@@ -203,6 +198,16 @@ export default new class ChattingHead{
         }
     }
 
+    #addChattingHeadMemory(data, roomId){
+		if( ! this.#chattingHeadMemory.hasOwnProperty(workspaceHandler.workspaceId)){
+			this.#chattingHeadMemory[workspaceHandler.workspaceId] = {};
+		}
+        if( ! this.#chattingHeadMemory.hasOwnProperty(roomId)){
+            this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId] = {};
+        }
+        this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId][data.dataset_account_name] = data
+    }
+
     createLiElement(obj){
         let {
             roomId, accountName, fullName, jobGrade,
@@ -233,9 +238,7 @@ export default new class ChattingHead{
             return;
         }
         this.#roomId = roomId;
-        if( ! this.members.hasOwnProperty(roomId)){
-            this.members[roomId] = {};
-        }
+        this.#addChattingHeadMemory(undefined, roomId);
     }
 
     get roomId(){
