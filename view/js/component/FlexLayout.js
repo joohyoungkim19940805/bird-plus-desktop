@@ -178,7 +178,6 @@ class FlexLayout extends HTMLElement {
 				target.style.visibility = 'hidden';
 				target.style.opacity = 0;
 				console.log('hidden!');
-				mutation.target.style.vis
 			}else{
 				// 뷰포트 내에서 보이는 경우
 				target.style.visibility = '';
