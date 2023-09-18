@@ -168,14 +168,22 @@ class FlexLayout extends HTMLElement {
 
 	#visibleObserver = new MutationObserver((mutationList, observer) => {
 		// 정해진 방향의 사이즈만(width or height) 0일뿐 다른 다른 방향 사이즈는 그대로여서 
-		// intersection observer가 미동작함
+		// intersection observer(가시성 영역 체크 코드)가 미동작함
 		mutationList.forEach((mutation) => {
 			let currentFlexGrow = parseFloat(mutation.target.style.flex.split(' ')[0]);
 			let currentSize = parseFloat(window.getComputedStyle(mutation.target)[this.sizeName]);
+			let {target} = mutation;
 			if( ! isNaN(currentFlexGrow) && currentFlexGrow == 0 && currentSize == 0){
-			
+				// 뷰포트 내에서 해당 영역이 보이지 않는 경우
+				target.style.visibility = 'hidden';
+				target.style.opacity = 0;
+				console.log('hidden!');
+				mutation.target.style.vis
 			}else{
-				
+				// 뷰포트 내에서 보이는 경우
+				target.style.visibility = '';
+				target.style.opacity = '';
+				console.log('show!')
 			}
 		});
 	});
