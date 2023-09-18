@@ -102,15 +102,38 @@
 #chatting_info_wrapper{
     background-color: white;
 }
+#chatting_info_wrapper .chatting_info_container{
+    justify-content: flex-end;
+}
 #chatting_info_wrapper .chatting_content_list {
     display: flex;
     flex-direction: column-reverse;
-    overflow: auto;
+    overflow-y: auto;
+    height: inherit;
 }
 #chatting_info_wrapper .chatting_content_list > li{
     padding-bottom: 0.35%;
+    /*border-top: solid 2px #00000012;*/
+}
+
+#chatting_info_wrapper .chatting_content_list > li .time_grouping{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background-color: white;
     border-top: solid 2px #00000012;
 }
+
+#chatting_info_wrapper .chatting_content_list > li .time_grouping .time_grouping_text{
+    position: absolute;
+    background-color: inherit;
+    border: solid 1px #00000012;
+    border-radius: 19%;
+    padding: 0.2%;
+    font-size: 11px;
+}
+
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper{
     display: flex;
     gap: 0.7vw;

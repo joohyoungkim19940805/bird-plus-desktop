@@ -99,12 +99,13 @@ export default new class ChattingHead{
 
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountCallBack', event => {
-            
+
             this.#addChattingHeadMemory(this.createLiElement(event), event.roomId);
 
             if(event.roomId == this.#roomId){
                 console.log(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId])
                 let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId]);
+                console.log(memberList);
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -202,10 +203,10 @@ export default new class ChattingHead{
 		if( ! this.#chattingHeadMemory.hasOwnProperty(workspaceHandler.workspaceId)){
 			this.#chattingHeadMemory[workspaceHandler.workspaceId] = {};
 		}
-        if( ! this.#chattingHeadMemory.hasOwnProperty(roomId)){
+        if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId].hasOwnProperty(roomId)){
             this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId] = {};
         }
-        this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId][data.dataset_account_name] = data
+        this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId][data.dataset.account_name] = data
     }
 
     createLiElement(obj){
@@ -238,7 +239,6 @@ export default new class ChattingHead{
             return;
         }
         this.#roomId = roomId;
-        this.#addChattingHeadMemory(undefined, roomId);
     }
 
     get roomId(){

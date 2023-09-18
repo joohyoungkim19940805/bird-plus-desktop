@@ -10,6 +10,8 @@ export default new class ChattingInfo{
     #page = 0;
 	#size = 10;
 
+    #oneDayMils = 1000 * 60 * 60 * 24;
+
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_info_wrapper',
         innerHTML: `
@@ -40,6 +42,12 @@ export default new class ChattingInfo{
                             this.createPage(data).then(liList => {        
                                 if(this.#page >= data.totalPages){
                                     this.#lastItemVisibleObserver.disconnect();
+                                    // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
+                                    // 날짜 관련 함수 코드 실행
+                                    this.#processingTimeGrouping(
+                                        this.#liList[this.#liList.length - 2], 
+                                        this.#liList[this.#liList.length - 1]
+                                    ); 
                                 }
                                 return liList;
                             })
@@ -55,7 +63,7 @@ export default new class ChattingInfo{
                     this.#liList.push(...liList);
                     let visibilityLastItem = this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]');
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    visibilityLastItem[visibilityLastItem.length - 1].previousElementSibling.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                    visibilityLastItem[visibilityLastItem.length - 1].previousElementSibling?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                 });
 			}
 		})
@@ -108,6 +116,12 @@ export default new class ChattingInfo{
                         .then(liList => {        
                             if(this.#page >= data.totalPages){
                                 this.#lastItemVisibleObserver.disconnect();
+                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
+                                // 날짜 관련 함수 코드 실행
+                                this.#processingTimeGrouping(
+                                    this.#liList[this.#liList.length - 2], 
+                                    this.#liList[this.#liList.length - 1]
+                                ); 
                             }
                             return liList;
                         })
@@ -156,9 +170,11 @@ export default new class ChattingInfo{
                 resolve(content);
                 return;
             }
-           return Promise.all(content.map(item => 
-                this.createItemElement(item)
-            )).then((liList = [])=>{
+            let prevItemPromise;
+            return Promise.all(content.map(item => {
+                prevItemPromise = this.createItemElement(item, prevItemPromise);
+                return prevItemPromise;
+            })).then((liList = [])=>{
                 console.log(liList);
                 if(liList.length == 0){
                     resolve(liList);
@@ -168,7 +184,7 @@ export default new class ChattingInfo{
         })
     }
 
-    createItemElement(data){
+    createItemElement(data, prevItemPromise){
         if( ! data){
             return;
         }
@@ -216,6 +232,7 @@ export default new class ChattingInfo{
             li.__editor = content;
             this.#addChattingMemory(li, id);
             this.#addItemEvent(li);
+            prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
             resolve(li);
         })
     }
@@ -249,6 +266,51 @@ export default new class ChattingInfo{
 
     #processingTimeText(createMils){
         return new Date(createMils).toLocaleTimeString();
+    }
+
+    async #processingTimeGrouping(li, prevItem){
+        return new Promise(resolve=>{
+            if( ! prevItem){
+                return;
+            }
+            let prevDate = new Date(Number(prevItem.dataset.create_mils));
+            let prevDateYearMonth = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, prevDate.getDate());
+            let currentDate = new Date(Number(li.dataset.create_mils));
+            let currentDateYearMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+            let diffMils = prevDateYearMonth.getTime() - currentDateYearMonth.getTime();
+
+            if(Math.abs(diffMils) < this.#oneDayMils){
+                resolve();
+                return;
+            }else if(prevItem.querySelector('.time_grouping')){
+                resolve();
+                return;
+            }
+
+            let timeText;
+            console.log(Math.abs(prevDate.getTime() - new Date().getTime()));
+            console.log(this.#oneDayMils);
+            
+            if(Math.abs(prevDate.getTime() - new Date().getTime()) <= this.#oneDayMils){
+                timeText = '오늘'
+            }else{
+                timeText = prevDate.toLocaleDateString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: '2-digit',
+                    formatMatcher: 'best fit'
+                })
+            }
+            //첫번째 매개변수 html 객체와 두번째 매개변수 html 객체간에 하루 이상 차이 나는 경우
+            let timeGroupingElement = Object.assign(document.createElement('div'), {
+                className: 'time_grouping',
+                innerHTML: `
+                    <small class="time_grouping_text">${timeText}</small>
+                `
+            })
+            prevItem.prepend(timeGroupingElement)
+            resolve();
+        });
     }
 
     reset(){
