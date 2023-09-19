@@ -59,12 +59,6 @@ export default class RoomContainer{
 					roomContainerListScroll.style.overflow = '';
 					customDetails.setAttribute('data-is_open', '');
 				}
-				/*
-				wrap.ontransitionend = () => {
-					wrap.closest('flex-layout').reflex(wrap.__resizePanel);
-					wrap.ontransitionend = '';
-				}
-				*/
 			}
 			new IntersectionObserver((entries, observer) => {
 				entries.forEach(entry =>{
