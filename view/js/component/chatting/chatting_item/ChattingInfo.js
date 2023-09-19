@@ -94,6 +94,11 @@ export default new class ChattingInfo{
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
                         this.#elementMap.chattingContentList.scrollHeight
                     )
+                    this.#processingTimeGrouping(
+                        this.#liList[0],
+                        liElement
+                    ); 
+                    this.#liList.unshift(liElement);
                 });
             }
         }

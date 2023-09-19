@@ -117,11 +117,12 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				if(this.contentEditable == 'false'){
 					return;
 				}
+				
 				if(this.childElementCount == 0){
 					this.#startFirstLine();
 				}
 
-				if(this.innerText.length <= 1 && this.#firstLine.childNodes[0]?.nodeName == 'BR' && (this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
+				if(this.innerText.length <= 1 && (this.#firstLine.childNodes[0]?.nodeName == 'BR' || this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
 					this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
 				}else{
 					this.#firstLine.removeAttribute('data-placeholder');
@@ -131,9 +132,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				mutation.addedNodes.forEach(element=>{
 					if(element.nodeType != Node.ELEMENT_NODE) return;
 					let sty = window.getComputedStyle(element);
+					/*
 					if(sty.visibility == 'hidden' || sty.opacity == 0){
 						return;
 					}
+					*/
 					if(element.classList.contains(Line.toolHandler.defaultClass) && (element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n'))){
 						element.innerText = '\n';
 						window.getSelection().setPosition(element, 1)
@@ -172,7 +175,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
         this.#isLoaded = false;
 		this.contentEditable = false;
     }
-
+	
 	#startFirstLine(){
 		let line = super.createLine();
 		line.isFirstLine = true;
@@ -272,7 +275,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return;
 		}
 		super.getLineRange(selection).then(({startLine, endLine})=> {
-			console.log(startLine, endLine);
 			startLine.line.cancelTool(TargetTool, selection, endLine);
 		})
 	}
@@ -298,7 +300,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			obj.type = Node.ELEMENT_NODE;
 			obj.name = node.constructor.name;
 			obj.tagName = node.tagName.toLowerCase();
-			console.log()
 			obj.data = Object.assign({}, node.dataset);
 			if(node.hasAttribute('is_cursor')){
 				obj.cursor_offset = node.getAttribute('cursor_offset');
@@ -322,7 +323,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		if(jsonObj instanceof Array){
 			this.replaceChildren(...this.#toHTML(jsonObj, this).filter(e=> e != undefined));
 		}
-		console.log(jsonObj instanceof Array)
 	}
 
 	#toHTML(objList, parent = this){
@@ -361,6 +361,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	}
 
 	get firstLine(){
-		return this.#firstLine;
+		this.firstElementChild.isFirstLine = true;
+		return this.firstElementChild;
 	}
 }
