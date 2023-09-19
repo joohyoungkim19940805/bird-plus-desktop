@@ -180,7 +180,6 @@ export default new class ChattingInfo{
                 prevItemPromise = this.createItemElement(item, prevItemPromise);
                 return prevItemPromise;
             })).then((liList = [])=>{
-                console.log(liList);
                 if(liList.length == 0){
                     resolve(liList);
                 }

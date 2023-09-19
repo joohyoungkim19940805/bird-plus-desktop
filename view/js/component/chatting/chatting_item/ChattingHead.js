@@ -12,6 +12,7 @@ export default new class ChattingHead{
         <div class="chatting_head_container" data-bind_name="chattingHeadContainer">
             <div class="chatting_head_info_wrapper list_scroll list_scroll-x" data-bind_name="chattingHeadInfoWrapper">
                 <div class="chatting_head_info_container">
+                    즐겨찾기 수정 예정 메모리 관련 이슈 및 20230919
                     <h3 class="chatting_head_title" data-bind_name="chattingHeadTitle"></h3>
                     <span class="chatting_head_joined_count" data-bind_name="chattingHeadJounedCount"></span>
                 </div>

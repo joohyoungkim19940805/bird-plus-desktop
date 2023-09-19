@@ -158,7 +158,7 @@ export default new class RoomFavoritesList{
 		});
 	}
 
-	createPage(data, roomName){
+	createPage(data, roomName = ''){
 		return new Promise(resolve => {
 			let {content = []} = data || {};
 			if(content.length == 0){
