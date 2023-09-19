@@ -79,7 +79,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchRoomFavoritesMyJoined : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoined', param),
 		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param),
 		searchRoomInAccountAllList : (param) => ipcRenderer.invoke('searchRoomInAccountAllList', param),
-		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param)
+		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param),
+		isRoomFavorites : (param) => ipcRenderer.invoke('isRoomFavorites', param)
 	}
 
 })

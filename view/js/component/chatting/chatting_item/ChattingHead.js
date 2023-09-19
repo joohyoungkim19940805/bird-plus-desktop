@@ -143,7 +143,17 @@ export default new class ChattingHead{
                     this.#elementMap.chattingHeadJounedCount.textContent = `(${memberList.length} members)`
                 }
 
-                let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
+                //let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
+                window.myAPI.room.isRoomFavorites({roomId : handler.roomId}).then(result => {
+                    if(result.data === true){
+                        this.#elementMap.favoritesAddButton.classList.add('apply')
+                        this.#elementMap.favoritesAddButton.textContent = '★'
+                    }else{
+                        this.#elementMap.favoritesAddButton.classList.remove('apply')
+                        this.#elementMap.favoritesAddButton.textContent = '☆'
+                    }
+                })
+                /*
                 if(favoritesTarget){
                     this.#elementMap.favoritesAddButton.classList.add('apply')
                     this.#elementMap.favoritesAddButton.textContent = '★'
@@ -151,7 +161,7 @@ export default new class ChattingHead{
                     this.#elementMap.favoritesAddButton.classList.remove('apply')
                     this.#elementMap.favoritesAddButton.textContent = '☆'
                 }
-
+                */
                 if(handler.room.roomType == 'SELF'){
                     memberAddButton.remove();
                 }else{

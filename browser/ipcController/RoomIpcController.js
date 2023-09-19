@@ -195,15 +195,9 @@ class RoomIpcController {
 			})
 		})
 
-		ipcMain.handle('updateRoomFavorites', async (event, param = {}) => {
+		ipcMain.handle('updateRoomFavorites', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
-					param = Object.entries(param).reduce((total, [k,v]) => {
-						if(v != undefined && v != ''){
-							total[k] = v;
-						}
-						return total;
-					},{});
 					return axios.post(`${__serverApi}/api/room/update/room-favorites-order`, JSON.stringify(param), {
 						headers:{
 							'Content-Type': 'application/json'
@@ -483,6 +477,39 @@ class RoomIpcController {
 				}
 			});
 		})
+
+		ipcMain.handle('isRoomFavorites', async (event, param) => {
+			if( ! param.roomId || isNaN(parseInt(param.roomId))){
+				log.error(`isRoomFavorites roomId is ::: ${param.roomId}`);
+				return undefined;
+			}
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.get(`${__serverApi}/api/room/search/is-room-favorites/${param.roomId}`, {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.catch(err=>{
+						log.error('IPC isRoomFavorites error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				log.error('error ::: ', error.message)
+				log.error('error stack :::', error.stack)
+				return undefined;
+			})
+		});
 
     }
 
