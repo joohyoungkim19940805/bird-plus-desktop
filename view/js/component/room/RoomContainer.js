@@ -38,22 +38,33 @@ export default class RoomContainer{
 			}
 			customDetails.onclick = () => {
 				let isOpen = customDetails.hasAttribute('data-is_open');
+				let flexLayout = wrap.closest('flex-layout');
 				if(isOpen){
 					customDetails.textContent = customDetails.dataset.close_status;
 					customDetails.dataset.previous_flex = wrap.style.flex;
 					wrap.style.transition = 'flex 0.5s';
 					wrap.style.minHeight = customDetailsSummary.getBoundingClientRect().height + 'px';
-					wrap.style.flex = '0 1 0%';
+					//wrap.style.flex = '0 1 0%';
+					//wrap.dataset.grow = 0;
+					flexLayout.closeFlex(wrap);
 					roomContainerListScroll.style.overflow = 'hidden';
 					customDetails.removeAttribute('data-is_open');
 				}else{
 					customDetails.textContent = customDetails.dataset.open_status;
 					wrap.style.transition = 'flex 0.5s';
 					wrap.style.flex = customDetails.dataset.previous_flex;
-					wrap.style.flex = '1 1 0%';
+					//wrap.style.flex = '1 1 0%';
+					//wrap.dataset.grow = 1;
+					flexLayout.openFlex(wrap);
 					roomContainerListScroll.style.overflow = '';
 					customDetails.setAttribute('data-is_open', '');
 				}
+				/*
+				wrap.ontransitionend = () => {
+					wrap.closest('flex-layout').reflex(wrap.__resizePanel);
+					wrap.ontransitionend = '';
+				}
+				*/
 			}
 			new IntersectionObserver((entries, observer) => {
 				entries.forEach(entry =>{

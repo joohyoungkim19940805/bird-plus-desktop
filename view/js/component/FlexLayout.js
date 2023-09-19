@@ -163,6 +163,16 @@ class FlexLayout extends HTMLElement {
 	#growChangeObserver = new MutationObserver( (mutationList, observer) => {
 		mutationList.forEach((mutation) => {
 			mutation.target.style.flex = `${parseFloat(mutation.target.dataset.grow)} 1 0%`;
+			/*if(window.getComputedStyle(mutation.target).transition == 'all 0s ease 0s'){
+				this.resize(mutation.target.__resizePanel);	
+			}else{
+				const removeEvent = (event) => {
+					let rect = mutation.target.getBoundingClientRect();
+					this.resize(mutation.target.__resizePanel, rect);
+					mutation.target.removeEventListener('transitionend', removeEvent, true);
+				}
+				mutation.target.addEventListener('transitionend', removeEvent, true);
+			}*/
 		});
 	})
 
@@ -171,18 +181,22 @@ class FlexLayout extends HTMLElement {
 		// intersection observer(가시성 영역 체크 코드)가 미동작함
 		mutationList.forEach((mutation) => {
 			let currentFlexGrow = parseFloat(mutation.target.style.flex.split(' ')[0]);
-			let currentSize = parseFloat(window.getComputedStyle(mutation.target)[this.sizeName]);
+			let currentStyle = window.getComputedStyle(mutation.target);
+			let currentSize = parseFloat(currentStyle[this.sizeName]);
+			//let minSize = parseFloat(currentStyle['min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1)]);
 			let {target} = mutation;
-			if( ! isNaN(currentFlexGrow) && currentFlexGrow == 0 && currentSize == 0){
+			if( ! isNaN(currentFlexGrow) && currentFlexGrow == 0 && currentSize == 0){//&& (currentSize == 0 || minSize >= currentSize)){
 				// 뷰포트 내에서 해당 영역이 보이지 않는 경우
 				target.style.visibility = 'hidden';
 				target.style.opacity = 0;
-				console.log('hidden!');
+				target.dataset.visibility = 'h'
+				//console.log('hidden!');
 			}else{
 				// 뷰포트 내에서 보이는 경우
 				target.style.visibility = '';
 				target.style.opacity = '';
-				console.log('show!')
+				target.style.visibility = 'h';
+				//console.log('show!')
 			}
 		});
 	});
@@ -192,6 +206,8 @@ class FlexLayout extends HTMLElement {
 	nextElementDirection;
 	sizeName;
 	resizeCursor;
+
+	resizeTargetList = [];
 
 	constructor(){
 		super();
@@ -215,6 +231,7 @@ class FlexLayout extends HTMLElement {
 							attributeFilter:['style'],
 							attributeOldValue:true
 						});
+						this.resizeTargetList.push(childElement);
 					}
 				});
 				let forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
@@ -316,7 +333,20 @@ class FlexLayout extends HTMLElement {
 				return;
 			}
 			// 부모요소 width 계산, 자기 자신 요소 width 마우스 위치값 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex grow 반영
-			
+			this.getResizeRequiredObject(resizePanel).then(obj => {
+				let targetSize = event[this.xy] - obj.targetRect[this.targetDirection];
+				let nextElementSize = obj.nextElementRect[this.nextElementDirection] - event[this.xy];
+				obj.targetSize = targetSize;
+				obj.nextElementSize = nextElementSize;
+				return obj;	
+			})
+			.then(obj => this.resize(resizePanel, obj));
+
+		})
+	}
+
+	getResizeRequiredObject(resizePanel){
+		return new Promise(resolve=>{
 			let targetRect = resizePanel.__resizeTarget.getBoundingClientRect();
 			let nextElementRect = resizePanel.nextElementSibling.getBoundingClientRect();
 
@@ -325,10 +355,26 @@ class FlexLayout extends HTMLElement {
 			let minSizeName = 'min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1);
 			let targetMinSize = parseInt(window.getComputedStyle(resizePanel.__resizeTarget)[minSizeName]);
 			let nextElementMinSize = parseInt(window.getComputedStyle(resizePanel.nextElementSibling)[minSizeName]);
+			resolve({
+				targetRect,
+				nextElementRect,
+				parentSize,
+				targetMinSize,
+				nextElementMinSize
+			})
+		})
+	}
 
-			let targetSize = event[this.xy] - targetRect[this.targetDirection];
-			let nextElementSize = nextElementRect[this.nextElementDirection] - event[this.xy];
-			
+	resize(resizePanel, {
+		targetRect,
+		nextElementRect,
+		parentSize,
+		targetMinSize,
+		nextElementMinSize,
+		targetSize,
+		nextElementSize
+	}){
+		return new Promise(resolve => {
 			if(targetSize <= 0 || (isNaN(targetMinSize) ? false : targetMinSize >= targetSize)){
 				targetSize = 0
 				//nextElementWidth = targetRect.width + nextElementRect[sizeName]
@@ -338,14 +384,81 @@ class FlexLayout extends HTMLElement {
 				targetSize = targetRect[this.sizeName];
 				nextElementSize = 0
 			}
-			
 			let targetFlexGrow = (targetSize / parentSize) * this.#growLimit;
 			let nextElementFlexGrow = (nextElementSize / parentSize) * this.#growLimit;
-
 			resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
 			resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
-
+			resolve();
 		})
+	}
+
+	closeFlex(resizeTarget){
+		if( ! resizeTarget.hasAttribute('data-is_resize') || 
+			resizeTarget.dataset.is_resize == false	
+		){
+			return;
+		}else if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
+			resizeTarget.dataset.grow = 0;
+			return;
+		}
+		let prevGrow = parseFloat(resizeTarget.style.flex.split(' ')[0]);
+		resizeTarget.dataset.grow = 0;
+		resizeTarget.__resizePanel.nextElementSibling.style.flex =
+			parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) + prevGrow + ' 1 0%';
+	}
+
+	openFlex(resizeTarget){
+		if( ! resizeTarget.hasAttribute('data-is_resize') || 
+			resizeTarget.dataset.is_resize == false
+		){
+			return;
+		}else if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
+			resizeTarget.dataset.grow = 1;
+			return;
+		}
+		let prevGrow = parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) - 1;
+
+		resizeTarget.dataset.grow = prevGrow == 0 ? 1 : prevGrow;
+
+		resizeTarget.__resizePanel.nextElementSibling.dataset.grow = 1;
+	}
+
+	reflex(resizePanel){
+		/*
+		return new Promise(resolve=>{
+			this.getResizeRequiredObject(resizePanel).then(obj => {
+				let targetSize = obj.targetRect[this.targetDirection];
+				let nextElementSize = obj.nextElementRect[this.nextElementDirection]
+				obj.targetSize = targetSize;
+				obj.nextElementSize = nextElementSize;
+				this.resize(resizePanel, obj);
+			})
+			resolve();
+		});
+		*/
+		/*
+		return new Promise(resolve=>{
+			Promise.all(this.resizeTargetList.map(async resizeTarget=>{
+				if(resizePanel == resizeTarget.__resizePanel || ! resizeTarget.__resizePanel.nextElementSibling){
+					return Promise.resolve();
+				}
+				return this.getResizeRequiredObject(resizeTarget.__resizePanel).then(obj => {
+					let targetSize = obj.targetRect[this.targetDirection];
+					let nextElementSize = obj.nextElementRect[this.nextElementDirection]
+					obj.targetSize = targetSize;
+					obj.nextElementSize = nextElementSize;
+					return {resizePanel, obj}
+				})
+			})).then(flexTargetList => {
+				flexTargetList.filter(e=> e != undefined).forEach( ({resizePanel, obj}) => {
+					console.log(obj.targetSize);
+					let targetFlexGrow = (obj.targetSize / obj.parentSize) * this.#growLimit;
+					resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
+				})
+			})
+			resolve();
+		});
+		*/
 	}
 
 	attributeChangedCallback(name, oldValue, newValue){

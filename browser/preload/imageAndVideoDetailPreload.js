@@ -92,4 +92,4 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 })
-//document.querySelector('img').style = 
+//document.querySelector('img').style =
