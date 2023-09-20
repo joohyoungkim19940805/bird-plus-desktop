@@ -50,6 +50,7 @@ class FlexLayout extends HTMLElement {
 				display: flex;
 				justify-content: center;
 				flex: 0 0 0.1%;
+				position: relative;
 				-moz-user-select: -moz-none;
 				-khtml-user-select: none;
 				-webkit-user-select: none;
@@ -307,16 +308,13 @@ class FlexLayout extends HTMLElement {
 	 * @param {HTMLElement} resizePanel 
 	 */
 	#addResizePanelEvent(resizePanel){
-		
 		resizePanel.addEventListener('mousedown', () => {
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 			document.body.style.cursor = this.resizeCursor;
 		})
 		window.addEventListener('mouseup', (event) => {
-			if( resizePanel.hasAttribute('data-is_mouse_down')) {
-				resizePanel.removeAttribute('data-is_mouse_down');
-			}
+			resizePanel.removeAttribute('data-is_mouse_down');
 			
 			resizePanel.querySelector('.hover').removeAttribute('data-is_hover', '');
 			
@@ -333,14 +331,8 @@ class FlexLayout extends HTMLElement {
 				return;
 			}
 			// 부모요소 width 계산, 자기 자신 요소 width 마우스 위치값 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex grow 반영
-			this.getResizeRequiredObject(resizePanel).then(obj => {
-				let targetSize = event[this.xy] - obj.targetRect[this.targetDirection];
-				let nextElementSize = obj.nextElementRect[this.nextElementDirection] - event[this.xy];
-				obj.targetSize = targetSize;
-				obj.nextElementSize = nextElementSize;
-				return obj;	
-			})
-			.then(obj => this.resize(resizePanel, obj));
+			this.getResizeRequiredObject(resizePanel)
+			.then(obj => this.resize(resizePanel, event[this.xy], obj));
 
 		})
 	}
@@ -355,8 +347,8 @@ class FlexLayout extends HTMLElement {
 			let parentSize = this.getBoundingClientRect()[this.sizeName];
 
 			let minSizeName = 'min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1);
-			let targetMinSize = parseFloat(window.getComputedStyle(resizePanel.__resizeTarget)[minSizeName]);
-			let nextElementMinSize = parseFloat(window.getComputedStyle(resizePanel.nextElementSibling)[minSizeName]);
+			let targetMinSize = parseFloat(window.getComputedStyle(resizePanel.__resizeTarget)[minSizeName]) || 1;
+			let nextElementMinSize = parseFloat(window.getComputedStyle(resizePanel.nextElementSibling)[minSizeName]) || 1;
 			resolve({
 				targetElement,
 				nextElement,
@@ -370,7 +362,7 @@ class FlexLayout extends HTMLElement {
 		})
 	}
 
-	resize(resizePanel, {
+	resize(resizePanel, mousePosition, {
 		targetElement,
 		nextElement,
 		targetRect,
@@ -379,36 +371,98 @@ class FlexLayout extends HTMLElement {
 		minSizeName,
 		targetMinSize,
 		nextElementMinSize,
-		targetSize,
-		nextElementSize
 	}){
 		return new Promise(resolve => {
-			console.log('targetSize', targetSize);
-			console.log('targetElement', targetElement);
-			console.log('nextElementSize', nextElementSize);
-			console.log('nextElement', nextElement);
-			console.log('resizePanel', resizePanel);
-			if(targetSize <= 0 || (isNaN(targetMinSize) ? false : targetMinSize >= targetSize)){
-				//targetSize = 0
-				//nextElementWidth = targetRect.width + nextElementRect[sizeName]
-				nextElementSize = nextElementRect[this.sizeName]
-				let previousElement = targetElement.previousElementSibling.__resizeTarget;
-				let previousElementSize = previousElement.getBoundingClientRect()[this.sizeName] - targetSize;
-				let previousMinSize =  parseFloat(window.getComputedStyle(previousElement)[minSizeName]);
-				if(previousElement){
-					let previousElementFlexGrow = ( previousElementSize / (parentSize - previousMinSize - 1)) * this.#growLimit;
-					previousElement.style.flex = `${previousElementFlexGrow} 1 0%`;
-				}
-				targetSize = 0
-			}else if(nextElementSize <= 0 || (isNaN(nextElementMinSize) ? false : nextElementMinSize >= nextElementSize)){
-				//targetWidth = targetRect[sizeName] + nextElementRect.width;
-				targetSize = targetRect[this.sizeName];
-				nextElementSize = 0
+			let targetSize = mousePosition - targetRect[this.targetDirection];
+			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
+			let overMoveList = []
+			const isOverMove = (elementSize, elementMinSize) => {
+				return elementSize <= 0 || (isNaN(elementSize) ? false : elementMinSize >= elementSize);
 			}
-			let targetFlexGrow = (targetSize / (parentSize - targetMinSize - 1)) * this.#growLimit;
-			let nextElementFlexGrow = (nextElementSize / (parentSize - targetMinSize - 1)) * this.#growLimit;
-			resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
-			resizePanel.nextElementSibling.style.flex = `${nextElementFlexGrow} 1 0%`;
+			const addOverMoveList = (element, elementSize, elementMinSize, elementRect) => {
+				overMoveList.push({
+					element,
+					elementSize,
+					elementMinSize,
+					elementRect
+				});
+			}
+			const overMoveProcessing = (element, direction = 'previousElementSibling') => {
+				new Promise(resolve =>{
+					let overElement = element[direction]?.[direction];
+					let overElementRect;
+					let overElementSize;
+					let overElementMinSize;
+					if(overElement){
+						overElementRect = overElement.getBoundingClientRect();
+						if(direction === 'previousElementSibling'){
+							overElementSize = mousePosition - overElementRect[this.targetDirection];
+						}else{
+							overElementSize = overElementRect[this.nextElementDirection] - mousePosition;
+						}
+						overElementMinSize = parseFloat(window.getComputedStyle(overElement)[minSizeName]) || 0;
+						if(isOverMove(overElementSize, overElementMinSize)){
+							addOverMoveList(overElement, 0, overElementMinSize, overElementRect);
+							let loopOverElement = overElement[direction]?.[direction];
+							let loopOverElementRect;
+							let loopOverElementSize;
+							let loopOverElementMinSize;
+
+							while(loopOverElement){
+
+								loopOverElementRect = loopOverElement.getBoundingClientRect();
+								if(direction === 'previousElementSibling'){
+									loopOverElementSize = mousePosition - loopOverElementRect[this.targetDirection];
+								}else{
+									loopOverElementSize = loopOverElementRect[this.nextElementDirection] - mousePosition;
+								}
+								loopOverElementMinSize =  parseFloat(window.getComputedStyle(loopOverElement)[minSizeName]) || 0;
+								
+								if(isOverMove(loopOverElement, loopOverElementSize)){
+									addOverMoveList(loopOverElement, 0, loopOverElementMinSize, loopOverElementRect);
+								}else{
+									addOverMoveList(loopOverElement, loopOverElementSize, loopOverElementMinSize, loopOverElementRect);
+								}
+		
+								loopOverElement = loopOverElement[direction]?.[direction];
+
+							}
+						}else{
+							addOverMoveList(overElement, overElementSize, overElementMinSize, overElementRect);
+						}
+					}
+					resolve();
+				});
+			}
+
+			if(isOverMove(targetSize, targetMinSize)){
+				overMoveProcessing(targetElement, 'previousElementSibling')
+				nextElementSize = nextElementRect[this.sizeName]
+				targetSize = 0;
+			}else if(isOverMove(nextElementSize, nextElementMinSize)){
+				overMoveProcessing(nextElement, 'nextElementSibling')
+				targetSize = targetRect[this.sizeName];
+				nextElementSize = 0;
+			}
+
+			let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
+			let nextElementFlexGrow = (nextElementSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
+			targetElement.style.flex = `${targetFlexGrow} 1 0%`;
+			nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
+
+			overMoveList.reverse().forEach(({
+				element,
+				elementSize,
+				elementMinSize,
+				elementRect
+			}, i)=>{
+				if(elementRect.height <= elementSize){
+					return;
+				}
+				let flexGrow = (elementSize / (parentSize - elementMinSize - 1)) * this.#growLimit;
+				element.style.flex = `${flexGrow} 1 0%`;
+			})
+			
 			resolve();
 		})
 	}

@@ -123,6 +123,8 @@
     position: relative;
     background-color: white;
     border-top: solid 2px #00000012;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
 }
 
 #chatting_info_wrapper .chatting_content_list > li .time_grouping .time_grouping_text{
