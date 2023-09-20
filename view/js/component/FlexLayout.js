@@ -196,7 +196,7 @@ class FlexLayout extends HTMLElement {
 				// 뷰포트 내에서 보이는 경우
 				target.style.visibility = '';
 				target.style.opacity = '';
-				target.style.visibility = 'h';
+				target.style.visibility = 'v';
 				//console.log('show!')
 			}
 		});
@@ -208,7 +208,7 @@ class FlexLayout extends HTMLElement {
 	sizeName;
 	resizeCursor;
 
-	resizeTargetList = [];
+	forResizeList = [];
 
 	constructor(){
 		super();
@@ -232,41 +232,15 @@ class FlexLayout extends HTMLElement {
 							attributeFilter:['style'],
 							attributeOldValue:true
 						});
-						this.resizeTargetList.push(childElement);
 					}
 				});
-				let forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
-				this.#growLimit = forResizeList.length;
-
-				new Promise(resolve => {
-					let notGrowList = [];
-					let remain = forResizeList.reduce((t,e,i)=>{
+				
+				this.remain().then(forResizeList=>{
+					forResizeList.forEach(e=>{
 						this.#growChangeObserver.observe(e, {
 							attributeFilter:['data-grow'],
 						})
-						if(e.hasAttribute('data-grow') == false){
-							notGrowList.push(e);
-							return t;
-						}
-						let grow = parseFloat(e.dataset.grow);
-						e.style.flex = `${grow} 1 0%`;
-						t -= grow;
-						return t;
-					}, this.#growLimit);
-
-					const resizeFun = (list) => {
-						let resizeWeight = (remain - list.length) / list.length;
-						list.forEach(e=>{
-							e.style.flex = `${1 + resizeWeight} 1 0%`;
-						});
-					}
-					if(notGrowList.length == 0){
-						resizeFun(forResizeList);
-					}else{
-						resizeFun(notGrowList);
-					}
-
-					resolve();
+					})
 				});
 			});
 		})
@@ -377,7 +351,7 @@ class FlexLayout extends HTMLElement {
 			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
 			let overMoveList = []
 			const isOverMove = (elementSize, elementMinSize) => {
-				return elementSize <= 0 || (isNaN(elementSize) ? false : elementMinSize >= elementSize);
+				return elementSize <= 0 || (isNaN(elementSize) ? false : elementMinSize + 1 >= elementSize);
 			}
 			const addOverMoveList = (element, elementSize, elementMinSize, elementRect) => {
 				overMoveList.push({
@@ -462,100 +436,121 @@ class FlexLayout extends HTMLElement {
 				let flexGrow = (elementSize / (parentSize - elementMinSize - 1)) * this.#growLimit;
 				element.style.flex = `${flexGrow} 1 0%`;
 			})
-			
+
 			resolve();
 		})
 	}
 
 	closeFlex(resizeTarget){
-		if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
-			return;
-		}
+		return new Promise(resolve=>{
+			if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
+				resolve(resizeTarget);
+				return;
+			}
 
-		resizeTarget.style.transition = 'flex 0.5s';
-		resizeTarget.ontransitionend = () => {
-			resizeTarget.style.transition = '';
-		}
+			resizeTarget.style.transition = 'flex 0.5s';
+			resizeTarget.ontransitionend = () => {
+				resizeTarget.style.transition = '';
+			}
+			
+			let notOpenTargetList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget)
+			if(notOpenTargetList.length == 1){
+				notOpenTargetList.forEach(e=>{
+					e.style.flex = '1 1 0%';
+				})
+			}
 
-		if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
+			if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
+				resizeTarget.dataset.grow = 0;
+				resolve(resizeTarget);
+				return;
+			}
+
+			resizeTarget.__resizePanel.nextElementSibling.style.transition = 'flex 0.5s';
+			resizeTarget.__resizePanel.nextElementSibling.ontransitionend = () => {
+				resizeTarget.__resizePanel.nextElementSibling.style.transition = '';
+			}
+
+			let prevGrow = parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) + parseFloat(resizeTarget.style.flex.split(' ')[0]);
+			
 			resizeTarget.dataset.grow = 0;
-			return;
-		}
+			resizeTarget.__resizePanel.nextElementSibling.dataset.grow = prevGrow;
 
-		resizeTarget.__resizePanel.nextElementSibling.style.transition = 'flex 0.5s';
-		resizeTarget.__resizePanel.nextElementSibling.ontransitionend = () => {
-			resizeTarget.__resizePanel.nextElementSibling.style.transition = '';
-		}
-
-		let prevGrow = parseFloat(resizeTarget.style.flex.split(' ')[0]);
-		resizeTarget.dataset.grow = 0;
-		resizeTarget.__resizePanel.nextElementSibling.style.flex =
-			parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) + prevGrow + ' 1 0%';
+			resolve(resizeTarget);
+		});
 	}
 
 	openFlex(resizeTarget){
-		if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
-			return;
-		}
+		return new Promise(resolve=>{
+			if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
+				resolve(resizeTarget)
+				return;
+			}
 
-		resizeTarget.style.transition = 'flex 0.5s';
-		resizeTarget.ontransitionend = () => {
-			resizeTarget.style.transition = '';
-		}
+			resizeTarget.style.transition = 'flex 0.5s';
+			resizeTarget.ontransitionend = () => {
+				resizeTarget.style.transition = '';
+			}
 
-		if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
-			resizeTarget.dataset.grow = 1;
-			return;
-		}
+			let notOpenTargetList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget)
+			if(notOpenTargetList.length == 1){
+				notOpenTargetList.forEach(e=>{
+					e.style.flex = '1 1 0%';
+				})
+			}
 
-		resizeTarget.__resizePanel.nextElementSibling.style.transition = 'flex 0.5s';
-		resizeTarget.__resizePanel.nextElementSibling.ontransitionend = () => {
-			resizeTarget.__resizePanel.nextElementSibling.style.transition = '';
-		}
+			if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
+				resizeTarget.dataset.grow = 1;
+				resolve(resizeTarget)
+				return;
+			}
 
-		let prevGrow = parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) - 1;
+			resizeTarget.__resizePanel.nextElementSibling.style.transition = 'flex 0.5s';
+			resizeTarget.__resizePanel.nextElementSibling.ontransitionend = () => {
+				resizeTarget.__resizePanel.nextElementSibling.style.transition = '';
+			}
 
-		resizeTarget.dataset.grow = prevGrow == 0 ? 1 : prevGrow;
+			let prevGrow = parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) - 1;
 
-		resizeTarget.__resizePanel.nextElementSibling.dataset.grow = 1;
+			resizeTarget.dataset.grow = prevGrow == 0 ? 1 : prevGrow;
+
+			resizeTarget.__resizePanel.nextElementSibling.dataset.grow = 1;
+			resolve(resizeTarget)
+		})
 	}
 
-	reflex(resizePanel){
-		/*
-		return new Promise(resolve=>{
-			this.getResizeRequiredObject(resizePanel).then(obj => {
-				let targetSize = obj.targetRect[this.targetDirection];
-				let nextElementSize = obj.nextElementRect[this.nextElementDirection]
-				obj.targetSize = targetSize;
-				obj.nextElementSize = nextElementSize;
-				this.resize(resizePanel, obj);
-			})
-			resolve();
-		});
-		*/
-		/*
-		return new Promise(resolve=>{
-			Promise.all(this.resizeTargetList.map(async resizeTarget=>{
-				if(resizePanel == resizeTarget.__resizePanel || ! resizeTarget.__resizePanel.nextElementSibling){
-					return Promise.resolve();
+	remain(){
+		return new Promise(resolve => {
+
+			this.forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
+			this.#growLimit = this.forResizeList.length;
+
+			let notGrowList = [];
+			let remain = this.forResizeList.reduce((t,e,i)=>{
+				if(e.hasAttribute('data-grow') == false){
+					notGrowList.push(e);
+					return t;
 				}
-				return this.getResizeRequiredObject(resizeTarget.__resizePanel).then(obj => {
-					let targetSize = obj.targetRect[this.targetDirection];
-					let nextElementSize = obj.nextElementRect[this.nextElementDirection]
-					obj.targetSize = targetSize;
-					obj.nextElementSize = nextElementSize;
-					return {resizePanel, obj}
-				})
-			})).then(flexTargetList => {
-				flexTargetList.filter(e=> e != undefined).forEach( ({resizePanel, obj}) => {
-					console.log(obj.targetSize);
-					let targetFlexGrow = (obj.targetSize / obj.parentSize) * this.#growLimit;
-					resizePanel.__resizeTarget.style.flex = `${targetFlexGrow} 1 0%`;
-				})
-			})
-			resolve();
+				let grow = parseFloat(e.dataset.grow);
+				e.style.flex = `${grow} 1 0%`;
+				t -= grow;
+				return t;
+			}, this.#growLimit);
+
+			const resizeFun = (list) => {
+				let resizeWeight = (remain - list.length) / list.length;
+				list.forEach(e=>{
+					e.style.flex = `${1 + resizeWeight} 1 0%`;
+				});
+			}
+			if(notGrowList.length == 0){
+				resizeFun(this.forResizeList);
+			}else{
+				resizeFun(notGrowList);
+			}
+
+			resolve(this.forResizeList);
 		});
-		*/
 	}
 
 	attributeChangedCallback(name, oldValue, newValue){
