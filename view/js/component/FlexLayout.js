@@ -351,7 +351,7 @@ class FlexLayout extends HTMLElement {
 			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
 			let overMoveList = []
 			const isOverMove = (elementSize, elementMinSize) => {
-				return elementSize <= 0 || (isNaN(elementSize) ? false : elementMinSize + 1 >= elementSize);
+				return elementSize <= 0 || (isNaN(elementMinSize) ? false : elementMinSize >= Math.floor(elementSize));
 			}
 			const addOverMoveList = (element, elementSize, elementMinSize, elementRect) => {
 				overMoveList.push({
@@ -418,9 +418,8 @@ class FlexLayout extends HTMLElement {
 				targetSize = targetRect[this.sizeName];
 				nextElementSize = 0;
 			}
-
 			let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
-			let nextElementFlexGrow = (nextElementSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
+			let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
 			targetElement.style.flex = `${targetFlexGrow} 1 0%`;
 			nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
 
@@ -434,7 +433,7 @@ class FlexLayout extends HTMLElement {
 					return;
 				}
 				let flexGrow = (elementSize / (parentSize - elementMinSize - 1)) * this.#growLimit;
-				element.style.flex = `${flexGrow} 1 0%`;
+				element.style.flex = `${overMoveList.length + 1 < flexGrow ? overMoveList.length + 1 : flexGrow} 1 0%`;
 			})
 
 			resolve();
@@ -452,16 +451,17 @@ class FlexLayout extends HTMLElement {
 			resizeTarget.ontransitionend = () => {
 				resizeTarget.style.transition = '';
 			}
-			
+
 			let notOpenTargetList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget)
 			if(notOpenTargetList.length == 1){
 				notOpenTargetList.forEach(e=>{
 					e.style.flex = '1 1 0%';
 				})
 			}
-
+			console.log(this.forResizeList.length - notOpenTargetList.length + 1)
 			if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
 				resizeTarget.dataset.grow = 0;
+				this.remain();
 				resolve(resizeTarget);
 				return;
 			}
@@ -472,8 +472,9 @@ class FlexLayout extends HTMLElement {
 			}
 
 			let prevGrow = parseFloat(resizeTarget.__resizePanel.nextElementSibling.style.flex.split(' ')[0]) + parseFloat(resizeTarget.style.flex.split(' ')[0]);
-			
+
 			resizeTarget.dataset.grow = 0;
+
 			resizeTarget.__resizePanel.nextElementSibling.dataset.grow = prevGrow;
 
 			resolve(resizeTarget);
@@ -497,10 +498,12 @@ class FlexLayout extends HTMLElement {
 				notOpenTargetList.forEach(e=>{
 					e.style.flex = '1 1 0%';
 				})
+				this.remain();
 			}
 
 			if(! resizeTarget.__resizePanel.nextElementSibling || resizeTarget.__resizePanel.nextElementSibling.dataset.grow == 0){
 				resizeTarget.dataset.grow = 1;
+				this.remain();
 				resolve(resizeTarget)
 				return;
 			}
