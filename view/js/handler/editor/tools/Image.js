@@ -50,7 +50,7 @@ export default class Image extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -130,11 +130,11 @@ export default class Image extends FreedomInterface {
 
     file = new DataTransfer().files;
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Image.defaultStyle.textContent != '' && Image.defaultStyle.textContent && Image.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Image.defaultStyle.textContent == '' && Image.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Image.createDefaultStyle();
-			Image.defaultStyle.toggleAttribute('data-is_update');
+			Image.defaultStyle.setAttribute('data-is_update', true);
 		}
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){

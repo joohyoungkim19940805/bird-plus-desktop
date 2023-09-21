@@ -49,7 +49,7 @@ export default class Underline extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -76,11 +76,11 @@ export default class Underline extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Underline, dataset);
-		if(Underline.defaultStyle.textContent != '' && Underline.defaultStyle.textContent && Underline.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Underline.defaultStyle.textContent == '' && Underline.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Underline.createDefaultStyle();
-			Underline.defaultStyle.toggleAttribute('data-is_update');
+			Underline.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Underline.palette.r + ',' + Underline.palette.g + ',' + Underline.palette.b + ',' + Underline.palette.a;

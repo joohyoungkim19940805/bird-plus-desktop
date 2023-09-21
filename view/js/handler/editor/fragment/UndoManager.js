@@ -129,12 +129,8 @@ export default class UndoManager{
 
             if(key == 'z'){
                 this.undoKeyEvent();
-                console.log(this.#history);
-                console.log(this.#historyIndex);
             }else{
                 this.redoKeyEvent();
-                console.log(this.#history);
-                console.log(this.#historyIndex);
             }
 
             let cursorTarget = this.#editor.querySelector('[is_cursor]');
@@ -180,7 +176,6 @@ export default class UndoManager{
     }
 
     addUserInput(){
-        
         let isWait = false;
         let isUndoSwitch = false;
         this.#editor.addEventListener('keydown', (event) => {
@@ -206,7 +201,6 @@ export default class UndoManager{
             }
             
             setTimeout(()=>{
-
 
                 let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
                 this.#history.unshift(undoRedo);

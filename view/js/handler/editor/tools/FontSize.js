@@ -59,9 +59,9 @@ export default class FontSize extends FreedomInterface {
 			}
 		})
 
-        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -89,11 +89,11 @@ export default class FontSize extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(FontSize, dataset);
-        if(FontSize.defaultStyle.textContent != '' && FontSize.defaultStyle.textContent && FontSize.defaultStyle.hasAttribute('data-is_update') == false){
+        if(FontSize.defaultStyle.textContent == '' && FontSize.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			FontSize.createDefaultStyle();
-			FontSize.defaultStyle.toggleAttribute('data-is_update');
+			FontSize.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.font_size = FontSize.fontSizeBox.selectedFont?.style.fontSize;

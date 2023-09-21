@@ -30,7 +30,7 @@ export default class Quote extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -62,11 +62,11 @@ export default class Quote extends FreedomInterface {
 
 	parentLine;
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Quote, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Quote.defaultStyle.textContent != '' && Quote.defaultStyle.textContent && Quote.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Quote.defaultStyle.textContent == '' && Quote.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Quote.createDefaultStyle();
-			Quote.defaultStyle.toggleAttribute('data-is_update');
+			Quote.defaultStyle.setAttribute('data-is_update', true);
 		}
 
 		super.connectedAfterOnlyOneCallback = () => {

@@ -19,10 +19,10 @@ export default class RoomContainer{
 		//roomFavoritesList.element.dataset.grow = 0;
 
 		roomList.element.dataset.is_resize = true;
-		//roomList.element.dataset.grow = 0;
+		roomList.element.dataset.grow = 0;
 
 		roomMessengerList.element.dataset.is_resize = true;
-		//roomMessengerList.element.dataset.grow = 0;
+		roomMessengerList.element.dataset.grow = 0;
 
 		this.#contentWrapperList = [roomMenuList.element, roomFavoritesList.element, roomList.element, roomMessengerList.element]
 

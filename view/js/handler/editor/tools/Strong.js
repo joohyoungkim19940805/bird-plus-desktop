@@ -27,7 +27,7 @@ export default class Strong extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -54,11 +54,11 @@ export default class Strong extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Strong, dataset);
-		if(Strong.defaultStyle.textContent != '' && Strong.defaultStyle.textContent && Strong.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Strong.defaultStyle.textContent == '' && Strong.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Strong.createDefaultStyle();
-			Strong.defaultStyle.toggleAttribute('data-is_update');
+			Strong.defaultStyle.setAttribute('data-is_update', true);
 		}
 	}
 	

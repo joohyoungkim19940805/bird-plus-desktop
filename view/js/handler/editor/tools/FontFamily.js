@@ -75,10 +75,10 @@ export default class FontFamily extends FreedomInterface {
                 this.fontFamilyBox.close();
 			}
 		})
-
-        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -101,11 +101,11 @@ export default class FontFamily extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(FontFamily, dataset);
-        if(FontFamily.defaultStyle.textContent != '' && FontFamily.defaultStyle.textContent && FontFamily.defaultStyle.hasAttribute('data-is_update') == false){
+        if(FontFamily.defaultStyle.textContent == '' && FontFamily.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			FontFamily.createDefaultStyle();
-			FontFamily.defaultStyle.toggleAttribute('data-is_update');
+			FontFamily.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.font_family = FontFamily.fontFamilyBox.selectedFont?.style.fontFamily;

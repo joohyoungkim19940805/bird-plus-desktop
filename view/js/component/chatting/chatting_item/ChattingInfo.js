@@ -10,8 +10,6 @@ export default new class ChattingInfo{
     #page = 0;
 	#size = 10;
 
-    #oneDayMils = 1000 * 60 * 60 * 24;
-
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_info_wrapper',
         innerHTML: `
@@ -83,6 +81,16 @@ export default new class ChattingInfo{
 
     #liList = [];
 
+    #second = 1000;
+    #minute = this.#second * 60;
+    #hour = this.#minute * 60;
+    #day = this.#hour * 24;
+    /*
+    this.timerElement.querySelector('.hour').textContent = `${Math.floor( ms / this.hour )}`.padStart(2,'0');
+    this.timerElement.querySelector('.minute').textContent = `${Math.floor( ms % this.hour / this.minute )}`.padStart(2,'0');
+    this.timerElement.querySelector('.seconds').textContent = `${Math.floor( ms % this.minute / this.second )}`.padStart(2,'0');
+    this.timerElement.querySelector('.millisecond').textContent = `${ ms % this.second }`.padStart(2,'0').slice(0, 2);
+    */
     constructor(){
 
         chattingHandler.addChattingEventListener = {
@@ -92,7 +100,7 @@ export default new class ChattingInfo{
                     this.#elementMap.chattingContentList.prepend(liElement);
                     this.#addChattingMemory(liElement)
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
-                        this.#elementMap.chattingContentList.scrollHeight
+                        9999999
                     )
                     this.#processingTimeGrouping(
                         this.#liList[0],
@@ -283,7 +291,7 @@ export default new class ChattingInfo{
             let currentDateYearMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
             let diffMils = prevDateYearMonth.getTime() - currentDateYearMonth.getTime();
 
-            if(Math.abs(diffMils) < this.#oneDayMils){
+            if(Math.abs(diffMils) < this.#day){
                 resolve();
                 return;
             }else if(prevItem.querySelector('.time_grouping')){
@@ -292,10 +300,8 @@ export default new class ChattingInfo{
             }
 
             let timeText;
-            console.log(Math.abs(prevDate.getTime() - new Date().getTime()));
-            console.log(this.#oneDayMils);
             
-            if(Math.abs(prevDate.getTime() - new Date().getTime()) <= this.#oneDayMils){
+            if(prevDate.toDateString() == new Date().toDateString()){
                 timeText = '오늘'
             }else{
                 timeText = prevDate.toLocaleDateString(undefined, {

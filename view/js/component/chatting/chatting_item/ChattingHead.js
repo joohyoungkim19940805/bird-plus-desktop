@@ -12,7 +12,6 @@ export default new class ChattingHead{
         <div class="chatting_head_container" data-bind_name="chattingHeadContainer">
             <div class="chatting_head_info_wrapper list_scroll list_scroll-x" data-bind_name="chattingHeadInfoWrapper">
                 <div class="chatting_head_info_container">
-                    즐겨찾기 수정 예정 메모리 관련 이슈 및 20230919
                     <h3 class="chatting_head_title" data-bind_name="chattingHeadTitle"></h3>
                     <span class="chatting_head_joined_count" data-bind_name="chattingHeadJounedCount"></span>
                 </div>
@@ -104,9 +103,7 @@ export default new class ChattingHead{
             this.#addChattingHeadMemory(this.createLiElement(event), event.roomId);
 
             if(event.roomId == this.#roomId){
-                console.log(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId])
                 let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId]);
-                console.log(memberList);
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -197,11 +194,14 @@ export default new class ChattingHead{
                 if(! result || result == ''){
                     this.#elementMap.favoritesAddButton.classList.remove('apply')
                     this.#elementMap.favoritesAddButton.textContent = '☆'
+                    delete roomFavoritesList.roomFavoritesMemory[workspaceHandler.workspaceId];
                 }else if(result.code == 0){
                     this.#elementMap.favoritesAddButton.classList.add('apply')
                     this.#elementMap.favoritesAddButton.textContent = '★'
+                    delete roomFavoritesList.roomFavoritesMemory[workspaceHandler.workspaceId];
                 }
                 roomFavoritesList.refresh();
+                
                 //workspaceHandler.workspaceId = workspaceHandler.workspaceId;
             })
         }

@@ -30,7 +30,7 @@ export default class BulletPoint extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -69,11 +69,11 @@ export default class BulletPoint extends FreedomInterface {
 
 	parentLine;
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(BulletPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(BulletPoint.defaultStyle.textContent != '' && BulletPoint.defaultStyle.textContent && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false){
+		if(BulletPoint.defaultStyle.textContent == '' && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			BulletPoint.createDefaultStyle();
-			BulletPoint.defaultStyle.toggleAttribute('data-is_update');
+			BulletPoint.defaultStyle.setAttribute('data-is_update', true);
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {

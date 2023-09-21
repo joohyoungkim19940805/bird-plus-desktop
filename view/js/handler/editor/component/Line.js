@@ -90,9 +90,7 @@ export default class Line {
 			this.lineElement[functionName] = this[functionName];
 		});
 		*/
-		if(this.isFirstLine == false){
-			this.lineElement.removeAttribute('placeholder')
-		}
+
 		this.lineElement.line = this;
 		/*
 		this.onkeyup = (event) => {

@@ -50,7 +50,6 @@ export default new class RoomList{
 				if(memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
-						.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 					);
 				}else{
 					promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
@@ -66,6 +65,13 @@ export default new class RoomList{
 				}
 				promise.then(liList => {
 					this.#liList.push(...liList);
+					this.#liList = Object.values(this.#liList.reduce((total, item)=>{
+						if(total.hasOwnProperty(item.dataset.room_id)){
+							return total;	
+						}
+						total[item.dataset.room_id] = item;
+						return total;
+					}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 					this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 					this.#lastItemVisibleObserver.disconnect();
 					let lastVisibleTarget = liList[liList.length - 1];
@@ -281,7 +287,6 @@ export default new class RoomList{
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
 				memory.flatMap(e=>Object.values(e))
-				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 			);
 		}else{
 			promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
@@ -297,6 +302,13 @@ export default new class RoomList{
 		}
 		promise.then(liList => {
 			this.#liList.push(...liList);
+			this.#liList = Object.values(this.#liList.reduce((total, item)=>{
+				if(total.hasOwnProperty(item.dataset.room_id)){
+					return total;	
+				}
+				total[item.dataset.room_id] = item;
+				return total;
+			}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 			this.#lastItemVisibleObserver.disconnect();
 			let lastVisibleTarget = liList[liList.length - 1];

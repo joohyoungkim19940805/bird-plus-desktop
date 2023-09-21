@@ -59,7 +59,7 @@ export default class Sort extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -89,11 +89,11 @@ export default class Sort extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-    constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Sort, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Sort.defaultStyle.textContent != '' && Sort.defaultStyle.textContent && Sort.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Sort.defaultStyle.textContent == '' && Sort.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Sort.createDefaultStyle();
-			Sort.defaultStyle.toggleAttribute('data-is_update');
+			Sort.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.text_align = Sort.sortBox.selectedSort?.textContent;

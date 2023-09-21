@@ -27,7 +27,7 @@ export default class Italic extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -59,11 +59,11 @@ export default class Italic extends FreedomInterface {
 	}
 
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Italic, dataset);
-		if(Italic.defaultStyle.textContent != '' && Italic.defaultStyle.textContent && Italic.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Italic.defaultStyle.textContent == '' && Italic.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Italic.createDefaultStyle();
-			Italic.defaultStyle.toggleAttribute('data-is_update');
+			Italic.defaultStyle.setAttribute('data-is_update', true);
 		}
 	}
 

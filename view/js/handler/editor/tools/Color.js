@@ -49,7 +49,7 @@ export default class Color extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -72,11 +72,11 @@ export default class Color extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Color, dataset);
-		if(Color.defaultStyle.textContent != '' && Color.defaultStyle.textContent && Color.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Color.defaultStyle.textContent == '' && Color.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Color.createDefaultStyle();
-			Color.defaultStyle.toggleAttribute('data-is_update');
+			Color.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Color.palette.r + ',' + Color.palette.g + ',' + Color.palette.b + ',' + Color.palette.a;

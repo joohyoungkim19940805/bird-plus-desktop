@@ -49,7 +49,7 @@ export default class Strikethrough extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -77,11 +77,11 @@ export default class Strikethrough extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Strikethrough, dataset);
-		if(Strikethrough.defaultStyle.textContent != '' && Strikethrough.defaultStyle.textContent && Strikethrough.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Strikethrough.defaultStyle.textContent == '' && Strikethrough.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Strikethrough.createDefaultStyle();
-			Strikethrough.defaultStyle.toggleAttribute('data-is_update');
+			Strikethrough.defaultStyle.setAttribute('data-is_update', true);
 		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Strikethrough.palette.r + ',' + Strikethrough.palette.g + ',' + Strikethrough.palette.b + ',' + Strikethrough.palette.a;

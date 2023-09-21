@@ -49,7 +49,7 @@ export default class Video extends FreedomInterface {
 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -136,11 +136,11 @@ export default class Video extends FreedomInterface {
      */
     files = new DataTransfer().files;
 
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Video.defaultStyle.textContent != '' && Video.defaultStyle.textContent && Video.defaultStyle.hasAttribute('data-is_update') == false){
+		if(Video.defaultStyle.textContent == '' && Video.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Video.createDefaultStyle();
-			Video.defaultStyle.toggleAttribute('data-is_update');
+			Video.defaultStyle.setAttribute('data-is_update', true);
 		}
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){

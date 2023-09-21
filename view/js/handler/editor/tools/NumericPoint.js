@@ -27,10 +27,10 @@ export default class NumericPoint extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
+		
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
-            document.head.append(this.createDefaultStyle());
+            document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
@@ -66,11 +66,11 @@ export default class NumericPoint extends FreedomInterface {
 
 	parentLine;
 	
-	constructor(dataset){
+	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(NumericPoint.defaultStyle.textContent != '' && NumericPoint.defaultStyle.textContent && NumericPoint.defaultStyle.hasAttribute('data-is_update') == false){
+		if(NumericPoint.defaultStyle.textContent == '' && NumericPoint.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			NumericPoint.createDefaultStyle();
-			NumericPoint.defaultStyle.toggleAttribute('data-is_update');
+			NumericPoint.defaultStyle.setAttribute('data-is_update', true);
 		}
 		
 		super.connectedAfterOnlyOneCallback = () => {
@@ -83,7 +83,6 @@ export default class NumericPoint extends FreedomInterface {
 		}
 
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
-			console.log('test<<<@22')
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

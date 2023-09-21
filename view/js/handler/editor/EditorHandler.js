@@ -39,7 +39,10 @@ export default class EditorHandler extends FreeWillEditor{
 			'free-will-editor-video' : Video,
 			'free-will-editor-code' : Code,
 		}
-		super(undefined, tools);
+		let option = {
+			isDefaultStyle : true
+		}
+		super(tools, option);
 
 		let toolbar = document.querySelector('#toolbar');
 		
@@ -70,15 +73,17 @@ export default class EditorHandler extends FreeWillEditor{
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
 			if(key == 'Enter' && altKey && this.innerText.replaceAll('\n', '') != ''){
-				console.log(workspaceHandler);
-				window.myAPI.chatting.sendChatting({
-					workspaceId: workspaceHandler.workspaceId,
-					roomId: roomHandler.roomId,
-					chatting: JSON.stringify(this.getLowDoseJSON())
-				}).then(res=>{
-					this.innerText = '';
-					console.log(res);
-				});
+				this.getLowDoseJSON().then(jsonList => {
+					window.myAPI.chatting.sendChatting({
+						workspaceId: workspaceHandler.workspaceId,
+						roomId: roomHandler.roomId,
+						chatting: JSON.stringify(jsonList)
+					}).then(res=>{
+						this.innerText = '';
+						console.log(res);
+					});
+				})
+
 			}
 		}
 	}
