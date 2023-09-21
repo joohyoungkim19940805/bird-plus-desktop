@@ -408,7 +408,7 @@ class FlexLayout extends HTMLElement {
 				targetSize = targetRect[this.sizeName];
 				nextElementSize = 0;
 			}
-			//if(targetRect.height)
+			
 			let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
 			let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
 			targetElement.style.flex = `${targetFlexGrow} 1 0%`;
@@ -452,7 +452,6 @@ class FlexLayout extends HTMLElement {
 						e.style.transition = '';
 					}
 					e.dataset.grow = this.forResizeList.length - notOpenTargetList.length + 1
-					console.log('e.dataset.grow', e.dataset.grow)
 				})
 			}
 			
@@ -474,8 +473,7 @@ class FlexLayout extends HTMLElement {
 					break;
 				}
 			}			
-			console.log('nextTarget',nextTarget, nextTarget?.dataset.grow);
-			console.log('notOpenTargetList',notOpenTargetList)
+
 			if(nextTarget && notOpenTargetList.length > 1){
 				nextTarget.dataset.grow = this.forResizeList.length - notOpenTargetList.length + 1
 			}
@@ -520,7 +518,7 @@ class FlexLayout extends HTMLElement {
 			notOpenTargetList.forEach(e=>{
 				e.dataset.grow = 1;
 			})
-			console.log('notOpenTargetList',notOpenTargetList);
+
 			if(notOpenTargetList.length > 1){
 				this.remain();
 			}
