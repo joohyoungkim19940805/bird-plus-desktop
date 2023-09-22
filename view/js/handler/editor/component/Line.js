@@ -325,7 +325,12 @@ export default class Line {
 			//console.log(fragment.childNodes);
 			//tool.append(...fragment.childNodes);
 			let childLine = new Line();
-			childLine.lineElement.append(...fragment.childNodes)
+			childLine.lineElement.append(...[...fragment.childNodes].map(e=>{
+				if(e.classList.contains(Line.toolHandler.defaultClass) && ! e.line){
+					new Line(e);
+				}
+				return e;
+			}))
 			tool.append(childLine.lineElement)
 			this.lineElement.replaceChildren(tool);
 			resolve(tool);
@@ -613,10 +618,11 @@ export default class Line {
 			let fragment = range.extractContents();
 			//console.log(fragment.childNodes);
 			//tool.append(...fragment.childNodes);
-			let childLine = new Line();
-			childLine.lineElement.append(...fragment.childNodes)
-			tool.append(childLine.lineElement)
-			this.lineElement.replaceChildren(tool);
+			let parent = tool.parentElement;
+			parent.append(...fragment.childNodes)
+			tool.remove();
+			console.log(parent);
+			this.lineElement.append(parent);
 			resolve(tool);
 		})
 	}
@@ -626,9 +632,7 @@ export default class Line {
 			let range = selection.getRangeAt(0);
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			let tool = Line.getTool(startContainer, TargetTool);
-			if( ! tool.constructor.toolHandler.isInline){
-				cancelBlockContent(range, tool)
-			}else if(isCollapsed){
+			if(! tool.shadowRoot && TargetTool.toolHandler.isInline && isCollapsed){
 				resolve();
 			} 
 			/*
@@ -655,7 +659,10 @@ export default class Line {
 				TargetTool.toolHandler.toolButton.dataset.tool_status = 'connected'
 				resolve();
 			}else{
-				if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
+				if(tool.shadowRoot || ! TargetTool.toolHandler.isInline){
+					this.#cancelBlockContent(range, tool)
+				}
+				else if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
 					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
 						console.log('cancelOnlyOneTool')
 						resolve(tool);

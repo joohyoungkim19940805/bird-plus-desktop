@@ -125,19 +125,21 @@ export default class FreedomInterface extends HTMLElement {
 						if( ! this.constructor.toolHandler.isInline){
 							let lastItemIndex;
 							resultList = [...addedNodes].map((e,i)=>{
-								if(e.nodeType != Node.ELEMENT_NODE || e.classList.contains(Line.toolHandler.defaultClass)){
+								if(e.nodeType != Node.ELEMENT_NODE){
+									return e;
+								} else if(e.classList.contains(Line.toolHandler.defaultClass)){
 									if( ! e.line){
 										new Line(e);
 									}
 									return e;
 								}
-								let line = this.parentEditor.createLine();
-								line.replaceChildren(e);
-								this.append(line);
+								let line = new Line(e);
+								line.lineElement.replaceChildren(e);
+								this.append(line.lineElement);
 								if( i == addedNodes.length - 1){
 									lastItemIndex = i;
 								}
-								return line;
+								return line.lineElement;
 							});
 							if(lastItemIndex){
 								resultList[lastItemIndex].line.lookAtMe();

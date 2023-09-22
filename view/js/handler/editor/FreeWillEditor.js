@@ -263,6 +263,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		
 		super.getLineRange(selection)
 		.then(({startLine, endLine}) => { 
+			console.log(startLine, endLine);
 			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine || startLine)
 		})
 		.then(lastApplyTool=> {
