@@ -14,7 +14,8 @@ export default class Italic extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'I',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Italic'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

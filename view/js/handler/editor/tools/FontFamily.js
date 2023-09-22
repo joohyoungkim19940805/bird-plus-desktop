@@ -37,7 +37,8 @@ export default class FontFamily extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'F',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+            title: 'Font Family'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

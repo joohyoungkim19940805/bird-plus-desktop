@@ -20,7 +20,8 @@ export default class Sort extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'Ξ',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'align'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

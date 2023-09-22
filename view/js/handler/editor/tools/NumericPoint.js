@@ -17,7 +17,8 @@ export default class NumericPoint extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '1.',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Numeric Point'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

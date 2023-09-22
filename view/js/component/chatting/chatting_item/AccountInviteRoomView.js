@@ -277,6 +277,9 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();
 		this.#accountInviteRoomViewAccountList.replaceChildren();
+		/*inviteAccountMapper.keys().forEach(k=>{
+			delete inviteAccountMapper[key];
+		})*/
 	}
 
 	set roomId(roomId){

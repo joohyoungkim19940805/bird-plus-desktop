@@ -17,7 +17,8 @@ export default class Quote extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'Q',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Quote'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

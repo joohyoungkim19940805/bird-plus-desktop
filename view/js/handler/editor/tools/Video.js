@@ -32,7 +32,8 @@ export default class Video extends FreedomInterface {
             className: `${this.#defaultStyle.id}-button`,
             innerHTML: `
                 <i class="${this.#defaultStyle.id} css-gg-video-icon"></i>
-            `
+            `,
+            title: 'Video'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

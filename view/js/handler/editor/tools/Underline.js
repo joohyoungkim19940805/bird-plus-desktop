@@ -17,7 +17,8 @@ export default class Underline extends FreedomInterface {
 		
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'U',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Underline'
         });
 
 		this.palette = new Palette({

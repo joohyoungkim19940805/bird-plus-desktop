@@ -18,7 +18,8 @@ export default class Color extends FreedomInterface {
 		
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'C',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Font Color'
         });
 
 		this.palette = new Palette({

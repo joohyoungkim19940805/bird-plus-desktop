@@ -18,7 +18,8 @@ export default class Background extends FreedomInterface {
 		
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'G',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Background Color'
         });
 
 		this.palette = new Palette({

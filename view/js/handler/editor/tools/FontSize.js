@@ -20,7 +20,8 @@ export default class FontSize extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '↑↓',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Font Size'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

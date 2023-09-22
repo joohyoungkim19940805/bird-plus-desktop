@@ -899,7 +899,7 @@ export default class Palette {
 		//position: fixed; 제거 20230517
 		this.#style.textContent = `
 			.palette-wrap{
-				background: #000000bf;
+				background: #343434;
 				padding: 0.9%;
 				width: ${this.#paletteVw}vw;
 				height: fit-content;

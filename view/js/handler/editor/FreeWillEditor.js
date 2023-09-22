@@ -128,7 +128,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						this.#startFirstLine();
 					}
 
-					if(this.innerText.length <= 1 && (this.#firstLine.childNodes[0]?.nodeName == 'BR' || this.innerText.includes('\u200B') || this.innerText.includes('\n'))){
+					if(
+						this.innerText.length <= 1 && 
+						this.#firstLine.childNodes[0]?.nodeName == 'BR'
+					){
 						this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
 					}else{
 						this.#firstLine.removeAttribute('data-placeholder');
@@ -253,14 +256,17 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
+		console.log(selection);
 		//if( ! anchorNodeLine || ! focusNodeLine){
 		//	return;
 		//}
 		
-		super.getLineRange(selection).then(({startLine, endLine})=> {
-			console.log(startLine);
-			console.log(endLine);
-			startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine || startLine)
+		super.getLineRange(selection)
+		.then(({startLine, endLine}) => { 
+			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine || startLine)
+		})
+		.then(lastApplyTool=> {
+			//selection.setPosition(lastApplyTool, 0)
 		})
 		/*
 		.then(tool=>{
@@ -277,14 +283,22 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#removerToos(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, focusNode} = selection;
+		/*
 		// 범위 선택 x인 경우 넘어가기
 		if(isCollapsed){
 			return;
-		}
+		}*/
 		super.getLineRange(selection).then(({startLine, endLine})=> {
-			console.log(startLine);
-			console.log(startLine.line);
 			startLine.line.cancelTool(TargetTool, selection, endLine);
+		}).then(()=>{
+			[...this.children]
+			.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
+			.forEach(lineElement=>{
+				if(lineElement.line.isLineEmpty()){
+					//lineElement.line = undefined;
+					//lineElement.remove();
+				}
+			})
 		})
 	}
 	

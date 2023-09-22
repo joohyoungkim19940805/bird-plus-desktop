@@ -17,7 +17,8 @@ export default class Strikethrough extends FreedomInterface {
 		
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'S',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Strikethrough'
         });
 
 		this.palette = new Palette({

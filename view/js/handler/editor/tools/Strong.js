@@ -14,7 +14,8 @@ export default class Strong extends FreedomInterface {
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: 'B',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Bold'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

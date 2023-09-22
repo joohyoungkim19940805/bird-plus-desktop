@@ -20,7 +20,8 @@ export default class Code extends FreedomInterface {
             className: `${this.#defaultStyle.id}-button`,
             innerHTML: `
                 <i class="${this.#defaultStyle.id} css-gg-code-icon"></i>
-            `
+            `,
+            title: 'Code Block'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

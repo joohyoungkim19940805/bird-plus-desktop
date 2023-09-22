@@ -47,6 +47,7 @@ export default new class ChattingHead{
 		
         this.#accountInviteRoomView = new AccountInviteRoomView(this);
 		this.#accountInviteRoomView.onOpenCloseCallBack = (status) => {
+            console.log('???',status)
 			this.#accountInviteRoomView.reset();
 			if(status == 'open'){
 				this.#accountInviteRoomView.callData(this.#accountInviteRoomView.page, this.#accountInviteRoomView.size, workspaceHandler.workspaceId, this.#accountInviteRoomView.form.fullName.value)

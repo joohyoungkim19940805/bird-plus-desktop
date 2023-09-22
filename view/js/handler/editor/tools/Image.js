@@ -33,7 +33,8 @@ export default class Image extends FreedomInterface {
             className: `${this.#defaultStyle.id}-button`,
             innerHTML: `
                 <i class="${this.#defaultStyle.id} css-gg-image-icon"></i>
-            `
+            `,
+            title: 'Image'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -194,7 +195,7 @@ export default class Image extends FreedomInterface {
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
             
             Image.imageBox.addImageHoverEvent(image);
-            if(this.nextSibling.tagName == 'BR'){
+            if(this.nextSibling?.tagName == 'BR'){
                 this.nextSibling.remove()
             }
         }
@@ -221,9 +222,9 @@ export default class Image extends FreedomInterface {
         
         description.dataset.open_status = '▼';
         
-        let slot = this.createSlot();
-        if(slot){
-            description.append(slot)
+        let slotList = this.createSlot();
+        if(slotList.length != 0){
+            description.append(...slotList)
         }
 
         description.onclick = (event) => {
@@ -273,22 +274,23 @@ export default class Image extends FreedomInterface {
      * @returns {HTMLSlotElement}
      */
     createSlot(){
-        let aticle = document.createElement('div');
+        //let aticle = document.createElement('div');
         
-        aticle.contentEditable = 'false';
-        aticle.draggable = 'false'; 
+        //aticle.contentEditable = 'false';
+        //aticle.draggable = 'false'; 
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
-            aticle.slot = Image.slotName;
-            this.append(aticle);
-            
-            let slot = Object.assign(document.createElement('slot'),{
-                name: Image.slotName
+            //aticle.slot = Image.slotName;
+             
+            return [...this.childNodes].map((e, i)=>{
+                e.slot = Image.slotName + '_' + i;
+                return Object.assign(document.createElement('slot'),{
+                    name: Image.slotName + '_' + i
+                });
+                //e.cloneNode(true)
             });
-            return slot;
         }else{
-            return undefined
+            return []
         }
 
     }

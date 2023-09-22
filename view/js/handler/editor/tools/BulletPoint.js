@@ -17,7 +17,8 @@ export default class BulletPoint extends FreedomInterface {
 		
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '●',
-            className: `${this.#defaultStyle.id}-button`
+            className: `${this.#defaultStyle.id}-button`,
+			title: 'Bullet Point'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{

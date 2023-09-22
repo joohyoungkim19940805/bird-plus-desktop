@@ -120,26 +120,34 @@ export default class FreedomInterface extends HTMLElement {
 				let {addedNodes, removedNodes} = mutation;
 				let connectedChildPromise = new Promise(resolve => {
 					if(addedNodes.length != 0){
+						
 						let resultList;
 						if( ! this.constructor.toolHandler.isInline){
-							let lastItemIndex = undefined;
+							let lastItemIndex;
 							resultList = [...addedNodes].map((e,i)=>{
-								if( ! Line.prototype.isPrototypeOf(e.line)){
-									let line = this.parentEditor.createLine();
-									line.replaceChildren(e);
-									this.append(line);
-									if( i == addedNodes.length - 1){
-										lastItemIndex = i;
+								if(e.nodeType != Node.ELEMENT_NODE || e.classList.contains(Line.toolHandler.defaultClass)){
+									if( ! e.line){
+										new Line(e);
 									}
-									return line;
+									return e;
 								}
-								return e;
+								let line = this.parentEditor.createLine();
+								line.replaceChildren(e);
+								this.append(line);
+								if( i == addedNodes.length - 1){
+									lastItemIndex = i;
+								}
+								return line;
 							});
-							resultList[resultList.length - 1].line.lookAtMe();
+							if(lastItemIndex){
+								resultList[lastItemIndex].line.lookAtMe();
+							}
 						}else{
 							resultList = addedNodes;
 						}
+						
 						this.connectedChildAfterCallBack(resultList);
+						this.connectedChildAfterCallBack(addedNodes);
 					}
 					resolve();
 				})
