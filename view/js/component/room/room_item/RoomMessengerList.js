@@ -49,7 +49,7 @@ export default new class RoomMessengerList{
 				this.#page += 1;
 				let promise;
 				let memory = Object.values(this.#roomMessengerMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
-				if(memory && memory.length != 0){
+				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
 					);

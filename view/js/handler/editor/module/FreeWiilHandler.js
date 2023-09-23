@@ -103,13 +103,7 @@ export default class FreeWiilHandler extends HTMLElement{
             }
             */
             if(key === 'Backspace'){
-                /*
-                this.getLineRange().then( ({startLine, endLine}) => {
-                    if(startLine == endLine && this.isLineEmpty(startLine)){
-                        console.log(222);
-                    }
-                })
-                */
+
             }else if (event.altKey && event.key == "Enter") {
 
             }
@@ -150,6 +144,12 @@ export default class FreeWiilHandler extends HTMLElement{
             }else{
                 let anchorNodeLine = Line.getLine(anchorNode);
                 let focusNodeLine = Line.getLine(focusNode);
+                if(anchorNodeLine == focusNodeLine){
+                    resolve({
+                        startLine: anchorNodeLine,
+                        endLine: focusNodeLine
+                    })
+                }
                 startAndEndLineObject = [...this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
                     if(item == anchorNodeLine || item == focusNodeLine){
                         let key = 'startLine';

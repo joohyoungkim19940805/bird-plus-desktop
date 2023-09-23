@@ -76,7 +76,7 @@ export default class BulletPoint extends FreedomInterface {
 			BulletPoint.createDefaultStyle();
 			BulletPoint.defaultStyle.setAttribute('data-is_update', true);
 		}
-		
+		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = BulletPoint.toolHandler.connectedFriends.length;
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -93,6 +93,7 @@ export default class BulletPoint extends FreedomInterface {
 				this.parentEditor.createLine();
 			}
         }
+		*/
 	}
 
 }

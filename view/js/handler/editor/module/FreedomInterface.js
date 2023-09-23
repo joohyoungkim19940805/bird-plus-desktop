@@ -8,6 +8,10 @@ export default class FreedomInterface extends HTMLElement {
 	static globalClickEventPromise = new Promise(resolve=>{
 		this.globalClickEventPromiseResolve = resolve;
 	});
+	static globalKeydownEventPromiseResolve;
+	static globalKeydownEventPromise = new Promise(resolve=>{
+		this.globalKeydownEventPromiseResolve = resolve;
+	})
 	
 	static{
 		document.addEventListener('mousemove', (event) => {
@@ -22,7 +26,12 @@ export default class FreedomInterface extends HTMLElement {
 				this.globalClickEventPromiseResolve = resolve;
 			})
 		})
-
+		window.addEventListener('keydown', (event) => {
+			this.globalKeydownEventPromiseResolve(event);
+			this.globalKeydownEventPromise = new Promise(resolve=>{
+				this.globalKeydownEventPromiseResolve = resolve;
+			})
+		})
 	}
 	static isMouseInnerElement(element){
 		if( ! this.globalMouseEvent) return;
@@ -32,13 +41,25 @@ export default class FreedomInterface extends HTMLElement {
 		let isMouseInnerY = ((y + height) >= clientY && y <= clientY);
 		return (isMouseInnerX && isMouseInnerY);
 	}
-
+	static globalKeydownEventListener(element, callBack = ({oldEvent, newEvent})=>{}){
+		let oldEvent = undefined;
+		let newEvent = undefined;
+		const simpleObserver = () => {
+			this.globalKeydownEventPromise.then((event)=>{
+				newEvent = event;
+				callBack({oldEvent, newEvent});
+				oldEvent = event;
+				simpleObserver();
+			})
+		}
+		simpleObserver();
+	}
 	/**
 	 * 
 	 * @param {HTMLElement} element 
 	 * @param {Function} callBack 
 	 */
-	static outClickElementListener(element, callBack = ({oldEvent, newEvent})=>{}){
+	static outClickElementListener(element, callBack = ({oldEvent, newEvent, isMouseOut = false})=>{}){
 
 		if(element == undefined || element?.nodeType != Node.ELEMENT_NODE){
 			throw new Error('element is not Element');
@@ -97,7 +118,7 @@ export default class FreedomInterface extends HTMLElement {
 			if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE){
 				document.removeEventListener('selectionchange', removeFun, true);
 				return;
-			}else if(this.isToolEmpty() || this.childNodes.length == 0){
+			}else if(this.isToolEmpty()){
 				let thisLine = this.parentEditor?.getLine(this);
 				this.remove();
 				if(thisLine){
@@ -114,6 +135,8 @@ export default class FreedomInterface extends HTMLElement {
 			Object.assign(this.dataset, dataset);
 		}
 
+		
+
 		let childListObserver = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				//console.log(mutation);
@@ -125,21 +148,16 @@ export default class FreedomInterface extends HTMLElement {
 						if( ! this.constructor.toolHandler.isInline){
 							let lastItemIndex;
 							resultList = [...addedNodes].map((e,i)=>{
-								if(e.nodeType != Node.ELEMENT_NODE){
-									return e;
-								} else if(e.classList.contains(Line.toolHandler.defaultClass)){
-									if( ! e.line){
-										new Line(e);
+								if( ! e.classList?.contains(Line.toolHandler.defaultClass)){
+									let lineElement = this.parentEditor.createLine();
+									lineElement.replaceChildren(e);
+									this.append(lineElement);
+									if( i == addedNodes.length - 1){
+										lastItemIndex = i;
 									}
-									return e;
+									return lineElement;
 								}
-								let line = new Line(e);
-								line.lineElement.replaceChildren(e);
-								this.append(line.lineElement);
-								if( i == addedNodes.length - 1){
-									lastItemIndex = i;
-								}
-								return line.lineElement;
+								return e;
 							});
 							if(lastItemIndex){
 								resultList[lastItemIndex].line.lookAtMe();
@@ -149,7 +167,7 @@ export default class FreedomInterface extends HTMLElement {
 						}
 						
 						this.connectedChildAfterCallBack(resultList);
-						this.connectedChildAfterCallBack(addedNodes);
+						//this.connectedChildAfterCallBack(addedNodes);
 					}
 					resolve();
 				})
@@ -165,6 +183,11 @@ export default class FreedomInterface extends HTMLElement {
 		});
 		childListObserver.observe(this, {childList:true})
 
+		if( ! this.constructor.toolHandler.isInline){
+			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
+				//console.log(newEvent);
+			})
+		}
 	}
 
 	connectedCallback(){

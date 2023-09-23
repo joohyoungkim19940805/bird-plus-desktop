@@ -114,7 +114,7 @@ export default class Code extends FreedomInterface {
 			Code.createDefaultStyle();
 			Code.defaultStyle.setAttribute('data-is_update', true);
 		}
-
+        /*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Code.toolHandler.connectedFriends.length;
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -131,6 +131,7 @@ export default class Code extends FreedomInterface {
 				this.parentEditor.createLine();
 			}
         }
+        */
 	}
 
 }

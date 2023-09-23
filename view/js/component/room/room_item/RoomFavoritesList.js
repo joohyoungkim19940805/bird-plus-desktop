@@ -48,7 +48,7 @@ export default new class RoomFavoritesList{
 				this.#page += 1;
 				let promise;
 				let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
-				if(memory && memory.length != 0){
+				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
 					);
@@ -262,7 +262,7 @@ export default new class RoomFavoritesList{
 		this.reset();
 		let promise;
 		let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId] || {});
-		if(memory && memory.length != 0 && this.#elementMap.searchName.value == ''){
+		if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
 				memory.flatMap(e=>Object.values(e))

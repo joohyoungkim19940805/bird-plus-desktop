@@ -47,7 +47,7 @@ export default new class RoomList{
 				this.#page += 1;
 				let promise;
 				let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
-				if(memory && memory.length != 0){
+				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
 					);

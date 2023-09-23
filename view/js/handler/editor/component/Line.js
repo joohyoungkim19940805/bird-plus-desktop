@@ -4,8 +4,6 @@ export default class Line {
 	#isLoaded = false;
 	#prevParent;
 
-	isFirstLine = false;
-
 	static toolHandler = new ToolHandler(this);
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
@@ -43,12 +41,12 @@ export default class Line {
 		let line = undefined;
 		if( ! element.parentElement){
 			return line;
-		}else if(Line.prototype.isPrototypeOf(element.line) && ! element.parentElement?.closest(`.${this.toolHandler.defaultClass}`)){
+		}else if(element.classList?.contains(Line.toolHandler.defaultClass)){
 			return element;
-		}else if(element.parentElement.classList.contains(this.toolHandler.defaultClass)){
+		}else if(element.parentElement.classList.contains(Line.toolHandler.defaultClass)){
 			line = element.parentElement;
 		}else{
-			line = element.parentElement.closest(`.${this.toolHandler.defaultClass}`);
+			line = element.parentElement.closest(`.${Line.toolHandler.defaultClass}`);
 		}
 		return line;
 	}
@@ -70,6 +68,15 @@ export default class Line {
 		}
 		return tool;
 	}
+	
+	static isElementTextEmpty(element){
+        let sty = window.getComputedStyle(element);
+		if(sty.visibility == 'hidden' || sty.opacity == 0){
+			return false;
+		}
+		//let emptyString = (element.innerText.replace(/\n+/g, '\n') == '\n' || element.innerText.replace(/\u200B+/g, '\u200B') == '\u200B');
+        return element.innerText.length == 0 || (element.innerText.length == 1 && (element.innerText == '\n' || element.innerText == '\u200B'));
+    }
 
 	lineElement
 
@@ -90,7 +97,6 @@ export default class Line {
 			this.lineElement[functionName] = this[functionName];
 		});
 		*/
-
 		this.lineElement.line = this;
 		/*
 		this.onkeyup = (event) => {
@@ -99,6 +105,24 @@ export default class Line {
 			}
 		}
 		*/
+		
+		let observer = new MutationObserver( (mutationList, observer) => {
+			mutationList.forEach((mutation) => {
+				if(Line.isElementTextEmpty(this.lineElement)){
+					if(this.lineElement.childElementCount != 0){
+						return;
+					}
+					//this.lineElement.innerText = '\n';
+					window.getSelection().setPosition(this.lineElement, 1)
+					this.lineElement.focus();
+				}
+			})
+		});
+		observer.observe(this.lineElement, {
+			childList:true,
+			subtree: true
+		})
+		
 	}
 	/*
 	connectedCallback(){
@@ -140,15 +164,14 @@ export default class Line {
 	 * @param {*} range 
 	 * @returns 
 	 */
-	async #applyOnlyOneTool(range, tool, TargetTool, endLine){
+	async #applyOnlyOneTool(tool, range){
 		return await new Promise(resolve=>{
-
 			range.surroundContents(tool);
 			resolve(tool)
 		});
 	}
 	
-	async #applyOnlyOneLine(range, tool, TargetTool, endLine){
+	async #applyOnlyOneLine(range, tool, TargetTool){
 		return await new Promise(resolve=>{
 			//let {startOffset, endOffset, startContainer,endContainer} = range;
 
@@ -212,9 +235,16 @@ export default class Line {
 			resolve();
 		});
 	}
-	#applyMultipleLineAll(range, tool, TargetTool, endLine){
-		return new Promise(resolve=>{
-
+	async #applyMultipleLineAllBlock(range, tool ,TargetTool, endLine){
+		return await new Promise(resolve => {
+			let fragment = range.extractContents();
+			tool.append(...fragment.childNodes);
+			this.lineElement.append(tool);
+			resolve(tool);
+		})
+	}
+	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
+		return await new Promise(resolve=>{
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 			
 			range.setStart(startContainer, startOffset);
@@ -319,31 +349,15 @@ export default class Line {
 
 		})
 	}
-	#applyBlockContent(range, tool ,TargetTool, endLine){
-		return new Promise(resolve => {
-			let fragment = range.extractContents();
-			//console.log(fragment.childNodes);
-			//tool.append(...fragment.childNodes);
-			let childLine = new Line();
-			childLine.lineElement.append(...[...fragment.childNodes].map(e=>{
-				if(e.classList.contains(Line.toolHandler.defaultClass) && ! e.line){
-					new Line(e);
-				}
-				return e;
-			}))
-			tool.append(childLine.lineElement)
-			this.lineElement.replaceChildren(tool);
-			resolve(tool);
-		})
-	}
+
 	/**
 	 * 
 	 * @param {*} TargetTool 
 	 * @param {*} range 
 	 * @returns 
 	 */
-	applyTool(TargetTool, range, endLine){
-		return new Promise(resolve => {
+	async applyTool(TargetTool, range, endLine){
+		return await new Promise(resolve => {
 			let tool = new TargetTool();
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 
@@ -358,18 +372,15 @@ export default class Line {
 				this.lineElement.childNodes[0].remove();
 			}
 			if(tool.shadowRoot || ! TargetTool.toolHandler.isInline){
-				this.#applyBlockContent(range, tool, TargetTool, endLine).then(tool => {
-					console.log('applyBlockContent');
-					resolve(tool)
-				});
+				resolve(this.#applyMultipleLineAllBlock(range, tool, TargetTool, endLine));
 			}else if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
 				console.log('applyOnlyOneTool');
-				this.#applyOnlyOneTool(range, tool, TargetTool, endLine).then(tool=>{
+				this.#applyOnlyOneTool(tool, range).then(tool=>{
 					resolve(tool)
 				})
 			}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
 				console.log('applyOnlyOneLine')
-				this.#applyOnlyOneLine(range, tool, TargetTool, endLine).then(endTool => {
+				this.#applyOnlyOneLine(range, tool, TargetTool).then(endTool => {
 					resolve(endTool)
 				})
 			}else{
@@ -381,8 +392,8 @@ export default class Line {
 		})
 	}
 
-	#cancelOnlyOneLine(range, tool, TargetTool){
-		return new Promise(resolve => {
+	async #cancelOnlyOneLine(range, tool, TargetTool){
+		return await new Promise(resolve => {
 			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
 			let {startOffset, endOffset, startContainer, endContainer} = range;
 			this.lineElement.childNodes.forEach(e=>{
@@ -391,8 +402,8 @@ export default class Line {
 			resolve();
 		});
 	}
-	#cancelOnlyOneTool(range, tool, TargetTool){
-		return new Promise(resolve => {
+	async #cancelOnlyOneTool(range, tool, TargetTool){
+		return await new Promise(resolve => {
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			/*
 			let textNode = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
@@ -512,8 +523,8 @@ export default class Line {
 		});
 	}
 
-	#cancelMultipleLineAll(range, tool, TargetTool, endLine){
-		return new Promise(resolve => {
+	async #cancelMultipleLineAll(range, tool, TargetTool, endLine){
+		return await new Promise(resolve => {
 			let {startOffset, endOffset, startContainer, endContainer} = range;
 			
 			let endTool = Line.getTool(endContainer, TargetTool);
@@ -571,16 +582,17 @@ export default class Line {
 					break;
 				}
 				nextLine.childNodes.forEach(e=>{
-					//console.log(4);
+					console.log(4);
 					this.#findCancels(e, TargetTool);
 				})
 				nextLine = nextLine.nextElementSibling;
 			}
 
 			if(endOffset == endContainer.length){
-				//console.log(1)
+				console.log(1)
 				this.#findCancels(endLine, TargetTool);
-			}else if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
+			}else
+			if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){
 				//console.log(2)
 				if(endRightText){
 					let rightTool = new TargetTool();
@@ -613,28 +625,13 @@ export default class Line {
 			resolve();
 		});
 	}
-	#cancelBlockContent(range, tool){
-		return new Promise(resolve => {
-			let fragment = range.extractContents();
-			//console.log(fragment.childNodes);
-			//tool.append(...fragment.childNodes);
-			let parent = tool.parentElement;
-			parent.append(...fragment.childNodes)
-			tool.remove();
-			console.log(parent);
-			this.lineElement.append(parent);
-			resolve(tool);
-		})
-	}
-	cancelTool(TargetTool, selection, endLine){
-		return new Promise(resolve => {
+
+	async cancelTool(TargetTool, selection, endLine){
+		return await new Promise(resolve => {
 			let {isCollapsed, anchorNode, anchorOffset} = selection;
 			let range = selection.getRangeAt(0);
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			let tool = Line.getTool(startContainer, TargetTool);
-			if(! tool.shadowRoot && TargetTool.toolHandler.isInline && isCollapsed){
-				resolve();
-			} 
 			/*
 			if(startContainer === endContainer){
 				if(startContainer.parentElement.childNodes.length == 1 
@@ -659,27 +656,25 @@ export default class Line {
 				TargetTool.toolHandler.toolButton.dataset.tool_status = 'connected'
 				resolve();
 			}else{
-				if(tool.shadowRoot || ! TargetTool.toolHandler.isInline){
-					this.#cancelBlockContent(range, tool)
-				}
-				else if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
+				if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
 					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
 						console.log('cancelOnlyOneTool')
-						resolve(tool);
+						resolve();
 					})
 				}else if(Line.getLine(startContainer) === Line.getLine(endContainer)){
 					// 하나만
 					// tool 범위 전체 선택인 경우
 					this.#cancelOnlyOneLine(range, tool, TargetTool).then(()=>{
-						console.log('cancelOnlyOneLine')
-						resolve(tool);
+						console.log('cancelOnlyOneLine 2')
+						resolve();
 					})
 				}else{
 					this.#cancelMultipleLineAll(range, tool, TargetTool, endLine).then(()=>{
 						console.log('cancelMultipleLineAll')
-						resolve(tool);
+						resolve();
 					}).catch(err=>console.error(err))
 				}
+				resolve();
 			}
 		})
 	}
@@ -717,13 +712,5 @@ export default class Line {
 		window.getSelection().setPosition(this.lineElement, this.lineElement.childNodes.length)
 		this.lineElement.focus()
 	}
-
-    isLineEmpty(){
-        let sty = window.getComputedStyle(this.lineElement);
-		if(sty.visibility == 'hidden' || sty.opacity == 0){
-			return false;
-		}
-        return this.lineElement.innerText.length == 0 || (this.lineElement.innerText.length == 1 && (this.lineElement.innerText == '\n' || this.lineElement.innerText == '\u200B'));
-    }
 
 }

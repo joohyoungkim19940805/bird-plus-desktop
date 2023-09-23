@@ -29,7 +29,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	tools;
 	toolsElement = {};
 	#placeholder;
-	#firstLine;
 	#undoManager;
 	isDefaultStyle = true;
 	constructor(
@@ -127,38 +126,45 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					if(this.childElementCount == 0){
 						this.#startFirstLine();
 					}
-
-					if(
-						this.innerText.length <= 1 && 
-						this.#firstLine.childNodes[0]?.nodeName == 'BR'
-					){
-						this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
-					}else{
-						this.#firstLine.removeAttribute('data-placeholder');
+					if( ! this.firstElementChild.line){
+						new Line(this.firstElementChild.line);
 					}
 					
-					//console.log(mutation.target);
-					mutation.addedNodes.forEach(element=>{
-						if(element.nodeType != Node.ELEMENT_NODE) return;
-						/*
-						let sty = window.getComputedStyle(element);
-						
-						if(sty.visibility == 'hidden' || sty.opacity == 0){
-							return;
-						}
-						*/
-						if(element.classList.contains(Line.toolHandler.defaultClass)){
-							if( ! element.line){
-								new Line(element);
-							}
-							if(element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n')){
-								element.innerText = '\n';
-								window.getSelection().setPosition(element, 1)
-								element.focus();
-							}
-						}
+					let isEmpty = Line.isElementTextEmpty(this);
+					let isExistTools = [...this.querySelectorAll('*')].some(e=>this.tools.hasOwnProperty(e.localName))
+					this.querySelectorAll('[data-placeholder]').forEach(async e => {
+						e.removeAttribute('data-placeholder')
 					})
-					
+					if(isEmpty && ! isExistTools){
+						this.firstElementChild.dataset.placeholder = this.#placeholder
+					}
+					//console.log(mutation.target);
+					mutation.addedNodes.forEach(async element=>{
+						new Promise(resolve=>{
+							if(element.nodeType != Node.ELEMENT_NODE) return;
+							/*
+							let sty = window.getComputedStyle(element);
+							
+							if(sty.visibility == 'hidden' || sty.opacity == 0){
+								return;
+							}
+							*/
+							if(element.classList.contains(Line.toolHandler.defaultClass)){
+								if( ! element.line){
+									new Line(element);
+								}
+								if(element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n')){
+									element.innerText = '\n';
+									window.getSelection().setPosition(element, 1)
+									element.focus();
+								}
+							}
+							resolve();
+						})
+					})
+					/*mutation.removedNodes.forEach(element=>{
+
+					})*/
 				})
 			});
 			observer.observe(this, {
@@ -191,7 +197,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		let lineElement = super.createLine();
 		lineElement.line.isFirstLine = true;
 		lineElement.setAttribute('data-placeholder', this.#placeholder);
-		this.#firstLine = lineElement;
 		return lineElement;
 	}
 
@@ -263,8 +268,13 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		
 		super.getLineRange(selection)
 		.then(({startLine, endLine}) => { 
-			console.log(startLine, endLine);
-			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine || startLine)
+			if( ! startLine.line){
+				new Line(startLine);
+			}
+			if( ! endLine.line){
+				new Line(endLine);
+			}
+			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine)
 		})
 		.then(lastApplyTool=> {
 			//selection.setPosition(lastApplyTool, 0)
@@ -290,16 +300,22 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return;
 		}*/
 		super.getLineRange(selection).then(({startLine, endLine})=> {
+			if( ! startLine.line){
+				new Line(startLine);
+			}
+			if( ! endLine.line){
+				new Line(endLine);
+			}
 			startLine.line.cancelTool(TargetTool, selection, endLine);
 		}).then(()=>{
-			[...this.children]
+			/*[...this.children]
 			.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
 			.forEach(lineElement=>{
 				if(lineElement.line.isLineEmpty()){
 					//lineElement.line = undefined;
 					//lineElement.remove();
 				}
-			})
+			})*/
 		})
 	}
 	
@@ -389,19 +405,14 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 	}
 
-	get isEmpty(){
-		return this.innerText.trim();
-	}
-
 	set placeholder(placeholder){
 		this.#placeholder = placeholder;
-		if(this.#firstLine){
-			this.#firstLine.setAttribute('data-placeholder', this.#placeholder);
+		if(this.firstElementChild){
+			this.firstElementChild.setAttribute('data-placeholder', this.#placeholder);
 		}
 	}
 
 	get firstLine(){
-		this.firstElementChild.isFirstLine = true;
 		return this.firstElementChild;
 	}
 }

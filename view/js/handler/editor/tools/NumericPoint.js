@@ -73,7 +73,7 @@ export default class NumericPoint extends FreedomInterface {
 			NumericPoint.createDefaultStyle();
 			NumericPoint.defaultStyle.setAttribute('data-is_update', true);
 		}
-		
+		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
@@ -89,7 +89,7 @@ export default class NumericPoint extends FreedomInterface {
 				this.parentEditor.createLine();
 			}
         }
-
+		*/
 	}
 
 }

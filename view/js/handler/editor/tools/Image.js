@@ -26,7 +26,7 @@ export default class Image extends FreedomInterface {
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-image';
-        this.toolHandler.isInline = false;
+        //this.toolHandler.isInline = false;
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '',
@@ -133,33 +133,69 @@ export default class Image extends FreedomInterface {
 
 	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Image.defaultStyle.textContent == '' && Image.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
+        if(Image.defaultStyle.textContent == '' && Image.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
 			Image.createDefaultStyle();
 			Image.defaultStyle.setAttribute('data-is_update', true);
 		}
+        
+        let imageLoadPromiseResolve;
+        let imageLoadPromise = new Promise(resolve => {
+            imageLoadPromiseResolve = resolve;
+        })
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){
-            this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
             this.file.files = Image.selectedFile.files;
+            let reader = new FileReader();  
+            reader.onload = function(e) { 
+                console.log('test!',e);
+                imageLoadPromiseResolve(e.target.result)
+                // do something with the URL in the DOM,
+                // then save it to local storage
+            };  
+            reader.readAsDataURL(Image.selectedFile.files[0]);
+        }else {
+            imageLoadPromiseResolve(this.dataset.url)
         }
-        console.log(this.file.files);
-        if( ! this.file.files){
+        if( ! this.file.files && ! this.dataset.name){
+            /*
+            if(this.dataset.url && this.dataset.name){
+                (async () => {
+                    const response = await fetch(this.dataset.url);
+                    const data = await response.blob();
+                    const ext = this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1);
+                    const metadata = {type: response.headers.get('Content-Type')};
+                    const file = new File([data], this.dataset.name, metadata)
+                })();
+                return;
+            }
+            */
             this.remove();
             throw new Error(`this file is ${this.file.files}`);
         }
         
-        Image.selectedFile.files = new DataTransfer().files
+        let imgLoadEndPromise = imageLoadPromise.then( async (url) => {
+            this.dataset.url = url;
+            return fetch(this.dataset.url)
+            .then(async res=>{
+                return res.blob().then(blob=>{
+                    let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
+                    console.log(imgUrl);
+                    return imgUrl;
+                })
+            })
+        })
 
+        Image.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
-        
-        this.createDefaultContent();
+        this.createDefaultContent(imgLoadEndPromise);
+
 	}
 
-    createDefaultContent(){
+    createDefaultContent(imgLoadEndPromise){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
@@ -171,14 +207,20 @@ export default class Image extends FreedomInterface {
             className: `${Image.defaultStyle.id} image-contanier`
         });
 
-        let image = Object.assign(document.createElement('img'), {
+        /*let image = Object.assign(document.createElement('img'), {
             //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            src: this.dataset.url
-        });
-        
-        if(this.file.files.length != 0){
-            image.dataset.image_name = this.file.files[0].name;
-        }
+            //src: this.dataset.url
+            //src: imgUrl
+        });*/
+        let image = document.createElement('img');
+        imgLoadEndPromise.then(imgUrl => {
+            console.log(imgUrl);
+            image.src = imgUrl;
+        })
+
+        //if(this.file.files.length != 0){
+        image.dataset.image_name = this.dataset.name
+        //}
 
         imageContanier.append(image);
 
@@ -191,7 +233,6 @@ export default class Image extends FreedomInterface {
 
         super.connectedAfterOnlyOneCallback = () => {
             let description = this.createDescription(image, imageContanier);
-
             wrap.append(...[description,imageContanier].filter(e=>e != undefined));
             
             Image.imageBox.addImageHoverEvent(image);
@@ -201,6 +242,7 @@ export default class Image extends FreedomInterface {
         }
 
         super.disconnectedAfterCallback = () => {
+        
         }
 
         return image;
@@ -222,9 +264,9 @@ export default class Image extends FreedomInterface {
         
         description.dataset.open_status = '▼';
         
-        let slotList = this.createSlot();
-        if(slotList.length != 0){
-            description.append(...slotList)
+        let slot = this.createSlot();
+        if(slot){
+            description.append(slot)
         }
 
         description.onclick = (event) => {
@@ -274,23 +316,22 @@ export default class Image extends FreedomInterface {
      * @returns {HTMLSlotElement}
      */
     createSlot(){
-        //let aticle = document.createElement('div');
+        let aticle = document.createElement('div');
         
-        //aticle.contentEditable = 'false';
-        //aticle.draggable = 'false'; 
+        aticle.contentEditable = 'false';
+        aticle.draggable = 'false'; 
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-            //aticle.slot = Image.slotName;
-             
-            return [...this.childNodes].map((e, i)=>{
-                e.slot = Image.slotName + '_' + i;
-                return Object.assign(document.createElement('slot'),{
-                    name: Image.slotName + '_' + i
-                });
-                //e.cloneNode(true)
+            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            aticle.slot = Image.slotName;
+            this.append(aticle);
+            
+            let slot = Object.assign(document.createElement('slot'),{
+                name: Image.slotName
             });
+            return slot;
         }else{
-            return []
+            return undefined
         }
 
     }

@@ -69,7 +69,7 @@ export default class Quote extends FreedomInterface {
 			Quote.createDefaultStyle();
 			Quote.defaultStyle.setAttribute('data-is_update', true);
 		}
-
+		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Quote.toolHandler.connectedFriends.length;
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -86,6 +86,7 @@ export default class Quote extends FreedomInterface {
 				this.parentEditor.createLine();
 			}
         }
+		*/
 	}
 
 }
