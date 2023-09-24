@@ -135,7 +135,7 @@ export default class Video extends FreedomInterface {
     /**
      * @returns{FileList}
      */
-    files = new DataTransfer().files;
+    file = new DataTransfer().files;
 
 	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
@@ -144,24 +144,47 @@ export default class Video extends FreedomInterface {
 			Video.defaultStyle.setAttribute('data-is_update', true);
 		}
 
+        let videoLoadPromiseResolve;
+        let videoLoadPromise = new Promise(resolve => {
+            videoLoadPromiseResolve = resolve;
+        })
+
 		if( ! dataset && Object.entries(this.dataset).length == 0){
-            this.files = Video.selectedFile.files;
-            this.dataset.url = URL.createObjectURL(this.files[0]);
-            this.dataset.name = this.files[0].name;
-            this.dataset.lastModified = this.files[0].lastModified;
-            this.dataset.size = this.files[0].size;
+            //this.dataset.url = URL.createObjectURL(this.files[0]);
+            this.dataset.name = Video.selectedFile.files[0].name;
+            this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
+            this.dataset.size = Video.selectedFile.files[0].size;
+            console.log(Video.selectedFile.files);
+            this.file.files = Video.selectedFile.files;
+            let reader = new FileReader();  
+            reader.onload = (event) => { 
+                videoLoadPromiseResolve(event.target.result)
+            };  
+            reader.readAsDataURL(Video.selectedFile.files[0]);
+        }else if( ! this.dataset.url && this.dataset.base_64){
+            videoLoadPromiseResolve(this.dataset.base_64)
+        }else if(this.dataset.url){
             
         }
-        
-        Video.selectedFile.files = new DataTransfer().files
 
+        let videoLoadEndPromise = videoLoadPromise.then( async (base64) => {
+            this.dataset.base_64 = base64;
+            return fetch(this.dataset.base_64)
+            .then(async res=>{
+                return res.blob().then(blob=>{
+                    let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
+                    return videoUrl;
+                })
+            })
+        })
+
+        Video.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
-        
-        this.createDefaultContent();
+        this.createDefaultContent(videoLoadEndPromise);
 	}
 
-    createDefaultContent(){
+    createDefaultContent(videoLoadEndPromise){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
@@ -178,9 +201,20 @@ export default class Video extends FreedomInterface {
             src: this.dataset.url,
             loop: true,
         });
-        
-        console.log(video.canPlayType(this.files[0].type))
-        if(video.canPlayType(this.files[0].type) == ''){
+        videoLoadEndPromise.then(videoUrl => {
+            video.src = videoUrl;
+        })
+        console.log(this.file);
+        console.log(`video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`)
+        if(
+            (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
+            (
+                this.dataset.name && 
+                video.canPlayType(
+                    `video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`
+                ) == ''
+            )
+        ){
             /*
             let file = new File(
                 [this.dataset.url],
@@ -268,7 +302,8 @@ export default class Video extends FreedomInterface {
         aticle.draggable = 'false';
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            aticle.append(...this.childNodes);
             aticle.slot = Video.descriptionName;
             this.append(aticle);
             
@@ -283,7 +318,7 @@ export default class Video extends FreedomInterface {
     }
 
     videoIsNotWorking(){
-        alert('호환되지 않는 영상입니다.');
+        alert(`${this.dataset.name}은 호환되지 않는 영상입니다.`);
         this.remove();
     }
 }

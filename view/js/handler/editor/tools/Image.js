@@ -143,46 +143,34 @@ export default class Image extends FreedomInterface {
             imageLoadPromiseResolve = resolve;
         })
 
-		if( ! dataset && Object.entries(this.dataset).length == 0){
+		if( ! dataset && Object.keys(this.dataset).length == 0){
+            //this.dataset.url = URL.createObjectURL(this.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
             this.file.files = Image.selectedFile.files;
             let reader = new FileReader();  
-            reader.onload = function(e) { 
-                console.log('test!',e);
-                imageLoadPromiseResolve(e.target.result)
-                // do something with the URL in the DOM,
-                // then save it to local storage
+            reader.onload = (event) => { 
+                imageLoadPromiseResolve(event.target.result)
             };  
             reader.readAsDataURL(Image.selectedFile.files[0]);
-        }else {
-            imageLoadPromiseResolve(this.dataset.url)
+        }else if( ! this.dataset.url && this.dataset.base_64){
+            imageLoadPromiseResolve(this.dataset.base_64)
+        }else if(this.dataset.url){
+            
         }
+
         if( ! this.file.files && ! this.dataset.name){
-            /*
-            if(this.dataset.url && this.dataset.name){
-                (async () => {
-                    const response = await fetch(this.dataset.url);
-                    const data = await response.blob();
-                    const ext = this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1);
-                    const metadata = {type: response.headers.get('Content-Type')};
-                    const file = new File([data], this.dataset.name, metadata)
-                })();
-                return;
-            }
-            */
             this.remove();
             throw new Error(`this file is ${this.file.files}`);
         }
         
-        let imgLoadEndPromise = imageLoadPromise.then( async (url) => {
-            this.dataset.url = url;
-            return fetch(this.dataset.url)
+        let imgLoadEndPromise = imageLoadPromise.then( async (base64) => {
+            this.dataset.base_64 = base64;
+            return fetch(this.dataset.base_64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                    console.log(imgUrl);
                     return imgUrl;
                 })
             })
@@ -214,7 +202,6 @@ export default class Image extends FreedomInterface {
         });*/
         let image = document.createElement('img');
         imgLoadEndPromise.then(imgUrl => {
-            console.log(imgUrl);
             image.src = imgUrl;
         })
 
@@ -322,7 +309,8 @@ export default class Image extends FreedomInterface {
         aticle.draggable = 'false'; 
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
-            aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            aticle.append(...this.childNodes);
             aticle.slot = Image.slotName;
             this.append(aticle);
             

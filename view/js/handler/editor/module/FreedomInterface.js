@@ -224,6 +224,11 @@ export default class FreedomInterface extends HTMLElement {
 				}else{
 					nextLine.line.lookAtMe();
 				}
+				/*this.childNodes.forEach(e=>{
+					if(e.nodeType == Node.TEXT_NODE){
+						e.remove()
+					}
+				})*/
 			}
 
 			this.connectedAfterOnlyOneCallback();
