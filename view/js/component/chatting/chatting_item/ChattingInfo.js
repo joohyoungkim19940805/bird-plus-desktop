@@ -302,7 +302,7 @@ export default new class ChattingInfo{
             let timeText;
             
             if(prevDate.toDateString() == new Date().toDateString()){
-                timeText = '오늘'
+                timeText = 'ToDay'
             }else{
                 timeText = prevDate.toLocaleDateString(undefined, {
                     weekday: 'short',

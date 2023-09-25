@@ -25,6 +25,11 @@ export default new class ChattingHead{
                     <button type="button" class="member_add_button pointer" data-bind_name="memberAddButton">+</button>
                 </div>
             </div>
+        <div class="border_wrapper">
+            <div><
+                게시판 아이콘 영역
+            /div>
+        </div>
             <ul class="chatting_head_joined_members list_scroll list_scroll-x" data-bind_name="chattingHeadJoinedMembers">
 
             </ul>
