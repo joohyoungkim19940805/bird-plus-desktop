@@ -22,13 +22,11 @@ export default class UndoManager{
         }
     }
 
-    #isLastObserverType;
-    #characterData = 'characterData';
-    #childList = 'childList';
-    #cursor = Object.assign(document.createElement('span'),{
-        id:'free-will-editor-cursor'
-    });
     #lastCursorPositionRect;
+
+    #isWait = false;
+    //#isUndoSwitch = false;
+
     /**
      * 
      * @param {FreeWillEditor} targetEditor 
@@ -37,7 +35,7 @@ export default class UndoManager{
     constructor(targetEditor){
         this.#editor = targetEditor;
         if(this.#editor.contentEditable == 'true'){
-            this.addCursorMove();
+            //this.addCursorMove();
             this.addUndoKey();
             this.addUserInput();
         }
@@ -67,17 +65,18 @@ export default class UndoManager{
             if(document.activeElement !== this.#editor){
 				return;
 			}
-            let selection = window.getSelection();
-            let range = selection.getRangeAt(0);
-            let newRect = range.getBoundingClientRect();
-            if(this.#lastCursorPositionRect && (this.#lastCursorPositionRect.x != newRect.x || this.#lastCursorPositionRect.y != newRect.y)){
-                this.rememberCursor(selection, range);
-            }
-            this.#lastCursorPositionRect = newRect;
+            this.rememberCursor();
         });
     }
 
-    rememberCursor(selection, range){
+    rememberCursor(){
+        if( ! this.#lastCursorPositionRect || (this.#lastCursorPositionRect.x == newRect.x && this.#lastCursorPositionRect.y == newRect.y)){
+            return
+        }    
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        let newRect = range.getBoundingClientRect();
+
         let {focusNode, focusOffset} = selection
 
         let target;
@@ -117,16 +116,16 @@ export default class UndoManager{
         target.setAttribute('cursor_index', index);
         target.setAttribute('cursor_scroll_x', this.#editor.scrollLeft);
         target.setAttribute('cursor_scroll_y', this.#editor.scrollTop);
+        this.#lastCursorPositionRect = newRect;
     }
 
     addUndoKey(){
         this.#editor.addEventListener('keydown', (event) => {
             let {ctrlKey, key} = event;
-            if( ! ctrlKey || (key != 'z' && key != 'y')){
+            if( ! ctrlKey || ! (key == 'z' || key == 'y')){
                 return;
             }
             event.preventDefault();
-
             if(key == 'z'){
                 this.undoKeyEvent();
             }else{
@@ -159,7 +158,8 @@ export default class UndoManager{
             this.#historyIndex = this.#history.length - 1
         }
         let undoRedo = this.#history[this.#historyIndex];
-
+       
+        //console.log('z key undo',undoRedo.html);
         this.#editor.innerHTML = undoRedo.html;
     }
     redoKeyEvent(){
@@ -172,49 +172,58 @@ export default class UndoManager{
         }
         let undoRedo = this.#history[this.#historyIndex];
 
+        //console.log('y key redo',undoRedo.html)
         this.#editor.innerHTML = undoRedo.html;
     }
+    addUndoRedo(){
+        if(
+            document.activeElement !== this.#editor ||
+            this.#history[0]?.html.trim() == this.#editor.innerHTML.trim() 
+        ){
+            return;
+        }
+    
+        this.rememberCursor();
 
+        let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
+        this.#history.unshift(undoRedo);
+        
+        if(this.#history.length > this.#historyLimit){
+            this.#history = this.#history.splice(0, this.#historyLimit);
+        }
+        
+        //console.log('history', this.#history);
+    }
     addUserInput(){
-        let isWait = false;
-        let isUndoSwitch = false;
         this.#editor.addEventListener('keydown', (event) => {
-            let {ctrlKey, key} = event;
-            if(ctrlKey && (key == 'z' || key == 'y')){
+            let {ctrlKey, key, altKey} = event;
+            if(ctrlKey || altKey || ctrlKey && (key == 'z' || key == 'y')){
                 return;
             }
-            if(isWait){
+            if(this.#isWait){
                 return;
             }
-            isWait = true;
-            isUndoSwitch = true;
+            this.#isWait = true;
+            //this.#isUndoSwitch = true;
             let timer = 50;
-            
-            let selection = window.getSelection();
-            let range = selection.getRangeAt(0);
-            let newRect = range.getBoundingClientRect();
-            this.#lastCursorPositionRect = newRect;
 
             if(this.#history.length != 0 && this.#history[0].html.trim() == this.#editor.innerHTML.trim()){
-                isWait = false;
+                this.#isWait = false;
                 return;
             }
             
             setTimeout(()=>{
-
-                let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
-                this.#history.unshift(undoRedo);
-
-                isWait = false;
+                this.addUndoRedo();
+                this.#isWait = false;
             }, timer);
         });
-
+        /*
         let addElementObserver = new MutationObserver( (mutationList, observer) => {
             mutationList.forEach((mutation) => {
                 let {addedNodes, removedNodes} = mutation;
 
-                if(isUndoSwitch){
-                    isUndoSwitch = false;
+                if(this.#isUndoSwitch){
+                    this.#isUndoSwitch = false;
                     //return;
                 }
 
@@ -234,42 +243,9 @@ export default class UndoManager{
                     });
                     resolve();
                 })
-                /*
-                new Promise(resolve=>{
-                    removedNodes.forEach(node=>{
-                        if(node.nodeType != Node.ELEMENT_NODE){
-                            return;
-                        }
-                        let tagName = node.tagName.toLowerCase();
-                        if(this.#editor.tools.hasOwnProperty(tagName) && this.#history.length != 0 && this.#history[0].html.trim() != this.#editor.innerHTML.trim()){
-                            console.log(777)
-                            let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
-                            this.#history.unshift(undoRedo);
-                        }
-                    });
-                    resolve();
-                })
-                */
             });
         })
         addElementObserver.observe(this.#editor, {
-			childList:true,
-			subtree: true
-		});
-
-        /*
-        let cursorRedoObserver = new MutationObserver( (mutationList, observer) => {
-            mutationList.forEach((mutation) => {
-                let {addedNodes, removedNodes} = mutation;
-                if(addedNodes.length == 1 && addedNodes[0].id == this.#cursor.id && addedNodes[0] != this.#cursor){
-                    this.#cursor.remove();
-                    this.#cursor = addedNodes[0];
-                }
-            });
-        })
-        cursorRedoObserver.observe(this.#editor, {
-            characterData: true,
-			characterDataOldValue: true,
 			childList:true,
 			subtree: true
 		});
@@ -283,4 +259,5 @@ export default class UndoManager{
     clearEditor(){
         this.#editor.innerHTML = '';
     }
+
 }

@@ -277,6 +277,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine)
 		})
 		.then(lastApplyTool=> {
+			this.#undoManager.addUndoRedo();
 			//selection.setPosition(lastApplyTool, 0)
 		})
 		/*
@@ -308,6 +309,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			}
 			startLine.line.cancelTool(TargetTool, selection, endLine);
 		}).then(()=>{
+			this.#undoManager.addUndoRedo();
 			/*[...this.children]
 			.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
 			.forEach(lineElement=>{
