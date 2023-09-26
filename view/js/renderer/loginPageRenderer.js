@@ -12,9 +12,9 @@ new class LoginPageRenderer{
 			}, {});
 
 			window.myAPI.account.loginProcessing(param).then(response=>{
-				console.log(response);
+				console.log('response',response);
 				let {code} = response;
-				if(code == '00'){
+				if(code == 0){
 					window.myAPI.pageChange.changeWokrspacePage();
 				}else if(code == 101){
 					statusText.textContent = '해당 기능에 권한이 없습니다.'

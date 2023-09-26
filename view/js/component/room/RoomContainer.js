@@ -24,7 +24,7 @@ export default class RoomContainer{
 		roomMessengerList.element.dataset.is_resize = true;
 		roomMessengerList.element.dataset.grow = 0;
 
-		this.#contentWrapperList = [roomMenuList.element, roomFavoritesList.element, roomList.element, roomMessengerList.element]
+		this.#contentWrapperList = [roomMenuList.element, roomFavoritesList.element, roomList.element, roomMessengerList.element, roomMessengerList.element.cloneNode(true)]
 
 		contentWrapper.replaceChildren(...this.#contentWrapperList)
 		this.#contentWrapperList.forEach(wrap => {
@@ -53,7 +53,7 @@ export default class RoomContainer{
 					wrap.style.minHeight = customDetailsSummary.getBoundingClientRect().height + 'px';
 					//wrap.style.flex = '0 1 0%';
 					//wrap.dataset.grow = 0;
-					flexLayout.closeFlex(wrap);
+					flexLayout.closeFlex(wrap, {isResize : true});
 					roomContainerListScroll.style.overflow = 'hidden';
 					customDetails.removeAttribute('data-is_open');
 				}else{
@@ -62,7 +62,7 @@ export default class RoomContainer{
 					wrap.style.flex = customDetails.dataset.previous_flex;
 					//wrap.style.flex = '1 1 0%';
 					//wrap.dataset.grow = 1;
-					flexLayout.openFlex(wrap);
+					flexLayout.openFlex(wrap, {isResize : true});
 					roomContainerListScroll.style.overflow = '';
 					customDetails.setAttribute('data-is_open', '');
 				}

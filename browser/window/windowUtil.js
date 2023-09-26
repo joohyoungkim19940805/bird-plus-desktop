@@ -30,6 +30,7 @@ class WindowUtil{
         }).catch(error=>{
             log.error(error);
             log.error('isLogin error callBack ::: ', callBack.toString());
+            axios.defaults.headers.common['Authorization'] = '';
             throw error;
         })
     }
@@ -45,10 +46,10 @@ class WindowUtil{
 			if( ! code || (code && code == 0)){
 				return response
 			}else{
-				throw new Error(JSON.stringify(data));
+				throw new Error(JSON.stringify(response));
 			}
 		}else{
-			throw new Error(JSON.stringify({status}));
+			throw new Error(JSON.stringify(response));
 		}
 	}
 

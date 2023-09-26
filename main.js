@@ -15,7 +15,7 @@ const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 //global.__birdPlusOptions = 
 
 // 일렉트론 모듈 호출
-const { app, BrowserWindow, ipcMain/*, ipcMain, dialog, shell*/ } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
 
 // path 모듈 호출
 

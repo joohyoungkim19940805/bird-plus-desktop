@@ -73,32 +73,36 @@ class LoginIpcController {
 					'Content-Type': 'application/json'
 				}
 			})
-			.then(windowUtil.responseCheck)
 			.then(response=>{
-				let db = DBConfig.getDB();
-				db.serialize( () => {
-					let {token, issuedAt, expiresAt} = response.data.data;
-					//global.__apiToken = token; 
-					db.run(`
-						INSERT INTO ACCOUNT_LOG (
-							TOKEN,
-							ISSUED_AT,
-							EXPIRES_AT
-						)
-						VALUES (?,?,?)
-					`,[token, issuedAt, expiresAt], (err) => {
-						if(err){
-							log.error('login account log insert error', err);
-						}
-						global.__apiToken = token
-					});
-					axios.defaults.headers.common['Authorization'] = token;
-				})
-					
-				return response.data;
+				let status = response.status;
+				let {data} = response;
+				if((status == '200' || status == '201') && data.code == 0){
+					let db = DBConfig.getDB();
+					db.serialize( () => {
+						let {token, issuedAt, expiresAt} = data.data;
+						//global.__apiToken = token; 
+						db.run(`
+							INSERT INTO ACCOUNT_LOG (
+								TOKEN,
+								ISSUED_AT,
+								EXPIRES_AT
+							)
+							VALUES (?,?,?)
+						`,[token, issuedAt, expiresAt], (err) => {
+							if(err){
+								log.error('login account log insert error', err);
+							}
+							global.__apiToken = token
+						});
+						axios.defaults.headers.common['Authorization'] = token;
+						windowUtil.isLogin();
+					})
+				}
+				return data;
 			}).catch(err=>{
 				log.error('loginProcessing error : ', err.message);
 				axios.defaults.headers.common['Authorization'] = '';
+				console.log(err);
 				if(err.response){
 					return err.response.data;
 				}else{

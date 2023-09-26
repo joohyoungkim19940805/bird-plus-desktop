@@ -343,7 +343,8 @@ class FlexLayout extends HTMLElement {
 		return new Promise(resolve => {
 			let targetSize = mousePosition - targetRect[this.targetDirection];
 			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
-			let overMoveList = []
+			let overMoveList = [];
+			let overTotalMinSize = 0;
 			const isOverMove = (elementSize, elementMinSize) => {
 				return Math.floor(elementSize) <= 0 || (isNaN(elementMinSize) ? false : elementMinSize >= Math.floor(elementSize));
 			}
@@ -370,13 +371,14 @@ class FlexLayout extends HTMLElement {
 							overElementSize = /*(nextElementRect[this.targetDirection] - nextElementRect[this.nextElementDirection]) + */overElementRect[this.nextElementDirection] - mousePosition;
 						}
 						overElementMinSize = parseFloat(window.getComputedStyle(overElement)[minSizeName]) || 0;
-						if(isOverMove(overElementSize, overElementMinSize)){
+						overTotalMinSize += overElementMinSize;
+						if(isOverMove(overElementSize, overTotalMinSize)){
 							addOverMoveList(overElement, 0, overElementMinSize, overElementRect);
 							let loopOverElement = overElement[direction]?.[direction];
 							let loopOverElementRect;
 							let loopOverElementSize;
 							let loopOverElementMinSize;
-	
+							let isLast = false;
 							while(loopOverElement){
 	
 								loopOverElementRect = loopOverElement.getBoundingClientRect();
@@ -386,13 +388,17 @@ class FlexLayout extends HTMLElement {
 									loopOverElementSize = /*(nextElementRect[this.targetDirection] - nextElementRect[this.nextElementDirection]) +*/ loopOverElementRect[this.nextElementDirection] - mousePosition;
 								}
 								loopOverElementMinSize = parseFloat(window.getComputedStyle(loopOverElement)[minSizeName]) || 0;
-								
-								if(isOverMove(loopOverElement, loopOverElementSize)){
+
+								if(isOverMove(loopOverElement, overTotalMinSize)){
+									overElementSize = overElementRect[this.sizeName];
+									overTotalMinSize += loopOverElementMinSize;
 									addOverMoveList(loopOverElement, 0, loopOverElementMinSize, loopOverElementRect);
 								}else{
 									addOverMoveList(loopOverElement, loopOverElementSize, loopOverElementMinSize, loopOverElementRect);
+									break;
+									//가장 마지막 요소까지 돌리고 break;
 								}
-		
+								
 								loopOverElement = loopOverElement[direction]?.[direction];
 							}
 						}else{
@@ -400,100 +406,168 @@ class FlexLayout extends HTMLElement {
 						}
 					}
 
-					resolve(element);
+					resolve();
 				});
 			}
 
 			let overMoveProcessingPromise;
-			let processingMinSize = 0;
+			//let processingMinSize = 0;
 
+			let overMoveDirection;
 			if(isOverMove(targetSize, targetMinSize)){
 				overMoveList = [];
+				overTotalMinSize += targetMinSize;
+				overMoveDirection = 'previousElementSibling';
 				overMoveProcessingPromise = overMoveProcessing(targetElement, 'previousElementSibling')
-				nextElementSize = nextElementRect[this.sizeName]
+				.then(() => {
+					if(overMoveList.length == 0){
+						nextElementSize = nextElementRect[this.sizeName]
+					}
+				})
 				targetSize = 0;
 
-				processingMinSize = targetMinSize;
+				//processingMinSize = targetMinSize;
 			}else if(isOverMove(nextElementSize, nextElementMinSize)){
 				overMoveList = [];
+				overTotalMinSize += nextElementMinSize;
+				overMoveDirection = 'nextElementSibling';
 				overMoveProcessingPromise = overMoveProcessing(nextElement, 'nextElementSibling')
-				targetSize = targetRect[this.sizeName];
+				.then(() => {
+					if(overMoveList.length == 0){
+						targetSize = targetRect[this.sizeName];
+					}
+				})
 				nextElementSize = 0;
 
-				processingMinSize = nextElementMinSize;
+				//processingMinSize = nextElementMinSize;
 			}else{
 				overMoveProcessingPromise = Promise.resolve(false);
 			}
 
-			let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
-			targetElement.style.flex = `${targetFlexGrow} 1 0%`;
-			let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
-			nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
-
-			overMoveProcessingPromise.then((overMoveTargetElement)=>{
-				overMoveList.reverse().forEach(({
-					element,
-					elementSize,
-					elementMinSize,
-					elementRect
-				}, i)=>{
-						if( targetMinSize >= Math.abs(this.totalMovement) * overMoveList.length ){
-							return;
-						}else if(element.dataset.visibility == 'h'){
-							elementSize = 0;
-						}
-						let flexGrow = (elementSize / (parentSize - elementMinSize - 1)) * this.#growLimit;
-						element.style.flex = `${flexGrow} 1 0%`;
-						this.prevOverFlexGrow = flexGrow;
-						this.prevOverRect = elementRect;
+			overMoveProcessingPromise.then(()=>{
+				console.log(overMoveList);
+				console.log(overMoveList[overMoveList.length - 1]);
+				
+				let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
+				targetElement.style.flex = `${targetFlexGrow} 1 0%`;
+				let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
+				nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
+				
+				let lastItem = overMoveList[overMoveList.length - 1];
+				let addNextOverMoveProcessingPromise
+				if(lastItem && lastItem.elementSize > 0){
+					addNextOverMoveProcessingPromise = overMoveProcessing(nextElement, overMoveDirection)
+				}else{
+					addNextOverMoveProcessingPromise = Promise.resolve();
+				}
+				addNextOverMoveProcessingPromise.then(() => {
+					overMoveList.reverse().forEach(({
+						element,
+						elementSize,
+						elementMinSize,
+						elementRect
+					}, i)=>{
+							if( elementMinSize >= Math.abs(this.totalMovement) * overMoveList.length ){
+								return;
+							}else if(elementSize == 0){
+								//elementSize = elementRect[this.sizeName];
+							}else if(element.dataset.visibility == 'h'){
+								elementSize = 0;
+							}
+							//console.log(elementSize, 'elementSize')
+							if(elementSize < 0 && overMoveDirection){
+								return;	
+							}
+							let flexGrow = (elementSize / (parentSize - (elementMinSize || 0) - 1)) * this.#growLimit;
+							element.style.flex = `${flexGrow} 1 0%`;
+							this.prevOverFlexGrow = flexGrow;
+							this.prevOverRect = elementRect;
+					})
 				})
-				this.prevTargetFlexGorw = targetFlexGrow
-				this.rpevNextElementFlexGrow = nextElementFlexGrow
+				
 			})
 
 			resolve();
 		})
 	}
 
-	closeFlex(resizeTarget){
+	closeFlex(resizeTarget, {isResize = false} = {}){
 		return new Promise(resolve=>{
 			if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
 				resolve(resizeTarget);
 				return;
 			}
 
+			resizeTarget.dataset.prev_grow = this.getGrow(resizeTarget);
+
 			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget);
-			[...notCloseList, resizeTarget].forEach(e=>{
+			let notCloseAndOpenTargetList = [...notCloseList, resizeTarget];
+			let resizeWeight = this.mathWeight(notCloseList, this.forResizeList.length);
+			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.5s';
 				e.ontransitionend = () => {
 					e.style.transition = '';
 				}
+				
+				if(e == resizeTarget){
+					e.dataset.grow = 0;
+					return;
+				}
+
+				if(isResize){
+					return;
+				}
+
+
+
+				let percent = (this.getGrow(e) / this.forResizeList.length);
+				
+				e.dataset.grow = (this.forResizeList.length * percent) + resizeWeight * percent;
 			})
 
-			resizeTarget.dataset.grow = 0;
-			this.resize(notCloseList, this.forResizeList.length)
+			if(isResize){
+				this.resize(notCloseList, this.forResizeList.length);
+			}
 
 			resolve(resizeTarget);
 		});
 	}
 
-	openFlex(resizeTarget){
+	openFlex(resizeTarget, {isPrevSizeOpen = false, isResize = false} = {}){
 		return new Promise(resolve=>{
 			if( ! resizeTarget.hasAttribute('data-is_resize') || resizeTarget.dataset.is_resize == false){
 				resolve(resizeTarget)
 				return;
 			}
 
-			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' || e == resizeTarget)
-			notCloseList.forEach(e=>{
+			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget);
+			let notCloseAndOpenTargetList = [...notCloseList, resizeTarget];
+			let resizeWeight = this.mathWeight(notCloseAndOpenTargetList, this.forResizeList.length);
+			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.5s';
 				e.ontransitionend = () => {
 					e.style.transition = '';
 				}
-			})
-			
-			this.resize(notCloseList, this.forResizeList.length)
+				
+				if(isResize){
+					return;
+				}
+				
+				if(e == resizeTarget){
+					e.dataset.grow = (isPrevSizeOpen ? resizeTarget.dataset.prev_grow : undefined) || resizeWeight;
+					resizeTarget.removeAttribute('data-prev_grow');
+					return;
+				}
 
+				let percent = this.getGrow(e) / this.forResizeList.length;
+				e.dataset.grow = (this.forResizeList.length - resizeWeight) * percent;
+			});
+
+			if(isResize){
+				this.resize(notCloseAndOpenTargetList, this.forResizeList.length);
+			}
+			
+			
 			resolve(resizeTarget)
 		})
 	}
@@ -523,7 +597,7 @@ class FlexLayout extends HTMLElement {
 	resize(list, totalGrow){
 		return new Promise(resolve=> {
 			//list = list.filter(e=>e.dataset.grow != '0');
-			let resizeWeight = 1 + ( (totalGrow - list.length) / list.length );
+			let resizeWeight = this.mathWeight(list, totalGrow)
 			list.forEach(e=>{
 				if(e.hasAttribute('data-grow')){
 					e.dataset.grow = resizeWeight;
@@ -552,6 +626,14 @@ class FlexLayout extends HTMLElement {
 		}else {
 			throw new Error('direction is "row" or "column" required value');
 		}
+	}
+
+	mathWeight(list, total){
+		return 1 + ( (total - list.length) / list.length );
+	}
+
+	getGrow(growTarget){
+		return (parseFloat(growTarget.style.flex.split(' ')[0]) || parseFloat(growTarget.dataset.grow));
 	}
 }
 
