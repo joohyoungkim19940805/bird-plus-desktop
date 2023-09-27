@@ -2,6 +2,7 @@
 /* chatting head [S]*/
 #chatting_head_wrapper .chatting_head_container{
     flex-flow: wrap;
+    align-content: flex-start;
 }
 #chatting_head_wrapper .chatting_head_container *:not(h3) {
     font-size: 1.1rem;
@@ -84,7 +85,8 @@
     white-space: nowrap;
     gap: 1%;
     min-inline-size: 100%;
-    align-items: flex-end;
+    align-items: flex-start;
+    height: fit-content;
 }
 #chatting_head_wrapper .chatting_head_container .chatting_head_joined_members li{
     padding-bottom: 0.7%;
@@ -98,7 +100,7 @@
 
 #chatting_head_wrapper .chatting_head_menu_wrapper{
     display: flex;
-    padding: 0 1% 0 1%;
+    padding: 1%;
     gap: 1vw;
 }
 #chatting_head_wrapper .chatting_head_menu_wrapper .chatting_head_border_icon_css_gg-list{

@@ -192,6 +192,7 @@ class FlexLayout extends HTMLElement {
 	nextElementDirection;
 	sizeName;
 	resizeCursor;
+	isReverseMoveCheckingFunction;
 
 	forResizeList = [];
 
@@ -340,9 +341,11 @@ class FlexLayout extends HTMLElement {
 		let mousePosition = event[this.xy];
 
 		this.totalMovement += event['movement' + this.xy.toUpperCase()]
+
 		return new Promise(resolve => {
 			let targetSize = mousePosition - targetRect[this.targetDirection];
 			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
+			
 			let overMoveList = [];
 			let overTotalMinSize = 0;
 			const isOverMove = (elementSize, elementMinSize) => {
@@ -372,13 +375,12 @@ class FlexLayout extends HTMLElement {
 						}
 						overElementMinSize = parseFloat(window.getComputedStyle(overElement)[minSizeName]) || 0;
 						overTotalMinSize += overElementMinSize;
-						if(isOverMove(overElementSize, overTotalMinSize)){
+						if(isOverMove(overElementSize, overElementMinSize)){
 							addOverMoveList(overElement, 0, overElementMinSize, overElementRect);
 							let loopOverElement = overElement[direction]?.[direction];
 							let loopOverElementRect;
 							let loopOverElementSize;
 							let loopOverElementMinSize;
-							let isLast = false;
 							while(loopOverElement){
 	
 								loopOverElementRect = loopOverElement.getBoundingClientRect();
@@ -396,7 +398,6 @@ class FlexLayout extends HTMLElement {
 								}else{
 									addOverMoveList(loopOverElement, loopOverElementSize, loopOverElementMinSize, loopOverElementRect);
 									break;
-									//가장 마지막 요소까지 돌리고 break;
 								}
 								
 								loopOverElement = loopOverElement[direction]?.[direction];
@@ -411,43 +412,30 @@ class FlexLayout extends HTMLElement {
 			}
 
 			let overMoveProcessingPromise;
-			//let processingMinSize = 0;
-
 			let overMoveDirection;
 			if(isOverMove(targetSize, targetMinSize)){
 				overMoveList = [];
 				overTotalMinSize += targetMinSize;
 				overMoveDirection = 'previousElementSibling';
 				overMoveProcessingPromise = overMoveProcessing(targetElement, 'previousElementSibling')
-				.then(() => {
-					if(overMoveList.length == 0){
-						nextElementSize = nextElementRect[this.sizeName]
-					}
-				})
 				targetSize = 0;
-
-				//processingMinSize = targetMinSize;
 			}else if(isOverMove(nextElementSize, nextElementMinSize)){
 				overMoveList = [];
 				overTotalMinSize += nextElementMinSize;
 				overMoveDirection = 'nextElementSibling';
 				overMoveProcessingPromise = overMoveProcessing(nextElement, 'nextElementSibling')
-				.then(() => {
-					if(overMoveList.length == 0){
-						targetSize = targetRect[this.sizeName];
-					}
-				})
 				nextElementSize = 0;
-
-				//processingMinSize = nextElementMinSize;
 			}else{
 				overMoveProcessingPromise = Promise.resolve(false);
 			}
 
 			overMoveProcessingPromise.then(()=>{
-				console.log(overMoveList);
-				console.log(overMoveList[overMoveList.length - 1]);
 				
+				/*console.log('overTotalMinSize',overTotalMinSize);
+				console.log('totalMovement',this.totalMovement);
+				console.log('targetRect',targetRect);
+				console.log('nextElementRect', nextElementRect);*/
+	
 				let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
 				targetElement.style.flex = `${targetFlexGrow} 1 0%`;
 				let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
@@ -455,13 +443,17 @@ class FlexLayout extends HTMLElement {
 				
 				let lastItem = overMoveList[overMoveList.length - 1];
 				let addNextOverMoveProcessingPromise
-				if(lastItem && lastItem.elementSize > 0){
-					addNextOverMoveProcessingPromise = overMoveProcessing(nextElement, overMoveDirection)
+				if(lastItem && isOverMove(lastItem.elementSize, overTotalMinSize)){
+				addNextOverMoveProcessingPromise = overMoveProcessing(lastItem.element, overMoveDirection).then(()=>{
+						lastItem.elementSize = 0;
+					});
 				}else{
 					addNextOverMoveProcessingPromise = Promise.resolve();
 				}
+				
+				addNextOverMoveProcessingPromise = Promise.resolve();
 				addNextOverMoveProcessingPromise.then(() => {
-					overMoveList.reverse().forEach(({
+					overMoveList.reverse().forEach( async ({
 						element,
 						elementSize,
 						elementMinSize,
@@ -469,15 +461,11 @@ class FlexLayout extends HTMLElement {
 					}, i)=>{
 							if( elementMinSize >= Math.abs(this.totalMovement) * overMoveList.length ){
 								return;
-							}else if(elementSize == 0){
-								//elementSize = elementRect[this.sizeName];
 							}else if(element.dataset.visibility == 'h'){
 								elementSize = 0;
-							}
-							//console.log(elementSize, 'elementSize')
-							if(elementSize < 0 && overMoveDirection){
-								return;	
-							}
+							}/*else if(isOverMove(elementSize, elementMinSize)){
+								return;
+							}*/
 							let flexGrow = (elementSize / (parentSize - (elementMinSize || 0) - 1)) * this.#growLimit;
 							element.style.flex = `${flexGrow} 1 0%`;
 							this.prevOverFlexGrow = flexGrow;
