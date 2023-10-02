@@ -38,8 +38,8 @@ export default class ToolHandler{
 		});
 	}
 
-	processingElementPosition(element){
-		let {x, y, height} = this.#toolButton.getBoundingClientRect();
+	processingElementPosition(element, target = this.#toolButton){
+		let {x, y, height} = target.getBoundingClientRect();
 		
 		let elementHeightPx = element.clientHeight;
 		let elementTop = (y - elementHeightPx)

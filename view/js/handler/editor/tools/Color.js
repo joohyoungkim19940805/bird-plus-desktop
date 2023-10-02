@@ -47,17 +47,18 @@ export default class Color extends FreedomInterface {
 				this.palette.close();
 			}
 		})
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = ``
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -73,12 +74,8 @@ export default class Color extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Color, dataset);
-		if(Color.defaultStyle.textContent == '' && Color.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Color.createDefaultStyle();
-			Color.defaultStyle.setAttribute('data-is_update', true);
-		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Color.palette.r + ',' + Color.palette.g + ',' + Color.palette.b + ',' + Color.palette.a;
 		}

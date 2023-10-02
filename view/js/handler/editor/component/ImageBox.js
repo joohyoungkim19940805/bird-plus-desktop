@@ -1,4 +1,3 @@
-import FreedomInterface from "../module/FreedomInterface"
 
 export default class ImageBox {
     

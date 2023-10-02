@@ -40,20 +40,13 @@ export default class Video extends FreedomInterface {
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
 				this.toolHandler.toolButton.dataset.tool_status = 'cancel';
 			}else{
-                this.#selectedFile.click();
                 this.#selectedFile.onchange = ()=> {
                     //let url = URL.createObjectURL(this.#selectedFile.files[0])
                     this.toolHandler.toolButton.dataset.tool_status = 'active';
                 }
+                this.#selectedFile.click();
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -117,6 +110,14 @@ export default class Video extends FreedomInterface {
                 aspect-ratio: attr(width) / attr(height);
             }
         `
+        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -137,12 +138,8 @@ export default class Video extends FreedomInterface {
      */
     file = new DataTransfer().files;
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Video.defaultStyle.textContent == '' && Video.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Video.createDefaultStyle();
-			Video.defaultStyle.setAttribute('data-is_update', true);
-		}
 
         let videoLoadPromiseResolve;
         let videoLoadPromise = new Promise(resolve => {
@@ -154,7 +151,6 @@ export default class Video extends FreedomInterface {
             this.dataset.name = Video.selectedFile.files[0].name;
             this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
             this.dataset.size = Video.selectedFile.files[0].size;
-            console.log(Video.selectedFile.files);
             this.file.files = Video.selectedFile.files;
             let reader = new FileReader();  
             reader.onload = (event) => { 
@@ -204,8 +200,7 @@ export default class Video extends FreedomInterface {
         videoLoadEndPromise.then(videoUrl => {
             video.src = videoUrl;
         })
-        console.log(this.file);
-        console.log(`video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`)
+
         if(
             (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
             (

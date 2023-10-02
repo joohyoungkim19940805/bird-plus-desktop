@@ -47,13 +47,6 @@ export default class Strikethrough extends FreedomInterface {
 				this.palette.close();
 			}
 		})
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -63,6 +56,14 @@ export default class Strikethrough extends FreedomInterface {
 				text-decoration-color: #404040;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -78,12 +79,8 @@ export default class Strikethrough extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Strikethrough, dataset);
-		if(Strikethrough.defaultStyle.textContent == '' && Strikethrough.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Strikethrough.createDefaultStyle();
-			Strikethrough.defaultStyle.setAttribute('data-is_update', true);
-		}
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Strikethrough.palette.r + ',' + Strikethrough.palette.g + ',' + Strikethrough.palette.b + ',' + Strikethrough.palette.a;
 		}

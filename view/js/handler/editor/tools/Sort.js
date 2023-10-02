@@ -57,13 +57,6 @@ export default class Sort extends FreedomInterface {
 				this.sortBox.close();
 			}
 		})
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
     static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
@@ -75,6 +68,14 @@ export default class Sort extends FreedomInterface {
                 display: block;
             }
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -90,12 +91,9 @@ export default class Sort extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Sort, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Sort.defaultStyle.textContent == '' && Sort.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Sort.createDefaultStyle();
-			Sort.defaultStyle.setAttribute('data-is_update', true);
-		}
+
 		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.text_align = Sort.sortBox.selectedSort?.textContent;
         }

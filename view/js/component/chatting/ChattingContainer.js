@@ -10,7 +10,7 @@ export default class ChattingContainer{
         }
 
         chattingHead.element.dataset.is_resize = true;
-        chattingHead.element.dataset.grow = 0.378;
+        chattingHead.element.dataset.grow = 0.4;
 
         chattingInfo.element.dataset.is_resize = true;
 

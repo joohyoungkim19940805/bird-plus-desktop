@@ -6,7 +6,7 @@ const path = require('path');
 /**
  * 메인 윈도우를 만들기 위해 일렉트론 모듈에서 브라우저 윈도우를 가져온다. 
  */
-const {BrowserWindow} = require('electron');
+const {BrowserWindow, shell} = require('electron');
 
 const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
 
@@ -96,8 +96,19 @@ class MainWindow extends BrowserWindow{
 		})
 
 		//새창 팝업 열릴시 트리거(파일인 경우만)
-		super.webContents.setWindowOpenHandler(({url}) => {
-			log.debug(url);
+		super.webContents.setWindowOpenHandler((event) => {
+			/*
+			event{
+			 	url: 'https://naver.com/',
+				frameName: '',
+				features: '',
+				disposition: 'foreground-tab',
+				referrer: { url: '', policy: 'strict-origin-when-cross-origin' },
+				postBody: undefined
+			}
+			*/
+			let {url} = event;
+			log.debug('MainWindow Line 100 ::: open url :::', url);
 			if(url.includes('blob:file:///')){
 				return {
 					action: 'allow',
@@ -117,6 +128,28 @@ class MainWindow extends BrowserWindow{
 						}
 					}
 				}
+			}else{
+				/*
+				return {
+					action: 'allow',
+					outlivesOpener: false,
+					overrideBrowserWindowOptions: {
+						frame: true,
+						fullscreenable: true,
+						backgroundColor: 'black',
+						//autoHideMenuBar : true,
+						//autoHideMenuBar : false,
+						movable : true,
+						resizable : true,
+						//titleBarStyle: 'visible',
+						titleBarOverlay: true,
+						//webPreferences: {
+						//	preload : path.join(__project_path, 'browser/preload/imageAndVideoDetailPreload.js')
+						//}
+					}
+				}
+				*/
+				shell.openExternal(url);
 			}
 
 			return { action: 'deny' }

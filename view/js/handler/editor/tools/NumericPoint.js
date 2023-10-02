@@ -28,13 +28,6 @@ export default class NumericPoint extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-		
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
     //list-style-type: disc;
 	static createDefaultStyle(){
@@ -50,6 +43,14 @@ export default class NumericPoint extends FreedomInterface {
 				margin-inline: 1.3em;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 	
@@ -67,12 +68,8 @@ export default class NumericPoint extends FreedomInterface {
 
 	parentLine;
 	
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(NumericPoint.defaultStyle.textContent == '' && NumericPoint.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			NumericPoint.createDefaultStyle();
-			NumericPoint.defaultStyle.setAttribute('data-is_update', true);
-		}
 		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);

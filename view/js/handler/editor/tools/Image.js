@@ -48,13 +48,6 @@ export default class Image extends FreedomInterface {
                 }
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -113,7 +106,15 @@ export default class Image extends FreedomInterface {
                 height: auto;
                 aspect-ratio: attr(width) / attr(height);
             }
-        `
+        ` 
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -131,12 +132,8 @@ export default class Image extends FreedomInterface {
 
     file = new DataTransfer().files;
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-        if(Image.defaultStyle.textContent == '' && Image.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Image.createDefaultStyle();
-			Image.defaultStyle.setAttribute('data-is_update', true);
-		}
         
         let imageLoadPromiseResolve;
         let imageLoadPromise = new Promise(resolve => {

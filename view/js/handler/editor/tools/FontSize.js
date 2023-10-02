@@ -16,13 +16,13 @@ export default class FontSize extends FreedomInterface {
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-font-size';
 		
-        this.fontSizeBox = new FontSizeBox({min:1, max:50});
-
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '↑↓',
             className: `${this.#defaultStyle.id}-button`,
 			title: 'Font Size'
         });
+
+		this.fontSizeBox = new FontSizeBox({min:1, max:50});
 
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){
@@ -59,13 +59,6 @@ export default class FontSize extends FreedomInterface {
 				this.fontSizeBox.close();
 			}
 		})
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
     static createDefaultStyle(){
@@ -75,6 +68,14 @@ export default class FontSize extends FreedomInterface {
 				padding-bottom = '1.1%';
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -90,13 +91,9 @@ export default class FontSize extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(FontSize, dataset);
-        if(FontSize.defaultStyle.textContent == '' && FontSize.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			FontSize.createDefaultStyle();
-			FontSize.defaultStyle.setAttribute('data-is_update', true);
-		}
-		if( ! dataset && Object.entries(this.dataset).length == 0){
+		if( ! dataset && Object.keys(this.dataset).length == 0){
             this.dataset.font_size = FontSize.fontSizeBox.selectedFont?.style.fontSize;
         }
         this.style.fontSize = this.dataset.font_size

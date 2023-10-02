@@ -14,7 +14,7 @@ import Italic from "../editor/tools/Italic"
 import Image from "../editor/tools/Image"
 import Video from "../editor/tools/Video"
 import Code from "../editor/tools/Code"
-
+import Hyperlink from "../editor/tools/Hyperlink"
 
 import workspaceHandler from "../workspace/WorkspaceHandler";
 import roomHandler from "../room/RoomHandler";
@@ -38,6 +38,7 @@ export default class EditorHandler extends FreeWillEditor{
 			'free-will-editor-image' : Image,
 			'free-will-editor-video' : Video,
 			'free-will-editor-code' : Code,
+			'free-will-editor-link' : Hyperlink,
 		}
 		let option = {
 			isDefaultStyle : true
@@ -62,6 +63,7 @@ export default class EditorHandler extends FreeWillEditor{
 			Image.toolHandler.toolButton,
 			Video.toolHandler.toolButton,
 			Code.toolHandler.toolButton,
+			Hyperlink.toolHandler.toolButton,
 		);
 
 		super.placeholder = '텍스트를 입력해주세요.'
@@ -80,7 +82,6 @@ export default class EditorHandler extends FreeWillEditor{
 						chatting: JSON.stringify(jsonList)
 					}).then(res=>{
 						this.innerText = '';
-						console.log(res);
 					});
 				})
 

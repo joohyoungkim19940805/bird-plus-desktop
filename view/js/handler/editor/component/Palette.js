@@ -732,7 +732,8 @@ export default class Palette {
 
     #settingApplyEvent(palette, cancelButton, applyButton, selectionRgbText){
 		cancelButton.onclick = () => {
-			palette.remove();
+			this.close();
+			//palette.remove();
 		}
 		applyButton.onclick = (event) => {
             this.applyCallback(event);

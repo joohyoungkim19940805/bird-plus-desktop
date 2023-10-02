@@ -31,13 +31,6 @@ export default class Code extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -89,8 +82,15 @@ export default class Code extends FreedomInterface {
                 box-shadow: 0px 0px 3px 0px #d1d1d1;
                 padding: 0.5em 1em 0.5em 1em;
 			}
-            
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -108,12 +108,8 @@ export default class Code extends FreedomInterface {
 
 	parentLine;
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Code, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Code.defaultStyle.textContent == '' && Code.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Code.createDefaultStyle();
-			Code.defaultStyle.setAttribute('data-is_update', true);
-		}
         /*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Code.toolHandler.connectedFriends.length;

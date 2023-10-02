@@ -25,13 +25,6 @@ export default class Strong extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -40,6 +33,14 @@ export default class Strong extends FreedomInterface {
 				font-weight: bold;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -57,10 +58,6 @@ export default class Strong extends FreedomInterface {
 
 	constructor(dataset, {isDefaultStyle = true} = {}){
 		super(Strong, dataset);
-		if(Strong.defaultStyle.textContent == '' && Strong.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Strong.createDefaultStyle();
-			Strong.defaultStyle.setAttribute('data-is_update', true);
-		}
 	}
 	
 }

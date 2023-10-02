@@ -26,7 +26,7 @@ export default new class ChattingHead{
                 </div>
             </div>
             <div class="chatting_head_menu_wrapper">
-                <button type="button" class="pointer chatting_head_border_icon_css_gg-list" data-bind_name="borderIconButton"></button>
+                <button type="button" class="pointer css-gg-list" data-bind_name="noticeBoardIconButton"></button>
             </div>
             <ul class="chatting_head_joined_members list_scroll list_scroll-x" data-bind_name="chattingHeadJoinedMembers">
 

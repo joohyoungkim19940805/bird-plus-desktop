@@ -28,13 +28,6 @@ export default class Quote extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -46,6 +39,14 @@ export default class Quote extends FreedomInterface {
 				margin-inline: 2.5em;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -63,12 +64,9 @@ export default class Quote extends FreedomInterface {
 
 	parentLine;
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Quote, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(Quote.defaultStyle.textContent == '' && Quote.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Quote.createDefaultStyle();
-			Quote.defaultStyle.setAttribute('data-is_update', true);
-		}
+
 		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Quote.toolHandler.connectedFriends.length;

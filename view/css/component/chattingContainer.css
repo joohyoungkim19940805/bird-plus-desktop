@@ -100,39 +100,10 @@
 
 #chatting_head_wrapper .chatting_head_menu_wrapper{
     display: flex;
-    padding: 1%;
+    padding: 0 1% 0.5% 1%;
     gap: 1vw;
 }
-#chatting_head_wrapper .chatting_head_menu_wrapper .chatting_head_border_icon_css_gg-list{
-    box-sizing: border-box;
-    position: relative;
-    display: block;
-    transform: scale(var(--ggs,1));
-    width: 22px;
-    height: 20px;
-    border: 2px solid;
-    border-radius: 3px
-}
-#chatting_head_wrapper .chatting_head_menu_wrapper .chatting_head_border_icon_css_gg-list::after,
-#chatting_head_wrapper .chatting_head_menu_wrapper .chatting_head_border_icon_css_gg-list::before{
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: currentColor;
-    top: 3px;
-    left: 3px;
-    box-shadow:
-        0 4px 0,
-        0 8px 0
-}
-#chatting_head_wrapper .chatting_head_menu_wrapper .chatting_head_border_icon_css_gg-list::after{
-    border-radius: 3px;
-    width: 8px;
-    left: 7px
-}
+
 /* chatting head [E]*/
 
 /* chatting info(body) [S]*/

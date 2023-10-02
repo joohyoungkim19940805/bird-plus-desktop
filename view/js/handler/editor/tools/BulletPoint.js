@@ -28,13 +28,6 @@ export default class BulletPoint extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -53,6 +46,14 @@ export default class BulletPoint extends FreedomInterface {
 				display: list-item;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 	
@@ -70,12 +71,8 @@ export default class BulletPoint extends FreedomInterface {
 
 	parentLine;
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(BulletPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		if(BulletPoint.defaultStyle.textContent == '' && BulletPoint.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			BulletPoint.createDefaultStyle();
-			BulletPoint.defaultStyle.setAttribute('data-is_update', true);
-		}
 		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = BulletPoint.toolHandler.connectedFriends.length;

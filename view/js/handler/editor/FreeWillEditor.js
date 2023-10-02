@@ -17,6 +17,7 @@ import Italic from "./tools/Italic"
 import Image from "./tools/Image"
 import Video from "./tools/Video"
 import Code from "./tools/Code"
+import Hyperlink from "./tools/Hyperlink"
 
 export default class FreeWillEditor extends FreeWiilHandler {
 	
@@ -24,7 +25,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	static toolsMap = {};
 
 	#isLoaded = false;
-	#prevParent;
 	components;
 	tools;
 	toolsElement = {};
@@ -48,6 +48,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			'free-will-editor-image' : Image,
 			'free-will-editor-video' : Video,
 			'free-will-editor-code' : Code,
+			'free-will-editor-link' : Hyperlink,
 		},
 		{isDefaultStyle = true} = {}
 	){
@@ -76,7 +77,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				if(className.includes(' ')){
 					throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 				}
-				if(isDefaultStyle){
+				if(this.isDefaultStyle){
 					Tool.createDefaultStyle();
 				}
 				Tool.toolHandler.defaultClass = className;
@@ -391,9 +392,12 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						node = new EditorTarget(jsonNode.data);
 					}else if(jsonNode.data.hasOwnProperty('is_line')){
 						let line = new Line(document.createElement(jsonNode.tagName));
-						node = line.lineElement
+						node = line.lineElement;
+						Object.assign(node.dataset, jsonNode.data);
 					}else{
-						node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
+						//node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
+						node = document.createElement(jsonNode.tagName);
+						Object.assign(node.dataset, jsonNode.data);
 					}
 
 					if(jsonNode.childs.length != 0){

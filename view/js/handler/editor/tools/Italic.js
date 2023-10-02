@@ -25,13 +25,6 @@ export default class Italic extends FreedomInterface {
 				this.toolHandler.toolButton.dataset.tool_status = 'active';
 			}
 		}
-
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
@@ -44,6 +37,14 @@ export default class Italic extends FreedomInterface {
 				font-style: italic;
 			}
 		`
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 	
@@ -60,12 +61,8 @@ export default class Italic extends FreedomInterface {
 	}
 
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Italic, dataset);
-		if(Italic.defaultStyle.textContent == '' && Italic.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Italic.createDefaultStyle();
-			Italic.defaultStyle.setAttribute('data-is_update', true);
-		}
 	}
 
 	

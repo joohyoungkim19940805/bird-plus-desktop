@@ -49,16 +49,18 @@ export default class Background extends FreedomInterface {
 			}
 		})
 
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
-        if(! defaultStyle){
-            document.head.append(this.#defaultStyle);
-        }else{
-            this.#defaultStyle = defaultStyle;
-        }
 	}
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = ``
+		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+        if(! defaultStyle){
+            document.head.append(this.#defaultStyle);
+        }else{
+            this.#defaultStyle?.remove();
+            this.#defaultStyle = defaultStyle;
+            document.head.append(this.#defaultStyle);
+        }
 		return this.#defaultStyle;
 	}
 
@@ -74,12 +76,9 @@ export default class Background extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-	constructor(dataset, {isDefaultStyle = true} = {}){
+	constructor(dataset){
 		super(Background, dataset);
-		if(Background.defaultStyle.textContent == '' && Background.defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			Background.createDefaultStyle();
-			Background.defaultStyle.setAttribute('data-is_update', true);
-		}
+
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Background.palette.r + ',' + Background.palette.g + ',' + Background.palette.b + ',' + Background.palette.a;
 		}
