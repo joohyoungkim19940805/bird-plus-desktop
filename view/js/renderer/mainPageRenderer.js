@@ -86,15 +86,13 @@ window.addEventListener("DOMContentLoaded", (event) => {
 			document.querySelector('#chatting')
 		)
 		
-		window.myAPI.room.createMySelfRoom({workspaceId}).then(result => {
-			// 사용자가 초대되어서 입장한 건지 뭔지 구분하기 귀찮으니 
+		window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
 			// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
 			if(result.code == 0){
 				roomHandler.roomId = result.data.id;
 			}
 		})
-
-		window.myAPI.chatting.chattingReady({workspaceId});
-
+		
+		window.myAPI.stream.initWorkspaceStream({workspaceId});
 	})
 });

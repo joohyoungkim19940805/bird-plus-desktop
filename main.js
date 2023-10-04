@@ -89,8 +89,9 @@ app.whenReady().then(()=>{
 		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
 		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
 		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
+		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
 		
-		ipcMain.handle('getProjectPath', (event) => {
+ipcMain.handle('getProjectPath', (event) => {
 			return global.__project_path;
 		})
 	/*

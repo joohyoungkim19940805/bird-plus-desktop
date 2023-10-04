@@ -268,16 +268,20 @@ class FlexLayout extends HTMLElement {
 	 * @param {HTMLElement} resizePanel 
 	 */
 	#addResizePanelEvent(resizePanel){
+		this.totalMovement = 0;
+		this.parentSize = 0;
 		resizePanel.addEventListener('mousedown', () => {
 			this.totalMovement = 0;
-
+			this.parentSize = this.getBoundingClientRect()[this.sizeName];
+			
 			resizePanel.setAttribute('data-is_mouse_down', '');
 			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 			document.body.style.cursor = this.resizeCursor;
 		})
 		window.addEventListener('mouseup', (event) => {
 			this.totalMovement = 0;
-
+			this.parentSize = 0;
+			
 			resizePanel.removeAttribute('data-is_mouse_down');
 			resizePanel.querySelector('.hover').removeAttribute('data-is_hover', '');
 			
@@ -290,194 +294,79 @@ class FlexLayout extends HTMLElement {
 		resizePanel.addEventListener('mouseup', () => {
 			resizePanel.removeAttribute('data-is_mouse_down');
 			this.totalMovement = 0;
+			this.parentSize = 0;
 		})
 		window.addEventListener('mousemove', (event) => {
 			if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
 				return;
 			}
-
-			// 부모요소 계산, 자기 자신 요소와 마우스 위치값 비율 계산, 비율 기준으로 limit의 비율 재계산하여 flex grow 반영
-			this.getResizeRequiredObject(resizePanel)
-			.then(obj => this.move(resizePanel, event, obj));
-
+			this.moveMouseFlex(resizePanel, event);
 		})
 	}
 
-	getResizeRequiredObject(resizePanel){
+	moveMouseFlex(resizePanel, event){
 		return new Promise(resolve=>{
-			let targetElement = resizePanel.__resizeTarget;
-			let nextElement = resizePanel.nextElementSibling;
-			let targetRect = targetElement.getBoundingClientRect();
-			let nextElementRect = nextElement.getBoundingClientRect();
-
-			let parentSize = this.getBoundingClientRect()[this.sizeName];
-
+			let movement = event['movement' + this.xy.toUpperCase()];
+			this.totalMovement += event['movement' + this.xy.toUpperCase()];
 			let minSizeName = 'min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1);
-			let targetMinSize = parseFloat(window.getComputedStyle(resizePanel.__resizeTarget)[minSizeName]) || 1;
-			let nextElementMinSize = parseFloat(window.getComputedStyle(resizePanel.nextElementSibling)[minSizeName]) || 1;
-			resolve({
-				targetElement,
-				nextElement,
-				targetRect,
-				nextElementRect,
-				parentSize,
-				minSizeName,
-				targetMinSize,
-				nextElementMinSize
-			})
-		})
-	}
 
-	move(resizePanel, event, {
-		targetElement,
-		nextElement,
-		targetRect,
-		nextElementRect,
-		parentSize,
-		minSizeName,
-		targetMinSize,
-		nextElementMinSize,
-	}){
-		let mousePosition = event[this.xy];
+			let targetElement = this.findNotCloseFlexContent(resizePanel.__resizeTarget, 'previousElementSibling');
+			if( ! targetElement || 30 < movement){
+				targetElement = resizePanel.__resizeTarget;
+			}
+			let targetMinSize = parseFloat(window.getComputedStyle(targetElement)[minSizeName]) || 0;
+			let targetRect = targetElement.getBoundingClientRect();
+			let targetSize = targetRect[this.sizeName] + movement;
 
-		this.totalMovement += event['movement' + this.xy.toUpperCase()]
+			let nextElement = this.findNotCloseFlexContent(resizePanel.nextElementSibling, 'nextElementSibling');
+			if( ! nextElement || 30 < (movement * -1)){
+				nextElement = resizePanel.nextElementSibling
+			}
+			let nextElementMinSize = parseFloat(window.getComputedStyle(nextElement)[minSizeName]) || 0;
+			let nextElementRect = nextElement.getBoundingClientRect();
+			let nextElementSize = nextElementRect[this.sizeName] + (movement * -1);
 
-		return new Promise(resolve => {
-			let targetSize = mousePosition - targetRect[this.targetDirection];
-			let nextElementSize = nextElementRect[this.nextElementDirection] - mousePosition;
 			
-			let overMoveList = [];
-			let overTotalMinSize = 0;
-			const isOverMove = (elementSize, elementMinSize) => {
-				return Math.floor(elementSize) <= 0 || (isNaN(elementMinSize) ? false : elementMinSize >= Math.floor(elementSize));
-			}
-			const addOverMoveList = (element, elementSize, elementMinSize, elementRect) => {
-				overMoveList.push({
-					element,
-					elementSize,
-					elementMinSize,
-					elementRect
-				});
-			}
-			const overMoveProcessing = (element, direction = 'previousElementSibling') => {
-				let overElement = element[direction]?.[direction];
-				let overElementRect;
-				let overElementSize;
-				let overElementMinSize;
-				return new Promise(resolve =>{
-
-					if(overElement){
-						overElementRect = overElement.getBoundingClientRect();
-						if(direction === 'previousElementSibling'){
-							overElementSize = mousePosition - overElementRect[this.targetDirection]// - (targetRect[this.nextElementDirection] - targetRect[this.targetDirection]);
-						}else{
-							overElementSize = /*(nextElementRect[this.targetDirection] - nextElementRect[this.nextElementDirection]) + */overElementRect[this.nextElementDirection] - mousePosition;
-						}
-						overElementMinSize = parseFloat(window.getComputedStyle(overElement)[minSizeName]) || 0;
-						overTotalMinSize += overElementMinSize;
-						if(isOverMove(overElementSize, overElementMinSize)){
-							addOverMoveList(overElement, 0, overElementMinSize, overElementRect);
-							let loopOverElement = overElement[direction]?.[direction];
-							let loopOverElementRect;
-							let loopOverElementSize;
-							let loopOverElementMinSize;
-							while(loopOverElement){
-	
-								loopOverElementRect = loopOverElement.getBoundingClientRect();
-								if(direction === 'previousElementSibling'){
-									loopOverElementSize = mousePosition - loopOverElementRect[this.targetDirection] //- (targetRect[this.nextElementDirection] - targetRect[this.targetDirection]);
-								}else{
-									loopOverElementSize = /*(nextElementRect[this.targetDirection] - nextElementRect[this.nextElementDirection]) +*/ loopOverElementRect[this.nextElementDirection] - mousePosition;
-								}
-								loopOverElementMinSize = parseFloat(window.getComputedStyle(loopOverElement)[minSizeName]) || 0;
-
-								if(isOverMove(loopOverElement, overTotalMinSize)){
-									overElementSize = overElementRect[this.sizeName];
-									overTotalMinSize += loopOverElementMinSize;
-									addOverMoveList(loopOverElement, 0, loopOverElementMinSize, loopOverElementRect);
-								}else{
-									addOverMoveList(loopOverElement, loopOverElementSize, loopOverElementMinSize, loopOverElementRect);
-									break;
-								}
-								
-								loopOverElement = loopOverElement[direction]?.[direction];
-							}
-						}else{
-							addOverMoveList(overElement, overElementSize, overElementMinSize, overElementRect);
-						}
-					}
-
-					resolve();
-				});
-			}
-
-			let overMoveProcessingPromise;
-			let overMoveDirection;
-			if(isOverMove(targetSize, targetMinSize)){
-				overMoveList = [];
-				overTotalMinSize += targetMinSize;
-				overMoveDirection = 'previousElementSibling';
-				overMoveProcessingPromise = overMoveProcessing(targetElement, 'previousElementSibling')
+			if(this.isOverMove(targetSize, targetMinSize)){
+				nextElementSize = nextElementRect[this.sizeName]
 				targetSize = 0;
-			}else if(isOverMove(nextElementSize, nextElementMinSize)){
-				overMoveList = [];
-				overTotalMinSize += nextElementMinSize;
-				overMoveDirection = 'nextElementSibling';
-				overMoveProcessingPromise = overMoveProcessing(nextElement, 'nextElementSibling')
+			}else if(this.isOverMove(nextElementSize, nextElementMinSize)){
+				targetSize = targetRect[this.sizeName];
 				nextElementSize = 0;
-			}else{
-				overMoveProcessingPromise = Promise.resolve(false);
 			}
-
-			overMoveProcessingPromise.then(()=>{
-				
-				/*console.log('overTotalMinSize',overTotalMinSize);
-				console.log('totalMovement',this.totalMovement);
-				console.log('targetRect',targetRect);
-				console.log('nextElementRect', nextElementRect);*/
-	
-				let targetFlexGrow = (targetSize / (parentSize - (targetMinSize || 0) - 1)) * this.#growLimit;
-				targetElement.style.flex = `${targetFlexGrow} 1 0%`;
-				let nextElementFlexGrow = (nextElementSize / (parentSize - (nextElementMinSize || 0) - 1)) * this.#growLimit;
-				nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
-				
-				let lastItem = overMoveList[overMoveList.length - 1];
-				let addNextOverMoveProcessingPromise
-				if(lastItem && isOverMove(lastItem.elementSize, overTotalMinSize)){
-				addNextOverMoveProcessingPromise = overMoveProcessing(lastItem.element, overMoveDirection).then(()=>{
-						lastItem.elementSize = 0;
-					});
-				}else{
-					addNextOverMoveProcessingPromise = Promise.resolve();
-				}
-				
-				addNextOverMoveProcessingPromise = Promise.resolve();
-				addNextOverMoveProcessingPromise.then(() => {
-					overMoveList.reverse().forEach( async ({
-						element,
-						elementSize,
-						elementMinSize,
-						elementRect
-					}, i)=>{
-							if( elementMinSize >= Math.abs(this.totalMovement) * overMoveList.length ){
-								return;
-							}else if(element.dataset.visibility == 'h'){
-								elementSize = 0;
-							}/*else if(isOverMove(elementSize, elementMinSize)){
-								return;
-							}*/
-							let flexGrow = (elementSize / (parentSize - (elementMinSize || 0) - 1)) * this.#growLimit;
-							element.style.flex = `${flexGrow} 1 0%`;
-							this.prevOverFlexGrow = flexGrow;
-							this.prevOverRect = elementRect;
-					})
-				})
-				
-			})
+			
+			//(parentSize - (elementMinSize || 0) - 1))
+			let targetFlexGrow = (targetSize / (this.parentSize - 1)) * this.#growLimit;
+			targetElement.style.flex = `${targetFlexGrow} 1 0%`;
+			let nextElementFlexGrow = (nextElementSize / (this.parentSize - 1)) * this.#growLimit;
+			nextElement.style.flex = `${nextElementFlexGrow} 1 0%`;
 
 			resolve();
-		})
+		});
 	}
+	isOverMove(elementSize, elementMinSize) {
+		return Math.floor(elementSize) <= 0 || (isNaN(elementMinSize) ? false : elementMinSize >= Math.floor(elementSize));
+	}
+
+	findNotCloseFlexContent(target, direction){
+		const isCloseCheck = ()=>{
+			let grow = parseFloat(window.getComputedStyle(target).flex.split(' ')[0]) || 0;
+			if(grow == 0){
+				return true;
+			}else{
+				return false;
+			}
+		};
+		
+		while(isCloseCheck()){
+			target = target[direction]?.[direction];
+			if(! target){
+				break;
+			}
+		}
+		return target;
+	}
+
 
 	closeFlex(resizeTarget, {isResize = false} = {}){
 		return new Promise(resolve=>{

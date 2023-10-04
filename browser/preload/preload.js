@@ -37,6 +37,14 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
 
+	event : {
+		electronEventTrigger : electronEventTrigger,
+	},
+
+	stream : {
+		initWorkspaceStream : (param) => ipcRenderer.send('initWorkspaceStream', param),
+	},
+
 	pageChange : {
 		changeLoginPage : () => ipcRenderer.send('changeLoginPage'),
 		changeWokrspacePage : () => ipcRenderer.send('changeWokrspacePage'),
@@ -47,13 +55,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		loginProcessing : (param) => ipcRenderer.invoke('loginProcessing', param),
 		getAccountInfo : () => ipcRenderer.invoke('getAccountInfo')
 	},
-	
-	event : {
-		electronEventTrigger : electronEventTrigger,
-	},
 
 	chatting : {
-		chattingReady : (param) => ipcRenderer.send('chattingReady', param),
 		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
 		searchChattingList : (param) => ipcRenderer.invoke('searchChattingList', param),
 	},

@@ -99,14 +99,14 @@ export default new class ChattingInfo{
                 this.createItemElement(chattingData).then(liElement => {
                     this.#elementMap.chattingContentList.prepend(liElement);
                     this.#addChattingMemory(liElement)
-                    this.#elementMap.chattingContentList.scrollBy(undefined, 
-                        9999999
-                    )
                     this.#processingTimeGrouping(
                         this.#liList[0],
                         liElement
                     ); 
                     this.#liList.unshift(liElement);
+                    this.#elementMap.chattingContentList.scrollBy(undefined, 
+                        9999999
+                    )
                 });
             }
         }
@@ -227,7 +227,9 @@ export default new class ChattingInfo{
             });
             let content = new EditorHandler({isReadOnly : true});
             content.contentEditable = false;
-            content.parseLowDoseJSON(chatting);
+            content.parseLowDoseJSON(chatting).then((e)=>{
+                resolve(li)
+            });
             li.append(content);
             
             Object.assign(li.dataset, {
@@ -245,7 +247,7 @@ export default new class ChattingInfo{
             this.#addChattingMemory(li, id);
             this.#addItemEvent(li);
             prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
-            resolve(li);
+            //resolve(li);
         })
     }
 

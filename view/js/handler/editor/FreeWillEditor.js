@@ -137,7 +137,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						e.removeAttribute('data-placeholder')
 					})
 					if(isEmpty && ! isExistTools){
-						this.firstElementChild.dataset.placeholder = this.#placeholder
+						this.placeholder = this.#placeholder;
+						//this.firstElementChild.dataset.placeholder = this.#placeholder
 					}
 					//console.log(mutation.target);
 					mutation.addedNodes.forEach(async element=>{
@@ -197,7 +198,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#startFirstLine(){
 		let lineElement = super.createLine();
 		lineElement.line.isFirstLine = true;
-		lineElement.setAttribute('data-placeholder', this.#placeholder);
+		this.placeholder = this.#placeholder;
 		return lineElement;
 	}
 
@@ -364,17 +365,19 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 	}
 
-	async parseLowDoseJSON(json){
-		new Promise(resolve => {
+	parseLowDoseJSON(json){
+		return new Promise(resolve => {
 			let jsonObj = json;
 			if(typeof json == 'string'){
 				jsonObj = JSON.parse(json);
 			}
 			if(jsonObj instanceof Array){
-				Promise.all(this.#toHTML(jsonObj, this))
-				.then(htmlList => {
-					this.replaceChildren(...htmlList.filter(e=> e != undefined))
-				});
+				resolve(
+					Promise.all(this.#toHTML(jsonObj, this))
+					.then(htmlList => {
+						this.replaceChildren(...htmlList.filter(e=> e != undefined))
+					})
+				);
 			}
 			resolve();
 		})
@@ -413,7 +416,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	set placeholder(placeholder){
 		this.#placeholder = placeholder;
-		if(this.firstElementChild){
+		if(this.firstElementChild && this.contentEditable != false){
 			this.firstElementChild.setAttribute('data-placeholder', this.#placeholder);
 		}
 	}

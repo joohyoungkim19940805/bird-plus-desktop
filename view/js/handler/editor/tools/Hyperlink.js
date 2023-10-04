@@ -116,8 +116,7 @@ export default class Hyperlink extends FreedomInterface {
 				margin-left: 1em;
 				padding-left: 1em;
 				border-left: 5px solid #d7d7db;
-				width: 50%;
-				padding-right: 100%;
+				width: inherit;
 			}
 			.${this.toolHandler.defaultClass} > [data-hyperlink_child="${Hyperlink.toolHandler.defaultClass}-child"] > *{
 				font-size: 14px;
