@@ -4,6 +4,7 @@ import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
 import roomContainer from "../../room/RoomContainer";
+import noticeBoardContainer from "../../notice_board/NoticeBoardContainer";
 
 export default new class ChattingHead{
     #chattingHeadMemory = {};
@@ -217,14 +218,22 @@ export default new class ChattingHead{
         
         this.#elementMap.noticeBoardIconButton.onclick = () => {
             let flexLayout = roomContainer.wrap.closest('flex-layout');
-            console.log(flexLayout);
-            console.log(roomContainer.container);
             if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
                 this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_close');
-                flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true});
+                
+                flexLayout.closeFlex(noticeBoardContainer.wrap).then(()=>{
+                    noticeBoardContainer.wrap.dataset.is_resize = false;
+                    flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true}).then(()=>{
+                    
+                    });
+                })
             }else{
                 this.#elementMap.noticeBoardIconButton.setAttribute('data-is_close', '');
-                flexLayout.closeFlex(roomContainer.wrap);
+                flexLayout.closeFlex(roomContainer.wrap).then(()=>{
+                    flexLayout.openFlex(noticeBoardContainer.wrap, {isPrevSizeOpen: true, isResize: false});
+                    roomContainer.wrap.dataset.is_resize = false;
+                });
+               
             }   
         }
         

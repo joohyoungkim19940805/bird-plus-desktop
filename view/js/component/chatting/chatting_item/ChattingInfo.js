@@ -143,9 +143,19 @@ export default new class ChattingInfo{
                 promise.then(liList => {
                     this.#liList.push(...liList);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    this.#elementMap.chattingContentList.scrollBy(undefined, 
-                        this.#elementMap.chattingContentList.scrollHeight
-                    )
+                    let isConnectedAwait = setInterval(()=>{
+                        if( ! this.#liList[0]){
+                            clearInterval(isConnectedAwait);
+                        }
+                        if( ! this.#liList[0].isConnected){
+                            return;
+                        }
+                        this.#elementMap.chattingContentList.scrollBy(undefined, 
+                            this.#elementMap.chattingContentList.scrollHeight
+                        )
+                        clearInterval(isConnectedAwait);
+                    },50);
+                   
                     this.#lastItemVisibleObserver.disconnect();
                     let lastVisibleTarget = liList[liList.length - 1];
                     if(lastVisibleTarget){

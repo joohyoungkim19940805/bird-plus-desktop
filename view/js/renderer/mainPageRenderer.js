@@ -1,5 +1,6 @@
 import roomContainer from "./../component/room/RoomContainer"
 import chattingContainer from "./../component/chatting/ChattingContainer"
+import noticeBoardContainer from "../component/notice_board/NoticeBoardContainer"
 
 import roomHandler from "../handler/room/RoomHandler"
 import chattingHandler from "../handler/chatting/ChattingHandler"
@@ -76,6 +77,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 	})
 	workspaceIdPromise.then(workspaceId => {
 		document.querySelector('#main').append(
+			noticeBoardContainer.wrap,
 			roomContainer.wrap,
 			chattingContainer.wrap
 		)

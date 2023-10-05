@@ -236,7 +236,9 @@ class FlexLayout extends HTMLElement {
 					});
 				});
 				//this.forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
+				this.#growChangeObserver.disconnect();
 				this.forResizeList = [...this.children].filter(e=>e.hasAttribute('data-is_resize'));
+				console.log(this.forResizeList.length)
 				this.forResizeList.forEach(e=>{
 					this.#growChangeObserver.observe(e, {
 						attributeFilter:['data-grow'],
@@ -399,7 +401,7 @@ class FlexLayout extends HTMLElement {
 
 			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget);
 			let notCloseAndOpenTargetList = [...notCloseList, resizeTarget];
-			let resizeWeight = this.mathWeight(notCloseList, this.forResizeList.length);
+			//let resizeWeight = this.mathWeight(notCloseList, this.forResizeList.length);
 			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.3s';
 				e.ontransitionend = () => {
@@ -415,9 +417,14 @@ class FlexLayout extends HTMLElement {
 					return;
 				}
 
-				let percent = (this.getGrow(e) / this.forResizeList.length);
-				
-				e.dataset.grow = (this.forResizeList.length * percent) + resizeWeight * percent;
+				let percent = this.getGrow(e) / this.forResizeList.length;
+				//let percentWeight = this.forResizeList.length * percent;
+				//let remainWeight = resizeWeight * percent;
+				if(notCloseList.length == 1){
+					e.dataset.grow = this.forResizeList.length;
+					return;
+				}
+				e.dataset.grow = this.forResizeList.length * percent
 			})
 
 			if(isResize){
@@ -440,6 +447,13 @@ class FlexLayout extends HTMLElement {
 			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget);
 			let notCloseAndOpenTargetList = [...notCloseList, resizeTarget];
 			let resizeWeight = this.mathWeight(notCloseAndOpenTargetList, this.forResizeList.length);
+			let openTargetGrow = 1;
+			if(isPrevSizeOpen && resizeTarget.hasAttribute('data-prev_grow')){
+				openTargetGrow = parseFloat(resizeTarget.dataset.prev_grow) || 1;
+				resizeTarget.removeAttribute('data-prev_grow');
+			}
+			
+			//notCloseList.forEach(e=>{
 			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.3s';
 				e.ontransitionend = () => {
@@ -451,13 +465,12 @@ class FlexLayout extends HTMLElement {
 				}
 				
 				if(e == resizeTarget){
-					e.dataset.grow = (isPrevSizeOpen ? resizeTarget.dataset.prev_grow : resizeWeight) ;
-					resizeTarget.removeAttribute('data-prev_grow');
+					resizeTarget.dataset.grow = openTargetGrow;
 					return;
 				}
-
-				let percent = this.getGrow(e) / this.forResizeList.length;
-				e.dataset.grow = (this.forResizeList.length - resizeWeight) * percent;
+				
+				let percent = (this.getGrow(e) / this.forResizeList.length) - (openTargetGrow / this.forResizeList.length)
+				e.dataset.grow = this.forResizeList.length * percent;
 			});
 
 			if(isResize){
