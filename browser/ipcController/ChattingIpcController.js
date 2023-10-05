@@ -12,7 +12,6 @@ class ChattingIpcController {
 	constructor() {
 
 		ipcMain.handle('sendChatting', async (event, param) => {
-			//log.debug('param!!!!',param);
 			windowUtil.isLogin( result => {
 				if(result.isLogin){
 					return axios.post(`${__serverApi}/api/chatting/create/send-chatting`, JSON.stringify(param), {

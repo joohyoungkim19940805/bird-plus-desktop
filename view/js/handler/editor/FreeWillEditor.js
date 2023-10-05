@@ -53,6 +53,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		{isDefaultStyle = true} = {}
 	){
 		super();
+		if(isDefaultStyle){
+			FreeWiilHandler.createDefaultStyle();
+		}
 		new Promise(resolve => {
 			this.isDefaultStyle = isDefaultStyle;
 			this.components = {

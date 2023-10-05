@@ -1,7 +1,7 @@
 import chattingHandler from "../../../handler/chatting/ChattingHandler"
 import roomHandler from "../../../handler/room/RoomHandler"
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler"
-import EditorHandler from "../../../handler/editor/EditorHandler"
+import chattingRegist from "./ChattingRegist"
 
 export default new class ChattingInfo{
     
@@ -225,7 +225,7 @@ export default new class ChattingInfo{
                     </div>
                 `
             });
-            let content = new EditorHandler({isReadOnly : true});
+            let content = new chattingRegist.constructor({isReadOnly : true});
             content.contentEditable = false;
             content.parseLowDoseJSON(chatting).then((e)=>{
                 resolve(li)

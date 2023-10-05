@@ -211,6 +211,20 @@ export default new class ChattingHead{
         this.#elementMap.memberAddButton.onclick = () => {
             this.#accountInviteRoomView.open();
         }
+  
+        /*
+        this.#elementMap.noticeBoardIconButton.onclick = () => {
+            let flexLayout = roomContainer.container.closest('flex-layout');
+            console.log(flexLayout);
+            console.log(roomContainer.container);
+            if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_open')){
+                this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_open');
+                flexLayout.openFlex(roomContainer.container, {isPrevSizeOpen: true});
+            }else{
+                flexLayout.closeFlex(roomContainer.container);
+            }   
+        }
+        */
     }
 
     #addChattingHeadMemory(data, roomId){

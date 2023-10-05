@@ -116,7 +116,7 @@ export default class Hyperlink extends FreedomInterface {
 				margin-left: 1em;
 				padding-left: 1em;
 				border-left: 5px solid #d7d7db;
-				width: inherit;
+				width: 95%;
 			}
 			.${this.toolHandler.defaultClass} > [data-hyperlink_child="${Hyperlink.toolHandler.defaultClass}-child"] > *{
 				font-size: 14px;
@@ -225,6 +225,8 @@ export default class Hyperlink extends FreedomInterface {
 				return p;
 			}).catch(error=>{
 				console.error(error);
+				//this.style.color = 'red';
+				//this.title = 'unknown site';
 				return undefined
 			});
         }else{
@@ -242,7 +244,9 @@ export default class Hyperlink extends FreedomInterface {
 			getUrlMetadataPromise.then(p => {
 				if(! p){
 					p = this.querySelector(`[data-hyperlink_child="${Hyperlink.toolHandler.defaultClass}-child"]`);
-					//return;
+					if( ! p){
+						return;
+					}
 				}
 				let title;
 				if(this.dataset.title != ''){
@@ -288,16 +292,15 @@ export default class Hyperlink extends FreedomInterface {
 					description,
 					image
 				].filter(e=>e!=undefined))
+
+				this.onclick = (event) => {
+					if( ! event.composedPath().some(e=>e==p)){
+						this.#aTag.click();
+					}
+				}
 			}) 
 		}
-		this.onclick = (event) => {
-			console.log(event);
-			console.log(event.target == this);
-			console.log(this.#aTag);
-			if(event.target == this){
-				this.#aTag.click();
-			}
-		}
+
 
 		/*
 		this.onmouseenter = () => {

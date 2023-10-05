@@ -20,36 +20,14 @@
 	</head>
 	<body>
 		<header-default></header-default>
-		<flex-layout data-direction="row">
-			<div class="content_wrapper options_wrapper" data-is_resize="true" data-grow="0.1" data-info="기능 옵션 도구">
-				<div class="content" data-is_no_resize="">aaaaaaa</div>
+		<flex-layout data-direction="row" id="main">
+			<div class="content_wrapper options_wrapper" data-is_resize="false" data-grow="0" data-info="기능 옵션 도구">
+				<div class="content">aaaaaaa</div>
 			</div>
-			<div class="content_wrapper rooms_wrapper" data-is_resize="true" data-grow="0.55" data-info="채널과 방 등" style="min-width : 50px;">
-				<div class="content">
-					<flex-layout class="content_wrapper" id="room" data-direction="column">
-					</flex-layout>
-				</div>
-			</div>
-
-			<div class="content_wrapper chating_wrapper" data-is_resize="true" data-info="채팅 관련" >
-				<div class="content">
-					<flex-layout class="chating_block content_wrapper" id="chatting" data-direction="column">
-						<div class="chating_content" data-grow="0.9" data-is_resize="true" style="min-height:29px">
-							<div class="content" id="chatting_write_only">
-								<div id="toolbar" data-info="tool button wrap">
-								</div>
-								<free-will-editor>
-									
-								</free-will-editor>
-							</div>
-						</div>
-					</flex-layout>
-				</div>
-			</div>
-			<div class="content_wrapper thread_wrapper" id="thread" data-is_resize="true" data-grow="0" data-info="스레드 같은 거">
-				<div is="content-block" data-direction="x" class="content" data-is_no_resize="" data-is_last_child="">abcdefghijk</div>
-			</div>
+			<!--<div class="content_wrapper thread_wrapper" id="thread" data-is_resize="false" data-grow="0" data-info="스레드 같은 거">
+				<div is="content-block">abcdefghijk</div>
+			</div>-->
 		</flex-layout>
-		<script type="text/javascript" src="./../js/dist/mainPageRenderer.js"></script>
+		<script type="text/javascript" src="./../js/dist/mainPageRenderer.js" defer></script>
 	</body>
 </html>

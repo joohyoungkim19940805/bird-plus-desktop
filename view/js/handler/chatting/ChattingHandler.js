@@ -1,4 +1,3 @@
-import EditorHandler from "../editor/EditorHandler";
 
 export default new class ChattingHandler{
 	#lastChattingId;

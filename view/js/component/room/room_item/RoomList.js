@@ -16,9 +16,9 @@ export default new class RoomList{
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						<b><i>Room</i></b>
-						<button class="add_button" data-bind_name="addButton">+</button>
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
+						<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Room</i></b>
+						<button class="pointer add_button" data-bind_name="addButton">╊</button>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">

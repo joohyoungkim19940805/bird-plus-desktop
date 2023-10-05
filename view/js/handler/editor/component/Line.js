@@ -113,7 +113,7 @@ export default class Line {
 						return;
 					}
 					//this.lineElement.innerText = '\n';
-					window.getSelection().setPosition(this.lineElement, 1)
+					window.getSelection().setPosition(this.lineElement, 0)
 					this.lineElement.focus();
 				}
 			})

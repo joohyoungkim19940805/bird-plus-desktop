@@ -7,16 +7,13 @@ export default class FreeWiilHandler extends HTMLElement{
 
     static #defaultClass = 'free-will-editor';
 
-    static{
-		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
+    static createDefaultStyle(){
+        let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.#defaultStyle);
         }else{
             this.#defaultStyle = defaultStyle;
         }
-    }
-
-    static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
             .${this.defaultClass}{
                 height: inherit;
@@ -68,10 +65,6 @@ export default class FreeWiilHandler extends HTMLElement{
 
     constructor({isDefaultStyle = true} = {}){
         super()
-        if(FreeWiilHandler.#defaultStyle.textContent == '' && FreeWiilHandler.#defaultStyle.hasAttribute('data-is_update') == false && isDefaultStyle){
-			FreeWiilHandler.createDefaultStyle();
-			FreeWiilHandler.#defaultStyle.setAttribute('data-is_update', true);
-		}
         this.classList.add('free-will-editor');
         this.addEventListener('keydown', (event) => {
             let key = event.key;

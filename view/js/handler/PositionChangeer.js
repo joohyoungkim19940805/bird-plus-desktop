@@ -28,7 +28,6 @@ export default class PositionChanger{
 					this.#targetItem = item;
 				}
 				item.ondragend = (event) => {
-					console.log('end!');
 					console.log(event);
 					if(event.x < 0 || event.y < 0){
 						this.#onDropDocumentOutCallback(item);
@@ -48,12 +47,12 @@ export default class PositionChanger{
 				}
 
 				item.ondrop = (event) => {
+					item.style.borderTop = '';
 					if(! this.#targetItem){
 						return;
 					}
 					let target = this.#targetItem;
 					item.before(target);
-					item.style.borderTop = '';
 					this.#targetItem = undefined;
 					new Promise(res=>{
 						let nowLastItem = this.#wrapper.querySelector('[data-order_sort]:last-child');
