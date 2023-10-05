@@ -3,6 +3,8 @@ import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
 import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
+import roomContainer from "../../room/RoomContainer";
+
 export default new class ChattingHead{
     #chattingHeadMemory = {};
     //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
@@ -212,19 +214,20 @@ export default new class ChattingHead{
             this.#accountInviteRoomView.open();
         }
   
-        /*
+        
         this.#elementMap.noticeBoardIconButton.onclick = () => {
-            let flexLayout = roomContainer.container.closest('flex-layout');
+            let flexLayout = roomContainer.wrap.closest('flex-layout');
             console.log(flexLayout);
             console.log(roomContainer.container);
-            if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_open')){
-                this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_open');
-                flexLayout.openFlex(roomContainer.container, {isPrevSizeOpen: true});
+            if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
+                this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_close');
+                flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true});
             }else{
-                flexLayout.closeFlex(roomContainer.container);
+                this.#elementMap.noticeBoardIconButton.setAttribute('data-is_close', '');
+                flexLayout.closeFlex(roomContainer.wrap);
             }   
         }
-        */
+        
     }
 
     #addChattingHeadMemory(data, roomId){

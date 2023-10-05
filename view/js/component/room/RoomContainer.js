@@ -13,7 +13,6 @@ export default new class RoomContainer{
 		})
 		wrap.dataset.is_resize = true;
 		wrap.dataset.grow = 0.55;
-        wrap.style.minWidth = '100px';
 		return wrap;
 	})();
 	#container = (() => {
