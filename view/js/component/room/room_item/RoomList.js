@@ -16,9 +16,13 @@ export default new class RoomList{
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
-						<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Room</i></b>
-						<button class="pointer add_button" data-bind_name="addButton">╊</button>
+						<div class="custom_details_wrapper">
+							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
+							<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Room</i></b>
+						</div>
+						<div class="add_button_wrapper">
+							<button class="pointer add_button" data-bind_name="addButton">╊</button>
+						</div>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">
@@ -166,7 +170,24 @@ export default new class RoomList{
 			},
 			runTheFirst: false
 		}
-
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
+			console.log(event);
+			let {content} = event;
+			if( ! ['ROOM_PUBLIC','ROOM_PRIVATE'].some(e=> e == content.roomType)){
+				return;
+			}
+			//this.refresh();
+			this.createItemElement(event.content)
+			.then(li => {
+				Object.entries(this.#roomMemory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
+					if( ! obj.hasOwnProperty(event.roomId)){
+						return;
+					}
+					this.#roomMemory[workspaceHandler.workspaceId][page][event.roomId] = li;
+				})
+				this.refresh()
+			})
+		});
 	}
 
 	callData(page, size, workspaceId, roomName){

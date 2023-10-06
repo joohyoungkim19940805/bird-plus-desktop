@@ -14,6 +14,16 @@ const electronEventTrigger = {
 		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
 			delete electronEventTrigger.objectEventListener[eventName]
 		}
+	},
+	trigger(eventName, event, message){
+		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
+			electronEventTrigger.objectEventListener[eventName].forEach(async callBack=>{
+				new Promise(res=>{
+					callBack(message);
+					res();
+				})
+			})
+		}
 	}
 };
 
@@ -90,42 +100,23 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 ipcRenderer.on('resized', (event, message) => {
 	//console.log(event);
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('resized')){
-		electronEventTrigger.objectEventListener['resized'].forEach(callBack=>{
-			/**
-			 * event 객체에 메인 프로세스에 접근할 수 있는 내용이 포함되어 있는 것 처럼 보이는데
-			 * 렌더러 프로세스로 이벤트 객체를 전송해도 되는지?
-			 */
-			callBack(message);
-		})
-	}
+	electronEventTrigger.trigger('resized', event, message);
 })
 
 ipcRenderer.on('chattingAccept', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('chattingAccept')){
-		electronEventTrigger.objectEventListener['chattingAccept'].forEach(callBack=>{
-			callBack(message);
-		})
-	}
+	electronEventTrigger.trigger('chattingAccept', event, message);
 })
 
 ipcRenderer.on('workspaceChange', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('workspaceChange')){
-		electronEventTrigger.objectEventListener['workspaceChange'].forEach(callBack=>{
-			callBack(message);
-		})
-	}
+	electronEventTrigger.trigger('workspaceChange', event, message);
 })
 
-ipcRenderer.on('roomInAccountCallBack', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('roomInAccountCallBack')){
-		electronEventTrigger.objectEventListener['roomInAccountCallBack'].forEach(async callBack=>{
-			new Promise(res=>{
-				callBack(message);
-				res();
-			})
-		})
-	}
+ipcRenderer.on('roomAccept', (event, message) => {
+	electronEventTrigger.trigger('roomAccept', event, message);
+})
+
+ipcRenderer.on('roomInAccountAccept', (event, message) => {
+	electronEventTrigger.trigger('roomInAccountAccept', event, message);
 })
 
 ipcRenderer.on('checkForUpdates', (event, message) => {

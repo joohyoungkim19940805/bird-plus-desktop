@@ -29,7 +29,7 @@ export default new class ChattingHead{
                 </div>
             </div>
             <div class="chatting_head_menu_wrapper">
-                <button type="button" class="pointer css-gg-list" data-bind_name="noticeBoardIconButton"></button>
+                <button type="button" class="pointer css-gg-list" data-bind_name="noticeBoardIconButton" title="notice board"></button>
             </div>
             <ul class="chatting_head_joined_members list_scroll list_scroll-x" data-bind_name="chattingHeadJoinedMembers">
 
@@ -104,7 +104,7 @@ export default new class ChattingHead{
         })
 
 
-        window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountCallBack', event => {
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
 
             this.#addChattingHeadMemory(this.createLiElement(event), event.roomId);
 
@@ -220,7 +220,6 @@ export default new class ChattingHead{
             let flexLayout = roomContainer.wrap.closest('flex-layout');
             if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
                 this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_close');
-                
                 flexLayout.closeFlex(noticeBoardContainer.wrap).then(()=>{
                     noticeBoardContainer.wrap.dataset.is_resize = false;
                     flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true}).then(()=>{
@@ -230,7 +229,7 @@ export default new class ChattingHead{
             }else{
                 this.#elementMap.noticeBoardIconButton.setAttribute('data-is_close', '');
                 flexLayout.closeFlex(roomContainer.wrap).then(()=>{
-                    flexLayout.openFlex(noticeBoardContainer.wrap, {isPrevSizeOpen: true, isResize: false});
+                    flexLayout.openFlex(noticeBoardContainer.wrap, {isPrevSizeOpen: true, isResize: true});
                     roomContainer.wrap.dataset.is_resize = false;
                 });
                

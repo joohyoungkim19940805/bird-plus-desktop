@@ -1,6 +1,6 @@
-import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
-import LayerPopupTemplate from "./../LayerPopupTemplate"
-import roomHandler from "./../../handler/room/RoomHandler";
+import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
+import LayerPopupTemplate from "../../LayerPopupTemplate"
+import roomHandler from "../../../handler/room/RoomHandler";
 
 export default class CreateMessengerView extends LayerPopupTemplate{
 
@@ -162,7 +162,6 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		this.form.create_messenger_view_button.onclick = (event) => {
 			window.myAPI.account.getAccountInfo()
 			.then(accountInfo => {
-				console.log(accountInfo);
 				let createRoomParam = {
 					roomName : Object.values(this.#inviteAccountMapper).map(e=>{
 						return e.full_name
@@ -171,7 +170,6 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 					roomType : 'MESSENGER'
 				}
 				window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
-					console.log(createRoomEvent);
 					if(createRoomEvent.code == 0){
 						this.roomId = createRoomEvent.data.id;
 						super.close();

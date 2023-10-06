@@ -238,7 +238,6 @@ class FlexLayout extends HTMLElement {
 				//this.forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
 				this.#growChangeObserver.disconnect();
 				this.forResizeList = [...this.children].filter(e=>e.hasAttribute('data-is_resize'));
-				console.log(this.forResizeList.length)
 				this.forResizeList.forEach(e=>{
 					this.#growChangeObserver.observe(e, {
 						attributeFilter:['data-grow'],

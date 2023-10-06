@@ -1,7 +1,7 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
-import CreateMessengerView from "../../messenger/CreateMessengerView";
+import CreateMessengerView from "./CreateMessengerView";
 
 export default new class RoomMessengerList{
 
@@ -17,9 +17,13 @@ export default new class RoomMessengerList{
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky" data-bind_name="roomSticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
+					<div class="custom_details_wrapper">
 						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
 						<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Messenger</i></b>
+					</div>
+					<div class="add_button_wrapper">
 						<button class="pointer add_button" data-bind_name="addButton">╊</button>
+					</div>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">
@@ -168,6 +172,28 @@ export default new class RoomMessengerList{
 			runTheFirst: false
 		}
 
+		/*window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
+			console.log(event);
+		})*/
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
+			console.log('roomAccept ::: ',event);
+			let {content} = event;
+			if( ! ['SELF','MESSENGER'].some(e=> e == content.roomType)){
+				return;
+			}
+			//this.refresh();
+			this.createItemElement(event.content)
+			.then(li => {
+				//this.#liList.push(li);
+				Object.entries(this.#roomMessengerMemory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
+					if( ! obj.hasOwnProperty(event.roomId)){
+						return;
+					}
+					this.#roomMessengerMemory[workspaceHandler.workspaceId][page][event.roomId] = li;
+				})
+				this.refresh()
+			})
+		});
 	}
 
 	callData(page, size, workspaceId, roomName){

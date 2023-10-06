@@ -165,7 +165,18 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				console.error('room is undefined', roomHandler);
 				return;
 			}
-			console.log(roomHandler.room);
+
+			if(roomHandler.room.roomType == 'MESSENGER'){
+				let createRoomParam = {
+					id : roomHandler.roomId,
+					roomName : roomHandler.room.roomName + ', ' + Object.values(this.#inviteAccountMapper).map(e=>{
+						return e.full_name
+					}).join(', '),
+					workspaceId : this.#workspaceId,
+					roomType : 'MESSENGER'
+				}
+				window.myAPI.room.createRoom(createRoomParam);
+			}
 			window.myAPI.room.createRoomInAccount(
 				Object.values(this.#inviteAccountMapper).map(e=>{	
 					return {

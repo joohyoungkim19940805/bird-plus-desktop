@@ -43,11 +43,20 @@ export default class LayerPopupTemplate{
 			attributeOldValue:true
 		});
 		
+		window.addEventListener('keyup', (event) => {
+			if( ! this.#containerBox.isConnected || event.key != 'Escape'){
+				return;
+			}
+
+			this.close();
+		})
+		/*
 		this.#containerBox.onkeyup = (event) => {
 			if(event.key == 'Escape'){
 				this.close();
 			}
 		}
+		*/
 		this.#dim.onclick = (event) => {
 			if(this.#dimIsClick || event.composedPath().some(e=>e==this.#containerBox)){
 				return;

@@ -73,6 +73,7 @@ div[is="content-block"]{
     padding-top: 5.125px;
 	border-bottom: groove 1px #ffffff40;
 	transition: all 0.7s;
+    min-height: 22px;
 }
 
 #toolbar > button:hover{

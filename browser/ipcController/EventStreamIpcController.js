@@ -10,14 +10,19 @@ const log = require('electron-log');
 class EventStreamIpcController {
     #source;
     #isConnectSource = false;
+	prevWorkspaceId;
     constructor(){
         ipcMain.on('initWorkspaceStream', async (event, {workspaceId}) => {
 			//log.debug('param.workspaceId ::: ', workspaceId);
 			//log.debug('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
 			
-			if(this.source?.connectionInProgress || this.#isConnectSource){
+			if(this.prevWorkspaceId == workspaceId && (this.source?.connectionInProgress || this.#isConnectSource)){
 				return;
+			}else if(this.prevWorkspaceId != workspaceId && this.source?.connectionInProgress){
+				this.source.close();
 			}
+			
+			this.prevWorkspaceId = workspaceId;
 
             this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
             this.#isConnectSource = true;
@@ -26,7 +31,11 @@ class EventStreamIpcController {
 				let {data, lastEventId, origin, type} = event;
 				data = JSON.parse(data);
 				if(data.serverSentStreamType == 'CHTTING_ACCEPT'){
-					mainWindow.webContents.send("chattingAccept", data);
+					this.chattingAccept(data);
+				}else if(data.serverSentStreamType == 'ROOM_ACCEPT'){
+					this.roomAccept(data);
+				}else if(data.serverSentStreamType == 'ROOM_IN_ACCOUNT_ACCEPT'){
+					this.roomInAccountAccept(data);
 				}
 				log.debug('on message: ', event.data);
 			};
@@ -34,6 +43,7 @@ class EventStreamIpcController {
             this.source.onerror = (error) => {
 				log.debug('on stream err: ', error);
 				log.debug('source ::: ', this.source);
+				this.#isConnectSource = false;
 				//연결 실패되면 계속 시도하기에 임시 조치로 close
 				//this.source.close();
 				//stop();
@@ -74,7 +84,18 @@ class EventStreamIpcController {
             */
         })
     }
-
+	chattingAccept(data){
+		log.debug('chattingAccept stream ::: ', data);
+		mainWindow.webContents.send("chattingAccept", data);
+	}
+	roomAccept(data){
+		log.debug('roomAccept stream ::: ', data);
+		mainWindow.webContents.send('roomAccept', data);
+	}
+	roomInAccountAccept(data){
+		log.debug('roomInAccountAccept stream ::: ', data);
+		mainWindow.webContents.send('roomInAccountAccept', data.content);
+	}
 }
 
 const eventStreamIpcController = new EventStreamIpcController();

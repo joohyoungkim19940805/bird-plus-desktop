@@ -81,7 +81,39 @@ class RoomIpcController {
 				return undefined;
 			})
 		})
-		
+		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
+			return windowUtil.isLogin( result => {
+				if(result.isLogin){
+					return axios.post(`${__serverApi}/api/room/create/room-in-account`, JSON.stringify(param), {
+						headers:{
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(windowUtil.responseCheck)
+					.then(response => response.data)
+					.then(data => {
+						log.debug('createRoomInAccount ::: ',data)
+						return data;
+					})
+					.catch(err=>{
+						log.error('IPC createRoomInAccount error : ', JSON.stringify(err));
+						//axios.defaults.headers.common['Authorization'] = '';
+						if(err.response){
+							return err.response.data;
+						}else{
+							return err.message
+						}
+					})
+				}else{
+					return {'isLogin': false};
+				}
+			}).catch(error=>{
+				log.error('error ::: ', error.message)
+				log.error('error stack :::', error.stack)
+				return undefined;
+			})
+		})
+		/*
 		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
 			return windowUtil.isLogin( result => {
 				if(result.isLogin){
@@ -111,13 +143,14 @@ class RoomIpcController {
 							let obj;
 							try{
 								obj = JSON.parse(String(bufferArr));
-								mainWindow.webContents.send('roomInAccountCallBack', obj);
+								obj.isInviteRoom = true;
+								mainWindow.webContents.send('roomInAccountAccept', obj);
 							}catch(ignore){
 								//log.error(err);
 							}
 						})
 						stream.on('end', () => {
-							log.debug('end stream ::: ')
+							log.debug('end createRoomInAccount stream ::: ')
 							streamEndResolve('done');
 						})
 						return promise;
@@ -130,7 +163,7 @@ class RoomIpcController {
 				log.error('error stack :::', error.stack)
 				return undefined;
 			})
-		})
+		})*/
 
 		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
 			return windowUtil.isLogin( result => {
@@ -437,13 +470,13 @@ class RoomIpcController {
 							let obj;
 							try{
 								obj = JSON.parse(String(bufferArr));
-								mainWindow.webContents.send('roomInAccountCallBack', obj);
+								mainWindow.webContents.send('roomInAccountAccept', obj);
 							}catch(ignore){
 								//log.error(err);
 							}
 						})
 						stream.on('end', () => {
-							log.debug('end stream ::: ')
+							log.debug('end searchRoomInAccountAllList stream ::: ')
 							streamEndResolve();
 						})
 						return promise.then(()=>'done');

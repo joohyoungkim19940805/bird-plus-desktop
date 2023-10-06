@@ -146,6 +146,7 @@ export default new class ChattingInfo{
                     let isConnectedAwait = setInterval(()=>{
                         if( ! this.#liList[0]){
                             clearInterval(isConnectedAwait);
+                            return;
                         }
                         if( ! this.#liList[0].isConnected){
                             return;

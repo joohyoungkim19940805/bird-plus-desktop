@@ -17,8 +17,10 @@ export default new class RoomFavoritesList{
 			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
 				<div class="room_sticky">
 					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>	
-						<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Favorites</i></b>
+						<div class="custom_details_wrapper">
+							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>	
+							<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Favorites</i></b>
+						</div>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
 						<form id="menu_search" data-bind_name="menuSearch">

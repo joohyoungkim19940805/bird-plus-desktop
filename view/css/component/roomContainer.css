@@ -35,20 +35,28 @@
     width: 100%;
     display: flex;
     align-content: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: stretch;
 }
-#room_wrapper .room_container .room_sticky .custom_details_summary .custom_details{
+#room_wrapper .room_container .room_sticky .custom_details_summary .custom_details_wrapper{
+    display: flex;
+}
+#room_wrapper .room_container .room_sticky .custom_details_summary .custom_details_wrapper .custom_details{
     font-size: x-small;
 }
-#room_wrapper .room_container .room_sticky .custom_details_summary > .custom_details_title{
-    width: 12vw;
+#room_wrapper .room_container .room_sticky .custom_details_summary .custom_details_wrapper .custom_details_title{
+    width: 100%;
     min-width: fit-content;
 }
-#room_wrapper .room_container .room_sticky .custom_details_summary .add_button{
+#room_wrapper .room_container .room_sticky .custom_details_summary .add_button_wrapper .add_button{
+    display: flex;
+    align-items: center;
+}
+#room_wrapper .room_container .room_sticky .custom_details_summary .add_button_wrapper .add_button{
     background: none;
     border: none;
     font-size: xx-small;
+    height: 100%;
 }
 #room_wrapper .room_container .room_sticky .custom_details_summary .add_button:hover{
     background: #e3e3e38c;
