@@ -154,8 +154,41 @@ export default new class NoticeBoardGroupList{
 		}
 		this.#elementMap.rootFolderAdd.onclick = (event) => this.folderAdd(event, this.#elementMap.noticeBoardListContent);
     }
-	folderAdd(event, parentRoot){
-		
+	createFolder(event){
+		let li = Object.assign(document.createElement('li'), {
+			className: 'notice_board_group_list_content_item',
+			innerHTML : `
+			<div class="notice_board_group_list_content_item_title_wrapper">
+				<div class="notice_board_group_list_content_item_title">
+					<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+				</div>
+				<div class="notice_board_group_list_content_button_wrapper">
+					<button class="css-gg-add pointer" type="button">
+					</button>
+					<button class="css-gg-folder-add pointer" type="button">
+					</button>
+				</div>
+			</div>
+			<ul>
+				<li class="notice_board_group_list_content_item">
+					<div class="notice_board_group_list_content_item_title_wrapper">
+						<div class="notice_board_group_list_content_item_title">
+							<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+						</div>
+						<div class="notice_board_group_list_content_button_wrapper">
+							<button class="css-gg-add pointer" type="button">
+							</button>
+							<button class="css-gg-folder-add pointer" type="button">
+							</button>
+						</div>
+					</div>
+					<ul>
+					</ul>
+				</li>
+			</ul>
+			`
+		});
+
 		parentRoot.prepend();
 	}
     callData(page, size, workspaceId, searchTitle, searchContent){
