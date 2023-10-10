@@ -3,7 +3,9 @@
  * global에 네임스페이스를 추가하는 경우는 반드시 필요한 경우에만 사용 할 것
  * global에 네임스페이스를 추가하는 것은 한 파일에서 전부 모아놓고 사용 할 것
  */
-global.__project_path = require.main.paths[0].split('node_modules')[0];
+// 일렉트론 모듈 호출
+const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
+global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){
 		return 'http://localhost:8079';
@@ -13,9 +15,6 @@ const log = require('electron-log');
 const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 //global.__birdPlusOptions = 
-
-// 일렉트론 모듈 호출
-const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
 
 // path 모듈 호출
 

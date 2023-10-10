@@ -2,8 +2,6 @@ import PositionChanger from "../../../handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
 export default new class RoomMenuList{
-	#workspaceId
-	#roomId
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
@@ -59,12 +57,14 @@ export default new class RoomMenuList{
 			if (entry.isIntersecting){
 				this.#page += 1;
 				let roomName = this.#elementMap.searchName.value;
-				this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data=>{
+				/*
+				this.callData(this.#page, this.#size, workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
 					}
 				})
+				*/
 			}
 		})
 	}, {
@@ -208,43 +208,6 @@ export default new class RoomMenuList{
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-		let roomName = this.#elementMap.searchName.value;
-		this.reset();
-		this.callData(this.#page, this.#size, this.#workspaceId, roomName).then(data => {
-			this.createPage(data).then(liList=> this.addListItemVisibleEvent(liList))
-		});
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
-
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-		new Promise(resolve => {
-			this.#elementMap.roomContentList.querySelectorAll('[data-room_id]').forEach((item) => {
-				let itemRoomId = Number(item.dataset.room_id);
-				if(isNaN(itemRoomId)){
-					return;
-				}else if(roomId == itemRoomId){
-					return;
-				}
-				item.style.fontWeight = '';
-			})
-			resolve();
-		})
-		let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${roomId}"]`);
-		targetRoom.style.fontWeight = 'bold';
-	}
-	get roomId(){
-		return this.#roomId;
 	}
 
 	get element(){

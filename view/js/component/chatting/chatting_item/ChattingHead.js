@@ -215,7 +215,7 @@ export default new class ChattingHead{
             this.#accountInviteRoomView.open();
         }
   
-        
+        let isFirstOpen = false;
         this.#elementMap.noticeBoardIconButton.onclick = () => {
             let flexLayout = roomContainer.wrap.closest('flex-layout');
             if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
@@ -229,7 +229,9 @@ export default new class ChattingHead{
             }else{
                 this.#elementMap.noticeBoardIconButton.setAttribute('data-is_close', '');
                 flexLayout.closeFlex(roomContainer.wrap).then(()=>{
-                    flexLayout.openFlex(noticeBoardContainer.wrap, {isPrevSizeOpen: true, isResize: true});
+                    flexLayout.openFlex(noticeBoardContainer.wrap, {isPrevSizeOpen: true, isResize: ! isFirstOpen}).then(() => {
+                        isFirstOpen = true;
+                    });
                     roomContainer.wrap.dataset.is_resize = false;
                 });
                

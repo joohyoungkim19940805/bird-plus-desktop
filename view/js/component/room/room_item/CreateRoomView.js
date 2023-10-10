@@ -1,4 +1,5 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
+import roomHandler from "../../../handler/room/RoomHandler";
 import LayerPopupTemplate from "./../../LayerPopupTemplate"
 
 export default class CreateRoomView extends LayerPopupTemplate{
@@ -111,16 +112,14 @@ export default class CreateRoomView extends LayerPopupTemplate{
 	page = 0;
 	size = 10;
 	#liList = [];
-	#workspaceId;
 	form = this.#layerContent.querySelector('#create_room_view');
-	#roomId;
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.page += 1;
 				let roomName = this.form.fullName.value;
-				this.callData(this.page, this.size, this.#workspaceId, roomName).then(data=>{
+				this.callData(this.page, this.size, workspaceHandler.workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
@@ -141,7 +140,11 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'createRoomView',
 			callBack: (handler) => {
-				this.workspaceId = handler.workspaceId;
+				this.reset();
+				let fullName = this.form.create_room_search_user.value;
+				this.callData(this.page, this.size, workspaceHandler.workspaceId, fullName).then(data => {
+					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
+				});
 			},
 			runTheFirst: true
 		}
@@ -160,14 +163,14 @@ export default class CreateRoomView extends LayerPopupTemplate{
 			}
 			let fullName = this.form.create_room_search_user.value;
 			this.reset();
-			this.callData(this.page, this.size, this.#workspaceId, fullName).then(data => {
+			this.callData(this.page, this.size, workspaceHandler.workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
 		}
 		this.form.create_room_search_user.oninput = (event) => {
 			if(this.form.create_room_search_user.value == ''){
 				this.reset();
-				this.callData(this.page, this.size, this.#workspaceId).then(data => {
+				this.callData(this.page, this.size, workspaceHandler.workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				});
 			}
@@ -176,13 +179,13 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		this.form.create_room_view_button.onclick = (event) => {
 			let createRoomParam = {
 				roomName : this.form.roomName.value,
-				workspaceId : this.#workspaceId,
+				workspaceId : workspaceHandler.workspaceId,
 				roomType : this.form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC',
 			}
 			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
 				console.log(createRoomEvent);
 				if(createRoomEvent.code == 0){
-					this.roomId = createRoomEvent.data.id;
+					roomHandler.roomId = createRoomEvent.data.id;
 					super.close();
 					window.myAPI.room.createRoomInAccount(
 						Object.values(this.#inviteAccountMapper).map(e=>{	
@@ -301,22 +304,4 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		this.#createRoomviewAccountList.replaceChildren();
 	}
 
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-	}
-
-	get roomId(){
-		return this.#roomId;
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
 }

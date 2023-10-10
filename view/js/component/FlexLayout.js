@@ -208,48 +208,50 @@ class FlexLayout extends HTMLElement {
 
 	constructor(){
 		super();
+		this.addResizePanel(this.children)
 		let observer = new MutationObserver( (mutationList, observer) => {
-			mutationList.forEach((mutation) => {
-				let {addedNodes, removedNodes} = mutation;
-				addedNodes.forEach(childElement=>{
-					if(childElement.nodeType != Node.ELEMENT_NODE || childElement.classList.contains(FlexLayout.resizePanelClass)){
-						return;
-					}
-					childElement.classList.add(FlexLayout.childClass)
-					let resizePanel = childElement.__resizePanel;
-					if(! resizePanel){
-						resizePanel = this.#createResizePanel();
-						childElement.__resizePanel = resizePanel;
-						resizePanel.__resizeTarget = childElement; 
-					}
-					childElement.after(resizePanel);
-
-					childElement.__resizePanel.style.display = childElement.dataset.is_resize == 'true' ? '' : 'none';
-
-					this.#resizeChangeObserver.observe(childElement, {
-						attributeFilter:['data-is_resize'],
-						attributeOldValue:true
-					});
-					this.#visibleObserver.observe(childElement, {
-						attributeFilter:['style'],
-						attributeOldValue:true
-					});
-				});
-				//this.forResizeList = [...this.children].filter(e=>e.dataset.is_resize == 'true');
-				this.#growChangeObserver.disconnect();
-				this.forResizeList = [...this.children].filter(e=>e.hasAttribute('data-is_resize'));
-				this.forResizeList.forEach(e=>{
-					this.#growChangeObserver.observe(e, {
-						attributeFilter:['data-grow'],
-					})
-				})
-				this.#growLimit = this.forResizeList.length;
-				this.remain();
-			});
+			mutationList.forEach((mutation) => this.addResizePanel(mutation.addedNodes))
 		})
 		observer.observe(this, {childList:true});
 	}
+	addResizePanel(childElementList){
+		if(childElementList instanceof HTMLCollection){
+			childElementList = [...childElementList]
+		}
+		childElementList.forEach(childElement=>{
+			if(childElement.nodeType != Node.ELEMENT_NODE || childElement.classList.contains(FlexLayout.resizePanelClass)){
+				return;
+			}
+			childElement.classList.add(FlexLayout.childClass)
+			let resizePanel = childElement.__resizePanel;
+			if(! resizePanel){
+				resizePanel = this.#createResizePanel();
+				childElement.__resizePanel = resizePanel;
+				resizePanel.__resizeTarget = childElement; 
+			}
+			childElement.after(resizePanel);
 
+			childElement.__resizePanel.style.display = childElement.dataset.is_resize == 'true' ? '' : 'none';
+
+			this.#resizeChangeObserver.observe(childElement, {
+				attributeFilter:['data-is_resize'],
+				attributeOldValue:true
+			});
+			this.#visibleObserver.observe(childElement, {
+				attributeFilter:['style'],
+				attributeOldValue:true
+			});
+		});
+		this.#growChangeObserver.disconnect();
+		this.forResizeList = [...this.children].filter(e=>e.hasAttribute('data-is_resize'));
+		this.forResizeList.forEach(e=>{
+			this.#growChangeObserver.observe(e, {
+				attributeFilter:['data-grow'],
+			})
+		})
+		this.#growLimit = this.forResizeList.length;
+		this.remain();
+	}
 	connectedCallback(){
         if( ! this.#isLoaded){
 			this.#isLoaded = true;

@@ -1,3 +1,4 @@
+import noticeBoardGroupList from "./notice_board_item/NoticeBoardGroupList"
 export default new class NoticeBoardContainer{
 
 	#contentList;
@@ -6,7 +7,7 @@ export default new class NoticeBoardContainer{
 			id: 'notice_board_wrapper',
 			innerHTML: '<div class="content"></div>'
 		});
-		wrap.dataset.is_resize = true;
+		wrap.dataset.is_resize = false;
 		wrap.dataset.grow = 0;
 		return wrap
 	})();
@@ -18,6 +19,10 @@ export default new class NoticeBoardContainer{
 		return noticeBoardContainer;
 	})();
 	constructor(){
+		noticeBoardGroupList.element.dataset.is_resize = true;
+		this.#contentList = [noticeBoardGroupList.element];
+		
+		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);
 	}
 

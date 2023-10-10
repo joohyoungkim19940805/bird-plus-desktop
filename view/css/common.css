@@ -72,11 +72,12 @@ ul {
     padding-inline-start: 0px;
 }
 
-
+/*
 li{
 	display: list-item;
     text-align: -webkit-match-parent;
 }
+*/
 
 .wrap{
 	display: flex;
@@ -288,3 +289,70 @@ input[type="checkbox"]{
     width: 8px;
     left: 7px
 }
+
+.css-gg-folder-add {
+    background:linear-gradient(to left,currentColor 10px,transparent 0)no-repeat center center/2px 6px;
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    transform: scale(var(--ggs,1));
+    width: 22px;
+    height: 16px;
+    border: 2px solid;
+    border-radius: 3px
+}
+.css-gg-folder-add::after,
+.css-gg-folder-add::before {
+    content: "";
+    display: block;
+    box-sizing: border-box;
+    position: absolute
+}
+.css-gg-folder-add::before {
+    background: currentColor;
+    left: 6px;
+    width: 6px;
+    height: 2px;
+    top: 5px
+}
+.css-gg-folder-add::after {
+    width: 10px;
+    height: 4px;
+    border: 2px solid;
+    border-bottom: 0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    top: -5px;
+}
+
+.css-gg-add {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid;
+    transform: scale(var(--ggs,1));
+    border-radius: 22px
+ }
+ .css-gg-add::after,
+ .css-gg-add::before {
+    content: "";
+    display: block;
+    box-sizing: border-box;
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 5px;
+    top: 8px;
+    left: 4px
+ }
+ .css-gg-add::after {
+    width: 2px;
+    height: 10px;
+    top: 4px;
+    left: 8px
+ }

@@ -1,6 +1,6 @@
 //const { contextBridge, ipcRenderer } = require('electron')
 const { contextBridge, ipcRenderer } = require('electron')
-//console.log('test<<<', __project_path);
+
 const electronEventTrigger = {
 	objectEventListener : {},
 	addElectronEventListener : (eventName, callBack) => {
@@ -94,8 +94,13 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchRoomInAccountAllList : (param) => ipcRenderer.invoke('searchRoomInAccountAllList', param),
 		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param),
 		isRoomFavorites : (param) => ipcRenderer.invoke('isRoomFavorites', param)
-	}
+	},
 
+	noticeBoard : {
+		createOrUpdateNoticeBoard : (param) => {},
+		searchNoticeBoard : (param) => {},
+		getNoticeBoard : (param) => {},
+	}
 })
 
 ipcRenderer.on('resized', (event, message) => {

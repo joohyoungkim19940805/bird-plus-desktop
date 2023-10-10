@@ -1,14 +1,11 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
-import CreateRoomView from "./CreateRoomView";
 
 export default new class RoomFavoritesList{
 
 	#roomFavoritesMemory = {};
 
-	#workspaceId
-	#roomId
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
@@ -55,7 +52,7 @@ export default new class RoomFavoritesList{
 						memory
 					);
 				}else{
-					promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+					promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
 					then(data => 
 						this.createPage(data)
 						.then(liList => {        
@@ -101,7 +98,7 @@ export default new class RoomFavoritesList{
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomFavoritesList',
 			callBack: (handler) => {
-				this.workspaceId = handler.workspaceId;
+				this.refresh();
 			},
 			runTheFirst: true
 		};
@@ -120,10 +117,6 @@ export default new class RoomFavoritesList{
 		roomHandler.addRoomIdChangeListener = {
 			name: 'roomFavoritesList',
 			callBack: (handler) => {
-				/*if(this.#roomId == handler.roomId){
-					return;
-				}*/
-				this.#roomId = handler.roomId;
 				new Promise(resolve => {
 					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);
@@ -218,7 +211,7 @@ export default new class RoomFavoritesList{
 					</div>
 				`
 			});
-			if(this.#roomId && roomId == this.#roomId){
+			if(roomHandler.roomId && roomId == roomHandler.roomId){
 				li.style.fontWeight = 'bold';
 			}
 			Object.assign(li.dataset, {
@@ -241,7 +234,7 @@ export default new class RoomFavoritesList{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
-				this.roomId = li.dataset.room_id;
+				roomHandler.roomId = li.dataset.room_id;
 			}
 			resolve(li);
 		});
@@ -270,7 +263,7 @@ export default new class RoomFavoritesList{
 				memory.flatMap(e=>Object.values(e))
 			);
 		}else{
-			promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+			promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
 			then(data => 
 				this.createPage(data)
 				.then(liList => {        
@@ -305,27 +298,7 @@ export default new class RoomFavoritesList{
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
 	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-		this.refresh();
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
-
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-		roomHandler.roomId = roomId;
-	}
-	get roomId(){
-		return this.#roomId;
-	}
-
+	
 	get element(){
 		return this.#element;
 	}

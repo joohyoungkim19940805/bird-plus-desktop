@@ -7,8 +7,6 @@ export default new class RoomMessengerList{
 
 	#roomMessengerMemory = {};
 
-	#workspaceId
-	#roomId
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {
@@ -58,7 +56,7 @@ export default new class RoomMessengerList{
 						memory
 					);
 				}else{
-					promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+					promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
 					then(data => 
 						this.createPage(data)
 						.then(liList => {        
@@ -107,7 +105,7 @@ export default new class RoomMessengerList{
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomMessengerList',
 			callBack: (handler) => {
-				this.workspaceId = handler.workspaceId;
+				this.refresh();
 			},
 			runTheFirst: true
 		};
@@ -125,14 +123,12 @@ export default new class RoomMessengerList{
 		this.#createMessengerView.onOpenCloseCallBack = (status) => {
 			this.#createMessengerView.reset();
 			if(status == 'open'){
-				this.#createMessengerView.callData(this.#createMessengerView.page, this.#createMessengerView.size, this.#workspaceId, this.#createMessengerView.form.fullName.value)
+				this.#createMessengerView.callData(this.#createMessengerView.page, this.#createMessengerView.size, workspaceHandler.workspaceId, this.#createMessengerView.form.fullName.value)
 				.then(data => {
 					this.#createMessengerView.createPage(data).then(liList => {
 						this.#createMessengerView.addListItemVisibleEvent(liList);
 					})
 				})
-			}else{
-				this.roomId = this.#createMessengerView.roomId;
 			}
 		}
 
@@ -146,7 +142,6 @@ export default new class RoomMessengerList{
 				/*if(this.#roomId == handler.roomId){
 					return;
 				}*/
-				this.#roomId = handler.roomId;
 				new Promise(resolve => {
 					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);
@@ -264,7 +259,7 @@ export default new class RoomMessengerList{
 					</div>
 				`
 			});
-			if(this.#roomId && roomId == this.#roomId){
+			if(roomHandler.roomId && roomId == roomHandler.roomId){
 				li.style.fontWeight = 'bold';
 			}
 			Object.assign(li.dataset, {
@@ -288,7 +283,7 @@ export default new class RoomMessengerList{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
-				this.roomId = li.dataset.room_id;
+				roomHandler.roomId = li.dataset.room_id;
 			}
 			resolve(li);
 		});
@@ -318,7 +313,7 @@ export default new class RoomMessengerList{
 				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 			);
 		}else{
-			promise = this.callData(this.#page, this.#size, this.#workspaceId, this.#elementMap.searchName.value).
+			promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
 			then(data => 
 				this.createPage(data)
 				.then(liList => {        
@@ -352,26 +347,6 @@ export default new class RoomMessengerList{
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.roomContentList.replaceChildren();
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-		this.refresh();
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
-
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-		roomHandler.roomId = roomId;
-	}
-	get roomId(){
-		return this.#roomId;
 	}
 
 	get element(){

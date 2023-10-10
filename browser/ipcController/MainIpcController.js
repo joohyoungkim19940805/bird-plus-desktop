@@ -10,28 +10,45 @@ class MainIpcController {
 	source;
 	workspaceObserver;
 	constructor() {
+		this.#initHandler();	
+	}
+	#initHandler(){
 		ipcMain.on('changeMainPage', async (event, param) => {
-			birdPlusOptions.setLastWindowSize(mainWindow);
-			birdPlusOptions.setLastWindowPosition(mainWindow);
-			mainWindow.resizable = true;
-			mainWindow.movable = true;
-			mainWindow.autoHideMenuBar = false;
-			mainWindow.menuBarVisible = true;
-           
-			mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
-				mainWindow.titleBarStyle = 'visibble'
-				mainWindow.show();
-			}).then(()=>{
-				mainWindow.workspaceId = param.workspaceId;
-			})
+			this.changeMainPage(event, param);
 		});
 
 		ipcMain.handle('getWorkspaceId', async () => {
-			return mainWindow.workspaceId;
+			this.getWorkspaceId();
 		})
 		ipcMain.handle('resetWorkspaceId', async () => {
-			mainWindow.resetWorkspace();
+			this.resetWorkspaceId();
 		})
+	}
+	#send(eventName, data){
+		mainWindow.webContents.send(eventName, data);
+	}
+	changeMainPage(event, param){
+		birdPlusOptions.setLastWindowSize(mainWindow);
+		birdPlusOptions.setLastWindowPosition(mainWindow);
+		mainWindow.resizable = true;
+		mainWindow.movable = true;
+		mainWindow.autoHideMenuBar = false;
+		mainWindow.menuBarVisible = true;
+	   
+		mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+			mainWindow.titleBarStyle = 'visibble'
+			mainWindow.show();
+		}).then(()=>{
+			mainWindow.workspaceId = param.workspaceId;
+		})
+	}
+
+	getWorkspaceId(){
+		return mainWindow.workspaceId;
+	}
+
+	resetWorkspaceId(){
+		mainWindow.resetWorkspace();
 	}
 
 }

@@ -97,16 +97,14 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 	page = 0;
 	size = 10;
 	#liList = [];
-	#workspaceId;
 	form = this.#layerContent.querySelector('#create_messenger_view');
-	#roomId;
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.page += 1;
 				let roomName = this.form.fullName.value;
-				this.callData(this.page, this.size, this.#workspaceId, roomName).then(data=>{
+				this.callData(this.page, this.size, workspaceHandler.workspaceId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
@@ -146,14 +144,14 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 			}
 			let fullName = this.form.create_messenger_view_search_user.value;
 			this.reset();
-			this.callData(this.page, this.size, this.#workspaceId, fullName).then(data => {
+			this.callData(this.page, this.size, workspaceHandler.workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
 		}
 		this.form.create_messenger_view_search_user.oninput = (event) => {
 			if(this.form.create_messenger_view_search_user.value == ''){
 				this.reset();
-				this.callData(this.page, this.size, this.#workspaceId).then(data => {
+				this.callData(this.page, this.size, workspaceHandler.workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				});
 			}
@@ -166,7 +164,7 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 					roomName : Object.values(this.#inviteAccountMapper).map(e=>{
 						return e.full_name
 					}).join(', ') + ', ' +accountInfo.fullName,
-					workspaceId : this.#workspaceId,
+					workspaceId : workspaceHandler.workspaceId,
 					roomType : 'MESSENGER'
 				}
 				window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
@@ -291,22 +289,4 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		this.#accountInviteRoomViewAccountList.replaceChildren();
 	}
 
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-	}
-
-	get roomId(){
-		return this.#roomId;
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
 }

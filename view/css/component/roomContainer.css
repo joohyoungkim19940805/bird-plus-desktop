@@ -61,6 +61,7 @@
 #room_wrapper .room_container .room_sticky .custom_details_summary .add_button:hover{
     background: #e3e3e38c;
 }
+
 #room_wrapper .room_container .search_name{
     width: 100%;
     background-color: inherit;
@@ -68,6 +69,7 @@
     border-bottom: solid 2px #cbcbcbbd;
     border-left: solid 2px #cbcbcbbd;
 }
+
 
 #room_wrapper .room_container .room_content_list_scroll .room_scrollbar{
 	position: absolute;

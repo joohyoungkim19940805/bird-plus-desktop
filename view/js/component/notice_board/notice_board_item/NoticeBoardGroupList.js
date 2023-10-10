@@ -1,60 +1,103 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
-import CreateRoomView from "./CreateRoomView";
-export default new class RoomList{
-	#roomMemory = {}
 
+export default new class NoticeBoardGroupList{
+	#roomMemory = {}
 	#page = 0;
 	#size = 10;
-	#element = Object.assign(document.createElement('div'), {
-		id: 'room_list_wrapper',
-		innerHTML: `
-			<div class="room_container list_scroll list_scroll-y" data-bind_name="roomContainer">
-				<div class="room_sticky" data-bind_name="roomSticky">
-					<div class="custom_details_summary" data-bind_name="customDetailsSummary">
-						<div class="custom_details_wrapper">
-							<button class="custom_details" data-open_status="▼" data-close_status="▶" data-is_open="" data-bind_name="customDetails">▼</button>
-							<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Room</i></b>
-						</div>
-						<div class="add_button_wrapper">
-							<button class="pointer add_button" data-bind_name="addButton">╊</button>
-						</div>
+    #element = Object.assign(document.createElement('div'), {
+        id: 'notice_board_group_list_wrapper',
+        innerHTML: `
+            <div class="notice_board_group_list_container" data-bind_name="noticeBoardListContainer">
+                <div class="notice_board_group_menu_wrapper">
+                    <div class="notice_board_group_search_wrapper" data-bind_name="noticeBoardMenuSearchWrapper">
+						<form id="notice_board_group_search" data-bind_name="noticeBoardSearch">
+							<div class="search_title_wrapper">
+                                <label>search title</label>
+                                <input type="search" placeholder="Press Enter Key" class="search_name" name="searchTitle" data-bind_name="searchTitle">
+                            </div>
+                            <div class="search_content_wrapper">
+                                <label>search content</label>
+                                <input type="search" placeholder="Press Enter Key" class="search_name" name="searchContent" data-bind_name="searchContent">
+                            </div>
+                        </form>
 					</div>
-					<div class="room_functions" data-bind_name="roomFunctions">
-						<form id="menu_search" data-bind_name="menuSearch">
-							<input type="search" placeholder="Press Enter Key" class="search_name" name="searchName" data-bind_name="searchName">
-						</form>
-					</div>
+                </div> 
+				<div class="notice_board_group_list_content_button_wrapper">
+					<button class="css-gg-folder-add pointer" type="button" data-bind_name="rootFolderAdd">
+					</button>
 				</div>
-				<ul class="room_content_list" data-bind_name="roomContentList">
-				</ul>
-			</div>
-		` 
-	})
-
+                <ul class="notice_board_group_list_content list_scroll list_scroll-y" data-bind_name="noticeBoardListContent">
+                    <li class="notice_board_group_list_content_item">
+						<div class="notice_board_group_list_content_item_title_wrapper">
+							<div class="notice_board_group_list_content_item_title">
+								<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+							</div>
+							<div class="notice_board_group_list_content_button_wrapper">
+								<button class="css-gg-add pointer" type="button">
+								</button>
+								<button class="css-gg-folder-add pointer" type="button">
+								</button>
+							</div>
+						</div>
+						<ul>
+							<li class="notice_board_group_list_content_item">
+								<div class="notice_board_group_list_content_item_title_wrapper">
+									<div class="notice_board_group_list_content_item_title">
+										<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+									</div>
+									<div class="notice_board_group_list_content_button_wrapper">
+										<button class="css-gg-add pointer" type="button">
+										</button>
+										<button class="css-gg-folder-add pointer" type="button">
+										</button>
+									</div>
+								</div>
+								<ul>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li class="notice_board_group_list_content_item">
+						<div class="notice_board_group_list_content_item_title_wrapper">
+							<div class="notice_board_group_list_content_item_title">
+								<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+							</div>
+							<div class="notice_board_group_list_content_button_wrapper">
+								<button class="css-gg-add pointer" type="button">
+								</button>
+								<button class="css-gg-folder-add pointer" type="button">
+								</button>
+							</div>
+						</div>
+						<ul>
+						</ul>
+					</li>
+                </ul>
+            </div>
+        `
+    })
 	#elementMap = (()=>{
 		return 	[...this.#element.querySelectorAll('[data-bind_name]')].reduce((total, element) => {
 			total[element.dataset.bind_name] = element;
 			return total;
 		}, {})
 	})();
-
 	#liList = [];
-
-	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
+    #lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.#page += 1;
 				let promise;
 				let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
-				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
+				if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
 					promise = Promise.resolve(
 						memory
 					);
 				}else{
-					promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
-					then(data => 
+					promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchTitle.value, this.#elementMap.searchContent.value)
+                    .then(data => 
 						this.createPage(data)
 						.then(liList => {        
 							if(this.#page >= data.totalPages){
@@ -86,118 +129,44 @@ export default new class RoomList{
 		threshold: 0.1,
 		root: document//this.#elementMap.roomContentList
 	});
-
-	#positionChanger;
-	#createRoomView;
-	constructor(){
-		
-		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
+    #positionChanger;
+    constructor(){
+        this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardListContent});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
+			/*window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
 				console.log(data);
-			})
+			})*/
 		}
 
-		this.#createRoomView = new CreateRoomView(this);
-		
-		workspaceHandler.addWorkspaceIdChangedListener = {
-			name: 'roomList',
-			callBack: (handler) => {
-				this.refresh();
-			},
-			runTheFirst: true
-		}
-
-		this.#elementMap.menuSearch.onsubmit = (event) => {
+        this.#elementMap.noticeBoardSearch.onsubmit = (event) => {
 			event.preventDefault();
 			this.refresh()
 		}
-		this.#elementMap.searchName.oninput = (event) => {
-			if(this.#elementMap.searchName.value == ''){
+		this.#elementMap.searchTitle.oninput = (event) => {
+			if(this.#elementMap.searchTitle.value == ''){
 				this.refresh()
 			}
 		}
-
-		this.#createRoomView.onOpenCloseCallBack = (status) => {
-			this.#createRoomView.reset();
-			if(status == 'open'){
-				this.#createRoomView.callData(this.#createRoomView.page, this.#createRoomView.size, workspaceHandler.workspaceId, this.#createRoomView.form.fullName.value)
-				.then(data => {
-					this.#createRoomView.createPage(data).then(liList => {
-						this.#createRoomView.addListItemVisibleEvent(liList);
-					})
-				})
-			}
-		}
-
-		this.#elementMap.addButton.onclick = () =>{
-			this.#createRoomView.open();
-		}
-
-		roomHandler.addRoomIdChangeListener = {
-			name: 'roomList',
-			callBack: (handler) => {
-				new Promise(resolve => {
-					this.#liList.forEach((item) => {
-						let itemRoomId = Number(item.dataset.room_id);
-						if(isNaN(itemRoomId)){
-							resolve();
-							return;
-						}else if(handler.roomId == itemRoomId){
-							resolve();
-							return;
-						}
-						item.style.fontWeight = '';
-					})
-					resolve();
-				})
-				let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${handler.roomId}"]`);
-				if(! targetRoom){
-					this.#elementMap.searchName.value = '';
-					this.refresh();
-					return;
-				}
-				targetRoom.style.fontWeight = 'bold';
-			},
-			runTheFirst: false
-		}
-		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
-			let {content} = event;
-			if( ! ['ROOM_PUBLIC','ROOM_PRIVATE'].some(e=> e == content.roomType)){
-				return;
-			}
-			//this.refresh();
-			this.createItemElement(event.content)
-			.then(li => {
-				Object.entries(this.#roomMemory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
-					if( ! obj.hasOwnProperty(event.roomId)){
-						return;
-					}
-					this.#roomMemory[workspaceHandler.workspaceId][page][event.roomId] = li;
-				})
+        this.#elementMap.searchContent.oninput = (event) => {
+			if(this.#elementMap.searchContent.value == ''){
 				this.refresh()
-			})
-		});
-	}
-
-	callData(page, size, workspaceId, roomName){
-		let searchPromise;
-		if(roomName && roomName != ''){
-			searchPromise = window.myAPI.room.searchRoomMyJoinedName({
-				page, size, workspaceId, roomName, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
-			})
-		}else{
-			searchPromise = window.myAPI.room.searchRoomMyJoined({
-				page, size, workspaceId, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
-			})
+			}
 		}
-		return searchPromise.then((data = {}) =>{
-			console.log(data)
-			return data.data;
-		});
+		this.#elementMap.rootFolderAdd.onclick = (event) => this.folderAdd(event, this.#elementMap.noticeBoardListContent);
+    }
+	folderAdd(event, parentRoot){
+		
+		parentRoot.prepend();
+	}
+    callData(page, size, workspaceId, searchTitle, searchContent){
+        return window.myAPI.noticeBoard.searchNoticeBoard({
+            page, size, workspaceId, searchTitle, searchContent
+        }).then((data = {}) => {
+            return data.data;
+        })
 	}
 
-	createPage(data, roomName = ''){
+    createPage(data, searchTitle = '', searchContent = ''){
 		return new Promise(resolve => {
 			let {content = []} = data || {};
 			if(content.length == 0){
@@ -212,7 +181,7 @@ export default new class RoomList{
                 }
 				this.#liList.push(...liList);
 				this.#elementMap.roomContentList.replaceChildren(...this.#liList);
-				if(roomName == ''){
+				if(searchTitle == '' && searchContent == ''){
 					this.#positionChanger.addPositionChangeEvent(...this.#liList);
 				}
                resolve(liList);
@@ -220,7 +189,7 @@ export default new class RoomList{
 		});
 	}
 
-	createItemElement(item){
+    createItemElement(item){
 		let {
 			id,
 			roomId,
@@ -268,7 +237,7 @@ export default new class RoomList{
 		})
 	}
 
-	#addItemEvent(li){
+    #addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
 				roomHandler.roomId = li.dataset.room_id;
@@ -277,7 +246,7 @@ export default new class RoomList{
 		});
 	}
 
-	#addRoomMemory(data, roomId){
+    #addRoomMemory(data, roomId){
 		if( ! this.#roomMemory.hasOwnProperty(workspaceHandler.workspaceId)){
 			this.#roomMemory[workspaceHandler.workspaceId] = {};
 		}
@@ -290,18 +259,18 @@ export default new class RoomList{
 		this.#roomMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
     }
 
-	refresh(){
+    refresh(){
 		this.reset();
 		let promise;
 		let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId] || {});
-		if(memory && memory.length != 0 && this.#elementMap.searchName.value == ''){
+		if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
 				memory.flatMap(e=>Object.values(e))
 			);
 		}else{
-			promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchName.value).
-			then(data => 
+			promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchTitle.value, this.#elementMap.searchContent.value)
+            .then(data => 
 				this.createPage(data)
 				.then(liList => {        
 					if(this.#page >= data.totalPages){
@@ -328,8 +297,7 @@ export default new class RoomList{
 			}
 		})
 	}
-
-	reset(){
+    reset(){
 		this.#page = 0;
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();

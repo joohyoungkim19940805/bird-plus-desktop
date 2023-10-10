@@ -12,89 +12,101 @@ class EventStreamIpcController {
     #isConnectSource = false;
 	prevWorkspaceId;
     constructor(){
-        ipcMain.on('initWorkspaceStream', async (event, {workspaceId}) => {
-			//log.debug('param.workspaceId ::: ', workspaceId);
-			//log.debug('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
-			
-			if(this.prevWorkspaceId == workspaceId && (this.source?.connectionInProgress || this.#isConnectSource)){
-				return;
-			}else if(this.prevWorkspaceId != workspaceId && this.source?.connectionInProgress){
-				this.source.close();
-			}
-			
-			this.prevWorkspaceId = workspaceId;
-
-            this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
-            this.#isConnectSource = true;
-
-            this.source.onmessage = (event) => {
-				let {data, lastEventId, origin, type} = event;
-				data = JSON.parse(data);
-				if(data.serverSentStreamType == 'CHTTING_ACCEPT'){
-					this.chattingAccept(data);
-				}else if(data.serverSentStreamType == 'ROOM_ACCEPT'){
-					this.roomAccept(data);
-				}else if(data.serverSentStreamType == 'ROOM_IN_ACCOUNT_ACCEPT'){
-					this.roomInAccountAccept(data);
-				}
-				log.debug('on message: ', event.data);
-			};
-
-            this.source.onerror = (error) => {
-				log.debug('on stream err: ', error);
-				log.debug('source ::: ', this.source);
-				this.#isConnectSource = false;
-				//연결 실패되면 계속 시도하기에 임시 조치로 close
-				//this.source.close();
-				//stop();
-			};
-			this.source.onopen = (success) => {
-				log.debug('on success: ', success)
-				this.#isConnectSource = true
-			}
-            /*
-			* This will listen only for events
-			* similar to the following:
-			*
-			* event: notice
-			* data: useful data
-			* id: someid
-			this.source.addEventListener("notice", (e) => {
-				log.debug('event notice', e.data);
-			});
-            */
-
-			/*
-			* Similarly, this will listen for events
-			* with the field `event: update`
-			this.source.addEventListener("update", (e) => {
-				log.debug('event update ::: ',e.data);
-			});
-            */
-
-			/*
-			* The event "message" is a special case, as it
-			* will capture events without an event field
-			* as well as events that have the specific type
-			* `event: message` It will not trigger on any
-			* other event type.
-			this.source.addEventListener("message", (e) => {
-				log.debug('message !!!!! : ', e.data);
-			});
-            */
-        })
+		this.#initHandler();
     }
+	#initHandler(){
+		ipcMain.on('initWorkspaceStream', async (event, {workspaceId}) => {
+			initWorkspaceStream(event, workspaceId);
+        })
+	}
+	#send(eventName, data){
+		mainWindow.webContents.send(eventName, data);
+	}
+	initWorkspaceStream(event, workspaceId){
+		//log.debug('param.workspaceId ::: ', workspaceId);
+		//log.debug('axios.defaults.headers.common ::: ', axios.defaults.headers.common['Authorization'])
+		
+		if(this.prevWorkspaceId == workspaceId && (this.source?.connectionInProgress || this.#isConnectSource)){
+			return;
+		}else if(this.prevWorkspaceId != workspaceId && this.source?.connectionInProgress){
+			this.source.close();
+		}
+		
+		this.prevWorkspaceId = workspaceId;
+
+		this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`);
+		this.#isConnectSource = true;
+
+		this.source.onmessage = (event) => {
+			let {data, lastEventId, origin, type} = event;
+			data = JSON.parse(data);
+			if(data.serverSentStreamType == 'CHTTING_ACCEPT'){
+				this.chattingAccept(data);
+			}else if(data.serverSentStreamType == 'ROOM_ACCEPT'){
+				this.roomAccept(data);
+			}else if(data.serverSentStreamType == 'ROOM_IN_ACCOUNT_ACCEPT'){
+				this.roomInAccountAccept(data);
+			}
+			log.debug('on message: ', event.data);
+		};
+
+		this.source.onerror = (error) => {
+			log.debug('on stream err: ', error);
+			log.debug('source ::: ', this.source);
+			this.#isConnectSource = false;
+			//연결 실패되면 계속 시도하기에 임시 조치로 close
+			//this.source.close();
+			//stop();
+		};
+		this.source.onopen = (success) => {
+			log.debug('on success: ', success)
+			this.#isConnectSource = true
+		}
+		/*
+		* This will listen only for events
+		* similar to the following:
+		*
+		* event: notice
+		* data: useful data
+		* id: someid
+		this.source.addEventListener("notice", (e) => {
+			log.debug('event notice', e.data);
+		});
+		*/
+
+		/*
+		* Similarly, this will listen for events
+		* with the field `event: update`
+		this.source.addEventListener("update", (e) => {
+			log.debug('event update ::: ',e.data);
+		});
+		*/
+
+		/*
+		* The event "message" is a special case, as it
+		* will capture events without an event field
+		* as well as events that have the specific type
+		* `event: message` It will not trigger on any
+		* other event type.
+		this.source.addEventListener("message", (e) => {
+			log.debug('message !!!!! : ', e.data);
+		});
+		*/
+	}
 	chattingAccept(data){
 		log.debug('chattingAccept stream ::: ', data);
-		mainWindow.webContents.send("chattingAccept", data);
+		this.#send("chattingAccept", data);
 	}
 	roomAccept(data){
 		log.debug('roomAccept stream ::: ', data);
-		mainWindow.webContents.send('roomAccept', data);
+		this.#send('roomAccept', data);
 	}
 	roomInAccountAccept(data){
 		log.debug('roomInAccountAccept stream ::: ', data);
-		mainWindow.webContents.send('roomInAccountAccept', data.content);
+		this.#send('roomInAccountAccept', data.content);
+	}
+	#send(eventName, data){
+		mainWindow.webContents.send(eventName, data);
 	}
 }
 
