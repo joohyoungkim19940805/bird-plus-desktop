@@ -14,43 +14,43 @@ class RoomIpcController {
 	#initHanlder(){
 		ipcMain.handle('createRoom', async (event, param = {}) => {
 			return this.createRoom(event, param);
-		})
+		});
 		ipcMain.handle('createMySelfRoom', async (event, param = {})=> {
 			return this.createMySelfRoom(event, param);
-		})
+		});
 		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
 			return this.createRoomInAccount(event, param);
-		})
+		});
 		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
 			return this.createRoomFavorites(event, param);
-		})
+		});
 		ipcMain.handle('updateRoomInAccout', async (event, param = []) => {
 			return this.updateRoomInAccout(event, param);
-		})
+		});
 		ipcMain.handle('updateRoomFavorites', async (event, param = []) => {
 			return this.updateRoomFavorites(event, param);
-		})
+		});
         ipcMain.handle('searchRoom', async (event, param = {}) => {
 			return this.searchRoom(event, param);
-		})
+		});
 		ipcMain.handle('searchRoomMyJoined', async (event, param = {}) => {
 			return this.searchRoomMyJoined(event, param);
-		})
+		});
 		ipcMain.handle('searchRoomMyJoinedName', async (event, param = {}) => {
 			return this.searchRoomMyJoinedName(event, param);
-		})
+		});
 		ipcMain.handle('searchRoomFavoritesMyJoined', async (event, param = {}) => {
 			return this.searchRoomFavoritesMyJoined(event, param);
-		})
+		});
 		ipcMain.handle('searchRoomFavoritesMyJoinedName', async (event, param = {}) => {
 			return this.searchRoomFavoritesMyJoinedName(event, param);
-		})
+		});
 		ipcMain.handle('searchRoomInAccountAllList', async (event, param = {}) => {
 			return this.searchRoomInAccountAllList(event, param);
-		})
+		});
 		ipcMain.handle('getRoomDetail', async (event, param = {}) => {
-			return this.getRoomDetail(event. param);
-		})
+			return this.getRoomDetail(event, param);
+		});
 		ipcMain.handle('isRoomFavorites', async (event, param = {}) => {
 			return this.isRoomFavorites(event, param);
 		});

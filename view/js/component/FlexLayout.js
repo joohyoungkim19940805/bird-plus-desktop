@@ -30,10 +30,7 @@ class FlexLayout extends HTMLElement {
 				flex-direction: row;
 			}
 			${this.#componentName} > .${this.#childClass} > *{
-				display: flex;
-				flex-direction: column;
-				height: 100%;
-				width: 100%;
+
 			}
 			${this.#componentName} > .${this.#childClass}[data-is_resize="true"]{
 				flex: 1 1 0%;

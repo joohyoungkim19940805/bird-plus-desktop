@@ -53,7 +53,7 @@ export default new class RoomContainer{
 					roomSticky, roomContentList, scrollbar
 				] = wrap.querySelectorAll('.room_sticky, .room_content_list, .room_scrollbar'); 
 
-				let roomContainerListScroll = wrap.querySelector('.room_container.list_scroll')
+				let roomContainerListScroll = wrap.querySelector('.list_scroll')
 				let customDetailsTitle = wrap.querySelector('[data-bind_name="customDetailsTitle"]')
 				let customDetails = wrap.querySelector('.custom_details');
 				let customDetailsSummary = customDetails.closest('.custom_details_summary')

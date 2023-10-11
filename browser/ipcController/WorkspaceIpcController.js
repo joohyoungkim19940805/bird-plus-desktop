@@ -17,14 +17,14 @@ class WorkspaceIpcController {
         })
 
         ipcMain.handle('searchWorkspaceMyJoined', async (event, param = {}) => {
-			this.searchWorkspaceMyJoined(event, param);
+			return this.searchWorkspaceMyJoined(event, param);
         })
 		ipcMain.handle('searchWorkspaceInAccount', async (event, param = {}) => {
-			this.searchWorkspaceInAccount(event, param)
+			return this.searchWorkspaceInAccount(event, param)
 		})
 		
 		ipcMain.handle('getWorkspaceDetail', async (event, param = {}) => {
-			this.getWorkspaceDetail(event, param);
+			return this.getWorkspaceDetail(event, param);
 		})
 	}
 

@@ -18,10 +18,10 @@ class MainIpcController {
 		});
 
 		ipcMain.handle('getWorkspaceId', async () => {
-			this.getWorkspaceId();
+			return this.getWorkspaceId();
 		})
 		ipcMain.handle('resetWorkspaceId', async () => {
-			this.resetWorkspaceId();
+			return this.resetWorkspaceId();
 		})
 	}
 	#send(eventName, data){

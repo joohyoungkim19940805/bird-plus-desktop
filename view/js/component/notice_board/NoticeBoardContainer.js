@@ -1,4 +1,4 @@
-import noticeBoardGroupList from "./notice_board_item/NoticeBoardGroupList"
+import noticeBoardList from "./notice_board_item/NoticeBoardList"
 export default new class NoticeBoardContainer{
 
 	#contentList;
@@ -19,8 +19,8 @@ export default new class NoticeBoardContainer{
 		return noticeBoardContainer;
 	})();
 	constructor(){
-		noticeBoardGroupList.element.dataset.is_resize = true;
-		this.#contentList = [noticeBoardGroupList.element];
+		noticeBoardList.element.dataset.is_resize = true;
+		this.#contentList = [noticeBoardList.element];
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);

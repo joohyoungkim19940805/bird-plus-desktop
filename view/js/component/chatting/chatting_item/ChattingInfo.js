@@ -85,6 +85,8 @@ export default new class ChattingInfo{
     #minute = this.#second * 60;
     #hour = this.#minute * 60;
     #day = this.#hour * 24;
+
+    #lastLiItem;
     /*
     this.timerElement.querySelector('.hour').textContent = `${Math.floor( ms / this.hour )}`.padStart(2,'0');
     this.timerElement.querySelector('.minute').textContent = `${Math.floor( ms % this.hour / this.minute )}`.padStart(2,'0');
@@ -257,7 +259,12 @@ export default new class ChattingInfo{
             li.__editor = content;
             this.#addChattingMemory(li, id);
             this.#addItemEvent(li);
-            prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
+            if( ! prevItemPromise && this.#lastLiItem){
+                this.#processingTimeGrouping(li, this.#lastLiItem);
+            }else{
+               prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
+            }
+            this.#lastLiItem = li;
             //resolve(li);
         })
     }
@@ -303,7 +310,6 @@ export default new class ChattingInfo{
             let currentDate = new Date(Number(li.dataset.create_mils));
             let currentDateYearMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
             let diffMils = prevDateYearMonth.getTime() - currentDateYearMonth.getTime();
-
             if(Math.abs(diffMils) < this.#day){
                 resolve();
                 return;
@@ -311,11 +317,11 @@ export default new class ChattingInfo{
                 resolve();
                 return;
             }
-
+            
             let timeText;
             
             if(prevDate.toDateString() == new Date().toDateString()){
-                timeText = 'ToDay'
+                timeText = 'to day'
             }else{
                 timeText = prevDate.toLocaleDateString(undefined, {
                     weekday: 'short',

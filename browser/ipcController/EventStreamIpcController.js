@@ -16,7 +16,7 @@ class EventStreamIpcController {
     }
 	#initHandler(){
 		ipcMain.on('initWorkspaceStream', async (event, {workspaceId}) => {
-			initWorkspaceStream(event, workspaceId);
+			this.initWorkspaceStream(event, workspaceId);
         })
 	}
 	#send(eventName, data){
@@ -104,9 +104,6 @@ class EventStreamIpcController {
 	roomInAccountAccept(data){
 		log.debug('roomInAccountAccept stream ::: ', data);
 		this.#send('roomInAccountAccept', data.content);
-	}
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
 	}
 }
 

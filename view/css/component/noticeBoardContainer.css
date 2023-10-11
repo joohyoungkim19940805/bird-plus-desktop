@@ -7,46 +7,72 @@
     overflow-wrap: revert-layer;
 }
 
-#notice_board_wrapper #notice_board_group_list_wrapper{
+#notice_board_wrapper #notice_board_list_wrapper{
     white-space: nowrap;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_container{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container{
     display: flex;
     flex-direction: column;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_container ul{
-    list-style-type: disclosure-closed;
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container > .notice_board_list_content{
+    padding-inline-start: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: clip !important;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container .notice_board_list_content{
     padding-inline-start: 21px;
+    overflow: hidden;
+    transition: all 1s;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_menu_wrapper .notice_board_group_search_wrapper #notice_board_group_search .search_title_wrapper,
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_menu_wrapper .notice_board_group_search_wrapper #notice_board_group_search .search_content_wrapper{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_title_wrapper,
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_content_wrapper{
     display: flex;
     flex-direction: column;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_menu_wrapper .notice_board_group_search_wrapper #notice_board_group_search .search_name{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_name{
     width: 100%;
     background-color: inherit;
     border: none;
     border-bottom: solid 2px #cbcbcbbd;
 }
 
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_content_button_wrapper{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content_button_wrapper{
     display: flex;
     padding: 1vh 0.4vw 0 0.4vw;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5vw;
+    gap: 1vw;
 }
 
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_content{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content{
     max-height: 30vh;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_content .notice_board_group_list_content_item:not(:last-child){
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item::marker:hover{
+    cursor: pointer;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item.type_notice_board{
+    display: block;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item:not(:last-child){
     padding: 0.5vh 0 0.5vh 0;
     border-bottom: solid 2px #e4ecf7;
 }
-#notice_board_wrapper #notice_board_group_list_wrapper .notice_board_group_list_content .notice_board_group_list_content_item .notice_board_group_list_content_item_title_wrapper{
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper{
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title{
+    width: 100%;
+    overflow-x: hidden;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name{
+    display: block;
+    width: 100%;
+    overflow-x: hidden;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name:focus-visible{
+    border-bottom: solid 1px #ff9a9a;
+    border-left: solid 1px #ff9a9a;
+    outline: none;
 }

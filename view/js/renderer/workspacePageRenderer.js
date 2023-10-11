@@ -46,6 +46,7 @@ new class WorkspacePageRenderer{
 		return window.myAPI.workspace.searchWorkspaceMyJoined({
 			page, size
 		}).then((data = {})=>{
+			console.log('data ::: ', data.data);
 			return data.data;
 		});
 	}

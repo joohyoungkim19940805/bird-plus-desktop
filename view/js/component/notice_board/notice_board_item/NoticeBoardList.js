@@ -1,18 +1,18 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
-import PositionChanger from "./../../../handler/PositionChangeer";
+import PositionChanger from "../../../handler/PositionChangeer";
 
-export default new class NoticeBoardGroupList{
+export default new class NoticeBoardList{
 	#roomMemory = {}
 	#page = 0;
 	#size = 10;
     #element = Object.assign(document.createElement('div'), {
-        id: 'notice_board_group_list_wrapper',
+        id: 'notice_board_list_wrapper',
         innerHTML: `
-            <div class="notice_board_group_list_container" data-bind_name="noticeBoardListContainer">
-                <div class="notice_board_group_menu_wrapper">
-                    <div class="notice_board_group_search_wrapper" data-bind_name="noticeBoardMenuSearchWrapper">
-						<form id="notice_board_group_search" data-bind_name="noticeBoardSearch">
+            <div class="notice_board_list_container" data-bind_name="noticeBoardListContainer">
+                <div class="notice_board_menu_wrapper">
+                    <div class="notice_board_search_wrapper" data-bind_name="noticeBoardMenuSearchWrapper">
+						<form id="notice_board_search" data-bind_name="noticeBoardSearch">
 							<div class="search_title_wrapper">
                                 <label>search title</label>
                                 <input type="search" placeholder="Press Enter Key" class="search_name" name="searchTitle" data-bind_name="searchTitle">
@@ -24,56 +24,11 @@ export default new class NoticeBoardGroupList{
                         </form>
 					</div>
                 </div> 
-				<div class="notice_board_group_list_content_button_wrapper">
+				<div class="notice_board_list_content_button_wrapper">
 					<button class="css-gg-folder-add pointer" type="button" data-bind_name="rootFolderAdd">
 					</button>
 				</div>
-                <ul class="notice_board_group_list_content list_scroll list_scroll-y" data-bind_name="noticeBoardListContent">
-                    <li class="notice_board_group_list_content_item">
-						<div class="notice_board_group_list_content_item_title_wrapper">
-							<div class="notice_board_group_list_content_item_title">
-								<b class="notice_board_group_list_content_item_title_name">TEST2</b>
-							</div>
-							<div class="notice_board_group_list_content_button_wrapper">
-								<button class="css-gg-add pointer" type="button">
-								</button>
-								<button class="css-gg-folder-add pointer" type="button">
-								</button>
-							</div>
-						</div>
-						<ul>
-							<li class="notice_board_group_list_content_item">
-								<div class="notice_board_group_list_content_item_title_wrapper">
-									<div class="notice_board_group_list_content_item_title">
-										<b class="notice_board_group_list_content_item_title_name">TEST2</b>
-									</div>
-									<div class="notice_board_group_list_content_button_wrapper">
-										<button class="css-gg-add pointer" type="button">
-										</button>
-										<button class="css-gg-folder-add pointer" type="button">
-										</button>
-									</div>
-								</div>
-								<ul>
-								</ul>
-							</li>
-						</ul>
-					</li>
-					<li class="notice_board_group_list_content_item">
-						<div class="notice_board_group_list_content_item_title_wrapper">
-							<div class="notice_board_group_list_content_item_title">
-								<b class="notice_board_group_list_content_item_title_name">TEST2</b>
-							</div>
-							<div class="notice_board_group_list_content_button_wrapper">
-								<button class="css-gg-add pointer" type="button">
-								</button>
-								<button class="css-gg-folder-add pointer" type="button">
-								</button>
-							</div>
-						</div>
-						<ul>
-						</ul>
-					</li>
+                <ul class="notice_board_list_content list_scroll list_scroll-y" data-bind_name="noticeBoardListContent">
                 </ul>
             </div>
         `
@@ -152,44 +107,135 @@ export default new class NoticeBoardGroupList{
 				this.refresh()
 			}
 		}
-		this.#elementMap.rootFolderAdd.onclick = (event) => this.folderAdd(event, this.#elementMap.noticeBoardListContent);
+		this.#elementMap.rootFolderAdd.onclick = () => {
+			this.createFolder(undefined, this.#elementMap.noticeBoardListContent);
+		}
     }
-	createFolder(event){
+	createFolder(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
-			className: 'notice_board_group_list_content_item',
+			className: 'notice_board_list_content_item',
 			innerHTML : `
-			<div class="notice_board_group_list_content_item_title_wrapper">
-				<div class="notice_board_group_list_content_item_title">
-					<b class="notice_board_group_list_content_item_title_name">TEST2</b>
+			<div class="notice_board_list_content_item_title_wrapper">
+				<button class="marker pointer" ${data.isEmpty ? 'data-is_open=""' : ''}></button>
+				<div class="notice_board_list_content_item_title">
+					<b class="notice_board_list_content_item_title_name" contentEditable=true>${data.folderName || ''}</b>
 				</div>
-				<div class="notice_board_group_list_content_button_wrapper">
+				<div class="notice_board_list_content_button_wrapper">
 					<button class="css-gg-add pointer" type="button">
 					</button>
 					<button class="css-gg-folder-add pointer" type="button">
 					</button>
 				</div>
 			</div>
-			<ul>
-				<li class="notice_board_group_list_content_item">
-					<div class="notice_board_group_list_content_item_title_wrapper">
-						<div class="notice_board_group_list_content_item_title">
-							<b class="notice_board_group_list_content_item_title_name">TEST2</b>
-						</div>
-						<div class="notice_board_group_list_content_button_wrapper">
-							<button class="css-gg-add pointer" type="button">
-							</button>
-							<button class="css-gg-folder-add pointer" type="button">
-							</button>
-						</div>
-					</div>
-					<ul>
-					</ul>
-				</li>
+			<ul class="notice_board_list_content">
 			</ul>
 			`
 		});
+		let [marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot] = li.querySelectorAll('.marker, .notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper, .css-gg-add, .css-gg-folder-add, .notice_board_list_content');
+		let deleteButton  = Object.assign(document.createElement('button'),{
+			className: 'css-gg-remove pointer',
+			onclick: (event) => li.remove()
+		});
+		if(data.isEmpty){
+			buttonWrapper.prepend(deleteButton);
+		}
 
-		parentRoot.prepend();
+		addButton.onclick = () => this.createNoticeBoard(undefined, childRoot);
+		folderAddButton.onclick = () => this.createFolder(undefined, childRoot);
+		marker.onclick = () => {
+			if(marker.hasAttribute('data-is_open')){
+				childRoot.style.height = '0px';
+			}else{
+				childRoot.style.height = '';
+			}
+			
+			marker.toggleAttribute('data-is_open');
+		}
+		deleteButton.onmouseover = (event) => {
+			deleteButton.dataset.is_mouseover = '';
+		}
+		deleteButton.onmouseout = (event) => {
+			deleteButton.removeAttribute('data-is_mouseover');
+		}
+		titleName.onblur = (event) => {
+			if(deleteButton && titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
+				deleteButton.remove();
+			}
+		}
+		titleName.onkeydown = (event) => {
+			console.log(event);
+			if(event.key != 'Enter'){
+				return;
+			}
+			event.preventDefault();
+			titleName.blur();
+		}
+		titleName.onkeyup = (event) => {
+			if(titleName.textContent == ''){
+				buttonWrapper.prepend(deleteButton);
+			}
+		}
+		let titleNameConnectedAwait = setInterval(()=>{
+			if(titleName.isConnected){
+				titleName.focus();
+				clearInterval(titleNameConnectedAwait);
+			}
+		}, 100)
+
+		parentRoot.prepend(li);
+	}
+	createNoticeBoard(data = {isEmpty:true}, parentRoot){
+		let li = Object.assign(document.createElement('li'), {
+			className: 'notice_board_list_content_item type_notice_board',
+			innerHTML: `
+			<div class="notice_board_list_content_item_title_wrapper">
+				<div class="notice_board_list_content_item_title">
+					<span class="notice_board_list_content_item_title_name" contentEditable=true>${data.folderName || ''}</span>
+				</div>
+				<div class="notice_board_list_content_button_wrapper">
+				</div>
+			</div>
+			`
+		});
+
+		let [titleName, buttonWrapper] = li.querySelectorAll('.notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper');
+		let deleteButton  = Object.assign(document.createElement('button'),{
+			className: 'css-gg-remove pointer',
+			onclick: (event) => li.remove()
+		});
+		if(data.isEmpty){
+			buttonWrapper.prepend(deleteButton);
+		}
+		deleteButton.onmouseover = (event) => {
+			deleteButton.dataset.is_mouseover = '';
+		}
+		deleteButton.onmouseout = (event) => {
+			deleteButton.removeAttribute('data-is_mouseover');
+		}
+		titleName.onblur = (event) => {
+			if(deleteButton && titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
+				deleteButton.remove();
+			}
+		}
+		titleName.onkeydown = (event) => {
+			if(event.key != 'Enter'){
+				return;
+			}
+			event.preventDefault();
+			titleName.blur();
+		}
+		titleName.onkeyup = (event) => {
+			if(titleName.textContent == ''){
+				buttonWrapper.prepend(deleteButton);
+			}
+		}
+		let titleNameConnectedAwait = setInterval(()=>{
+			if(titleName.isConnected){
+				titleName.focus();
+				clearInterval(titleNameConnectedAwait);
+			}
+		}, 100)
+		parentRoot.prepend(li);
 	}
     callData(page, size, workspaceId, searchTitle, searchContent){
         return window.myAPI.noticeBoard.searchNoticeBoard({
