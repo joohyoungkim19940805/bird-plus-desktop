@@ -1,4 +1,4 @@
-
+import common from "./../common"; 
 new class WorkspacePageRenderer{
 	page = 0;
 	size = 10;
@@ -65,8 +65,7 @@ new class WorkspacePageRenderer{
 				let li = Object.assign(document.createElement('li'),{
 					className: 'pointer',
 					innerHTML: `
-					<div class="workspace_list_container">
-						<img src="/images/user.png">
+					<div class="workspace_list_container" style="display: flex;align-items: center;">
 						<div>
 							<div><b>${workspaceName}</b></div>
 							<div>${joinedCount} members</div>
@@ -74,6 +73,13 @@ new class WorkspacePageRenderer{
 					</div>
 					`
 				});
+				common.getProjectPathPromise().then(path => {
+					let img = Object.assign(document.createElement('img'),{
+						src: `${path}view\\image\\user.png`,
+						width: 30
+					})
+					li.querySelector('.workspace_list_container').prepend(img);
+				})
 				this.visibleObserver.observe(li);
 				this.addItemEvent(li, workspaceId);
 				return li;
@@ -101,7 +107,7 @@ new class WorkspacePageRenderer{
 				resolve(liList);
 			}
 			this.lastItemVisibleObserver.disconnect();
-			this.lastItemVisibleObserver.observe(liList[liList.length - 1]);
+			this.lastItemVisibleObserver.observe(liList.at(-1));
 			resolve(liList);
 		})
 	}

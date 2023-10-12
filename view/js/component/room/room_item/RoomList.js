@@ -75,7 +75,10 @@ export default new class RoomList{
 					}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 					this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 					this.#lastItemVisibleObserver.disconnect();
-					let lastVisibleTarget = liList[liList.length - 1];
+					if(liList.length == 0){
+						return;
+					}
+					let lastVisibleTarget = this.#liList.at(-1);
 					if(lastVisibleTarget){
 						this.#lastItemVisibleObserver.observe(lastVisibleTarget)
 					}
@@ -322,7 +325,10 @@ export default new class RoomList{
 			}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
 			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 			this.#lastItemVisibleObserver.disconnect();
-			let lastVisibleTarget = liList[liList.length - 1];
+			if(liList.length == 0){
+				return;
+			}
+			let lastVisibleTarget = this.#liList.at(-1);
 			if(lastVisibleTarget){
 				this.#lastItemVisibleObserver.observe(lastVisibleTarget)
 			}

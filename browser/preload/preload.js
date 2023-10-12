@@ -19,7 +19,12 @@ const electronEventTrigger = {
 		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
 			electronEventTrigger.objectEventListener[eventName].forEach(async callBack=>{
 				new Promise(res=>{
-					callBack(message);
+					try{
+						callBack(message);
+					}catch(err){
+						console.error(`${eventName} error message ::: `,err.message);
+						console.error(`${eventName} error message ::: `,err.stack);
+					}
 					res();
 				})
 			})
@@ -97,10 +102,13 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 
 	noticeBoard : {
-		createOrUpdateNoticeBoard : (param) => {},
-		searchNoticeBoard : (param) => {},
+		createNoticeBoard : (param) => ipcRenderer.invoke('createNoticeBoard', param),
+		createNoticeBoardGroup : (param) => ipcRenderer.invoke('createNoticeBoard', param),
+		searchNoticeBoard : (param) => ipcRenderer.invoke('searchNoticeBoard', param),
 		getNoticeBoard : (param) => {},
-	}
+	},
+
+
 })
 
 ipcRenderer.on('resized', (event, message) => {
@@ -123,6 +131,10 @@ ipcRenderer.on('roomAccept', (event, message) => {
 ipcRenderer.on('roomInAccountAccept', (event, message) => {
 	electronEventTrigger.trigger('roomInAccountAccept', event, message);
 })
+
+ipcRenderer.on('noticeBoardAccept', (event, message) => {
+	electronEventTrigger.trigger('noticeBoardAccept', event, message);
+});
 
 ipcRenderer.on('checkForUpdates', (event, message) => {
 	if(electronEventTrigger.objectEventListener.hasOwnProperty('checkForUpdates')){

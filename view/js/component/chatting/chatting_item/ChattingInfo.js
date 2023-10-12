@@ -43,8 +43,8 @@ export default new class ChattingInfo{
                                     // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                     // 날짜 관련 함수 코드 실행
                                     this.#processingTimeGrouping(
-                                        this.#liList[this.#liList.length - 2], 
-                                        this.#liList[this.#liList.length - 1]
+                                        this.#liList.at(-2), 
+                                        this.#liList.at(-1)
                                     ); 
                                 }
                                 return liList;
@@ -54,14 +54,14 @@ export default new class ChattingInfo{
                 
                 promise.then(liList => {
                     this.#lastItemVisibleObserver.disconnect();
-                    let lastVisibleTarget = liList[liList.length - 1];
+                    let lastVisibleTarget = liList.at(-1);
                     if(lastVisibleTarget){
                         this.#lastItemVisibleObserver.observe(lastVisibleTarget);
                     }
                     this.#liList.push(...liList);
-                    let visibilityLastItem = this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]');
+                    let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    visibilityLastItem[visibilityLastItem.length - 1].previousElementSibling?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                    visibilityLastItem?.previousElementSibling?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                 });
 			}
 		})
@@ -134,8 +134,8 @@ export default new class ChattingInfo{
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                 // 날짜 관련 함수 코드 실행
                                 this.#processingTimeGrouping(
-                                    this.#liList[this.#liList.length - 2], 
-                                    this.#liList[this.#liList.length - 1]
+                                    this.#liList.at(-2), 
+                                    this.#liList.at(-1)
                                 ); 
                             }
                             return liList;
@@ -160,7 +160,7 @@ export default new class ChattingInfo{
                     },50);
                    
                     this.#lastItemVisibleObserver.disconnect();
-                    let lastVisibleTarget = liList[liList.length - 1];
+                    let lastVisibleTarget = liList.at(-1);
                     if(lastVisibleTarget){
                         this.#lastItemVisibleObserver.observe(lastVisibleTarget)
                     }

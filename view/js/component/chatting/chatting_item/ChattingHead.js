@@ -105,11 +105,11 @@ export default new class ChattingHead{
 
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
+            let {content = event} = event;
+            this.#addChattingHeadMemory(this.createLiElement(content), content.roomId);
 
-            this.#addChattingHeadMemory(this.createLiElement(event), event.roomId);
-
-            if(event.roomId == this.#roomId){
-                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][event.roomId]);
+            if(content.roomId == this.#roomId){
+                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][content.roomId]);
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {

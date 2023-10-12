@@ -259,7 +259,7 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 				resolve(liList);
 			}
 			this.#lastItemVisibleObserver.disconnect();
-			this.#lastItemVisibleObserver.observe(liList[liList.length - 1]);
+			this.#lastItemVisibleObserver.observe(liList.at(-1));
 			resolve(liList);
 		})
 	}

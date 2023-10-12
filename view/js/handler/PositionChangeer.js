@@ -20,7 +20,8 @@ export default class PositionChanger{
 			throw new Error('data-order_sort is not defined or is not number')
 		}
 		return new Promise(resolve => {
-			let lastItem = this.#wrapper.querySelector('[data-order_sort]:last-child')
+			
+			let lastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop() // or at(-1)
 			child.forEach((item, index)=>{
 				item.draggable = true;
 				item.dataset.is_position_change_target = '';
@@ -55,7 +56,8 @@ export default class PositionChanger{
 					item.before(target);
 					this.#targetItem = undefined;
 					new Promise(res=>{
-						let nowLastItem = this.#wrapper.querySelector('[data-order_sort]:last-child');
+						let nowLastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
+						//this.#wrapper.querySelector('[data-order_sort]:last-child');
 						let prevOrderSort = Number(lastItem.dataset.order_sort);
 						if(target == lastItem && lastItem != nowLastItem){
 							nowLastItem.dataset.order_sort = lastItem.dataset.order_sort;
@@ -78,11 +80,17 @@ export default class PositionChanger{
 					}).then(()=>{
 						this.#onDropEndChangePositionCallback(
 							child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort).map(e=>{
-								return {
+								let obj = Object.assign({}, e.dataset);
+								return Object.entries(obj).reduce((total, [k,v]) => {
+									let key = k.split('_').map((e, i) => i == 0 ? e : e.charAt(0).toUpperCase() + e.substring(1)).join('');
+									total[key] = v;
+									return total;
+								}, {})
+								/*return {
 									id: e.dataset.id, 
 									roomId: e.dataset.room_id, 
 									orderSort: e.dataset.order_sort,
-								};
+								};*/
 							})
 						)
 					})

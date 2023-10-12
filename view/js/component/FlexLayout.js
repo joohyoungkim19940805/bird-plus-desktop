@@ -377,10 +377,11 @@ class FlexLayout extends HTMLElement {
 		};
 		
 		while(isCloseCheck()){
-			target = target[direction]?.[direction];
-			if(! target){
+			let nextTarget = target[direction]?.[direction];
+			if(! nextTarget){
 				break;
 			}
+			target = nextTarget;
 		}
 		return target;
 	}

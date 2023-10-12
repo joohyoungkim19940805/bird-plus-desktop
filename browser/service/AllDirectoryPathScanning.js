@@ -168,8 +168,7 @@ class AllDirectoryPathScanning{
             fs.stat(dirPath, (error, stats) => {
                 let lastName = '';
                 if(dirPath){
-                    let pathList = dirPath.split('/');
-                    lastName = pathList[pathList.length - 1];
+                    lastName = dirPath.split('/').pop();
                 }
 
 				if(stats && ! error){

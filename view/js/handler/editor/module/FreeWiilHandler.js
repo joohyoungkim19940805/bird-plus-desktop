@@ -126,7 +126,7 @@ export default class FreeWiilHandler extends HTMLElement{
                 let allLine = [...this.children].filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
                 startAndEndLineObject = {
                     startLine : allLine[0],
-                    endLine : allLine[allLine.length - 1]
+                    endLine : allLine.at(-1)
                 }
                 let range = selection.getRangeAt(0);
                 //selection.removeAllRanges();

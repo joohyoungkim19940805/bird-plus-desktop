@@ -21,13 +21,14 @@
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container .notice_board_list_content{
     padding-inline-start: 21px;
-    overflow: hidden;
-    transition: all 1s;
+    /*overflow: hidden;*/
+    transition: height 0.3s;
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_title_wrapper,
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_content_wrapper{
     display: flex;
     flex-direction: column;
+    padding: 0 1vw 0 1vw;
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_menu_wrapper .notice_board_search_wrapper #notice_board_search .search_name{
     width: 100%;

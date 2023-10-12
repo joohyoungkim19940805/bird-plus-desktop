@@ -3,7 +3,7 @@ import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "../../../handler/PositionChangeer";
 
 export default new class NoticeBoardList{
-	#roomMemory = {}
+	#memory = {}
 	#page = 0;
 	#size = 10;
     #element = Object.assign(document.createElement('div'), {
@@ -28,7 +28,7 @@ export default new class NoticeBoardList{
 					<button class="css-gg-folder-add pointer" type="button" data-bind_name="rootFolderAdd">
 					</button>
 				</div>
-                <ul class="notice_board_list_content list_scroll list_scroll-y" data-bind_name="noticeBoardListContent">
+                <ul class="notice_board_list_content list_scroll list_scroll-y" data-bind_name="noticeBoardList">
                 </ul>
             </div>
         `
@@ -45,7 +45,7 @@ export default new class NoticeBoardList{
 			if (entry.isIntersecting){
 				this.#page += 1;
 				let promise;
-				let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
+				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[this.#page] || {});
 				if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
 					promise = Promise.resolve(
 						memory
@@ -71,9 +71,9 @@ export default new class NoticeBoardList{
 						total[item.dataset.room_id] = item;
 						return total;
 					}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
-					this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+					this.#elementMap.noticeBoardList.replaceChildren(...this.#liList);
 					this.#lastItemVisibleObserver.disconnect();
-					let lastVisibleTarget = liList[liList.length - 1];
+					let lastVisibleTarget = liList.at(-1);
 					if(lastVisibleTarget){
 						this.#lastItemVisibleObserver.observe(lastVisibleTarget)
 					}
@@ -86,7 +86,7 @@ export default new class NoticeBoardList{
 	});
     #positionChanger;
     constructor(){
-        this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardListContent});
+        this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
 			/*window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
 				console.log(data);
@@ -108,7 +108,7 @@ export default new class NoticeBoardList{
 			}
 		}
 		this.#elementMap.rootFolderAdd.onclick = () => {
-			this.createFolder(undefined, this.#elementMap.noticeBoardListContent);
+			this.createFolder(undefined, this.#elementMap.noticeBoardList);
 		}
     }
 	createFolder(data = {isEmpty:true}, parentRoot){
@@ -131,6 +131,7 @@ export default new class NoticeBoardList{
 			</ul>
 			`
 		});
+		li.dataset.visibility_not = '';
 		let [marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot] = li.querySelectorAll('.marker, .notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper, .css-gg-add, .css-gg-folder-add, .notice_board_list_content');
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove pointer',
@@ -143,12 +144,23 @@ export default new class NoticeBoardList{
 		addButton.onclick = () => this.createNoticeBoard(undefined, childRoot);
 		folderAddButton.onclick = () => this.createFolder(undefined, childRoot);
 		marker.onclick = () => {
+			childRoot.ontransitionend = '';
 			if(marker.hasAttribute('data-is_open')){
-				childRoot.style.height = '0px';
+				childRoot.style.height = childRoot.scrollHeight + 'px';
+				childRoot.dataset.prev_height = childRoot.style.height;
+				setTimeout(()=>{
+					childRoot.style.height = '0px';
+					childRoot.ontransitionend = () => {
+						childRoot.style.overflow = 'hidden';
+					}
+				}, 0);
 			}else{
-				childRoot.style.height = '';
+				childRoot.style.height = childRoot.dataset.prev_height;
+				childRoot.ontransitionend = () => {
+					childRoot.style.height = '';
+					childRoot.style.overflow = '';
+				}
 			}
-			
 			marker.toggleAttribute('data-is_open');
 		}
 		deleteButton.onmouseover = (event) => {
@@ -160,6 +172,24 @@ export default new class NoticeBoardList{
 		titleName.onblur = (event) => {
 			if(deleteButton && titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
+				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
+					window.myAPI.noticeBoard.createNoticeBoard({
+						roomId: roomHandler.roomId,
+						workspaceId: workspaceHandler.workspaceId,
+						title: titleName.textContent
+					}).then( result => {
+						console.log(result);
+						let keyRegx = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
+						let underbarKeyNameObject = Object.entries(result.data).reduce((total, [k,v]) => {
+							let key = k.match(keyRegx).map(e=> e.toLowerCase()).join('_');
+							total[key] = v;
+							return total;
+						}, {});
+						Object.assign(li.dataset, underbarKeyNameObject);
+						console.log(li.dataset);
+					})
+				}
+				titleName.dataset.prev_titleName = titleName.textContent
 			}
 		}
 		titleName.onkeydown = (event) => {
@@ -326,22 +356,22 @@ export default new class NoticeBoardList{
 	}
 
     #addRoomMemory(data, roomId){
-		if( ! this.#roomMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-			this.#roomMemory[workspaceHandler.workspaceId] = {};
+		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
+			this.#memory[workspaceHandler.workspaceId] = {};
 		}
-		if( ! this.#roomMemory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
-			this.#roomMemory[workspaceHandler.workspaceId][this.#page] = {};
+		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
+			this.#memory[workspaceHandler.workspaceId][this.#page] = {};
 		}
 		if( ! data || ! roomId){
 			return ;
 		}
-		this.#roomMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+		this.#memory[workspaceHandler.workspaceId][this.#page][roomId] = data;
     }
 
     refresh(){
 		this.reset();
 		let promise;
-		let memory = Object.values(this.#roomMemory[workspaceHandler.workspaceId] || {});
+		let memory = Object.values(this.#memory[workspaceHandler.workspaceId] || {});
 		if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
@@ -368,9 +398,9 @@ export default new class NoticeBoardList{
 				total[item.dataset.room_id] = item;
 				return total;
 			}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
-			this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+			this.#elementMap.noticeBoardList.replaceChildren(...this.#liList);
 			this.#lastItemVisibleObserver.disconnect();
-			let lastVisibleTarget = liList[liList.length - 1];
+			let lastVisibleTarget = liList.at(-1);
 			if(lastVisibleTarget){
 				this.#lastItemVisibleObserver.observe(lastVisibleTarget)
 			}
@@ -380,7 +410,7 @@ export default new class NoticeBoardList{
 		this.#page = 0;
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();
-		this.#elementMap.roomContentList.replaceChildren();
+		this.#elementMap.noticeBoardList.replaceChildren();
 	}
 
 	get element(){

@@ -53,7 +53,7 @@ export default class ToolHandler{
 
 	isLastTool(tool){
 		if(this.#identity.prototype.isPrototypeOf(tool)){
-			return tool === this.#connectedFriends[this.#connectedFriends.length - 1];
+			return tool === this.#connectedFriends.at(-1);
 		}else{
 			throw new Error(`tool is not my identity, this tool name is ${tool.constructor.name}. but my identity name is ${this.#identity.name}`);
 		}

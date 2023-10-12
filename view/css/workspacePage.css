@@ -1,8 +1,13 @@
 #joined_workspace_list{
     height: 29%;
     overflow-y: auto;
+    overflow-x: visible;
     z-index: 1;
     background-color: #6aa8df99;
+    display: grid;
+    width: fit-content;
+    padding-right: 10px;
+    gap: 0.7vh;
 }
 #renderCanvas{
 	position: fixed;

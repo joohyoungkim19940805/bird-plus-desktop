@@ -268,6 +268,7 @@ input[type="checkbox"]{
     height: 20px;
     border: 2px solid;
     border-radius: 3px;
+    background: white;
 }
 .css-gg-list::after,
 .css-gg-list::before{

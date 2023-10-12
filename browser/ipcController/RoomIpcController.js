@@ -69,7 +69,7 @@ class RoomIpcController {
 					}
 					return total;
 				},{});
-				return axios.post(`${__serverApi}/api/room/create/room`, JSON.stringify(param), {
+				return axios.post(`${__serverApi}/api/room/create/`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -186,7 +186,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	createRoomFavorites(){
+	createRoomFavorites(event, param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -318,7 +318,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomMyJoinedName(event, param){
+	searchRoomMyJoinedName(event, param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let queryString = Object.entries(param)
@@ -393,13 +393,18 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomFavoritesMyJoinedName(event, param){
+	searchRoomFavoritesMyJoinedName(event, param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let queryString = Object.entries(param)
 					.filter(([k,v]) => v != undefined && v != '')
-					.map(([k,v]) => `${k}=${v}`).join('&')
-				log.debug('kjh test <<< ', queryString);
+					.map(([k,v]) => {
+						if(v instanceof Array){
+							v = v.map(val=>`${k}=${val}`).join('&')
+							return v;
+						}
+						return `${k}=${v}`
+					}).join('&')
 				return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-name-list?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'

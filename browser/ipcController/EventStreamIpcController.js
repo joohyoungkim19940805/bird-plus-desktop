@@ -46,6 +46,8 @@ class EventStreamIpcController {
 				this.roomAccept(data);
 			}else if(data.serverSentStreamType == 'ROOM_IN_ACCOUNT_ACCEPT'){
 				this.roomInAccountAccept(data);
+			}else if(data.serverSentStreamType == 'NOTICE_BOARD_ACCEPT'){
+				this.noticeBoardAccept(data);
 			}
 			log.debug('on message: ', event.data);
 		};
@@ -103,7 +105,11 @@ class EventStreamIpcController {
 	}
 	roomInAccountAccept(data){
 		log.debug('roomInAccountAccept stream ::: ', data);
-		this.#send('roomInAccountAccept', data.content);
+		this.#send('roomInAccountAccept', data);
+	}
+	noticeBoardAccept(data){
+		log.debug('noticeBoardAccept stream ::: ', data);
+		this.#send('noticeBoardAccept', data);
 	}
 }
 

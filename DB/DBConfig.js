@@ -235,7 +235,7 @@ class DBConfig{
 	}
 
 	static #processingColumn(columnName){
-		return columnName.match(this.#columnRegex).join('_');
+		return columnName.match(this.#columnRegex).map(e=>e.toLowerCase()).join('_');
 	}
 
 	/**

@@ -8,6 +8,9 @@ import chattingHandler from "../handler/chatting/ChattingHandler"
 const visibleObserver = new IntersectionObserver((entries, observer) => {
 	entries.forEach(entry =>{
 		let {isIntersecting, target} = entry;
+		if(target.hasAttribute('data-visibility_not')){
+			return;
+		}
 		if (isIntersecting){
 			target.style.visibility = '';
 			target.style.opacity = '';
