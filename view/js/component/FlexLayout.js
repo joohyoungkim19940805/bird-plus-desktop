@@ -169,18 +169,29 @@ class FlexLayout extends HTMLElement {
 		// 정해진 방향의 사이즈만(width or height) 0일뿐 다른 다른 방향 사이즈는 그대로여서 
 		// 가시성 영역 체크 코드가 미동작하여 추가
 		mutationList.forEach((mutation) => {
-			let currentFlexGrow = parseFloat(mutation.target.style.flex.split(' ')[0]);
-			let currentStyle = window.getComputedStyle(mutation.target);
-			let currentSize = parseFloat(currentStyle[this.sizeName]);
-			let minSize = parseFloat(currentStyle['min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1)]);
 			let {target} = mutation;
-			if( ! isNaN(currentFlexGrow) && ( currentFlexGrow == 0 || (currentSize == 0 || minSize >= currentSize) )){
+			let targetRect = target.getBoundingClientRect();
+			let currentFlexGrow = parseFloat(target.style.flex.split(' ')[0]);
+			let currentStyle = window.getComputedStyle(target);
+			let currentMinSize = parseFloat(currentStyle['min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1)]);
+			let currentSize = targetRect[this.sizeName];
+			//if( ! isNaN(currentFlexGrow) && ( currentFlexGrow == 0 || (currentSize == 0 || currentMinSize >= currentSize) )){
+			if(currentSize == 0 || currentMinSize >= currentSize){
+			
 				// 뷰포트 내에서 해당 영역이 보이지 않는 경우
-				target.dataset.visibility = 'h'
+				target.dataset.flex_visibility = 'h'
+				/*if(target.hasAttribute('data-is_visibility')){
+					target.style.visibility = 'hidden';
+					target.style.opacity = 0;
+				}*/
 				//target.dataset.grow = 0;
 			}else{
 				// 뷰포트 내에서 보이는 경우
-				target.dataset.visibility = 'v';
+				target.dataset.flex_visibility = 'v';
+				/*if(target.hasAttribute('data-is_visibility')){
+					target.style.visibility = '';
+					target.style.opacity = '';
+				}*/
 			}
 		});
 	});
@@ -429,7 +440,9 @@ class FlexLayout extends HTMLElement {
 			if(isResize){
 				this.resize(notCloseList, this.forResizeList.length);
 			}
-
+			if(resizeTarget._closeCallBack){
+				resizeTarget._closeCallBack();
+			}
 			resolve(resizeTarget);
 		});
 	}
@@ -475,7 +488,9 @@ class FlexLayout extends HTMLElement {
 			if(isResize){
 				this.resize(notCloseAndOpenTargetList, this.forResizeList.length);
 			}
-			
+			if(resizeTarget._openCallBack){
+				resizeTarget._openCallBack();
+			}
 			
 			resolve(resizeTarget)
 		})

@@ -1,4 +1,5 @@
 import noticeBoardList from "./notice_board_item/NoticeBoardList"
+
 export default new class NoticeBoardContainer{
 
 	#contentList;
@@ -24,6 +25,10 @@ export default new class NoticeBoardContainer{
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);
+
+		this.#wrap._openCallBack = () => {
+			noticeBoardList.refresh();
+		}
 	}
 
 	get container(){

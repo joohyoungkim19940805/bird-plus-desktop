@@ -40,6 +40,7 @@ class EventStreamIpcController {
 		this.source.onmessage = (event) => {
 			let {data, lastEventId, origin, type} = event;
 			data = JSON.parse(data);
+			log.debug('event stream data ::: ', data);
 			if(data.serverSentStreamType == 'CHTTING_ACCEPT'){
 				this.chattingAccept(data);
 			}else if(data.serverSentStreamType == 'ROOM_ACCEPT'){

@@ -23,7 +23,7 @@ const visibleObserver = new IntersectionObserver((entries, observer) => {
 	})
 }, {
 	threshold: 0.01,
-	root: document
+	root: document.body
 });
 new MutationObserver( (mutationList, observer) => {
 	mutationList.forEach((mutation) => {

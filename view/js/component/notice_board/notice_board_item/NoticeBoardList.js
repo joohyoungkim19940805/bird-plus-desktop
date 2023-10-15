@@ -1,7 +1,7 @@
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "../../../handler/PositionChangeer";
-
+import common from "./../../../common"
 export default new class NoticeBoardList{
 	#memory = {}
 	#page = 0;
@@ -110,6 +110,7 @@ export default new class NoticeBoardList{
 		this.#elementMap.rootFolderAdd.onclick = () => {
 			this.createFolder(undefined, this.#elementMap.noticeBoardList);
 		}
+		//noticeBoardList
     }
 	createFolder(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
@@ -118,7 +119,7 @@ export default new class NoticeBoardList{
 			<div class="notice_board_list_content_item_title_wrapper">
 				<button class="marker pointer" ${data.isEmpty ? 'data-is_open=""' : ''}></button>
 				<div class="notice_board_list_content_item_title">
-					<b class="notice_board_list_content_item_title_name" contentEditable=true>${data.folderName || ''}</b>
+					<b class="notice_board_list_content_item_title_name" contentEditable=true>${data.title || ''}</b>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
 					<button class="css-gg-add pointer" type="button">
@@ -131,6 +132,10 @@ export default new class NoticeBoardList{
 			</ul>
 			`
 		});
+		if( ! data.isEmpty){
+			common.jsonToSaveElementDataset(data, li);
+			console.log('dataset :::' , li.dataset);
+		}
 		li.dataset.visibility_not = '';
 		let [marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot] = li.querySelectorAll('.marker, .notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper, .css-gg-add, .css-gg-folder-add, .notice_board_list_content');
 		let deleteButton  = Object.assign(document.createElement('button'),{
@@ -173,27 +178,25 @@ export default new class NoticeBoardList{
 			if(deleteButton && titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
-					window.myAPI.noticeBoard.createNoticeBoard({
+					window.myAPI.noticeBoard.createNoticeBoardGroup({
 						roomId: roomHandler.roomId,
 						workspaceId: workspaceHandler.workspaceId,
-						title: titleName.textContent
+						title: titleName.textContent,
+						groupId: li.dataset.group_id,
+						parentGroupId: parentRoot.dataset.parent_group_id
 					}).then( result => {
+						childRoot.dataset.parent_group_id = li.dataset.group_id;
 						console.log(result);
-						let keyRegx = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
-						let underbarKeyNameObject = Object.entries(result.data).reduce((total, [k,v]) => {
-							let key = k.match(keyRegx).map(e=> e.toLowerCase()).join('_');
-							total[key] = v;
-							return total;
-						}, {});
-						Object.assign(li.dataset, underbarKeyNameObject);
-						console.log(li.dataset);
+						common.jsonToSaveElementDataset(result.data, li);
 					})
 				}
 				titleName.dataset.prev_titleName = titleName.textContent
 			}
 		}
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', event => {
+
+		})
 		titleName.onkeydown = (event) => {
-			console.log(event);
 			if(event.key != 'Enter'){
 				return;
 			}
@@ -206,13 +209,14 @@ export default new class NoticeBoardList{
 			}
 		}
 		let titleNameConnectedAwait = setInterval(()=>{
-			if(titleName.isConnected){
+			if(titleName.isConnected && data.isEmpty){
 				titleName.focus();
 				clearInterval(titleNameConnectedAwait);
 			}
 		}, 100)
-
 		parentRoot.prepend(li);
+		
+		return li;
 	}
 	createNoticeBoard(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
@@ -220,7 +224,7 @@ export default new class NoticeBoardList{
 			innerHTML: `
 			<div class="notice_board_list_content_item_title_wrapper">
 				<div class="notice_board_list_content_item_title">
-					<span class="notice_board_list_content_item_title_name" contentEditable=true>${data.folderName || ''}</span>
+					<span class="notice_board_list_content_item_title_name" contentEditable=true>${data.title || ''}</span>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
 				</div>
@@ -260,88 +264,55 @@ export default new class NoticeBoardList{
 			}
 		}
 		let titleNameConnectedAwait = setInterval(()=>{
-			if(titleName.isConnected){
+			if(titleName.isConnected && data.isEmpty){
 				titleName.focus();
 				clearInterval(titleNameConnectedAwait);
 			}
 		}, 100)
 		parentRoot.prepend(li);
+		
+		return li;
 	}
-    callData(page, size, workspaceId, searchTitle, searchContent){
+    callData(workspaceId, roomId, searchTitle, searchContent, parentGroupId){
         return window.myAPI.noticeBoard.searchNoticeBoard({
-            page, size, workspaceId, searchTitle, searchContent
+            workspaceId, roomId, searchTitle, searchContent, parentGroupId
         }).then((data = {}) => {
+			console.log(data);
             return data.data;
         })
 	}
 
-    createPage(data, searchTitle = '', searchContent = ''){
+    createPage(content = [], searchTitle = '', searchContent = '', parentRoot = this.#elementMap.noticeBoardList){
 		return new Promise(resolve => {
-			let {content = []} = data || {};
+			//let {content = []} = data || {};
 			if(content.length == 0){
 				resolve(content);
 				return;
 			}
-			return Promise.all(content.map(item => 
-                this.createItemElement(item)
-            )).then((liList = [])=>{
+			return Promise.all(
+				content.map(item => {
+					return this.createItemElement(item, parentRoot)
+				})
+			).then((liList = [])=>{
 				if(liList.length == 0){
                     resolve(liList);
                 }
-				this.#liList.push(...liList);
-				this.#elementMap.roomContentList.replaceChildren(...this.#liList);
+				console.log(this.#memory);
+				let list = Object.values(this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][parentRoot.dataset.parent_group_id || 0]);
+				parentRoot.replaceChildren(...list);
 				if(searchTitle == '' && searchContent == ''){
-					this.#positionChanger.addPositionChangeEvent(...this.#liList);
+					console.log(list);
+					this.#positionChanger.addPositionChangeEvent(...list);
 				}
-               resolve(liList);
+               resolve(list);
             });
 		});
 	}
 
-    createItemElement(item){
-		let {
-			id,
-			roomId,
-			orderSort,
-			roomCode,
-			roomName,
-			isEnabled,
-			workspaceId,
-			roomType
-		} = item;
+    createItemElement(item, parentRoot){
 		return new Promise(resolve=>{
-			let roomTypeMark;
-			if(roomType == 'ROOM_PUBLIC'){
-				roomTypeMark = '@';
-			}else if(roomType == 'ROOM_PRIVATE'){
-				roomTypeMark = '#';
-			}
-			let li = Object.assign(document.createElement('li'), {
-				className: 'pointer',
-				innerHTML: `
-					<div>
-						<span>${roomTypeMark}</span>
-						<span>${roomName}</span>
-					</div>
-				`
-			});
-			if(roomHandler.roomId && roomId == roomHandler.roomId){
-				li.style.fontWeight = 'bold';
-			}
-			Object.assign(li.dataset, {
-				id,
-				room_id: roomId,
-				prev_order_sort: orderSort,
-				order_sort: orderSort,
-				room_code: roomCode,
-				room_name: roomName,
-				is_enabled: isEnabled,
-				workspace_id: workspaceId,
-				room_type: roomType
-			});
-			li.draggable = true;
-			this.#addRoomMemory(li, roomId);
-			this.#addItemEvent(li);
+			let li = ! item.groupId ? this.createNoticeBoard(item, parentRoot) : this.createFolder(item, parentRoot);
+			this.#addMemory(li, item.id, parentRoot.dataset.parent_group_id);
 			resolve(li);
 		})
 	}
@@ -355,56 +326,25 @@ export default new class NoticeBoardList{
 		});
 	}
 
-    #addRoomMemory(data, roomId){
+    #addMemory(data, noticeBoardId, parentGroupId = 0){
 		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
 			this.#memory[workspaceHandler.workspaceId] = {};
 		}
-		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
-			this.#memory[workspaceHandler.workspaceId][this.#page] = {};
+		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
+			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
 		}
-		if( ! data || ! roomId){
-			return ;
+		if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(parentGroupId)){
+			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][parentGroupId] = {};
 		}
-		this.#memory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+		this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][parentGroupId][noticeBoardId] = data;
     }
 
-    refresh(){
+    refresh(parentRoot){
 		this.reset();
-		let promise;
-		let memory = Object.values(this.#memory[workspaceHandler.workspaceId] || {});
-		if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
-			this.#page = memory.length - 1;
-			promise = Promise.resolve(
-				memory.flatMap(e=>Object.values(e))
-			);
-		}else{
-			promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchTitle.value, this.#elementMap.searchContent.value)
-            .then(data => 
-				this.createPage(data)
-				.then(liList => {        
-					if(this.#page >= data.totalPages){
-						this.#lastItemVisibleObserver.disconnect();
-					}
-					return liList;
-				})
-			)
-		}
-		promise.then(liList => {
-			this.#liList.push(...liList);
-			this.#liList = Object.values(this.#liList.reduce((total, item)=>{
-				if(total.hasOwnProperty(item.dataset.room_id)){
-					return total;	
-				}
-				total[item.dataset.room_id] = item;
-				return total;
-			}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
-			this.#elementMap.noticeBoardList.replaceChildren(...this.#liList);
-			this.#lastItemVisibleObserver.disconnect();
-			let lastVisibleTarget = liList.at(-1);
-			if(lastVisibleTarget){
-				this.#lastItemVisibleObserver.observe(lastVisibleTarget)
-			}
-		})
+		this.callData(workspaceHandler.workspaceId, roomHandler.roomId, undefined, undefined, parentRoot?.dataset.parent_group_id)
+			.then(data => {
+				this.createPage(data, undefined, undefined, parentRoot)
+			})
 	}
     reset(){
 		this.#page = 0;
