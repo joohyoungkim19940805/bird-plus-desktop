@@ -72,7 +72,8 @@ export default new class RoomContainer{
 						customDetails.textContent = customDetails.dataset.close_status;
 						customDetails.dataset.previous_flex = wrap.style.flex;
 						//wrap.style.transition = 'flex 0.5s';
-						wrap.style.minHeight = customDetailsSummary.getBoundingClientRect().height + 'px';
+						minHeight = customDetailsSummary.getBoundingClientRect().height;
+						wrap.style.minHeight = minHeight + 'px';
 						//wrap.style.flex = '0 1 0%';
 						//wrap.dataset.grow = 0;
 						flexLayout.closeFlex(wrap, {isResize : true});
@@ -89,6 +90,10 @@ export default new class RoomContainer{
 						customDetails.setAttribute('data-is_open', '');
 					}
 				}
+				window.addEventListener('resize', () => {
+					minHeight = customDetailsSummary.getBoundingClientRect().height;
+					wrap.style.minHeight = minHeight + 'px';
+				})
 				new IntersectionObserver((entries, observer) => {
 					entries.forEach(entry =>{
 						let wrapRect = wrap.getBoundingClientRect();

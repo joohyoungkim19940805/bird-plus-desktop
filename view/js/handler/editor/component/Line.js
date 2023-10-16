@@ -709,8 +709,9 @@ export default class Line {
 		if(this.lineElement.innerText.length == 0 || (this.lineElement.innerText.length == 1 && this.lineElement.innerText.charAt(0) == '\n')){
 			this.lineElement.innerText = '\n';
 		}
-		window.getSelection().setPosition(this.lineElement, this.lineElement.childNodes.length)
 		this.lineElement.focus()
+		window.getSelection().setPosition(this.lineElement, this.lineElement.childNodes.length)
+		
 	}
 
 }

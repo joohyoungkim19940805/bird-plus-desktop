@@ -104,6 +104,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	noticeBoard : {
 		createNoticeBoard : (param) => ipcRenderer.invoke('createNoticeBoard', param),
 		createNoticeBoardGroup : (param) => ipcRenderer.invoke('createNoticeBoardGroup', param),
+		deleteNoticeBoard : (param) => ipcRenderer.invoke('deleteNoticeBoard', param),
+		deleteNoticeBoardGroup : (param) => ipcRenderer.invoke('deleteNoticeBoardGroup', param),
 		searchNoticeBoard : (param) => ipcRenderer.invoke('searchNoticeBoard', param),
 		getNoticeBoard : (param) => {},
 	},

@@ -19,7 +19,7 @@ export default new class Common{
 				return total;
 			}, {});
 			Object.assign(element.dataset, underbarKeyNameObject);
-			resolve();
+			resolve(element);
 		})
 	}
 	/**

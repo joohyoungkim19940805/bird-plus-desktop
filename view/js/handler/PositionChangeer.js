@@ -3,7 +3,7 @@ export default class PositionChanger{
 	#targetItem;
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
-	#onDropDocumentOutCallback = (target) => {}; 
+	#onDropDocumentOutCallback = (target) => {console.log('out!!')}; 
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');
@@ -24,39 +24,59 @@ export default class PositionChanger{
 			let lastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop() // or at(-1)
 			child.forEach((item, index)=>{
 				item.draggable = true;
-				item.dataset.is_position_change_target = '';
 				item.ondragstart = (event) => {
+					event.stopPropagation();
 					this.#targetItem = item;
+					//this.#targetItem = event.target;
+					child.forEach(async e => {
+						[...e.children].forEach((ee)=>{
+							if(ee.tagName == 'UL') return;
+							ee.style.pointerEvents = 'none';
+						})
+					})
 				}
 				item.ondragend = (event) => {
-					console.log(event);
-					if(event.x < 0 || event.y < 0){
+					event.stopPropagation();
+					if(
+						event.x < 0 || event.y < 0 ||
+						window.outerWidth < event.x || window.outerHeight < event.y
+					){
 						this.#onDropDocumentOutCallback(item);
 					}
 					this.#targetItem = undefined;
+					child.forEach(async e => {
+						[...e.children].forEach((ee)=>{
+							if(ee.tagName == 'UL') return;
+							ee.style.pointerEvents = '';
+						})
+					})
 				}
 				item.ondragover = (event) => {
+					event.stopPropagation();
 					event.preventDefault();
 				}
-				
 				item.ondragenter = (event) => {
-					item.style.borderTop = 'solid #0000009c';
+					event.stopPropagation();
+					event.target.style.borderTop = 'solid #0000009c';
 				}
-
 				item.ondragleave = (event) => {
-					item.style.borderTop = '';
+					event.stopPropagation();
+					event.target.style.borderTop = '';
 				}
-
 				item.ondrop = (event) => {
-					item.style.borderTop = '';
+					event.stopPropagation();
+					event.target.style.borderTop = '';
 					if(! this.#targetItem){
 						return;
 					}
+					//return;
 					let target = this.#targetItem;
 					item.before(target);
+					event.target.closest('[data-order_sort]').before(target);
 					this.#targetItem = undefined;
 					new Promise(res=>{
 						let nowLastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
+						//let nowLastItem = [...target.closest('ul').children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
 						//this.#wrapper.querySelector('[data-order_sort]:last-child');
 						let prevOrderSort = Number(lastItem.dataset.order_sort);
 						if(target == lastItem && lastItem != nowLastItem){
@@ -66,7 +86,6 @@ export default class PositionChanger{
 						}
 						lastItem = nowLastItem
 						let prevItem = lastItem.previousElementSibling;
-						let updateList = [];
 						while(prevItem){
 							prevOrderSort += 1;
 							prevItem.dataset.prev_order_sort = prevItem.dataset.order_sort
@@ -94,31 +113,6 @@ export default class PositionChanger{
 							})
 						)
 					})
-					/*console.log(child);
-					console.log(index);
-					let targetIndex = child.findIndex(e=>e==target);
-					let sortList = [...child.slice(targetIndex +1, index), target, item, ...child.slice(index + 1)]
-					let lastOrderSortNumberOfDesc = Number(child[child.length - 1].dataset.order_sort);
-					console.log(sortList)
-					//sortList.unshift(item)
-					console.log(sortList.map(e=>e.dataset.order_sort));
-					console.log();
-					sortList.reverse().forEach((e,i)=>{
-						e.dataset.order_sort = lastOrderSortNumberOfDesc + i
-					})*/
-					//cloneList.sort((a,b)=>{
-					//	return Number(a.dataset.order_sort) - Number(b.dataset.order_sort) 
-					//})
-
-					/*
-					cloneList.reverse().forEach((e,i)=>{
-						console.log(lastOrderSortNumberOfDesc,' ',i)
-						console.log('start! ',e.dataset.order_sort)
-						e.dataset.order_sort = lastOrderSortNumberOfDesc + i
-						console.log('end! ',e.dataset.order_sort)
-						console.log(e);
-					})
-					*/
 				}
 			})
 			resolve();

@@ -2,7 +2,8 @@
     background-color: #fdffff;
 }
 #room_wrapper .content{
-    display: inline-flex;
+    /*display: inline-flex;*/
+    display: flex;
     overflow: auto;
     overflow-wrap: revert-layer;
 }
@@ -69,7 +70,6 @@
     border-bottom: solid 2px #cbcbcbbd;
     border-left: solid 2px #cbcbcbbd;
 }
-
 
 #room_wrapper .room_container .room_content_list_scroll .room_scrollbar{
 	position: absolute;
