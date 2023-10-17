@@ -17,7 +17,7 @@ export default class ToolHandler{
 		//다른 부분 선택시에 동작하지 않도록 수정 필요(에디터만 셀렉션체인지인 경우)
 		document.addEventListener("selectionchange", (event) => {
 			let selection = window.getSelection();
-			if(document.activeElement !== selection.focusNode?.parentElement.closest('.free-will-editor')){
+			if(document.activeElement !== selection.focusNode?.parentElement?.closest('.free-will-editor')){
 				return;
 			}
 			/**

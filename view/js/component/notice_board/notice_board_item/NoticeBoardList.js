@@ -113,19 +113,17 @@ export default new class NoticeBoardList{
 			this.createFolder(undefined, this.#elementMap.noticeBoardList);
 		}
 
-		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', event => {
-
-		})
-		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardSearch', (data) => {
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
 			console.log(data)
 			let parentRoot = data.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${data.parentGroupId}"]`)
 			this.createItemElement(
 				data, 
 				parentRoot
-			).then(() => {
+			).then(li => {
 				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0] || {});
 				parentRoot.replaceChildren(...memory);
 			})
+
 		});
 		//noticeBoardList
     }
@@ -216,7 +214,7 @@ export default new class NoticeBoardList{
 		titleName.onblur = (event) => {
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
-				titleName.contentEditable = false;
+				//titleName.contentEditable = false;
 				titleName.classList.add('pointer');
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
 					window.myAPI.noticeBoard.createNoticeBoardGroup({
@@ -244,7 +242,7 @@ export default new class NoticeBoardList{
 			innerHTML: `
 			<div class="notice_board_list_content_item_title_wrapper">
 				<div class="notice_board_list_content_item_title">
-					<span class="notice_board_list_content_item_title_name" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</span>
+					<span class="notice_board_list_content_item_title_name" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty||true)}>${data.title || ''}</span>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
 				</div>
@@ -282,7 +280,7 @@ export default new class NoticeBoardList{
 		titleName.onblur = (event) => {
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
-				titleName.contentEditable = false;
+				//titleName.contentEditable = false;
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
 					window.myAPI.noticeBoard.createNoticeBoard({
 						roomId: roomHandler.roomId,

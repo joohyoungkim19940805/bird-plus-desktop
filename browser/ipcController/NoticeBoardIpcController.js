@@ -136,9 +136,9 @@ class NoticeBoardIpccontroller {
 						let obj;
 						try{
 							obj = JSON.parse(String(bufferArr));
-							this.#send('noticeBoardSearch', obj)
+							this.#send('noticeBoardAccept', obj)
 						}catch(ignore){
-							//log.error(err);
+							log.error(ignore.message);
 						}
 					})
 					stream.on('end', () => {
