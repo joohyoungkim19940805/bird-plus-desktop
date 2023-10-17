@@ -3,32 +3,77 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 const electronEventTrigger = {
 	objectEventListener : {},
+	onEvent : {},
+	on : (eventName, callBack) => {
+		electronEventTrigger.onEvent[eventName] = callBack;
+		ipcRenderer.on(eventName, (event, message) => {
+			electronEventTrigger.trigger(eventName, event, message);
+		})
+	},
 	addElectronEventListener : (eventName, callBack) => {
 		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
-			electronEventTrigger.objectEventListener[eventName].push(callBack);
+			electronEventTrigger.objectEventListener[eventName].push({ [callBack.name] : callBack });
 		}else{
-			electronEventTrigger.objectEventListener[eventName] = [callBack];
+			electronEventTrigger.objectEventListener[eventName] = [{ [callBack.name] : callBack }];
+		}
+		ipcRenderer.on(eventName, (event, message) => {
+			electronEventTrigger.trigger(eventName, event, message);
+		})
+	},
+	removeElectronEventListener : (eventName, callBack) => {
+		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
+			if(callBack){
+				electronEventTrigger.objectEventListener[eventName] = electronEventTrigger.objectEventListener[eventName].filter(e=> ! e.hasOwnProperty(callBack.name))
+			}else{
+				delete electronEventTrigger.objectEventListener[eventName]
+			}
 		}
 	},
-	removeElectronEventListener : (eventName) => {
-		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
-			delete electronEventTrigger.objectEventListener[eventName]
-		}
-	},
-	trigger(eventName, event, message){
-		if(electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
-			electronEventTrigger.objectEventListener[eventName].forEach(async callBack=>{
-				new Promise(res=>{
-					try{
-						callBack(message);
-					}catch(err){
-						console.error(`${eventName} error message ::: `,err.message);
-						console.error(`${eventName} error message ::: `,err.stack);
+	trigger : (eventName, event, message) => {
+		new Promise(resolve=> {
+			if( ! electronEventTrigger.objectEventListener.hasOwnProperty(eventName)){
+				resolve();
+				return;
+			}
+			electronEventTrigger.objectEventListener[eventName].forEach(async obj => {
+				Object.values(obj).forEach(async callBack => {
+					if( ! callBack || ! callBack instanceof Function){
+						return;
 					}
-					res();
+					new Promise(res=>{	
+						try{
+							if(eventName == 'checkForUpdates' || eventName == 'updateAvailable' || eventName == 'updateDownloaded'){
+								callBack(event,message);
+								return;
+							}
+			
+							callBack(message);
+						}catch(err){
+							console.error(`${eventName} error message ::: `,err.message);
+							console.error(`${eventName} error stack ::: `,err.stack);
+						}
+						res();
+					})
 				})
 			})
-		}
+			resolve();
+		})
+		
+		new Promise(resolve => {
+			console.log(electronEventTrigger.onEvent[eventName]);
+			if( ! electronEventTrigger.onEvent[eventName] || ! electronEventTrigger.onEvent[eventName] instanceof Function){
+				resolve();
+				return;
+			}
+			try{
+				electronEventTrigger.onEvent[eventName](message);
+			}catch(err){
+				console.error(`${eventName} error message ::: `, err.message);
+				console.error(`${eventName} error stack ::: `, err.stack);
+			}
+			resolve();
+		})
+		
 	}
 };
 
@@ -111,51 +156,4 @@ contextBridge.exposeInMainWorld('myAPI', {
 	},
 
 
-})
-
-ipcRenderer.on('resized', (event, message) => {
-	//console.log(event);
-	electronEventTrigger.trigger('resized', event, message);
-})
-
-ipcRenderer.on('chattingAccept', (event, message) => {
-	electronEventTrigger.trigger('chattingAccept', event, message);
-})
-
-ipcRenderer.on('workspaceChange', (event, message) => {
-	electronEventTrigger.trigger('workspaceChange', event, message);
-})
-
-ipcRenderer.on('roomAccept', (event, message) => {
-	electronEventTrigger.trigger('roomAccept', event, message);
-})
-
-ipcRenderer.on('roomInAccountAccept', (event, message) => {
-	electronEventTrigger.trigger('roomInAccountAccept', event, message);
-})
-
-ipcRenderer.on('noticeBoardAccept', (event, message) => {
-	electronEventTrigger.trigger('noticeBoardAccept', event, message);
-});
-
-ipcRenderer.on('checkForUpdates', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('checkForUpdates')){
-		electronEventTrigger.objectEventListener['checkForUpdates'].forEach(callBack=>{
-			callBack(event, message);
-		})
-	}
-})
-ipcRenderer.on('updateAvailable', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('updateAvailable')){
-		electronEventTrigger.objectEventListener['updateAvailable'].forEach(callBack=>{
-			callBack(event, message);
-		})
-	}
-})
-ipcRenderer.on('updateDownloaded', (event, message) => {
-	if(electronEventTrigger.objectEventListener.hasOwnProperty('updateDownloaded')){
-		electronEventTrigger.objectEventListener['updateDownloaded'].forEach(callBack=>{
-			callBack(event, message);
-		})
-	}
 })

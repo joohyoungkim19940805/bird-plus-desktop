@@ -13,7 +13,7 @@ export default class PositionChanger{
 		this.#wrapper = wrapper;
 	}
 
-	addPositionChangeEvent(...child){
+	addPositionChangeEvent(child, {isChildSpreadDraggableEvent = true} = {}){
 		if(child.length == 0){
 			throw new Error('child is empty');
 		}else if(child.some(e=>Number(e.dataset.order_sort) == undefined || isNaN(Number(e.dataset.order_sort)))){

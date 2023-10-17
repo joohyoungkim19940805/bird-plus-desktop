@@ -23,7 +23,7 @@
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container .notice_board_list_content{
     padding-inline-start: 21px;
-    /*overflow: hidden;*/
+    overflow: hidden;
     transition: height 0.3s;
     margin-top: 1vh;
 }
@@ -75,6 +75,9 @@
     display: block;
     width: 100%;
     overflow-x: hidden;
+}
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name::before{
+    content: attr(data-content_count);
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name:focus-visible{
     border-bottom: solid 1px #ff9a9a;

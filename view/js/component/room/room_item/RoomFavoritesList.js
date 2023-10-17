@@ -179,7 +179,7 @@ export default new class RoomFavoritesList{
 				this.#liList.push(...liList);
 				this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 				if(roomName == ''){
-					this.#positionChanger.addPositionChangeEvent(...this.#liList);
+					this.#positionChanger.addPositionChangeEvent(this.#liList);
 				}
                resolve(liList);
             });

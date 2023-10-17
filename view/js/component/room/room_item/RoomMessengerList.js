@@ -223,7 +223,7 @@ export default new class RoomMessengerList{
 				this.#liList.push(...liList);
 				this.#elementMap.roomContentList.replaceChildren(...this.#liList);
 				if(this.#elementMap.searchName.value == ''){
-					this.#positionChanger.addPositionChangeEvent(...this.#liList);
+					this.#positionChanger.addPositionChangeEvent(this.#liList);
 				}
                resolve(liList);
             });

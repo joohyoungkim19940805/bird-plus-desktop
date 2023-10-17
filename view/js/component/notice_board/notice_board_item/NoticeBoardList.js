@@ -4,8 +4,7 @@ import PositionChanger from "../../../handler/PositionChangeer";
 import common from "./../../../common"
 export default new class NoticeBoardList{
 	#memory = {}
-	#page = 0;
-	#size = 10;
+
     #element = Object.assign(document.createElement('div'), {
         id: 'notice_board_list_wrapper',
         innerHTML: `
@@ -21,6 +20,7 @@ export default new class NoticeBoardList{
                                 <label>search content</label>
                                 <input type="search" placeholder="Press Enter Key" class="search_name" name="searchContent" data-bind_name="searchContent">
                             </div>
+							<button type="submit" hidden></button>
                         </form>
 					</div>
                 </div> 
@@ -39,7 +39,7 @@ export default new class NoticeBoardList{
 			return total;
 		}, {})
 	})();
-	#liList = [];
+
 	/*
     #lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
@@ -116,16 +116,27 @@ export default new class NoticeBoardList{
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', event => {
 
 		})
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardSearch', (data) => {
+			console.log(data)
+			let parentRoot = data.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${data.parentGroupId}"]`)
+			this.createItemElement(
+				data, 
+				parentRoot
+			).then(() => {
+				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0] || {});
+				parentRoot.replaceChildren(...memory);
+			})
+		});
 		//noticeBoardList
     }
 	createFolder(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
-			className: 'notice_board_list_content_item',
+			className: `notice_board_list_content_item`,
 			innerHTML : `
 			<div class="notice_board_list_content_item_title_wrapper">
 				<button class="marker pointer" ${data.isEmpty ? 'data-is_open=""' : ''}></button>
 				<div class="notice_board_list_content_item_title">
-					<b class="notice_board_list_content_item_title_name" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</b>
+					<b class="notice_board_list_content_item_title_name ${data.isEmpty ? '' : 'pointer'}" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</b>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
 					<button class="css-gg-add pointer" type="button">
@@ -142,7 +153,14 @@ export default new class NoticeBoardList{
 		let [marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot] = li.querySelectorAll('.marker, .notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper, .css-gg-add, .css-gg-folder-add, .notice_board_list_content');
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove pointer',
-			onclick: (event) => li.remove()
+			onclick: (event) => {
+				window.myAPI.noticeBoard.deleteNoticeBoardGroup({
+					roomId: roomHandler.roomId,
+					workspaceId: workspaceHandler.workspaceId,
+					groupId: li.dataset.group_id,
+				})
+				li.remove();
+			}
 		});
 		let updateButton = Object.assign(document.createElement('button'), {
 			innerHTML: `<i class="css-gg-pen">`,
@@ -152,6 +170,7 @@ export default new class NoticeBoardList{
 				updateButton.remove();
 				titleName.focus();
 				window.getSelection().setPosition(titleName, titleName.childNodes.length);
+				titleName.classList.remove('pointer');
 			}
 		});
 		li.childElementMap = {
@@ -188,11 +207,17 @@ export default new class NoticeBoardList{
 			}
 			marker.toggleAttribute('data-is_open');
 		}
-
+		titleName.onclick = (event) => {
+			if(document.activeElement == titleName){
+				return;
+			}
+			marker.click();
+		}
 		titleName.onblur = (event) => {
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
+				titleName.classList.add('pointer');
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
 					window.myAPI.noticeBoard.createNoticeBoardGroup({
 						roomId: roomHandler.roomId,
@@ -230,7 +255,14 @@ export default new class NoticeBoardList{
 		let [titleName, buttonWrapper] = li.querySelectorAll('.notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper');
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove pointer',
-			onclick: (event) => li.remove()
+			onclick: (event) => {
+				window.myAPI.noticeBoard.deleteNoticeBoardGroup({
+					roomId: roomHandler.roomId,
+					workspaceId: workspaceHandler.workspaceId,
+					id: li.dataset.id,
+				})
+				li.remove();
+			}
 		});
 		let updateButton = Object.assign(document.createElement('button'), {
 			innerHTML: `<i class="css-gg-pen">`,
@@ -271,6 +303,7 @@ export default new class NoticeBoardList{
 		this.#addItemEvent(li, parentRoot);
 		return li;
 	}
+
     callData(workspaceId, roomId, searchTitle, searchContent, parentGroupId){
 		return window.myAPI.noticeBoard.searchNoticeBoard({
             workspaceId, roomId, searchTitle, searchContent, parentGroupId
@@ -297,7 +330,7 @@ export default new class NoticeBoardList{
                 }
 				//console.log(this.#memory);
 				/*if(searchTitle == '' && searchContent == ''){
-					this.#positionChanger.addPositionChangeEvent(...liList);
+					this.#positionChanger.addPositionChangeEvent(liList);
 				}*/
                resolve(liList);
             });
@@ -377,35 +410,23 @@ export default new class NoticeBoardList{
     }
 
     refresh(parentRoot = this.#elementMap.noticeBoardList){
-		this.reset(parentRoot);
+		parentRoot.replaceChildren();
 		let promise;
 		let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[parentRoot.dataset.parent_group_id || 0] || {});
-		let isSearchEmpty = this.#elementMap.searchTitle.value == '' && this.#elementMap.searchTitle.value == '';
+		let isSearchEmpty = this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == '';
 		if(isSearchEmpty && memory && memory.length != 0){
-			promise = Promise.resolve(memory);
+			//promise = Promise.resolve(memory);
+			parentRoot.replaceChildren(...memory);
 		}else{
-			promise = this.callData(workspaceHandler.workspaceId, roomHandler.roomId, this.#elementMap.searchTitle.oninput.value, this.#elementMap.searchTitle.oninput.value, parentRoot?.dataset.parent_group_id)
-			.then( async data => {
-				return this.createPage(data, undefined, undefined, parentRoot).then( (liList = []) => {
-					if(liList.length != 0){
-						let positionChanger = new PositionChanger({wrapper:parentRoot});
-						positionChanger.addPositionChangeEvent(...liList);
-					}
-					return liList;
-				})
-			})
+			this.callData(
+				workspaceHandler.workspaceId,
+				roomHandler.roomId, 
+				this.#elementMap.searchTitle.value, 
+				this.#elementMap.searchContent.value, 
+				parentRoot?.dataset.parent_group_id
+			)
+
 		}
-		promise.then((liList = []) => {
-			parentRoot.replaceChildren(...liList);
-		})
-
-
-	}
-    reset(parentRoot){
-		this.#page = 0;
-		this.#liList = [];
-		//this.#lastItemVisibleObserver.disconnect();
-		parentRoot.replaceChildren();
 	}
 
 	get element(){

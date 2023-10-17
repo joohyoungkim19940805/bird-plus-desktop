@@ -111,9 +111,11 @@ class NoticeBoardIpccontroller {
 					.map(([k,v]) => `${k}=${v}`).join('&')
                     //console.log('queryString ::: ', queryString);
                 return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list?${queryString}`, {
-                    headers:{
-                        'Content-Type': 'application/json'
-                    }
+					headers:{
+						'Content-Type': 'application/json',
+						'Accept': 'text/event-stream',
+					},
+					responseType: 'stream'
                 })
                 .then(windowUtil.responseCheck)
                 .then(response => response.data)
@@ -125,7 +127,26 @@ class NoticeBoardIpccontroller {
                     }else{
                         return err.message
                     }
-                })
+                }).then(stream => {
+					let streamEndResolve;
+					let promise = new Promise(res=>{
+						streamEndResolve = res;
+					})
+					stream.on('data', bufferArr => {
+						let obj;
+						try{
+							obj = JSON.parse(String(bufferArr));
+							this.#send('noticeBoardSearch', obj)
+						}catch(ignore){
+							//log.error(err);
+						}
+					})
+					stream.on('end', () => {
+						log.debug('end noticeBoardSearch stream ::: ')
+						streamEndResolve();
+					})
+					return promise.then(()=>'done');
+				})
             }else{
 				return {'isLogin': false};
 			}
