@@ -115,25 +115,27 @@ export default new class NoticeBoardList{
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
 			console.log(data)
-			let parentRoot = data.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${data.parentGroupId}"]`)
+			let {content} = data;
+			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
 			this.createItemElement(
-				data, 
+				content, 
 				parentRoot
 			).then(li => {
-				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0] || {});
+				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0] || {});
 				parentRoot.replaceChildren(...memory);
 			})
 
 		});
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDeleteAccept', (data) => {
 			console.log(data);
-			let id = data.groupId || data.id;
+			let {content} = data;
+			let id = content.groupId || content.id;
 			if(! id) return;
-			console.log('delete bef',this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0]?.[id]);
-			delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0]?.[id]
-			console.log('delete aft', this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0]?.[id]);
-			let parentRoot = data.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${data.parentGroupId}"]`)
-			parentRoot.replaceChildren(...Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[data.parentGroupId || 0] || {}));
+			console.log('delete bef',this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]);
+			delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]
+			console.log('delete aft', this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]);
+			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
+			parentRoot.replaceChildren(...Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0] || {}));
 		})
 		//noticeBoardList
     }
