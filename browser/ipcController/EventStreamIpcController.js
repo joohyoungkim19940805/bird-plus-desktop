@@ -46,7 +46,7 @@ class EventStreamIpcController {
 				if(i == 0){
 					return e.toLowerCase(); 
 				}
-				return e.charAt(0) + e.substring(1).toLowerCase;
+				return e.charAt(0) + e.substring(1).toLowerCase();
 			}).join('');
 
 			if(this[eventName]){
