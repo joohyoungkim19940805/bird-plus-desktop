@@ -41,16 +41,20 @@ class EventStreamIpcController {
 			let {data, lastEventId, origin, type} = event;
 			data = JSON.parse(data);
 			log.debug('event stream data ::: ', data);
-			if(data.serverSentStreamType == 'CHTTING_ACCEPT'){
-				this.chattingAccept(data);
-			}else if(data.serverSentStreamType == 'ROOM_ACCEPT'){
-				this.roomAccept(data);
-			}else if(data.serverSentStreamType == 'ROOM_IN_ACCOUNT_ACCEPT'){
-				this.roomInAccountAccept(data);
-			}else if(data.serverSentStreamType == 'NOTICE_BOARD_ACCEPT'){
-				this.noticeBoardAccept(data);
+
+			let eventName = data.serverSentStreamType.split('_').map((e, i)=>{
+				if(i == 0){
+					return e.toLowerCase(); 
+				}
+				return e.charAt(0).toLowerCase() + e.substring(1);
+			}).join('');
+
+			if(this[eventName]){
+				this[eventName]();
+				return ;
 			}
-			log.debug('on message: ', event.data);
+			this.#send(eventName, data);
+			log.debug('on message: ', event.data, 'eventName ::', eventName);
 		};
 
 		this.source.onerror = (error) => {

@@ -137,9 +137,7 @@ class NoticeBoardIpccontroller {
 						try{
 							obj = JSON.parse(String(bufferArr));
 							this.#send('noticeBoardAccept', obj)
-						}catch(ignore){
-							log.error(ignore.message);
-						}
+						}catch(ignore){}
 					})
 					stream.on('end', () => {
 						log.debug('end noticeBoardSearch stream ::: ')
@@ -165,6 +163,7 @@ class NoticeBoardIpccontroller {
                     }
                     return total;
                 },{});
+                console.log('delete param',param)
                 return axios.post(`${__serverApi}/api/notice-board/delete/`, JSON.stringify(param), {
                     headers:{
                         'Content-Type': 'application/json'
@@ -199,6 +198,7 @@ class NoticeBoardIpccontroller {
                     }
                     return total;
                 },{});
+
                 return axios.post(`${__serverApi}/api/notice-board/delete/group`, JSON.stringify(param), {
                     headers:{
                         'Content-Type': 'application/json'
