@@ -19,11 +19,11 @@
     padding-inline-start: 0 !important;
     overflow-y: auto !important;
     overflow-x: clip !important;
+    overflow: hidden;
     margin-top: 1vh;
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_container .notice_board_list_content{
     padding-inline-start: 21px;
-    overflow: hidden;
     transition: height 0.3s;
     margin-top: 1vh;
 }

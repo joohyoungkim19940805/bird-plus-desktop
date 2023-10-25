@@ -2,7 +2,7 @@ import chattingHandler from "../../../handler/chatting/ChattingHandler"
 import roomHandler from "../../../handler/room/RoomHandler"
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler"
 import chattingRegist from "./ChattingRegist"
-
+import common from "./../../../common"
 export default new class ChattingInfo{
     
     #chattingMemory = {}
@@ -244,7 +244,8 @@ export default new class ChattingInfo{
                 resolve(li)
             });
             li.append(content);
-            
+            common.jsonToSaveElementDataset(data, li);
+
             Object.assign(li.dataset, {
                 id,
                 room_id: roomId,
@@ -281,19 +282,20 @@ export default new class ChattingInfo{
     }
 
     #addChattingMemory(data, id){
-        return new Promise(resolve => {
-            if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-                this.#chattingMemory[workspaceHandler.workspaceId] = {};
-            }
-            if( ! this.#chattingMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
-                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
-            }
-            if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
-                this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
-            }
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
-            resolve();
-        })
+        if(data.dataset.room_id != roomHandler.roomId || data.dataset.workpsace_id != workspaceHandler.workspaceId){
+            return;
+        }
+
+        if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
+            this.#chattingMemory[workspaceHandler.workspaceId] = {};
+        }
+        if( ! this.#chattingMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
+            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
+        }
+        if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
+            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
+        }
+        this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
     }
 
     #processingTimeText(createMils){

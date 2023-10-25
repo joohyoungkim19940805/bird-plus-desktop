@@ -5,7 +5,7 @@ import AccountInviteRoomView from "./AccountInviteRoomView";
 
 import roomContainer from "../../room/RoomContainer";
 import noticeBoardContainer from "../../notice_board/NoticeBoardContainer";
-
+import common from "./../../../common"
 export default new class ChattingHead{
     #chattingHeadMemory = {};
     //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
@@ -106,10 +106,10 @@ export default new class ChattingHead{
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
             let {content = event} = event;
-            this.#addChattingHeadMemory(this.createLiElement(content), content.roomId);
+            this.#addChattingHeadMemory(this.createLiElement(content));
 
-            if(content.roomId == this.#roomId){
-                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][content.roomId]);
+            if(content.roomId == roomHandler.roomId){
+                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -240,37 +240,29 @@ export default new class ChattingHead{
         
     }
 
-    #addChattingHeadMemory(data, roomId){
+    #addChattingHeadMemory(data){
+        if(data.dataset.room_id != roomHandler.roomId || data.dataset.workspace_id != workspaceHandler.workspaceId){
+            return;
+        }
 		if( ! this.#chattingHeadMemory.hasOwnProperty(workspaceHandler.workspaceId)){
 			this.#chattingHeadMemory[workspaceHandler.workspaceId] = {};
 		}
-        if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId].hasOwnProperty(roomId)){
-            this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId] = {};
+        if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
+            this.#chattingHeadMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {};
         }
-        this.#chattingHeadMemory[workspaceHandler.workspaceId][roomId][data.dataset.account_name] = data
+        this.#chattingHeadMemory[workspaceHandler.workspaceId][roomHandler.roomId][data.dataset.account_name] = data
     }
 
     createLiElement(obj){
-        let {
-            roomId, accountName, fullName, jobGrade,
-            department, createMils, updateMils
-        } = obj;
+
         let li = Object.assign(document.createElement('li'), {
             className: 'pointer',
             innerHTML: `
-                <span>${fullName}</span>
+                <span>${obj.fullName}</span>
             `
         });
-        Object.assign(li.dataset,{
-            room_id: roomId,
-            account_name: accountName,
-            full_name: fullName,
-            job_grade: jobGrade,
-            department,
-            create_mils: createMils,
-            update_mils: updateMils
-        });
-
+        common.jsonToSaveElementDataset(obj, li);
+        console.log(li.dataset);
         return li
     }
 

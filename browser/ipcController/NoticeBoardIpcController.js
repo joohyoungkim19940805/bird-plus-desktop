@@ -27,6 +27,12 @@ class NoticeBoardIpccontroller {
 		ipcMain.handle('deleteNoticeBoard', async (event, param = {}) => {
 			return this.deleteNoticeBoard(event, param);
 		});
+        /*ipcMain.handle('updateNoticeBoardGroup', async (event, param = {}) => {
+			return this.updateNoticeBoardGroup(event, param);
+		});*/
+		ipcMain.handle('updateNoticeBoardOrder', async (event, param = []) => {
+			return this.updateNoticeBoardOrder(event, param);
+		});
 	}
 
 	#send(eventName, data){
@@ -224,6 +230,71 @@ class NoticeBoardIpccontroller {
 			return undefined;
 		})
     }
+    updateNoticeBoardOrder(event, param = []){
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                console.log('update param',param)
+                return axios.post(`${__serverApi}/api/notice-board/update/order`, JSON.stringify(param), {
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(windowUtil.responseCheck)
+                .then(response => response.data)
+                .catch(err=>{
+                    log.error('IPC deleteNoticeBoard error : ', JSON.stringify(err));
+                    //axios.defaults.headers.common['Authorization'] = '';
+                    if(err.response){
+                        return err.response.data;
+                    }else{
+                        return err.message
+                    }
+                })
+            }else{
+                return {'isLogin': false};
+            }
+        }).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+    }
+    /*
+    updateNoticeBoardGroup(event, param = {}){
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                param = Object.entries(param).reduce((total, [k,v]) => {
+                    if(v != undefined && v != ''){
+                        total[k] = v;
+                    }
+                    return total;
+                },{});
+
+                return axios.post(`${__serverApi}/api/notice-board/update/group`, JSON.stringify(param), {
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(windowUtil.responseCheck)
+                .then(response => response.data)
+                .catch(err=>{
+                    log.error('IPC deleteNoticeBoardGroup error : ', JSON.stringify(err));
+                    //axios.defaults.headers.common['Authorization'] = '';
+                    if(err.response){
+                        return err.response.data;
+                    }else{
+                        return err.message
+                    }
+                })
+            }else{
+                return {'isLogin': false};
+            }
+        }).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+    }*/
 }
 const noticeBoardIpccontroller = new NoticeBoardIpccontroller();
 module.exports = noticeBoardIpccontroller

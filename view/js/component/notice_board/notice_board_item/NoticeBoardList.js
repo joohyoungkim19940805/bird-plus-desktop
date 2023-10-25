@@ -89,10 +89,21 @@ export default new class NoticeBoardList{
     #positionChanger;
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardList});
-		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			/*window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
+		//let prevWrapper;
+		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
+			//prevWrapper = wrapper;
+			let targetDataIndex = changeList.findIndex(e=>e.id==target.dataset.id);
+			let parentRoot = item.__parentRoot;
+			if(parentRoot && targetDataIndex != -1 && changeList[targetDataIndex].parentGroupId != parentRoot.dataset.parent_group_id || 0){
+				changeList[targetDataIndex].parentGroupId = parentRoot.dataset.parent_group_id
+				//if(prevWrapper){
+					//prevWrapper.querySelector(`[data-id="${targetData.id}"]`)?.remove();
+				//}
+			}
+			console.log(changeList);
+			window.myAPI.noticeBoard.updateNoticeBoardOrder(changeList).then(data=>{
 				console.log(data);
-			})*/
+			})
 		}
 
         this.#elementMap.noticeBoardSearch.onsubmit = (event) => {
@@ -114,30 +125,43 @@ export default new class NoticeBoardList{
 		}
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
-			console.log(data)
-			let {content} = data;
+			let {content = data} = data;
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
 			this.createItemElement(
 				content, 
 				parentRoot
 			).then(li => {
-				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0] || {});
-				parentRoot.replaceChildren(...memory);
+				console.log(content.id);
+				console.log(this.#elementMap.noticeBoardList.querySelectorAll(`[data-id="${content.id}"]`))
+				this.#elementMap.noticeBoardList.querySelectorAll(`[data-id="${content.id}"]`).forEach((e,i)=>{
+					if(e == li) {
+						console.log(li);
+						return
+					}
+					e.remove();
+				});
+				let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
+					.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+				this.#positionChanger.addPositionChangeEvent(list.filter(e=>e.dataset.parent_group_id), parentRoot)
+				parentRoot.replaceChildren(...list);
 			})
 
 		});
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDeleteAccept', (data) => {
-			console.log(data);
 			let {content} = data;
 			let id = content.groupId || content.id;
 			if(! id) return;
-			console.log('delete bef',this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]);
-			delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]
-			console.log('delete aft', this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0]?.[id]);
+
+			delete this.#memory[workspaceHandler.workspaceId][roomHandler.roomId]?.[id]
+			
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
-			parentRoot.replaceChildren(...Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[content.parentGroupId || 0] || {}));
+			
+			let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
+				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+			this.#positionChanger.addPositionChangeEvent(list.filter(e=>e.dataset.parent_group_id), parentRoot)
+			parentRoot.replaceChildren(...list);
 		})
-		//noticeBoardList
+
     }
 	createFolder(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
@@ -160,7 +184,11 @@ export default new class NoticeBoardList{
 			`
 		});
 		li.dataset.visibility_not = '';
+		li.__parentRoot = parentRoot;
 		let [marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot] = li.querySelectorAll('.marker, .notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper, .css-gg-add, .css-gg-folder-add, .notice_board_list_content');
+		childRoot.__component = {
+			marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot, li
+		};
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove pointer',
 			onclick: (event) => {
@@ -168,6 +196,7 @@ export default new class NoticeBoardList{
 					roomId: roomHandler.roomId,
 					workspaceId: workspaceHandler.workspaceId,
 					groupId: li.dataset.group_id,
+					parentGroupId: li.dataset.parent_group_id,
 				})
 				li.remove();
 			}
@@ -191,7 +220,10 @@ export default new class NoticeBoardList{
 			childRoot.dataset.parent_group_id = li.dataset.group_id;
 		})
 
-		addButton.onclick = () => this.createNoticeBoard(undefined, childRoot);
+		addButton.onclick = () => {
+			this.createNoticeBoard(undefined, childRoot);
+			marker.dataset.is_open = '';
+		}
 		folderAddButton.onclick = () => this.createFolder(undefined, childRoot);
 		marker.onclick = () => {
 			childRoot.ontransitionend = '';
@@ -200,9 +232,8 @@ export default new class NoticeBoardList{
 				childRoot.dataset.prev_height = childRoot.style.height;
 				setTimeout(()=>{
 					childRoot.style.height = '0px';
-					childRoot.ontransitionend = () => {
-						childRoot.style.overflow = 'hidden';
-					}
+					childRoot.style.overflow = 'hidden';
+					childRoot.ontransitionend = ''
 				}, 0);
 			}else{
 				childRoot.style.height = childRoot.dataset.prev_height;
@@ -261,7 +292,7 @@ export default new class NoticeBoardList{
 			</div>
 			`
 		});
-
+		li.__parentRoot = parentRoot;
 		let [titleName, buttonWrapper] = li.querySelectorAll('.notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper');
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove pointer',
@@ -270,12 +301,17 @@ export default new class NoticeBoardList{
 					roomId: roomHandler.roomId,
 					workspaceId: workspaceHandler.workspaceId,
 					id: li.dataset.id,
+					parentGroupId: li.dataset.parent_group_id,
 				})
 				li.remove();
+				console.log(parentRoot.childElementCount);
+				if(parentRoot.childElementCount == 0){
+					parentRoot.__component.marker.removeAttribute('data-is_open');
+				}
 			}
 		});
 		let updateButton = Object.assign(document.createElement('button'), {
-			innerHTML: `<i class="css-gg-pen">`,
+			innerHTML: `<i class="css-gg-pen"></i>`,
 			className: 'icon_button pointer',
 			onclick : (event) => {
 				titleName.contentEditable = true;
@@ -350,7 +386,7 @@ export default new class NoticeBoardList{
     createItemElement(item, parentRoot){
 		return new Promise(resolve=>{
 			let li = ! item.groupId ? this.createNoticeBoard(item, parentRoot) : this.createFolder(item, parentRoot);
-			this.#addMemory(li, item.id, parentRoot.dataset.parent_group_id);
+			this.#addMemory(li, item.groupId || item.id, parentRoot.dataset.parent_group_id);
 			resolve(li);
 		})
 	}
@@ -413,20 +449,25 @@ export default new class NoticeBoardList{
 		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
 			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
 		}
+		/*
 		if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(parentGroupId)){
 			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][parentGroupId] = {};
 		}
 		this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][parentGroupId][noticeBoardId] = data;
+		*/
+		this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardId] = data;
     }
 
     refresh(parentRoot = this.#elementMap.noticeBoardList){
 		parentRoot.replaceChildren();
 		let promise;
-		let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[parentRoot.dataset.parent_group_id || 0] || {});
+		let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0));
 		let isSearchEmpty = this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == '';
 		if(isSearchEmpty && memory && memory.length != 0){
 			//promise = Promise.resolve(memory);
-			parentRoot.replaceChildren(...memory);
+			parentRoot.replaceChildren(
+				...memory.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
+				);
 		}else{
 			this.callData(
 				workspaceHandler.workspaceId,

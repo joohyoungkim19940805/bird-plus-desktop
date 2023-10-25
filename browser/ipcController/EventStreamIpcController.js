@@ -49,18 +49,26 @@ class EventStreamIpcController {
 				return e.charAt(0) + e.substring(1).toLowerCase();
 			}).join('');
 
+			log.debug('on message: ', event.data, 'eventName ::', eventName);
+
 			if(this[eventName]){
-				this[eventName]();
+				this[eventName](eventName, data);
 				return ;
 			}
 			this.#send(eventName, data);
-			log.debug('on message: ', event.data, 'eventName ::', eventName);
+			
 		};
 
 		this.source.onerror = (error) => {
 			log.debug('on stream err: ', error);
 			log.debug('source ::: ', this.source);
 			this.#isConnectSource = false;
+			windowUtil.isLogin( result => {
+				if( ! result.isLogin){
+					axios.defaults.headers.common['Authorization'] = '';
+					this.#send('neeLoginRequest', result);
+				}
+			})
 			//연결 실패되면 계속 시도하기에 임시 조치로 close
 			//this.source.close();
 			//stop();
@@ -100,22 +108,7 @@ class EventStreamIpcController {
 		});
 		*/
 	}
-	chattingAccept(data){
-		log.debug('chattingAccept stream ::: ', data);
-		this.#send("chattingAccept", data);
-	}
-	roomAccept(data){
-		log.debug('roomAccept stream ::: ', data);
-		this.#send('roomAccept', data);
-	}
-	roomInAccountAccept(data){
-		log.debug('roomInAccountAccept stream ::: ', data);
-		this.#send('roomInAccountAccept', data);
-	}
-	noticeBoardAccept(data){
-		log.debug('noticeBoardAccept stream ::: ', data);
-		this.#send('noticeBoardAccept', data);
-	}
+
 }
 
 const eventStreamIpcController = new EventStreamIpcController();

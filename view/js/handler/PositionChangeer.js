@@ -13,19 +13,21 @@ export default class PositionChanger{
 		this.#wrapper = wrapper;
 	}
 
-	addPositionChangeEvent(child, {isChildSpreadDraggableEvent = true} = {}){
+	addPositionChangeEvent(child, wrapper){
 		if(child.length == 0){
 			throw new Error('child is empty');
 		}else if(child.some(e=>Number(e.dataset.order_sort) == undefined || isNaN(Number(e.dataset.order_sort)))){
 			throw new Error('data-order_sort is not defined or is not number')
 		}
+		let parent = wrapper || this.#wrapper;
 		return new Promise(resolve => {
 			
-			let lastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop() // or at(-1)
+			let lastItem = [...parent.children].filter(e=>e.hasAttribute('data-order_sort')).pop() // or at(-1)
 			child.forEach((item, index)=>{
 				item.draggable = true;
 				item.ondragstart = (event) => {
 					event.stopPropagation();
+					//event.preventDefault();
 					this.#targetItem = item;
 					//this.#targetItem = event.target;
 					child.forEach(async e => {
@@ -37,6 +39,7 @@ export default class PositionChanger{
 				}
 				item.ondragend = (event) => {
 					event.stopPropagation();
+					//event.preventDefault();
 					if(
 						event.x < 0 || event.y < 0 ||
 						window.outerWidth < event.x || window.outerHeight < event.y
@@ -57,25 +60,28 @@ export default class PositionChanger{
 				}
 				item.ondragenter = (event) => {
 					event.stopPropagation();
+					event.preventDefault();
 					event.target.style.borderTop = 'solid #0000009c';
 				}
 				item.ondragleave = (event) => {
 					event.stopPropagation();
+					event.preventDefault();
 					event.target.style.borderTop = '';
 				}
 				item.ondrop = (event) => {
 					event.stopPropagation();
+					event.preventDefault();
 					event.target.style.borderTop = '';
 					if(! this.#targetItem){
 						return;
 					}
 					//return;
 					let target = this.#targetItem;
-					item.before(target);
+					//item.before(target);
 					event.target.closest('[data-order_sort]').before(target);
 					this.#targetItem = undefined;
 					new Promise(res=>{
-						let nowLastItem = [...this.#wrapper.children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
+						let nowLastItem = [...parent.children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
 						//let nowLastItem = [...target.closest('ul').children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
 						//this.#wrapper.querySelector('[data-order_sort]:last-child');
 						let prevOrderSort = Number(lastItem.dataset.order_sort);
@@ -98,10 +104,11 @@ export default class PositionChanger{
 						res();
 					}).then(()=>{
 						this.#onDropEndChangePositionCallback(
-							child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort).map(e=>{
+							[...child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort || e != target), target].map(e=>{
 								let obj = Object.assign({}, e.dataset);
 								return Object.entries(obj).reduce((total, [k,v]) => {
 									let key = k.split('_').map((e, i) => i == 0 ? e : e.charAt(0).toUpperCase() + e.substring(1)).join('');
+									if(key == 'createAt' || key == 'updateAt' || key == 'visibilityNot' || key == 'visibility')return total;
 									total[key] = v;
 									return total;
 								}, {})
@@ -110,7 +117,8 @@ export default class PositionChanger{
 									roomId: e.dataset.room_id, 
 									orderSort: e.dataset.order_sort,
 								};*/
-							})
+							}),
+							{item, target, wrapper}
 						)
 					})
 				}
