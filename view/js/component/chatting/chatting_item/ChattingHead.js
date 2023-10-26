@@ -204,11 +204,11 @@ export default new class ChattingHead{
                 if(! result || result == ''){
                     this.#elementMap.favoritesAddButton.classList.remove('apply')
                     this.#elementMap.favoritesAddButton.textContent = '☆'
-                    delete roomFavoritesList.roomFavoritesMemory[workspaceHandler.workspaceId];
+                    delete roomFavoritesList.memory[workspaceHandler.workspaceId];
                 }else if(result.code == 0){
                     this.#elementMap.favoritesAddButton.classList.add('apply')
                     this.#elementMap.favoritesAddButton.textContent = '★'
-                    delete roomFavoritesList.roomFavoritesMemory[workspaceHandler.workspaceId];
+                    delete roomFavoritesList.memory[workspaceHandler.workspaceId];
                 }
                 roomFavoritesList.refresh();
                 
