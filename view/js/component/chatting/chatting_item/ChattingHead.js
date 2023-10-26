@@ -135,7 +135,11 @@ export default new class ChattingHead{
 			callBack: (handler) => {
                 this.#roomId = handler.roomId;
                 this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
-                if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId]?.hasOwnProperty(handler.roomId)){
+                this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
+                window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
+                    console.log(result);
+                });
+                /*if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId]?.hasOwnProperty(handler.roomId)){
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
                     window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
                         console.log(result);
@@ -144,7 +148,7 @@ export default new class ChattingHead{
                     let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId][handler.roomId])
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
                     this.#elementMap.chattingHeadJounedCount.textContent = `(${memberList.length} members)`
-                }
+                }*/
 
                 //let favoritesTarget = [...roomFavoritesList.elementMap.roomContentList.children].find(li => li.dataset.room_id == handler.roomId)
                 window.myAPI.room.isRoomFavorites({roomId : handler.roomId}).then(result => {

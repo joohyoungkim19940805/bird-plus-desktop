@@ -48,9 +48,6 @@
     gap: 1vw;
 }
 
-#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content{
-    max-height: 30vh;
-}
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item::marker:hover{
     cursor: pointer;
 }

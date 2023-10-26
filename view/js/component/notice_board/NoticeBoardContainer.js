@@ -1,4 +1,5 @@
 import noticeBoardList from "./notice_board_item/NoticeBoardList"
+import noticeBoardDetail from "./notice_board_item/NoticeBoardDetail"
 
 export default new class NoticeBoardContainer{
 
@@ -21,7 +22,11 @@ export default new class NoticeBoardContainer{
 	})();
 	constructor(){
 		noticeBoardList.element.dataset.is_resize = true;
-		this.#contentList = [noticeBoardList.element];
+		noticeBoardDetail.element.dataset.is_resize = true;
+		noticeBoardDetail.element.dataset.grow = 0;
+		noticeBoardDetail.element.dataset.prev_grow = 1.8;
+
+		this.#contentList = [noticeBoardList.element, noticeBoardDetail.element];
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);

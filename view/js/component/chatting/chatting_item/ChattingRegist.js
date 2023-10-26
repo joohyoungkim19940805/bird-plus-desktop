@@ -89,6 +89,7 @@ export default new class ChattingRegist extends FreeWillEditor{
             
             super.placeholder = '텍스트를 입력해주세요.'
 			super.spellcheck = true
+			//super.dataset.visibility_not = ''
 			this.#addEvent();
 		}
 	}

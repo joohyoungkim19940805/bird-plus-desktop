@@ -5,7 +5,7 @@ import chattingRegist from "./ChattingRegist"
 import common from "./../../../common"
 export default new class ChattingInfo{
     
-    #chattingMemory = {}
+    #memory = {}
 
     #page = 0;
 	#size = 10;
@@ -28,7 +28,7 @@ export default new class ChattingInfo{
 			if (entry.isIntersecting){
 				this.#page += 1;
                 let promise;
-                let memory = Object.values(this.#chattingMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
+                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
                 if(memory && memory.length != 0){
                     promise = Promise.resolve(
                         memory
@@ -100,7 +100,7 @@ export default new class ChattingInfo{
             callBack: (chattingData) => {
                 this.createItemElement(chattingData).then(liElement => {
                     this.#elementMap.chattingContentList.prepend(liElement);
-                    this.#addChattingMemory(liElement)
+                    this.#addMemory(liElement)
                     this.#processingTimeGrouping(
                         this.#liList[0],
                         liElement
@@ -117,7 +117,7 @@ export default new class ChattingInfo{
             callBack: () => {
                 this.reset();
                 let promise;
-                let memory = Object.values(this.#chattingMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                 if(memory && memory.length != 0){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
@@ -258,7 +258,7 @@ export default new class ChattingInfo{
                 account_name: accountName
             });
             li.__editor = content;
-            this.#addChattingMemory(li, id);
+            this.#addMemory(li, id);
             this.#addItemEvent(li);
             if( ! prevItemPromise && this.#lastLiItem){
                 this.#processingTimeGrouping(li, this.#lastLiItem);
@@ -281,21 +281,21 @@ export default new class ChattingInfo{
         })
     }
 
-    #addChattingMemory(data, id){
+    #addMemory(data, id){
         if(data.dataset.room_id != roomHandler.roomId || data.dataset.workpsace_id != workspaceHandler.workspaceId){
             return;
         }
 
-        if( ! this.#chattingMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-            this.#chattingMemory[workspaceHandler.workspaceId] = {};
+        if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
+            this.#memory[workspaceHandler.workspaceId] = {};
         }
-        if( ! this.#chattingMemory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
+        if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
+            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
         }
-        if( ! this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
-            this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
+        if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
+            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
         }
-        this.#chattingMemory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
+        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
     }
 
     #processingTimeText(createMils){

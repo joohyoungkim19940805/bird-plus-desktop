@@ -4,7 +4,7 @@ import PositionChanger from "./../../../handler/PositionChangeer";
 
 export default new class RoomFavoritesList{
 
-	#roomFavoritesMemory = {};
+	#memory = {};
 
 	#page = 0;
 	#size = 10;
@@ -46,7 +46,7 @@ export default new class RoomFavoritesList{
 			if (entry.isIntersecting){
 				this.#page += 1;
 				let promise;
-				let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
+				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[this.#page] || {});
 				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
@@ -94,7 +94,13 @@ export default new class RoomFavoritesList{
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
 			console.log(changeList)
-			window.myAPI.room.updateRoomFavorites(changeList).then(data=>{
+			window.myAPI.room.updateRoomFavorites(changeList.map(e=>{
+				return {
+					id: e.dataset.id, 
+					roomId: e.dataset.room_id, 
+					orderSort: e.dataset.order_sort,
+				}
+			})).then(data=>{
 				console.log(data);
 			})
 		}
@@ -229,7 +235,7 @@ export default new class RoomFavoritesList{
 				room_type: roomType
 			});
 			li.draggable = true;
-			this.#addRoomFavoritesMemory(li, roomId);
+			this.#addMemory(li, roomId);
 			this.#addItemEvent(li);
 			resolve(li);
 		});
@@ -243,23 +249,23 @@ export default new class RoomFavoritesList{
 		});
 	}
 
-	#addRoomFavoritesMemory(data, roomId){
-		if( ! this.#roomFavoritesMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-			this.#roomFavoritesMemory[workspaceHandler.workspaceId] = {};
+	#addMemory(data, roomId){
+		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
+			this.#memory[workspaceHandler.workspaceId] = {};
 		}
-		if( ! this.#roomFavoritesMemory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
-			this.#roomFavoritesMemory[workspaceHandler.workspaceId][this.#page] = {};
+		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
+			this.#memory[workspaceHandler.workspaceId][this.#page] = {};
 		}
 		if( ! data || ! roomId){
 			return ;
 		}
-		this.#roomFavoritesMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+		this.#memory[workspaceHandler.workspaceId][this.#page][roomId] = data;
     }
 	
 	refresh(){
 		this.reset();
 		let promise;
-		let memory = Object.values(this.#roomFavoritesMemory[workspaceHandler.workspaceId] || {});
+		let memory = Object.values(this.#memory[workspaceHandler.workspaceId] || {});
 		if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
@@ -313,7 +319,7 @@ export default new class RoomFavoritesList{
 		return this.#elementMap;
 	}
 
-	get roomFavoritesMemory(){
-		return this.#roomFavoritesMemory;
+	get memory(){
+		return this.#memory;
 	}
 }

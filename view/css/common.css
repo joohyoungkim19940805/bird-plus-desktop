@@ -382,7 +382,7 @@ input[type="checkbox"]{
 .marker::before{
     content: '▶'
 }
-.marker[data-is_open]::before{
+.marker[data-is_open="true"]::before{
     content: '▼'
 }
 .marker{

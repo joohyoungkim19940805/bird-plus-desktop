@@ -4,6 +4,7 @@ export default class PositionChanger{
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
 	#onDropDocumentOutCallback = (target) => {console.log('out!!')}; 
+	#onIfCancelCallBack = (target) => {};
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');
@@ -77,6 +78,12 @@ export default class PositionChanger{
 					}
 					//return;
 					let target = this.#targetItem;
+					let cancle = this.onIfCancelCallBack(target, item)
+					if((typeof cancle) != 'boolean'){
+						throw new Error('onIfCancelCallBack is only return Boolean');
+					}else if(cancle){
+						return;
+					}
 					//item.before(target);
 					event.target.closest('[data-order_sort]').before(target);
 					this.#targetItem = undefined;
@@ -84,6 +91,9 @@ export default class PositionChanger{
 						let nowLastItem = [...parent.children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
 						//let nowLastItem = [...target.closest('ul').children].filter(e=>e.hasAttribute('data-order_sort')).pop(); // or at(-1)
 						//this.#wrapper.querySelector('[data-order_sort]:last-child');
+						if( ! lastItem){
+							lastItem = nowLastItem;
+						}
 						let prevOrderSort = Number(lastItem.dataset.order_sort);
 						if(target == lastItem && lastItem != nowLastItem){
 							nowLastItem.dataset.order_sort = lastItem.dataset.order_sort;
@@ -91,7 +101,7 @@ export default class PositionChanger{
 							//prevOrderSort -= 1;
 						}
 						lastItem = nowLastItem
-						let prevItem = lastItem.previousElementSibling;
+						let prevItem = lastItem?.previousElementSibling;
 						while(prevItem){
 							prevOrderSort += 1;
 							prevItem.dataset.prev_order_sort = prevItem.dataset.order_sort
@@ -104,21 +114,8 @@ export default class PositionChanger{
 						res();
 					}).then(()=>{
 						this.#onDropEndChangePositionCallback(
-							[...child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort || e != target), target].map(e=>{
-								let obj = Object.assign({}, e.dataset);
-								return Object.entries(obj).reduce((total, [k,v]) => {
-									let key = k.split('_').map((e, i) => i == 0 ? e : e.charAt(0).toUpperCase() + e.substring(1)).join('');
-									if(key == 'createAt' || key == 'updateAt' || key == 'visibilityNot' || key == 'visibility')return total;
-									total[key] = v;
-									return total;
-								}, {})
-								/*return {
-									id: e.dataset.id, 
-									roomId: e.dataset.room_id, 
-									orderSort: e.dataset.order_sort,
-								};*/
-							}),
-							{item, target, wrapper}
+							[...child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort && e != target), target],
+							{item, target, parent}
 						)
 					})
 				}
@@ -139,6 +136,13 @@ export default class PositionChanger{
 	}
 	get onDropDocumentOutCallback(){
 		return this.#onDropDocumentOutCallback;
+	}
+
+	set onIfCancelCallBack(callBack){
+		this.#onIfCancelCallBack = callBack
+	}
+	get onIfCancelCallBack(){
+		return this.#onIfCancelCallBack;
 	}
 
 }

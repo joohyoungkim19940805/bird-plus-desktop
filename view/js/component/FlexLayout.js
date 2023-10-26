@@ -443,6 +443,9 @@ class FlexLayout extends HTMLElement {
 			if(resizeTarget._closeCallBack){
 				resizeTarget._closeCallBack();
 			}
+			resizeTarget.ontransitionend = () => {
+				resizeTarget.style.transition = '';
+			}
 			resolve(resizeTarget);
 		});
 	}
@@ -488,11 +491,15 @@ class FlexLayout extends HTMLElement {
 			if(isResize){
 				this.resize(notCloseAndOpenTargetList, this.forResizeList.length);
 			}
-			if(resizeTarget._openCallBack){
-				resizeTarget._openCallBack();
+
+			resizeTarget.ontransitionend = ()=>{
+				resizeTarget.style.transition = '';
+				if(resizeTarget._openCallBack){
+					resizeTarget._openCallBack();
+				}
+				resolve(resizeTarget)
 			}
 			
-			resolve(resizeTarget)
 		})
 	}
 

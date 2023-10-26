@@ -5,7 +5,7 @@ import CreateMessengerView from "./CreateMessengerView";
 
 export default new class RoomMessengerList{
 
-	#roomMessengerMemory = {};
+	#memory = {};
 
 	#page = 0;
 	#size = 10;
@@ -50,7 +50,7 @@ export default new class RoomMessengerList{
 			if (entry.isIntersecting){
 				this.#page += 1;
 				let promise;
-				let memory = Object.values(this.#roomMessengerMemory[workspaceHandler.workspaceId]?.[this.#page] || {});
+				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[this.#page] || {});
 				if(this.#elementMap.searchName.value == '' && memory && memory.length != 0){
 					promise = Promise.resolve(
 						memory
@@ -95,7 +95,13 @@ export default new class RoomMessengerList{
 		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			window.myAPI.room.updateRoomInAccout(changeList).then(data=>{
+			window.myAPI.room.updateRoomInAccout(changeList.map(e=>{
+				return {
+					id: e.dataset.id, 
+					roomId: e.dataset.room_id, 
+					orderSort: e.dataset.order_sort,
+				}
+			})).then(data=>{
 				console.log(data);
 			})
 		}
@@ -180,11 +186,11 @@ export default new class RoomMessengerList{
 			this.createItemElement(event.content)
 			.then(li => {
 				//this.#liList.push(li);
-				Object.entries(this.#roomMessengerMemory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
+				Object.entries(this.#memory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
 					if( ! obj.hasOwnProperty(event.roomId)){
 						return;
 					}
-					this.#roomMessengerMemory[workspaceHandler.workspaceId][page][event.roomId] = li;
+					this.#memory[workspaceHandler.workspaceId][page][event.roomId] = li;
 				})
 				this.refresh()
 			})
@@ -274,7 +280,7 @@ export default new class RoomMessengerList{
 				room_type: roomType
 			});
 			li.draggable = true;
-			this.#addRoomMessengerMemory(li, roomId);
+			this.#addMemory(li, roomId);
 			this.#addItemEvent(li);
 			resolve(li);
 		});
@@ -289,23 +295,23 @@ export default new class RoomMessengerList{
 		});
 	}
 
-	#addRoomMessengerMemory(data, roomId){
-		if( ! this.#roomMessengerMemory.hasOwnProperty(workspaceHandler.workspaceId)){
-			this.#roomMessengerMemory[workspaceHandler.workspaceId] = {};
+	#addMemory(data, roomId){
+		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
+			this.#memory[workspaceHandler.workspaceId] = {};
 		}
-		if( ! this.#roomMessengerMemory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
-			this.#roomMessengerMemory[workspaceHandler.workspaceId][this.#page] = {};
+		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
+			this.#memory[workspaceHandler.workspaceId][this.#page] = {};
 		}
 		if( ! data || ! roomId){
 			return ;
 		}
-		this.#roomMessengerMemory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+		this.#memory[workspaceHandler.workspaceId][this.#page][roomId] = data;
     }
 
 	refresh(){
 		this.reset();
 		let promise;
-		let memory = Object.values(this.#roomMessengerMemory[workspaceHandler.workspaceId] || {});
+		let memory = Object.values(this.#memory[workspaceHandler.workspaceId] || {});
 		if(memory && memory.length != 0 && this.#elementMap.searchName.value == ''){
 			this.#page = memory.length - 1;
 			promise = Promise.resolve(
