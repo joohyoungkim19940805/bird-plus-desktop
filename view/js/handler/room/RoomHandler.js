@@ -41,4 +41,7 @@ export default new class RoomHandler{
     get room(){
         return this.#room;
     }
+    removeRoomIdChangeListener(name){
+        delete this.#addRoomIdChangeListener(name);
+    }
 }

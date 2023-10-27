@@ -24,8 +24,8 @@ class RoomIpcController {
 		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
 			return this.createRoomFavorites(event, param);
 		});
-		ipcMain.handle('updateRoomInAccout', async (event, param = []) => {
-			return this.updateRoomInAccout(event, param);
+		ipcMain.handle('updateRoomInAccoutOrder', async (event, param = []) => {
+			return this.updateRoomInAccoutOrder(event, param);
 		});
 		ipcMain.handle('updateRoomFavorites', async (event, param = []) => {
 			return this.updateRoomFavorites(event, param);
@@ -33,20 +33,14 @@ class RoomIpcController {
         ipcMain.handle('searchRoom', async (event, param = {}) => {
 			return this.searchRoom(event, param);
 		});
-		ipcMain.handle('searchRoomMyJoined', async (event, param = {}) => {
-			return this.searchRoomMyJoined(event, param);
+		ipcMain.handle('searchMyJoinedRoomList', async (event, param = {}) => {
+			return this.searchMyJoinedRoomList(event, param);
 		});
-		ipcMain.handle('searchRoomMyJoinedName', async (event, param = {}) => {
-			return this.searchRoomMyJoinedName(event, param);
+		ipcMain.handle('searchRoomFavoritesList', async (event, param = {}) => {
+			return this.searchRoomFavoritesList(event, param);
 		});
-		ipcMain.handle('searchRoomFavoritesMyJoined', async (event, param = {}) => {
-			return this.searchRoomFavoritesMyJoined(event, param);
-		});
-		ipcMain.handle('searchRoomFavoritesMyJoinedName', async (event, param = {}) => {
-			return this.searchRoomFavoritesMyJoinedName(event, param);
-		});
-		ipcMain.handle('searchRoomInAccountAllList', async (event, param = {}) => {
-			return this.searchRoomInAccountAllList(event, param);
+		ipcMain.handle('searchRoomJoinedAccountList', async (event, param = {}) => {
+			return this.searchRoomJoinedAccountList(event, param);
 		});
 		ipcMain.handle('getRoomDetail', async (event, param = {}) => {
 			return this.getRoomDetail(event, param);
@@ -129,7 +123,7 @@ class RoomIpcController {
 	createRoomInAccount(event, param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.post(`${__serverApi}/api/room/create/room-in-account`, JSON.stringify(param), {
+				return axios.post(`${__serverApi}/api/room/create/in-account`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -158,7 +152,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	updateRoomInAccout(event, param = []){
+	updateRoomInAccoutOrder(event, param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/room/update/room-in-account-order`, JSON.stringify(param), {
@@ -169,7 +163,7 @@ class RoomIpcController {
 				.then(windowUtil.responseCheck)
 				.then(response => response.data)
 				.catch(err=>{
-					log.error('IPC createRoom error : ', JSON.stringify(err));
+					log.error('IPC updateRoomInAccoutOrder error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -195,7 +189,7 @@ class RoomIpcController {
 					}
 					return total;
 				},{});
-				return axios.post(`${__serverApi}/api/room/create/room-favorites`, JSON.stringify(param), {
+				return axios.post(`${__serverApi}/api/room/create/favorites`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -248,14 +242,14 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoom(event, param = {}){
+	searchRoomList(event, param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				log.debug('param!!! : ' , param);
+				let {roomId} = param;
 				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
+					.filter(([k,v]) => v != undefined && v != '' && k != 'roomId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
-				return axios.get(`${__serverApi}/api/room/search/room-list?${queryString}`, {
+				return axios.get(`${__serverApi}/api/room/search/list/${roomId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -280,11 +274,12 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomMyJoined(event, param = {}){
+	searchMyJoinedRoomList(event, param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
+				let {workspaceId} = param;
 				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
 					.map(([k,v]) => {
 						if(v instanceof Array){
 							v = v.map(val=>`${k}=${val}`).join('&')
@@ -292,8 +287,7 @@ class RoomIpcController {
 						}
 						return `${k}=${v}`
 					}).join('&')
-					
-				return axios.get(`${__serverApi}/api/room/search/room-my-joined-list?${queryString}`, {
+				return axios.get(`${__serverApi}/api/room/search/my-joined-list/${workspaceId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -301,7 +295,7 @@ class RoomIpcController {
 				.then(windowUtil.responseCheck)
 				.then(response => response.data)
 				.catch(err=>{
-					log.error('IPC searchRoomMyJoined error : ', err.message);
+					log.error('IPC searchMyJoinedRoomList error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -318,11 +312,12 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomMyJoinedName(event, param = {}){
+	searchRoomFavoritesList(event, param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
+				let {workspaceId} = param;
 				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
 					.map(([k,v]) => {
 						if(v instanceof Array){
 							v = v.map(val=>`${k}=${val}`).join('&')
@@ -330,7 +325,7 @@ class RoomIpcController {
 						}
 						return `${k}=${v}`
 					}).join('&')
-				return axios.get(`${__serverApi}/api/room/search/room-my-joined-name-list?${queryString}`, {
+				return axios.get(`${__serverApi}/api/room/search/favorites-list/${workspaceId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -338,7 +333,7 @@ class RoomIpcController {
 				.then(windowUtil.responseCheck)
 				.then(response => response.data)
 				.catch(err=>{
-					log.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
+					log.error('IPC searchMyJoinedRoomList error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -355,89 +350,14 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomFavoritesMyJoined(event, param = {}){
-		return windowUtil.isLogin( result => {
-			if(result.isLogin){
-				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
-					.map(([k,v]) => {
-						if(v instanceof Array){
-							v = v.map(val=>`${k}=${val}`).join('&')
-							return v;
-						}
-						return `${k}=${v}`
-					}).join('&')
-					
-				return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-list?${queryString}`, {
-					headers:{
-						'Content-Type': 'application/json'
-					}
-				})
-				.then(windowUtil.responseCheck)
-				.then(response => response.data)
-				.catch(err=>{
-					log.error('IPC searchRoomMyJoined error : ', JSON.stringify(err));
-					//axios.defaults.headers.common['Authorization'] = '';
-					if(err.response){
-						return err.response.data;
-					}else{
-						return err.message
-					}
-				})
-			}else{
-				return {'isLogin': false};
-			}
-		}).catch(error=>{
-			log.error('error ::: ', error.message)
-			log.error('error stack :::', error.stack)
-			return undefined;
-		})
-	}
-	searchRoomFavoritesMyJoinedName(event, param = {}){
-		return windowUtil.isLogin( result => {
-			if(result.isLogin){
-				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
-					.map(([k,v]) => {
-						if(v instanceof Array){
-							v = v.map(val=>`${k}=${val}`).join('&')
-							return v;
-						}
-						return `${k}=${v}`
-					}).join('&')
-				return axios.get(`${__serverApi}/api/room/search/room-my-joined-favorites-name-list?${queryString}`, {
-					headers:{
-						'Content-Type': 'application/json'
-					}
-				})
-				.then(windowUtil.responseCheck)
-				.then(response => response.data)
-				.catch(err=>{
-					log.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
-					//axios.defaults.headers.common['Authorization'] = '';
-					if(err.response){
-						return err.response.data;
-					}else{
-						return err.message
-					}
-				})
-			}else{
-				return {'isLogin': false};
-			}
-		}).catch(error=>{
-			log.error('error ::: ', error.message)
-			log.error('error stack :::', error.stack)
-			return undefined;
-		})
-	}
-	searchRoomInAccountAllList(event, param = {}){
+	searchRoomJoinedAccountList(event, param = {}){
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
-			log.error(`searchRoomInAccountAllList roomId is ::: ${param.roomId}`);
+			log.error(`searchRoomJoinedAccountList roomId is ::: ${param.roomId}`);
 			return undefined;
 		}
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/room/search/room-in-account-all-list/${param.roomId}`, {
+				return axios.get(`${__serverApi}/api/room/search/in-account-list/${param.roomId}`, {
 					headers:{
 						'Content-Type': 'application/json',
 						'Accept': 'text/event-stream',
@@ -447,7 +367,7 @@ class RoomIpcController {
 				.then(windowUtil.responseCheck)
 				.then(response => response.data)
 				.catch(err=>{
-					log.error('IPC createRoomFavorites error : ', JSON.stringify(err));
+					log.error('IPC searchRoomJoinedAccountList error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -469,7 +389,7 @@ class RoomIpcController {
 						}
 					})
 					stream.on('end', () => {
-						log.debug('end searchRoomInAccountAllList stream ::: ')
+						log.debug('end searchRoomJoinedAccountList stream ::: ')
 						streamEndResolve();
 					})
 					return promise.then(()=>'done');
@@ -490,7 +410,7 @@ class RoomIpcController {
 		}
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/room/search/room-detail/${param.roomId}`, {
+				return axios.get(`${__serverApi}/api/room/search/detail/${param.roomId}`, {
 					headers: {
 						'Content-Type' : 'application/json'
 					}

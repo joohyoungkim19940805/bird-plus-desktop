@@ -2,7 +2,9 @@ import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "../../../handler/PositionChangeer";
 import noticeBoardDetail from "./NoticeBoardDetail";
-import common from "./../../../common"
+import common from "./../../../common";
+import noticeBoardHandler from "./../../../handler/notice_board/NoticeBoardHandler";
+
 export default new class NoticeBoardList{
 	#memory = {}
 
@@ -41,52 +43,6 @@ export default new class NoticeBoardList{
 		}, {})
 	})();
 
-	/*
-    #lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
-		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				this.#page += 1;
-				let promise;
-				let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[this.#page] || {});
-				if(memory && memory.length != 0 && this.#elementMap.searchTitle.value == '' && this.#elementMap.searchContent.value == ''){
-					promise = Promise.resolve(
-						memory
-					);
-				}else{
-					promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, this.#elementMap.searchTitle.value, this.#elementMap.searchContent.value)
-                    .then(data => 
-						this.createPage(data)
-						.then(liList => {        
-							if(this.#page >= data.totalPages){
-								this.#lastItemVisibleObserver.disconnect();
-							}
-							return liList;
-						})
-					)
-				}
-				promise.then(liList => {
-					this.#liList.push(...liList);
-					this.#liList = Object.values(this.#liList.reduce((total, item)=>{
-						if(total.hasOwnProperty(item.dataset.room_id)){
-							return total;	
-						}
-						total[item.dataset.room_id] = item;
-						return total;
-					}, {})).sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort))
-					this.#elementMap.noticeBoardList.replaceChildren(...this.#liList);
-					this.#lastItemVisibleObserver.disconnect();
-					let lastVisibleTarget = liList.at(-1);
-					if(lastVisibleTarget){
-						this.#lastItemVisibleObserver.observe(lastVisibleTarget)
-					}
-				})
-			}
-		})
-	}, {
-		threshold: 0.1,
-		root: document//this.#elementMap.roomContentList
-	});
-	*/
     #positionChanger;
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardList});
@@ -146,7 +102,7 @@ export default new class NoticeBoardList{
 			}
 		}
 		this.#elementMap.rootFolderAdd.onclick = () => {
-			this.createFolder(undefined, this.#elementMap.noticeBoardList);
+			this.createNoticeBoardGroup(undefined, this.#elementMap.noticeBoardList);
 		}
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
@@ -191,7 +147,10 @@ export default new class NoticeBoardList{
 		})
 
     }
-	createFolder(data = {isEmpty:true}, parentRoot){
+	createFolder(){
+		
+	}
+	createNoticeBoardGroup(data = {isEmpty:true}, parentRoot){
 		let li = Object.assign(document.createElement('li'), {
 			className: `notice_board_list_content_item`,
 			innerHTML : `
@@ -284,7 +243,7 @@ export default new class NoticeBoardList{
 			childRoot.style.height = '';
 			childRoot.style.overflow = '';	
 		}
-		folderAddButton.onclick = () => this.createFolder(undefined, childRoot);
+		folderAddButton.onclick = () => this.createNoticeBoardGroup(undefined, childRoot);
 		
 		markerObserve.observe(marker, {
 			attributeFilter:['data-is_open'],
@@ -338,12 +297,18 @@ export default new class NoticeBoardList{
 		return li;
 	}
 	createNoticeBoard(data = {isEmpty:true}, parentRoot){
+		let isNoticeBoardActive = ! Boolean(data.isEmpty) && 
+			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId]?.
+				[data.id]?.
+				querySelector('notice_board_list_content_item_title_name')?.
+				classList.contains('active');
+
 		let li = Object.assign(document.createElement('li'), {
 			className: 'notice_board_list_content_item type_notice_board',
 			innerHTML: `
 			<div class="notice_board_list_content_item_title_wrapper">
 				<div class="notice_board_list_content_item_title">
-					<span class="notice_board_list_content_item_title_name pointer" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</span>
+					<span class="notice_board_list_content_item_title_name pointer ${isNoticeBoardActive ? 'active' : ''}" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</span>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
 				</div>
@@ -374,6 +339,7 @@ export default new class NoticeBoardList{
 				titleName.contentEditable = true;
 				updateButton.remove();
 				titleName.focus();
+				titleName.classList.remove('pointer');
 				window.getSelection().setPosition(titleName, titleName.childNodes.length);
 			}
 		})
@@ -381,39 +347,46 @@ export default new class NoticeBoardList{
 			titleName, buttonWrapper, deleteButton, updateButton
 		};
 		common.jsonToSaveElementDataset(data, li);
-		let isNoticeBoardDetailOpen = false;
-		let isFirstOpen = true; 
+
 		let flexLayout = this.#element.closest('flex-layout');
+		let isOpenFlag = false;
 		titleName.onclick = (event) => {
 			if(document.activeElement == titleName){
 				return;
+			}else if(titleName.classList.contains('active')){
+				flexLayout.closeFlex(noticeBoardDetail.element)
 			}
-			if(! isNoticeBoardDetailOpen){
-				let promise;
-				if(isFirstOpen){
-					promise = Promise.resolve();
-					isFirstOpen = false;
+			isOpenFlag = ! isOpenFlag;
+			if(isOpenFlag && data.id){
+				noticeBoardHandler.noticeBoardId = data.id;
+			}
+			noticeBoardDetail.element.dataset.prev_grow = 1.5;
+			noticeBoardDetail.element._openEndCallBack = () => {
+				//titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+				titleName.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+				titleName.classList.add('active');
+			}
+			noticeBoardDetail.element._closeEndCallBack = () => {
+				noticeBoardDetail.element.dataset.prev_grow = 1.5;
+				if( ! titleName.classList.contains('active')){
+					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true})
 				}else{
-					promise = flexLayout.closeFlex(noticeBoardDetail.element)
+					titleName.classList.remove('active');
 				}
-				promise.then(()=>{
-					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(()=>{
-						titleName.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-					});
-				});
-				titleName.style.fontWeight = 'bold';
-			}else{
-				flexLayout.closeFlex(noticeBoardDetail.element);
-				titleName.style.fontWeight = '';
 			}
-			new Promise(resolve=>{
-				this.#elementMap.noticeBoardList.querySelectorAll('.notice_board_list_content_item_title_name').forEach(e=> {
-					if(e == titleName)return;
-					e.style.fontWeight = '';
+
+			if(flexLayout.isVisible(noticeBoardDetail.element)){
+				flexLayout.closeFlex(noticeBoardDetail.element)
+			}else{
+				flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(() => {
+					titleName.classList.add('pointer');
 				})
-				resolve();
-			});
-			isNoticeBoardDetailOpen = ! isNoticeBoardDetailOpen;
+			}
+			this.#elementMap.noticeBoardList.querySelectorAll('.notice_board_list_content_item_title_name').forEach(e=> {
+				if(e == titleName)return;
+				e.classList.remove('active');
+			})
+
 		}
 		titleName.onblur = (event) => {
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
@@ -444,7 +417,7 @@ export default new class NoticeBoardList{
 	}
 
     callData(workspaceId, roomId, searchTitle, searchContent, parentGroupId){
-		return window.myAPI.noticeBoard.searchNoticeBoard({
+		return window.myAPI.noticeBoard.searchNoticeBoardList({
             workspaceId, roomId, searchTitle, searchContent, parentGroupId
         }).then((data = {}) => {
 			console.log(data);
@@ -478,7 +451,7 @@ export default new class NoticeBoardList{
 
     createItemElement(item, parentRoot){
 		return new Promise(resolve=>{
-			let li = ! item.groupId ? this.createNoticeBoard(item, parentRoot) : this.createFolder(item, parentRoot);
+			let li = ! item.groupId ? this.createNoticeBoard(item, parentRoot) : this.createNoticeBoardGroup(item, parentRoot);
 			this.#addMemory(li, item.groupId || item.id, parentRoot.dataset.parent_group_id);
 			resolve(li);
 		})

@@ -73,6 +73,10 @@
     width: 100%;
     overflow-x: hidden;
 }
+#notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name.active{
+    font-weight: bold;
+    color: #ffc4e2;    
+}
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name::before{
     content: attr(data-content_count);
 }

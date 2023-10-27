@@ -136,12 +136,12 @@ export default new class ChattingHead{
                 this.#roomId = handler.roomId;
                 this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
-                window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
+                window.myAPI.room.searchRoomJoinedAccountList({roomId: handler.roomId}).then(result=>{
                     console.log(result);
                 });
                 /*if( ! this.#chattingHeadMemory[workspaceHandler.workspaceId]?.hasOwnProperty(handler.roomId)){
                     this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
-                    window.myAPI.room.searchRoomInAccountAllList({roomId: handler.roomId}).then(result=>{
+                    window.myAPI.room.searchRoomJoinedAccountList({roomId: handler.roomId}).then(result=>{
                         console.log(result);
                     });
                 }else{

@@ -95,7 +95,7 @@ export default new class RoomMessengerList{
 		
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			window.myAPI.room.updateRoomInAccout(changeList.map(e=>{
+			window.myAPI.room.updateRoomInAccoutOrder(changeList.map(e=>{
 				return {
 					id: e.dataset.id, 
 					roomId: e.dataset.room_id, 
@@ -198,17 +198,9 @@ export default new class RoomMessengerList{
 	}
 
 	callData(page, size, workspaceId, roomName){
-		let searchPromise;
-		if(roomName && roomName != ''){
-			searchPromise = window.myAPI.room.searchRoomMyJoinedName({
-				page, size, workspaceId, roomName, roomType: ['SELF','MESSENGER']
-			})
-		}else{
-			searchPromise = window.myAPI.room.searchRoomMyJoined({
-				page, size, workspaceId, roomType: ['SELF','MESSENGER']
-			})
-		}
-		return searchPromise.then((data = {}) =>{
+		return window.myAPI.room.searchMyJoinedRoomList({
+			page, size, workspaceId, roomName, roomType: ['SELF','MESSENGER']
+		}).then((data = {}) =>{
 			return data.data;
 		});
 	}

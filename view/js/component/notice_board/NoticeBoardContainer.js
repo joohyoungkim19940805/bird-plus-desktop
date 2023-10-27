@@ -11,7 +11,7 @@ export default new class NoticeBoardContainer{
 		});
 		wrap.dataset.is_resize = false;
 		wrap.dataset.grow = 0;
-		return wrap
+		return wrap 
 	})();
 	#container = (() => {
 		let noticeBoardContainer = Object.assign(document.createElement('flex-layout'), {
@@ -24,14 +24,14 @@ export default new class NoticeBoardContainer{
 		noticeBoardList.element.dataset.is_resize = true;
 		noticeBoardDetail.element.dataset.is_resize = true;
 		noticeBoardDetail.element.dataset.grow = 0;
-		noticeBoardDetail.element.dataset.prev_grow = 1.8;
+		noticeBoardDetail.element.dataset.prev_grow = 1.5;
 
 		this.#contentList = [noticeBoardList.element, noticeBoardDetail.element];
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);
 
-		this.#wrap._openCallBack = () => {
+		this.#wrap._openEndCallBack = () => {
 			noticeBoardList.refresh();
 		}
 	}

@@ -19,23 +19,21 @@ class WindowUtil{
                 });
             }else{
                 if(response.data.code == 0){
-                    response.data.isLogin = true;	
+                    response.isLogin = true;	
                 }else if(response.data.code == 100 || response.data.code == 105 || response.data.code == 106 || response.data.code == 107){
-                    response.data.isLogin = false;
+                    response.isLogin = false;
                 }else{
-                    response.data.isLogin = false;
+                    response.isLogin = false;
                 }
-                return callBack(response.data);
+                return callBack(response);
             }
         }).catch(error=>{
             log.error(error);
             log.error('isLogin error callBack ::: ', callBack.toString());
             //axios.defaults.headers.common['Authorization'] = '';
-            error.data.isLogin = false;
             console.log(error.data);
-            if(!error.data)error.data={}
-            error.data.isLogin=false;
-            return error;
+            error.isLogin=false;
+            return callBack(error);
             //throw error;
         })
     }

@@ -4,7 +4,7 @@ export default class PositionChanger{
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
 	#onDropDocumentOutCallback = (target) => {console.log('out!!')}; 
-	#onIfCancelCallBack = (target) => {};
+	#onIfCancelCallBack = (target) => {return false;};
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');

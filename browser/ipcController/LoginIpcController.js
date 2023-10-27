@@ -64,13 +64,13 @@ class LoginIpcController {
 								mainWindow.isOpening = false;
 							})
 						}else{
-							axios.defaults.headers.common['Authorization'] = '';
+							//axios.defaults.headers.common['Authorization'] = '';
 							this.#moveLoginPage(mainWindow);
 						}
 					}).catch(error=>{
-						log.error('error ::: ', error.message)
-						log.error('error stack :::', error.stack)
-						return undefined;
+						log.error(' changeLoginPage error ::: ', error.message)
+						log.error(' changeLoginPage error stack :::', error.stack)
+						this.#moveLoginPage(mainWindow);
 					});
 				}else{
 					this.#moveLoginPage(mainWindow);

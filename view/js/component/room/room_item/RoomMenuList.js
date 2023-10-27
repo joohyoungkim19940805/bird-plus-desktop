@@ -102,17 +102,9 @@ export default new class RoomMenuList{
 	}
 
 	callData(page, size, workspaceId, roomName){
-		let searchPromise;
-		if(roomName && roomName != ''){
-			searchPromise = window.myAPI.room.searchRoomMyJoinedName({
-				page, size, workspaceId, roomName, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
-			})
-		}else{
-			searchPromise = window.myAPI.room.searchRoomMyJoined({
-				page, size, workspaceId, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
-			})
-		}
-		return searchPromise.then((data = {}) =>{
+		return window.myAPI.room.searchMyJoinedRoomList({
+			page, size, workspaceId, roomName, roomType: ['ROOM_PUBLIC','ROOM_PRIVATE']
+		}).then((data = {}) =>{
 			console.log(data)
 			return data.data;
 		});

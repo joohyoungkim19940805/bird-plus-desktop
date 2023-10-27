@@ -93,7 +93,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 	 */
 	//openFile : () => ipcRenderer.invoke('dialog:openFile'),
 	
-	scanningUserDirectory : () => ipcRenderer.invoke('scanningUserDirectory'),
+	scanningUserDirectory : () => ipcRenderer.send('scanningUserDirectory'),
 	
 	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
 
@@ -134,14 +134,12 @@ contextBridge.exposeInMainWorld('myAPI', {
 		createMySelfRoom : (param)=> ipcRenderer.invoke('createMySelfRoom', param),
 		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
 		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
-		updateRoomInAccout : (param) => ipcRenderer.invoke('updateRoomInAccout', param),
+		updateRoomInAccoutOrder : (param) => ipcRenderer.invoke('updateRoomInAccoutOrder', param),
 		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
 		searchRoom : (param) => ipcRenderer.invoke('searchRoom', param),
-		searchRoomMyJoined : (param) => ipcRenderer.invoke('searchRoomMyJoined', param),
-		searchRoomMyJoinedName : (param) => ipcRenderer.invoke('searchRoomMyJoinedName', param),
-		searchRoomFavoritesMyJoined : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoined', param),
-		searchRoomFavoritesMyJoinedName : (param) => ipcRenderer.invoke('searchRoomFavoritesMyJoinedName', param),
-		searchRoomInAccountAllList : (param) => ipcRenderer.invoke('searchRoomInAccountAllList', param),
+		searchMyJoinedRoomList : (param) => ipcRenderer.invoke('searchMyJoinedRoomList', param),
+		searchRoomFavoritesList : (param) => ipcRenderer.invoke('searchRoomFavoritesList', param),
+		searchRoomJoinedAccountList : (param) => ipcRenderer.invoke('searchRoomJoinedAccountList', param),
 		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param),
 		isRoomFavorites : (param) => ipcRenderer.invoke('isRoomFavorites', param)
 	},
@@ -149,13 +147,12 @@ contextBridge.exposeInMainWorld('myAPI', {
 	noticeBoard : {
 		createNoticeBoard : (param) => ipcRenderer.invoke('createNoticeBoard', param),
 		createNoticeBoardGroup : (param) => ipcRenderer.invoke('createNoticeBoardGroup', param),
+		createNoticeBoardDetail : (param) => ipcRenderer.invoke('createNoticeBoardDetail', param),
 		deleteNoticeBoard : (param) => ipcRenderer.invoke('deleteNoticeBoard', param),
 		deleteNoticeBoardGroup : (param) => ipcRenderer.invoke('deleteNoticeBoardGroup', param),
 		updateNoticeBoardOrder : (param) => ipcRenderer.invoke('updateNoticeBoardOrder', param),
-		//updateNoticeBoardGroup : (param) => ipcRenderer.invoke('updateNoticeBoardGroup', param),
-		searchNoticeBoard : (param) => ipcRenderer.invoke('searchNoticeBoard', param),
-		getNoticeBoard : (param) => {},
+		updateNoticeBoardDetailOrder : (param) => ipcRenderer.invoke('updateNoticeBoardDetailOrder', param),
+		searchNoticeBoardList : (param) => ipcRenderer.invoke('searchNoticeBoardList', param),
+		searchNoticeBoardDetailList : (param) => ipcRenderer.invoke('searchNoticeBoardDetailList', param),
 	},
-
-
 })

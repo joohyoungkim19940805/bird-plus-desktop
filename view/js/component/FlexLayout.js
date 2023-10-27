@@ -440,11 +440,12 @@ class FlexLayout extends HTMLElement {
 			if(isResize){
 				this.resize(notCloseList, this.forResizeList.length);
 			}
-			if(resizeTarget._closeCallBack){
-				resizeTarget._closeCallBack();
-			}
+
 			resizeTarget.ontransitionend = () => {
 				resizeTarget.style.transition = '';
+				if(resizeTarget._closeEndCallBack){
+					resizeTarget._closeEndCallBack();
+				}
 			}
 			resolve(resizeTarget);
 		});
@@ -494,12 +495,11 @@ class FlexLayout extends HTMLElement {
 
 			resizeTarget.ontransitionend = ()=>{
 				resizeTarget.style.transition = '';
-				if(resizeTarget._openCallBack){
-					resizeTarget._openCallBack();
+				if(resizeTarget._openEndCallBack){
+					resizeTarget._openEndCallBack();
 				}
-				resolve(resizeTarget)
 			}
-			
+			resolve(resizeTarget)
 		})
 	}
 
@@ -565,6 +565,14 @@ class FlexLayout extends HTMLElement {
 
 	getGrow(growTarget){
 		return (parseFloat(growTarget.style.flex.split(' ')[0]) || parseFloat(growTarget.dataset.grow));
+	}
+	isVisible(target){
+		if( ! target.hasAttribute('data-flex_visibility')){
+			throw new Error('is not flex-layout child');
+			//return false;
+		}
+
+		return target.dataset.flex_visibility == 'v';
 	}
 }
 

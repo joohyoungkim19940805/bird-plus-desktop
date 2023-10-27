@@ -153,17 +153,9 @@ export default new class RoomFavoritesList{
 	}
 
 	callData(page, size, workspaceId, roomName){
-		let searchPromise;
-		if(roomName && roomName != ''){
-			searchPromise = window.myAPI.room.searchRoomFavoritesMyJoinedName({
-				page, size, workspaceId, roomName
-			})
-		}else{
-			searchPromise = window.myAPI.room.searchRoomFavoritesMyJoined({
-				page, size, workspaceId
-			})
-		}
-		return searchPromise.then((data = {}) =>{
+		return window.myAPI.room.searchRoomFavoritesList({
+			page, size, workspaceId, roomName
+		}).then((data = {}) =>{
 			console.log(data)
 			return data.data;
 		});

@@ -47,10 +47,11 @@ class ChattingIpcController {
 	searchChattingList(event, param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
+				let {workspaceId, roomId} = param;
 				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
-				return axios.get(`${__serverApi}/api/chatting/search/chatting-list?${queryString}`, {
+				return axios.get(`${__serverApi}/api/chatting/search/chatting-list/${workspaceId}/${roomId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}

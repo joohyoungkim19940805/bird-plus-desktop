@@ -49,7 +49,7 @@ class WorkspaceIpcController {
 	searchWorkspaceMyJoined(event, param = {}){
 		return windowUtil.isLogin((result) => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/workspace/search/workspace-my-joined-list?page=${param.page}&size=${param.size}`, {
+				return axios.get(`${__serverApi}/api/workspace/search/my-joined-list?page=${param.page}&size=${param.size}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -83,7 +83,7 @@ class WorkspaceIpcController {
 				let queryString = Object.entries(param)
 					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
-				return axios.get(`${__serverApi}/api/workspace/search/workspace-in-account-list/${param.workspaceId}?${queryString}`, {
+				return axios.get(`${__serverApi}/api/workspace/search/joined-account-list/${param.workspaceId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -92,7 +92,7 @@ class WorkspaceIpcController {
 				.then(response => {
 					return response.data
 				}).catch(err=>{
-					log.error('IPC searchRoomMyJoinedName error : ', JSON.stringify(err));
+					log.error('IPC searchWorkspaceInAccount error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -116,7 +116,7 @@ class WorkspaceIpcController {
 		}
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/workspace/search/workspace-detail/${param.workspaceId}`, {
+				return axios.get(`${__serverApi}/api/workspace/search/detail/${param.workspaceId}`, {
 					headers: {
 						'Content-Type' : 'application/json'
 					}

@@ -18,9 +18,15 @@ class NoticeBoardIpccontroller {
 		ipcMain.handle('createNoticeBoard', async (event, param = {}) => {
 			return this.createNoticeBoard(event, param);
 		});
-        ipcMain.handle('searchNoticeBoard', async (event, param = {}) => {
-			return this.searchNoticeBoard(event, param);
+        ipcMain.handle('createNoticeBoardDetail', async (event, param = {}) => {
+            return this.createNoticeBoardDetail(event, param)
+        })
+        ipcMain.handle('searchNoticeBoardList', async (event, param = {}) => {
+			return this.searchNoticeBoardList(event, param);
 		});
+        ipcMain.handle('searchNoticeBoardDetailList', async (event, param = {}) => {
+            return this.searchNoticeBoardDetailList(event, param);
+        })
         ipcMain.handle('deleteNoticeBoardGroup', async (event, param = {}) => {
 			return this.deleteNoticeBoardGroup(event, param);
 		});
@@ -109,14 +115,49 @@ class NoticeBoardIpccontroller {
 		})
     }
 
-    searchNoticeBoard(event, param = {}){
+    createNoticeBoardDetail(event, param = {}){
         return windowUtil.isLogin( result => {
             if(result.isLogin){
+                param = Object.entries(param).reduce((total, [k,v]) => {
+                    if(v != undefined && v != ''){
+                        total[k] = v;
+                    }
+                    return total;
+                },{});
+                return axios.post(`${__serverApi}/api/notice-board/create/detail`, JSON.stringify(param), {
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(windowUtil.responseCheck)
+                .then(response => response.data)
+                .catch(err=>{
+                    log.error('IPC createNoticeBoard error : ', JSON.stringify(err));
+                    //axios.defaults.headers.common['Authorization'] = '';
+                    if(err.response){
+                        return err.response.data;
+                    }else{
+                        return err.message
+                    }
+                })
+            }else{
+                return {'isLogin': false};
+            }
+        }).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+    }
+    searchNoticeBoardList(event, param = {}){
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                let {workspaceId, roomId} = param;
 				let queryString = Object.entries(param)
-					.filter(([k,v]) => v != undefined && v != '')
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
                     //console.log('queryString ::: ', queryString);
-                return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list?${queryString}`, {
+                return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
 					headers:{
 						'Content-Type': 'application/json',
 						'Accept': 'text/event-stream',
@@ -126,7 +167,7 @@ class NoticeBoardIpccontroller {
                 .then(windowUtil.responseCheck)
                 .then(response => response.data)
                 .catch(err=>{
-                    log.error('IPC searchNoticeBoard error : ', JSON.stringify(err));
+                    log.error('IPC searchNoticeBoardList error : ', JSON.stringify(err));
                     //axios.defaults.headers.common['Authorization'] = '';
                     if(err.response){
                         return err.response.data;
@@ -160,6 +201,60 @@ class NoticeBoardIpccontroller {
 			return undefined;
 		});
     }
+
+    searchNoticeBoardDetailList(event, param = {}){
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                let {workspaceId, roomId, noticeBoardId} = param;
+				let queryString = Object.entries(param)
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId' && k != 'noticeBoardId')
+					.map(([k,v]) => `${k}=${v}`).join('&')
+                    //console.log('queryString ::: ', queryString);
+                return axios.get(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
+					headers:{
+						'Content-Type': 'application/json',
+						'Accept': 'text/event-stream',
+					},
+					responseType: 'stream'
+                })
+                .then(windowUtil.responseCheck)
+                .then(response => response.data)
+                .catch(err=>{
+                    log.error('IPC searchNoticeBoard error : ', JSON.stringify(err));
+                    //axios.defaults.headers.common['Authorization'] = '';
+                    if(err.response){
+                        return err.response.data;
+                    }else{
+                        return err.message
+                    }
+                }).then(stream => {
+					let streamEndResolve;
+					let promise = new Promise(res=>{
+						streamEndResolve = res;
+					})
+					stream.on('data', bufferArr => {
+						let obj;
+						try{
+							obj = JSON.parse(String(bufferArr));
+							this.#send('noticeBoardDetailAccept', obj)
+						}catch(ignore){}
+					})
+					stream.on('end', () => {
+						log.debug('end noticeBoardSearch stream ::: ')
+						streamEndResolve();
+					})
+					return promise.then(()=>'done');
+				})
+            }else{
+				return {'isLogin': false};
+			}
+        }).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		});
+    }
+
     deleteNoticeBoard(event, param = {}){
         return windowUtil.isLogin( result => {
             if(result.isLogin){

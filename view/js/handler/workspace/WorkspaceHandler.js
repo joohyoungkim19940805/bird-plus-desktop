@@ -58,11 +58,11 @@ export default new class WorkspaceHandler{
         this.#workspaceId = workspaceId;
         window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
             this.#workspace = workspace;
-        });
-        Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
-            new Promise(res => {
-                callBack(this);
-                res();
+            Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
+                new Promise(res => {
+                    callBack(this);
+                    res();
+                });
             });
         });
     }
