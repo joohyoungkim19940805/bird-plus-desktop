@@ -44,6 +44,7 @@ export default new class NoticeBoardList{
 	})();
 
     #positionChanger;
+
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardList});
 		//let prevWrapper;
@@ -145,7 +146,12 @@ export default new class NoticeBoardList{
 			this.#positionChanger.addPositionChangeEvent(list, parentRoot)
 			parentRoot.replaceChildren(...list);
 		})
-
+        window.addEventListener('resize', (event) => {
+			let activeTitleName = this.#elementMap.noticeBoardList.querySelector('.notice_board_list_content_item_title_name.pointer.active');
+            if(activeTitleName){
+				activeTitleName.scrollIntoView({ behavior: 'instant', block: "end", inline: "nearest" });
+			}
+		})
     }
 	createFolder(){
 		
@@ -362,9 +368,9 @@ export default new class NoticeBoardList{
 			}
 			noticeBoardDetail.element.dataset.prev_grow = 1.5;
 			noticeBoardDetail.element._openEndCallBack = () => {
+				titleName.classList.add('active');
 				//titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
 				titleName.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
-				titleName.classList.add('active');
 			}
 			noticeBoardDetail.element._closeEndCallBack = () => {
 				noticeBoardDetail.element.dataset.prev_grow = 1.5;
@@ -379,19 +385,19 @@ export default new class NoticeBoardList{
 				flexLayout.closeFlex(noticeBoardDetail.element)
 			}else{
 				flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(() => {
-					titleName.classList.add('pointer');
+					//titleName.classList.add('active');
 				})
 			}
-			this.#elementMap.noticeBoardList.querySelectorAll('.notice_board_list_content_item_title_name').forEach(e=> {
+			this.#elementMap.noticeBoardList.querySelectorAll('.notice_board_list_content_item_title_name').forEach( async e=> {
 				if(e == titleName)return;
 				e.classList.remove('active');
 			})
-
 		}
 		titleName.onblur = (event) => {
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
+				titleName.classList.add('pointer');
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
 					window.myAPI.noticeBoard.createNoticeBoard({
 						roomId: roomHandler.roomId,
