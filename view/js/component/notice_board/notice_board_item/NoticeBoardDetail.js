@@ -33,8 +33,6 @@ class NoticdeBoardLine extends FreeWillEditor{
     parentLi;
     parentClass;
     constructor(parentLi, parentClass){
-        this.parentLi = parentLi;
-        this.parentClass = parentClass;
         let tools = {
 			'free-will-strong' : Strong,
 
@@ -44,18 +42,24 @@ class NoticdeBoardLine extends FreeWillEditor{
 		}
 		super(tools, option);
 
+        this.parentLi = parentLi;
+        this.parentClass = parentClass;
+
+
         this.toolbarWrapper.push(
             Strong.toolHandler.toolButton
         );
         
         super.placeholder = ''
         super.spellcheck = true
+        super.contentEditable = true;
     }
 
 	connectedCallback(){
+        super.connectedCallback();
         if( ! this.#isLoaded){
 			this.#isLoaded = true;
-            Promise.all([...new Array(Number(parentLi.dataset.empty_line_count || 0))].map(e=> parentClass.createItemElement(e))).then(emptyList => {
+            Promise.all([...new Array(Number(this.parentLi.dataset.empty_line_count || 0))].map(e=> parentClass.createItemElement(e))).then(emptyList => {
                 this.parentLi.before(...emptyList);
             })
         }
@@ -147,49 +151,58 @@ export default new class NoticeBoardDetail{
             });
             li.style.minHeight = (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 + 'px';
             this.#addItemEvent(li, data);
-            if(!data){
-                resolve(li);
-                return;
-            }
-            
-            let content = data.content;
-            delete data.content;
-            common.jsonToSaveElementDataset(data, li).then(() => {
-                let editor = new NoticdeBoardLine(li, this);
-                li.append(editor);
-                editor.parseLowDoseJSON(content).then(e=>{
-                    resolve(li);
-                });
-            })
-
+            resolve(li);
         })
     }
 
     #addItemEvent(li, data){
 
         return new Promise(resolve=> {
-            const addButtonEvent = () => {
-                if(data){
-                    return
-                }
-                let addButton = Object.assign(document.createElement('button'), {
-                    className: 'notice_board_detail_item_add_content',
-                    textContent: '+'
-                });
+            let addButton = Object.assign(document.createElement('button'), {
+                className: 'notice_board_detail_item_add_content',
+                textContent: '+'
+            });
+            let editor = new NoticdeBoardLine(li, this);
+            if(! data){
                 li.append(addButton);
-                
-                li.onmouseenter = () => {
+            }else{
+                let content = data.content;
+                delete data.content;
+                common.jsonToSaveElementDataset(data, li).then(() => {
+                    li.append(editor);
+                    editor.parseLowDoseJSON(content).then(e=>{
+                        resolve(li);
+                    });
+                })
+            }
+
+            li.onmouseenter = () => {
+                if(addButton.isConnected){
                     addButton.classList.add('active');
                 }
-                
-                li.onmouseleave = () => {
+            }
+            
+            li.onmouseleave = () => {
+                if(addButton.isConnected){
                     //addButton.classList.remove('active');
                 }
-                addButton.onclick = () => {
-                    
+            }
+            addButton.onclick = () => {
+                if(editor.isConnected){
+                    return;
                 }
-            }           
-            addButtonEvent();
+                li.append(editor);
+                addButton.remove();
+            }
+
+            editor.onblur = () => {
+                console.log(editor.isEmpty);
+                if(editor.isEmpty){
+                    editor.remove();
+                    li.append(addButton);
+                }
+            }
+
             resolve(li);
         });
     }

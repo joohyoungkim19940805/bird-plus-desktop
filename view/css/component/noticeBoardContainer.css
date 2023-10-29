@@ -112,6 +112,10 @@
     padding-top: 0.2rem;
     padding-left: 0.5rem;
 }
+#notice_board_wrapper #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item notice-board-line.free-will-editor{
+    width: 100%;
+    background: none;
+}
 #notice_board_wrapper #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item .notice_board_detail_item_add_content.active{
     opacity: 1;
     visibility: visible

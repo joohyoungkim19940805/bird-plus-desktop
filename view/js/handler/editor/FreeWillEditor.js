@@ -94,7 +94,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						//}
 						let selection = window.getSelection();
 						if(this.contentEditable == 'false'){
-							observer.disconnect();
+							//observer.disconnect();
 							return;
 						}else if( ! selection.containsNode(this, true)){
 							return;
@@ -134,12 +134,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						new Line(this.firstElementChild.line);
 					}
 					
-					let isEmpty = Line.isElementTextEmpty(this);
-					let isExistTools = [...this.querySelectorAll('*')].some(e=>this.tools.hasOwnProperty(e.localName))
 					this.querySelectorAll('[data-placeholder]').forEach(async e => {
 						e.removeAttribute('data-placeholder')
 					})
-					if(isEmpty && ! isExistTools){
+					if(this.isEmpty){
 						this.placeholder = this.#placeholder;
 						//this.firstElementChild.dataset.placeholder = this.#placeholder
 					}
@@ -183,11 +181,15 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			if(this.contentEditable == 'inherit'){
+			console.log(this.contentEditable);
+			
+			if(this.contentEditable == 'inherit' || Boolean(this.contentEditable)){
 				this.contentEditable = true;
 				this.tabIndex = 1;
 				this.focus()
-				this.#startFirstLine();
+				if(this.isEmpty){
+					this.#startFirstLine();
+				}
 				this.#undoManager = new UndoManager(this);
 			}
 			
@@ -426,5 +428,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	get firstLine(){
 		return this.firstElementChild;
+	}
+
+	get isEmpty(){
+		return Line.isElementTextEmpty(this) && ! [...this.querySelectorAll('*')].some(e=>this.tools.hasOwnProperty(e.localName));
 	}
 }

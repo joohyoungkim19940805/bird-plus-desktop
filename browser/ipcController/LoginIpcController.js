@@ -64,7 +64,7 @@ class LoginIpcController {
 								mainWindow.isOpening = false;
 							})
 						}else{
-							//axios.defaults.headers.common['Authorization'] = '';
+							axios.defaults.headers.common['Authorization'] = '';
 							this.#moveLoginPage(mainWindow);
 						}
 					}).catch(error=>{
