@@ -256,6 +256,7 @@ export default class Line {
 			if(targetStartLineItem){
 				let itemRemoveList = [];
 				let itemAppendList = [];
+				let i = 0;
 				while(targetStartLineItem){
 					if(targetStartLineItem.nodeType == Node.ELEMENT_NODE){
 						if(tool == targetStartLineItem){
@@ -268,6 +269,12 @@ export default class Line {
 						itemRemoveList.push(targetStartLineItem);
 					}
 					targetStartLineItem = targetStartLineItem.nextSibling;	
+					
+					i += 1;
+					if( i > 1000){
+						console.error('while infiniti loop error ::: applyMultipleLineAll');
+						break;
+					}
 				}
 				[...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
 				itemRemoveList.forEach(e=>e.remove())
@@ -279,17 +286,27 @@ export default class Line {
 				nextTool.append(tool.parentElement.nextSibling);
 				tool.parentElement.after(nextTool);
 				let nextItem = nextTool.nextSibling;
+				
+				let i = 0;
 				while(nextItem){		
 					if(nextTool == nextItem){
 						break;
 					}
 					nextTool.append(nextItem);
+
+					i += 1;
+					if(i > 1000){
+						console.error('while infiniti loop error ::: applyMultipleLineAll');
+						break;
+					}
 				}
 			}
 			
 			
 			let targetLine = Line.getLine(startContainer).nextElementSibling; 
 			let middleTargetTool;
+			
+			let i = 0;
 			while(targetLine){
 				if(targetLine === endLine){
 					break;
@@ -302,7 +319,14 @@ export default class Line {
 				range.selectNodeContents(targetLine);
 				range.surroundContents(middleTargetTool);
 				targetLine = targetLine.nextElementSibling;
+
+				i += 1;
+				if(i > 1000){
+					console.error('while infiniti loop error ::: applyMultipleLineAll');
+					break;
+				}
 			}
+
 			if(Line.prototype.isPrototypeOf(endContainer.line)){
 				resolve(( ! middleTargetTool ? tool : middleTargetTool ));
 			}else{
@@ -315,6 +339,9 @@ export default class Line {
 				if(targetEndLineItem){
 					let itemRemoveList = [];
 					let itemAppendList = [];
+					
+					let i = 0;
+
 					while(targetEndLineItem){
 						if(targetEndLineItem.nodeType == Node.ELEMENT_NODE){
 							endTool.prepend(targetEndLineItem);
@@ -334,6 +361,13 @@ export default class Line {
 							itemAppendList.unshift(targetEndLineItem.textContent)
 						}
 						targetEndLineItem = targetEndLineItem.previousSibling;
+
+						i += 1;
+
+						if(i > 1000){
+							console.error('while infiniti loop error ::: applyMultipleLineAll');
+							break;
+						}
 					}
 					//let targetTextNode = [...endTool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)
 					//itemAppendList.push(targetTextNode.data);
@@ -576,7 +610,10 @@ export default class Line {
 				tool.remove();
 			}
 
-			let nextLine = this.lineElement.nextElementSibling
+			let nextLine = this.lineElement.nextElementSibling;
+
+			let i = 0;
+
 			while(nextLine){
 				if(nextLine == endLine){
 					break;
@@ -586,6 +623,13 @@ export default class Line {
 					this.#findCancels(e, TargetTool);
 				})
 				nextLine = nextLine.nextElementSibling;
+
+				i += 1;
+
+				if(i > 1000){
+					console.error('while infiniti loop error ::: cancelMultipleLineAll');
+					break;
+				}
 			}
 
 			if(endOffset == endContainer.length){

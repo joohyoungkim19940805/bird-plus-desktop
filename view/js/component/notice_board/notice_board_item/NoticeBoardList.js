@@ -81,8 +81,6 @@ export default new class NoticeBoardList{
 			})
 		}
 		this.#positionChanger.onIfCancelCallBack = (target, item) => {
-			console.log(target);
-			console.log(item);
 			if(! item.dataset.parent_group_id && ! target.dataset.group_id){
 				return true
 			}
@@ -355,36 +353,37 @@ export default new class NoticeBoardList{
 		common.jsonToSaveElementDataset(data, li);
 
 		let flexLayout = this.#element.closest('flex-layout');
-		let isOpenFlag = false;
 		titleName.onclick = (event) => {
 			if(document.activeElement == titleName){
 				return;
 			}else if(titleName.classList.contains('active')){
 				flexLayout.closeFlex(noticeBoardDetail.element)
 			}
-			isOpenFlag = ! isOpenFlag;
-			if(isOpenFlag && data.id){
-				noticeBoardHandler.noticeBoardId = data.id;
-			}
 			noticeBoardDetail.element.dataset.prev_grow = 1.5;
 			noticeBoardDetail.element._openEndCallBack = () => {
 				titleName.classList.add('active');
 				//titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
-				titleName.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+				titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
 			}
 			noticeBoardDetail.element._closeEndCallBack = () => {
 				noticeBoardDetail.element.dataset.prev_grow = 1.5;
-				if( ! titleName.classList.contains('active')){
-					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true})
+				if( ! titleName.classList.contains('active') && this.prevOpenFlexTarget != titleName){
+					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(()=>{
+						noticeBoardHandler.noticeBoardId = data.id;
+						this.prevOpenFlexTarget = titleName;
+					})
 				}else{
 					titleName.classList.remove('active');
 				}
 			}
 
 			if(flexLayout.isVisible(noticeBoardDetail.element)){
-				flexLayout.closeFlex(noticeBoardDetail.element)
+				flexLayout.closeFlex(noticeBoardDetail.element).then(() => {
+				})
 			}else{
 				flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(() => {
+					this.prevOpenFlexTarget = titleName;
+					noticeBoardHandler.noticeBoardId = data.id;
 					//titleName.classList.add('active');
 				})
 			}

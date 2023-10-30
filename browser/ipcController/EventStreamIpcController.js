@@ -66,7 +66,7 @@ class EventStreamIpcController {
 			windowUtil.isLogin( result => {
 				if( ! result.isLogin){
 					axios.defaults.headers.common['Authorization'] = '';
-					this.#send('neeLoginRequest', result);
+					this.#send('needLoginRequest', result);
 				}
 			})
 			//연결 실패되면 계속 시도하기에 임시 조치로 close

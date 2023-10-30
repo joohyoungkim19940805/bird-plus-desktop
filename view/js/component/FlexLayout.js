@@ -386,13 +386,18 @@ class FlexLayout extends HTMLElement {
 				return false;
 			}
 		};
-		
+		let i = 0
 		while(isCloseCheck()){
 			let nextTarget = target[direction]?.[direction];
 			if(! nextTarget){
 				break;
 			}
 			target = nextTarget;
+			i += 1;
+			if(i > 1000){
+				console.error('while infiniti loop error ::: findNotCloseFlexContent');
+				break;
+			}
 		}
 		return target;
 	}
@@ -416,6 +421,7 @@ class FlexLayout extends HTMLElement {
 				e.style.transition = 'flex 0.3s';
 				e.ontransitionend = () => {
 					e.style.transition = '';
+					//e.ontransitionend = '';
 				}
 				
 				if(e == resizeTarget){
@@ -446,6 +452,7 @@ class FlexLayout extends HTMLElement {
 				if(resizeTarget._closeEndCallBack){
 					resizeTarget._closeEndCallBack();
 				}
+				//resizeTarget.ontransitionend = '';
 			}
 			resolve(resizeTarget);
 		});
@@ -474,6 +481,7 @@ class FlexLayout extends HTMLElement {
 				e.style.transition = 'flex 0.3s';
 				e.ontransitionend = () => {
 					e.style.transition = '';
+					//e.ontransitionend = '';
 				}
 				
 				if(isResize){
@@ -498,6 +506,7 @@ class FlexLayout extends HTMLElement {
 				if(resizeTarget._openEndCallBack){
 					resizeTarget._openEndCallBack();
 				}
+				//resizeTarget.ontransitionend = '';
 			}
 			resolve(resizeTarget)
 		})

@@ -60,7 +60,6 @@ const electronEventTrigger = {
 		})
 		
 		new Promise(resolve => {
-			console.log(electronEventTrigger.onEvent[eventName]);
 			if( ! electronEventTrigger.onEvent[eventName] || ! electronEventTrigger.onEvent[eventName] instanceof Function){
 				resolve();
 				return;

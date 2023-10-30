@@ -1,5 +1,7 @@
+const path = require('path');
 const axios = require('axios');
 const log = require('electron-log');
+const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 
 class WindowUtil{
     constructor(){
@@ -25,14 +27,29 @@ class WindowUtil{
                 }else{
                     response.isLogin = false;
                 }
+
+                if(! response.isLogin){
+                    mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+                        mainWindow.titleBarStyle = 'visibble'
+                        mainWindow.show();
+                        mainWindow.isOpening = false;
+                        return 'done';
+                    })
+                }
                 return callBack(response);
             }
         }).catch(error=>{
             log.error(error);
             log.error('isLogin error callBack ::: ', callBack.toString());
-            //axios.defaults.headers.common['Authorization'] = '';
-            console.log(error.data);
+            log.error(error.data);
+            axios.defaults.headers.common['Authorization'] = '';
             error.isLogin=false;
+            mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+                mainWindow.titleBarStyle = 'visibble'
+                mainWindow.show();
+                mainWindow.isOpening = false;
+                return 'done';
+            })
             return callBack(error);
             //throw error;
         })

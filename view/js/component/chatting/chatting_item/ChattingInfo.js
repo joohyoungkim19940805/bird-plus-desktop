@@ -117,14 +117,14 @@ export default new class ChattingInfo{
             callBack: () => {
                 this.reset();
                 let promise;
-                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                /*let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                 if(memory && memory.length != 0){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
                         memory.flatMap(e=>Object.values(e))
                         .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                     );
-                }else{
+                }else{*/
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                     .then(async data=> 
                         this.createPage(data)
@@ -141,7 +141,7 @@ export default new class ChattingInfo{
                             return liList;
                         })
                     )
-                }
+                //}
                 promise.then(liList => {
                     this.#liList.push(...liList);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);

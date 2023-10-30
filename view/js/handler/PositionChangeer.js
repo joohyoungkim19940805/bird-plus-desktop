@@ -102,6 +102,7 @@ export default class PositionChanger{
 						}
 						lastItem = nowLastItem
 						let prevItem = lastItem?.previousElementSibling;
+						let i = 0;
 						while(prevItem){
 							prevOrderSort += 1;
 							prevItem.dataset.prev_order_sort = prevItem.dataset.order_sort
@@ -110,6 +111,11 @@ export default class PositionChanger{
 								break;
 							}
 							prevItem = prevItem.previousElementSibling;
+							i += 1;
+							if(i > 1000){
+								console.error('while infiniti loop error ::: addPositionChangeEvent');
+								break;
+							}
 						}
 						res();
 					}).then(()=>{

@@ -128,7 +128,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					}
 					
 					if(this.childElementCount == 0){
-						this.#startFirstLine();
+						this.startFirstLine();
 					}
 					if( ! this.firstElementChild.line){
 						new Line(this.firstElementChild.line);
@@ -181,14 +181,12 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	connectedCallback(){
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
-			console.log(this.contentEditable);
-			
-			if(this.contentEditable == 'inherit' || Boolean(this.contentEditable)){
+			if(this.contentEditable == 'inherit' || this.contentEditable == true){
 				this.contentEditable = true;
 				this.tabIndex = 1;
 				this.focus()
 				if(this.isEmpty){
-					this.#startFirstLine();
+					this.startFirstLine();
 				}
 				this.#undoManager = new UndoManager(this);
 			}
@@ -197,10 +195,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	}
 	disconnectedCallback(){
         this.#isLoaded = false;
-		this.contentEditable = false;
+		//this.contentEditable = false;
     }
 	
-	#startFirstLine(){
+	startFirstLine(){
 		let lineElement = super.createLine();
 		lineElement.line.isFirstLine = true;
 		this.placeholder = this.#placeholder;

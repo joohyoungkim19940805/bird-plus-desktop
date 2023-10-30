@@ -59,13 +59,16 @@ export default new class NoticeBoardHandler{
         }
         this.#noticeBoard = [];
         this.#noticeBoardId = noticeBoardId;
-        Object.values(this.#addNoticeBoardIdChangeListener).forEach(async callBack => {
-            new Promise(res => {
-                callBack(this);
-                res();
-            })
-        });
-
+        new Promise(resolve => {
+            Object.values(this.#addNoticeBoardIdChangeListener).forEach(async callBack => {
+                new Promise(res => {
+                    callBack(this);
+                    res();
+                })
+            });
+            resolve();
+        })
+        
         window.myAPI.noticeBoard.searchNoticeBoardDetailList({
             workspaceId: workspaceHandler.workspaceId, 
             roomId: roomHandler.roomId,

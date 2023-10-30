@@ -25,30 +25,24 @@ class NoticdeBoardLine extends FreeWillEditor{
     static{
         window.customElements.define('notice-board-line', NoticdeBoardLine);
     }
-    
-    toolbarWrapper = [];
-    
-	#isLoaded = false;
+    static tools = {
+        'free-will-strong' : Strong,
+    }
+    static option = {
+        isDefaultStyle : true
+    }
+    static toolbarWrapper = [
+        Strong.toolHandler.toolButton
+    ];
     
     parentLi;
     parentClass;
     constructor(parentLi, parentClass){
-        let tools = {
-			'free-will-strong' : Strong,
 
-		}
-		let option = {
-			isDefaultStyle : true
-		}
-		super(tools, option);
+		super(NoticdeBoardLine.tools, NoticdeBoardLine.option);
 
         this.parentLi = parentLi;
         this.parentClass = parentClass;
-
-
-        this.toolbarWrapper.push(
-            Strong.toolHandler.toolButton
-        );
         
         super.placeholder = ''
         super.spellcheck = true
@@ -57,12 +51,9 @@ class NoticdeBoardLine extends FreeWillEditor{
 
 	connectedCallback(){
         super.connectedCallback();
-        if( ! this.#isLoaded){
-			this.#isLoaded = true;
-            Promise.all([...new Array(Number(this.parentLi.dataset.empty_line_count || 0))].map(e=> parentClass.createItemElement(e))).then(emptyList => {
-                this.parentLi.before(...emptyList);
-            })
-        }
+        Promise.all([...new Array(Number(this.parentLi.dataset.empty_line_count || 0))].map(e=> this.parentClass.createItemElement(e))).then(emptyList => {
+            this.parentLi.before(...emptyList);
+        })
     }
 }
 
@@ -90,10 +81,6 @@ export default new class NoticeBoardDetail{
     #positionChanger;
     
     #defaultEmptyLine = 20;
-    
-    #lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
-
-    })
 
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardDetailList});
@@ -104,47 +91,66 @@ export default new class NoticeBoardDetail{
         noticeBoardHandler.addNoticeBoardAcceptListener = {
             name: 'noticeBoardDetailAccept',
             callBack: (handler, data)=>{
-                console.log(data);
                 this.createItemElement(data)
                 .then(li => {
                     this.#addMemory(li);
                 }).then( () => {
-                    let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[handler.noticeBoardId] || {})
-                        .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-                    this.#elementMap.noticeBoardDetailList.replaceChildren(...list);
+                    let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+                    .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+                    let firstEmptyLineLength = ( 
+                        window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
+                    ) - list.length - this.#elementMap.noticeBoardDetailList.childElementCount
+                    
+                    if(firstEmptyLineLength < 1){
+                        firstEmptyLineLength = this.#defaultEmptyLine;
+                    }
+
+                    Promise.all( [...new Array(parseInt(firstEmptyLineLength))].map(e=> this.createItemElement(e)) ).then(emptyList =>{
+                        this.#elementMap.noticeBoardDetailList.replaceChildren(...list, ...emptyList);    
+                    });
                 })
             },
             runTheFirst: false
         }
-        noticeBoardHandler.addNoticeBoardIdChangeListener = {
-            name: 'noticeBoardDetailIdChange',
-            callBack: (handler, data)=>{
-                this.#elementMap.noticeBoardDetailList.replaceChildren();
-            }
-        }
         noticeBoardHandler.addNoticeBoardAcceptEndListener = {
             name: 'noticeBoardDetailAcceptEndCallback',
             callBack: (handler, data)=>{
-                let dataCount = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[handler.noticeBoardId] || {}).length;
+                let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+                .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+
+                let dataCount = list.length;
+                
                 let firstEmptyLineLength = ( 
                     window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
                 ) - dataCount - this.#elementMap.noticeBoardDetailList.childElementCount
                 if(firstEmptyLineLength < 1){
                     firstEmptyLineLength = this.#defaultEmptyLine;
                 }
-                console.log(firstEmptyLineLength);
+
                 Promise.all( [...new Array(parseInt(firstEmptyLineLength))].map(e=> this.createItemElement(e)) ).then(emptyList =>{
-                    let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[handler.noticeBoardId] || {})
-                        .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+
                     this.#elementMap.noticeBoardDetailList.replaceChildren(...list, ...emptyList);    
                 });
             },
             runTheFirst: false
         }
+        
+        noticeBoardHandler.addNoticeBoardIdChangeListener = {
+            name: 'noticeBoardDetailIdChange',
+            callBack: (handler, data)=>{
+                this.#elementMap.noticeBoardDetailList.replaceChildren();
+                /*if(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId]){
+                    this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId] = {};
+                }*/
+            }
+        }
 
     }
 
     createItemElement(data){
+        if(data && data.serverSentStreamType){
+            data = data.content;
+        }
         return new Promise(resolve=>{
             let li = Object.assign(document.createElement('li'),{
                 className : 'notice_board_detail_item'
@@ -163,16 +169,15 @@ export default new class NoticeBoardDetail{
                 textContent: '+'
             });
             let editor = new NoticdeBoardLine(li, this);
+            editor.startFirstLine()
             if(! data){
                 li.append(addButton);
             }else{
-                let content = data.content;
+                let {content} = data;
                 delete data.content;
                 common.jsonToSaveElementDataset(data, li).then(() => {
                     li.append(editor);
-                    editor.parseLowDoseJSON(content).then(e=>{
-                        resolve(li);
-                    });
+                    editor.parseLowDoseJSON(content)
                 })
             }
 
@@ -184,7 +189,7 @@ export default new class NoticeBoardDetail{
             
             li.onmouseleave = () => {
                 if(addButton.isConnected){
-                    //addButton.classList.remove('active');
+                    addButton.classList.remove('active');
                 }
             }
             addButton.onclick = () => {
@@ -194,31 +199,69 @@ export default new class NoticeBoardDetail{
                 li.append(editor);
                 addButton.remove();
             }
-
+            let prevHTML;
+            editor.onfocus = (event) => {
+                prevHTML = editor.innerHTML;
+            }
             editor.onblur = () => {
-                console.log(editor.isEmpty);
+                console.log('??');
                 if(editor.isEmpty){
                     editor.remove();
                     li.append(addButton);
+                    return ;
+                }else if(prevHTML == editor.innerHTML){
+                    return;
                 }
+                
+
+                let emptyLineCount = 0;
+                let prevItem = li.previousElementSibling;
+                
+                let i = 0;
+                while(prevItem){
+                    let prevContent = prevItem.querySelector('notice-board-line');
+                    if(! prevContent){
+                        emptyLineCount += 1;
+                        prevItem = prevItem.previousElementSibling;
+                    }else {
+                        break;    
+                    }
+
+                    i += 1;
+                    if(i > 1000){
+                        console.error('while infiniti loop error ::: addItemEvent');
+                        break;
+                    }
+                }
+                editor.getLowDoseJSON().then(jsonList => {
+                    window.myAPI.noticeBoard.createNoticeBoardDetail({
+                        id : li.dataset.id,
+                        noticeBoardId: noticeBoardHandler.noticeBoardId,
+                        roomId: roomHandler.roomId,
+                        workspaceId: workspaceHandler.workspaceId,
+                        emptyLineCount: emptyLineCount,
+                        content : JSON.stringify(jsonList)
+                    })
+                })
+
             }
 
             resolve(li);
         });
     }
 
-    #addMemory(data, noticeBoardId){
+    #addMemory(data){
 		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
 			this.#memory[workspaceHandler.workspaceId] = {};
 		}
 		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
 			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
 		}
-        if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(noticeBoardId)){
-            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardId] = {}
+        if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(noticeBoardHandler.noticeBoardId)){
+            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId] = {}
         }
         
-        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardId][data.dataset.id] = data;
+        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId][data.dataset.id] = data;
 		
     }
 

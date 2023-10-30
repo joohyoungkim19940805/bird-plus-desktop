@@ -68,6 +68,7 @@ class LoginIpcController {
 							this.#moveLoginPage(mainWindow);
 						}
 					}).catch(error=>{
+						axios.defaults.headers.common['Authorization'] = '';
 						log.error(' changeLoginPage error ::: ', error.message)
 						log.error(' changeLoginPage error stack :::', error.stack)
 						this.#moveLoginPage(mainWindow);
