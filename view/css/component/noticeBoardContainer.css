@@ -123,4 +123,15 @@
 #notice_board_wrapper #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item .notice_board_detail_item_add_content:hover{
     background: #ebebeb;
 }
+#notice_board_wrapper #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item .notice_board_detail_item_position_change_icon{
+    color: #afafaf;
+    font-size: 1rem;
+    font-weight: bold;
+    padding-right: 7px;
+}
+#notice_board_wrapper #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item .notice_board_detail_item_position_change_icon:hover{
+    /*@see https://stackoverflow.com/a/5697103*/
+    cursor: move;
+    /*cursor: grab;*/
+}
 /* notice board detail [E] */

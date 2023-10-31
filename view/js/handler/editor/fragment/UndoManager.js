@@ -121,6 +121,10 @@ export default class UndoManager{
 
     addUndoKey(){
         this.#editor.addEventListener('keydown', (event) => {
+            console.log(document.activeElement, this.#editor)
+            if(document.activeElement !== this.#editor){
+				return;
+			}
             let {ctrlKey, key} = event;
             if( ! ctrlKey || ! (key == 'z' || key == 'y')){
                 return;
@@ -196,6 +200,10 @@ export default class UndoManager{
     }
     addUserInput(){
         this.#editor.addEventListener('keydown', (event) => {
+            console.log(document.activeElement, this.#editor)
+            if(document.activeElement !== this.#editor){
+				return;
+			}
             let {ctrlKey, key, altKey} = event;
             if(ctrlKey || altKey || ctrlKey && (key == 'z' || key == 'y')){
                 return;

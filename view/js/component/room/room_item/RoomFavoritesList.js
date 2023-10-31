@@ -93,7 +93,6 @@ export default new class RoomFavoritesList{
 	constructor(){
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
-			console.log(changeList)
 			window.myAPI.room.updateRoomFavorites(changeList.map(e=>{
 				return {
 					id: e.dataset.id, 
@@ -111,7 +110,19 @@ export default new class RoomFavoritesList{
 			},
 			runTheFirst: true
 		};
-		
+		this.#positionChanger.onDropDocumentOutCallback = ({target, event}) => {
+			window.myAPI.createSubWindow({
+				workspaceId: workspaceHandler.workspaceId,
+				roomId: target.dataset.room_id,
+				width: parseInt(window.outerWidth * 0.7),
+				height: parseInt(window.outerHeight * 0.7),
+				x: event.x,
+				y: event.y,
+				pageName: 'multipleChattingView',
+				pageId : target.dataset.room_id
+			})
+		}
+
 
 		this.#elementMap.menuSearch.onsubmit = (event) => {
 			event.preventDefault();

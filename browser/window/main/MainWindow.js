@@ -6,7 +6,7 @@ const path = require('path');
 /**
  * 메인 윈도우를 만들기 위해 일렉트론 모듈에서 브라우저 윈도우를 가져온다. 
  */
-const {BrowserWindow, shell} = require('electron');
+const {BrowserWindow, ipcMain, shell} = require('electron');
 
 const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
 
@@ -26,6 +26,8 @@ class MainWindow extends BrowserWindow{
 	#workspaceId
 	#isOpening = true;
 	#isOpeningCallbackList = [];
+
+	subWindow = {};
 
 	/**
 	 * 메인 윈도우의 생성자
@@ -95,7 +97,11 @@ class MainWindow extends BrowserWindow{
 			birdPlusOptions.position = super.getPosition();
 		})
 
-		//새창 팝업 열릴시 트리거(파일인 경우만)
+		ipcMain.on('createSubWindow', async (event, param) => {
+			this.createSubWindow(param);
+		})
+
+		//새창 팝업 열릴시 트리거
 		super.webContents.setWindowOpenHandler((event) => {
 			/*
 			event{
@@ -162,6 +168,13 @@ class MainWindow extends BrowserWindow{
         }
 		this.#workspaceId = workspaceId;
 		mainWindow.webContents.send("workspaceChange", {workspaceId: this.#workspaceId});
+		/*Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed){
+				delete mainWindow.subWindow[k];
+				return;
+			}
+			v.webContents.send("workspaceChange", {workspaceId: this.#workspaceId});
+		})*/
 	}
 	get workspaceId(){
 		return this.#workspaceId;
@@ -174,6 +187,58 @@ class MainWindow extends BrowserWindow{
 
 	resetWorkspace(){
 		this.#workspaceId = undefined;
+	}
+
+	createSubWindow(param){
+		if(! param.pageName){
+			throw new Error('pageName is null');
+		}
+
+		let duplecateWindow = this.subWindow[param.pageId] || this.subWindow[param.pageName];
+
+		if(duplecateWindow && duplecateWindow.isDestroyed()){
+			delete this.subWindow[param.pageId];
+			delete this.subWindow[param.pageName];
+		}else if(duplecateWindow){
+			return;
+		}
+		console.log(param);
+		let window = new BrowserWindow(
+			{
+				width : param.width,
+				height : param.height,
+				webPreferences : {
+					preload : path.join(__project_path, 'browser/preload/preload.js'),
+					protocol: "file",
+					  slashes: true
+				},
+				autoHideMenuBar : true,
+				titleBarStyle: 'visible',
+				movable : true,
+				resizable : true,
+				trafficLightPosition: {
+					x: 15,
+					y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+				},
+				x: parseInt( param.x - (param.width / 2) ),
+				y: parseInt( param.y - 20) //parseInt( param.y - (param.height / 2) )
+			}
+		)
+		window.loadFile(path.join(__project_path, `view/html/${param.pageName}.html`)).then(e=>{
+			if(param.roomId){
+				window.webContents.send('roomChange', {
+					roomId:param.roomId
+				});
+				window.webContents.openDevTools();
+			}
+		})
+
+		if(param.pageId){
+			this.subWindow[param.pageId] = window;
+		}else{
+			this.subWindow[param.pageName] = window;
+		}
+
 	}
 }
 

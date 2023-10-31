@@ -99,10 +99,14 @@ export default new class ChattingInfo{
             name: 'chattingInfo',
             callBack: (chattingData) => {
                 this.createItemElement(chattingData).then(liElement => {
+                    this.#addMemory(liElement, chattingData.id)
+                    if(roomHandler.roomId != chattingData.roomId){
+                        return;
+                    }
                     this.#elementMap.chattingContentList.prepend(liElement);
-                    this.#addMemory(liElement)
+
                     this.#processingTimeGrouping(
-                        this.#liList[0],
+                        this.#liList[0] || liElement,
                         liElement
                     ); 
                     this.#liList.unshift(liElement);

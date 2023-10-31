@@ -21,9 +21,9 @@ import roomHandler from "../../../handler/room/RoomHandler";
 import common from "./../../../common"
 import PositionChanger from "../../../handler/PositionChangeer";
 import noticeBoardHandler from "../../../handler/notice_board/NoticeBoardHandler";
-class NoticdeBoardLine extends FreeWillEditor{
+class NoticeBoardLine extends FreeWillEditor{
     static{
-        window.customElements.define('notice-board-line', NoticdeBoardLine);
+        window.customElements.define('notice-board-line', NoticeBoardLine);
     }
     static tools = {
         'free-will-strong' : Strong,
@@ -32,14 +32,18 @@ class NoticdeBoardLine extends FreeWillEditor{
         isDefaultStyle : true
     }
     static toolbarWrapper = [
-        Strong.toolHandler.toolButton
+        (() => {
+            let btn = Strong.toolHandler.toolButton.cloneNode(true);
+            btn.onclick = Strong.toolHandler.toolButton.onclick;
+            return btn;
+        })()
     ];
     
     parentLi;
     parentClass;
     constructor(parentLi, parentClass){
 
-		super(NoticdeBoardLine.tools, NoticdeBoardLine.option);
+		super(NoticeBoardLine.tools, NoticeBoardLine.option);
 
         this.parentLi = parentLi;
         this.parentClass = parentClass;
@@ -49,12 +53,6 @@ class NoticdeBoardLine extends FreeWillEditor{
         super.contentEditable = true;
     }
 
-	connectedCallback(){
-        super.connectedCallback();
-        Promise.all([...new Array(Number(this.parentLi.dataset.empty_line_count || 0))].map(e=> this.parentClass.createItemElement(e))).then(emptyList => {
-            this.parentLi.before(...emptyList);
-        })
-    }
 }
 
 export default new class NoticeBoardDetail{
@@ -67,6 +65,7 @@ export default new class NoticeBoardDetail{
                 <ul class="notice_board_detail_content" data-bind_name="noticeBoardDetailList">
  
                 </ul>
+            <div class="toolbar" style="position: fixed;" data-bind_name="test"></div>
             </div>
         `
     })
@@ -82,72 +81,91 @@ export default new class NoticeBoardDetail{
     
     #defaultEmptyLine = 20;
 
+    #prevRange;
+    #prevContent;
+    #prevStartOffset;
+    #prevEndOffset;
+
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardDetailList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
 
         };
-
-        noticeBoardHandler.addNoticeBoardAcceptListener = {
-            name: 'noticeBoardDetailAccept',
-            callBack: (handler, data)=>{
-                this.createItemElement(data)
-                .then(li => {
-                    this.#addMemory(li);
-                }).then( () => {
-                    let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-                    .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-                    let firstEmptyLineLength = ( 
-                        window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
-                    ) - list.length - this.#elementMap.noticeBoardDetailList.childElementCount
-                    
-                    if(firstEmptyLineLength < 1){
-                        firstEmptyLineLength = this.#defaultEmptyLine;
-                    }
-
-                    Promise.all( [...new Array(parseInt(firstEmptyLineLength))].map(e=> this.createItemElement(e)) ).then(emptyList =>{
-                        this.#elementMap.noticeBoardDetailList.replaceChildren(...list, ...emptyList);    
-                    });
-                })
-            },
-            runTheFirst: false
-        }
-        noticeBoardHandler.addNoticeBoardAcceptEndListener = {
-            name: 'noticeBoardDetailAcceptEndCallback',
-            callBack: (handler, data)=>{
-                let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
+            this.createItemElement(data)
+            .then(li => {
+                this.#addMemory(li);
+            }).then( async () => {
+                let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+                    .map(async item=> {
+                        let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
+                            .map((e,i)=> this.createItemElement(e, Number(item.dataset.order_sort) + i )));
+                        result.push(item);
+                        return result;
+                    })
+                ))
+                .flatMap(e=>e)
                 .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-
-                let dataCount = list.length;
-                
                 let firstEmptyLineLength = ( 
                     window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
-                ) - dataCount - this.#elementMap.noticeBoardDetailList.childElementCount
+                ) - list.length - this.#elementMap.noticeBoardDetailList.childElementCount
+                
                 if(firstEmptyLineLength < 1){
                     firstEmptyLineLength = this.#defaultEmptyLine;
                 }
 
-                Promise.all( [...new Array(parseInt(firstEmptyLineLength))].map(e=> this.createItemElement(e)) ).then(emptyList =>{
-
-                    this.#elementMap.noticeBoardDetailList.replaceChildren(...list, ...emptyList);    
+                Promise.all([...new Array(parseInt(firstEmptyLineLength))]
+                    .map((e, i) => this.createItemElement(e, Number(list[list.length - 1]?.dataset.order_sort || 0) - i - 2)) 
+                )
+                .then(emptyList =>{
+                    let totalList = [...list, ...emptyList];
+                    this.#positionChanger.addPositionChangeEvent(totalList);
+                    this.#elementMap.noticeBoardDetailList.replaceChildren(...totalList);    
                 });
-            },
-            runTheFirst: false
-        }
+            })
+        })
         
         noticeBoardHandler.addNoticeBoardIdChangeListener = {
             name: 'noticeBoardDetailIdChange',
             callBack: (handler, data)=>{
                 this.#elementMap.noticeBoardDetailList.replaceChildren();
+                this.refresh();
                 /*if(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId]){
                     this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId] = {};
                 }*/
             }
         }
 
+        document.addEventListener('selectionchange', event => {
+            if(document.activeElement.constructor != NoticeBoardLine){
+                return;
+            }
+            let selection = window.getSelection();
+            if (selection.rangeCount == 0){
+                return;
+            }
+            let range = selection.getRangeAt(0);
+            if(range.commonAncestorContainer.nodeType != Node.TEXT_NODE){
+                return;
+            }
+            
+            this.#prevRange = range.cloneRange();
+            this.#prevStartOffset = range.startOffset;
+            this.#prevEndOffset = range.endOffset;
+            this.#prevContent = range.commonAncestorContainer;
+            console.log(document.activeElement);
+            if( ! selection.isCollapsed){
+                this.#elementMap.noticeBoardDetailContainer.append(this.#elementMap.test);
+                this.#elementMap.test.append(...NoticeBoardLine.toolbarWrapper)
+                common.processingElementPosition(this.#elementMap.test ,document.activeElement)
+            }else{
+                this.#elementMap.test.remove();
+            }
+        })
+
     }
 
-    createItemElement(data){
+    createItemElement(data, emptyIndex){
         if(data && data.serverSentStreamType){
             data = data.content;
         }
@@ -155,8 +173,10 @@ export default new class NoticeBoardDetail{
             let li = Object.assign(document.createElement('li'),{
                 className : 'notice_board_detail_item'
             });
+            if(! data) li.dataset.order_sort = emptyIndex + 1; 
             li.style.minHeight = (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 + 'px';
             this.#addItemEvent(li, data);
+            
             resolve(li);
         })
     }
@@ -168,15 +188,21 @@ export default new class NoticeBoardDetail{
                 className: 'notice_board_detail_item_add_content',
                 textContent: '+'
             });
-            let editor = new NoticdeBoardLine(li, this);
+            let editor = new NoticeBoardLine(li, this);
+            let positionChangeIcon = Object.assign(document.createElement('span'),{
+                className: 'notice_board_detail_item_position_change_icon',
+                textContent: '〓'
+            })
             editor.startFirstLine()
             if(! data){
                 li.append(addButton);
+                li.dataset.is_empty = '';
             }else{
                 let {content} = data;
                 delete data.content;
                 common.jsonToSaveElementDataset(data, li).then(() => {
                     li.append(editor);
+                    li.append(positionChangeIcon)
                     editor.parseLowDoseJSON(content)
                 })
             }
@@ -184,27 +210,65 @@ export default new class NoticeBoardDetail{
             li.onmouseenter = () => {
                 if(addButton.isConnected){
                     addButton.classList.add('active');
+                    return;
                 }
+                li.draggable = false;
             }
-            
             li.onmouseleave = () => {
                 if(addButton.isConnected){
                     addButton.classList.remove('active');
+                    return;
                 }
             }
+            let isPositionChangeIconOver = false;
+            positionChangeIcon.onmousemove = () => {
+                li.draggable = true;
+            }
+            positionChangeIcon.onmouseover = () => {
+                isPositionChangeIconOver = true;
+                li.draggable = true;
+            }
+            positionChangeIcon.onmouseout = () => {
+                isPositionChangeIconOver = false;
+                li.draggable = false;
+            }
+            li.onpointerdown = (event) => {
+                if(isPositionChangeIconOver){
+                    return;
+                }
+                li.setPointerCapture(event.pointerId);
+            }
+            li.onpointerup = (event) => {
+                li.releasePointerCapture(event.pointerId);
+            }
+            li.__dragendCallback = () => {
+                let selection = window.getSelection()
+                let range = selection.getRangeAt(0);
+                if(this.#prevRange){
+                    range.setEnd(this.#prevContent, this.#prevEndOffset);
+                    range.setStart(this.#prevContent, this.#prevStartOffset);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }else{
+                    selection.setPosition(editor, editor.childNodes.length);
+                }
+            }
+
             addButton.onclick = () => {
                 if(editor.isConnected){
                     return;
                 }
                 li.append(editor);
+                li.append(positionChangeIcon);
                 addButton.remove();
+                window.getSelection().setPosition(editor, editor.childNodes.length);
             }
             let prevHTML;
             editor.onfocus = (event) => {
                 prevHTML = editor.innerHTML;
             }
             editor.onblur = () => {
-                console.log('??');
+
                 if(editor.isEmpty){
                     editor.remove();
                     li.append(addButton);
@@ -239,7 +303,8 @@ export default new class NoticeBoardDetail{
                         noticeBoardId: noticeBoardHandler.noticeBoardId,
                         roomId: roomHandler.roomId,
                         workspaceId: workspaceHandler.workspaceId,
-                        emptyLineCount: emptyLineCount,
+                        emptyLineCount,
+                        orderSort: [...this.#elementMap.noticeBoardDetailList.children].reverse().findIndex(e=>e==li) - Math.abs(Number(this.#elementMap.noticeBoardDetailList.lastElementChild.dataset.order_sort) || 0),
                         content : JSON.stringify(jsonList)
                     })
                 })
@@ -248,6 +313,14 @@ export default new class NoticeBoardDetail{
 
             resolve(li);
         });
+    }
+
+    #callData(){
+        return window.myAPI.noticeBoard.searchNoticeBoardDetailList({
+            workspaceId: workspaceHandler.workspaceId, 
+            roomId: roomHandler.roomId,
+            noticeBoardId : noticeBoardHandler.noticeBoardId
+        })
     }
 
     #addMemory(data){
@@ -264,6 +337,39 @@ export default new class NoticeBoardDetail{
         this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId][data.dataset.id] = data;
 		
     }
+
+    async refresh(){
+        let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+            .map(async item=> {
+                let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
+                    .map((e,i)=> this.createItemElement(e, Number(item.dataset.order_sort) + i) ));
+                result.push(item);
+                return result;
+            })
+        )).flatMap(e=>e)
+        .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
+        if(list.length == 0){
+            this.#callData();
+        }
+        let dataCount = list.length;
+        
+        let firstEmptyLineLength = ( 
+            window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
+        ) - dataCount - this.#elementMap.noticeBoardDetailList.childElementCount
+        
+        if(firstEmptyLineLength < 1){
+            firstEmptyLineLength = this.#defaultEmptyLine;
+        }
+
+        Promise.all([...new Array(parseInt(firstEmptyLineLength))]
+            .map((e, i) => this.createItemElement(e, Number(list[list.length - 1]?.dataset.order_sort || 0) - i - 2)) 
+        )
+        .then(emptyList =>{
+            let totalList = [...list, ...emptyList];
+            this.#positionChanger.addPositionChangeEvent(totalList);
+            this.#elementMap.noticeBoardDetailList.replaceChildren(...totalList);    
+        });
+	}
 
 	get element(){
 		return this.#element;

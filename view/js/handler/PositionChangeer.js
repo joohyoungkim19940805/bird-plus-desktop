@@ -3,7 +3,7 @@ export default class PositionChanger{
 	#targetItem;
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
-	#onDropDocumentOutCallback = (target) => {console.log('out!!')}; 
+	#onDropDocumentOutCallback = (target) => {console.log('out!!', target)}; 
 	#onIfCancelCallBack = (target) => {return false;};
 	constructor({wrapper}){
 		if( ! wrapper){
@@ -45,7 +45,10 @@ export default class PositionChanger{
 						event.x < 0 || event.y < 0 ||
 						window.outerWidth < event.x || window.outerHeight < event.y
 					){
-						this.#onDropDocumentOutCallback(item);
+						this.#onDropDocumentOutCallback({
+							target:item,
+							event
+						});
 					}
 					this.#targetItem = undefined;
 					child.forEach(async e => {
@@ -54,6 +57,9 @@ export default class PositionChanger{
 							ee.style.pointerEvents = '';
 						})
 					})
+					if(item.__dragendCallback){
+						item.__dragendCallback();
+					}
 				}
 				item.ondragover = (event) => {
 					event.stopPropagation();

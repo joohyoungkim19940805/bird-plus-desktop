@@ -43,6 +43,13 @@ class NoticeBoardIpccontroller {
 
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
+		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed()){
+				delete mainWindow.subWindow[k];
+				return;
+			}
+			v.webContents.send(eventName, data);
+		})
 	}
 
     createNoticeBoardGroup(event, param = {}){

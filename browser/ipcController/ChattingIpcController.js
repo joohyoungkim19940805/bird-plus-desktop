@@ -19,6 +19,13 @@ class ChattingIpcController {
 	}
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
+		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed()){
+				delete mainWindow.subWindow
+				return;
+			}
+			e.webContents.send(eventName, data);
+		})
 	}
 	sendChatting(event, param){
 		return windowUtil.isLogin( result => {

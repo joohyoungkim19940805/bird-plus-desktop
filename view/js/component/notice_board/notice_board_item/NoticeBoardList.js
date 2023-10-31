@@ -273,13 +273,6 @@ export default new class NoticeBoardList{
 				titleName.contentEditable = false;
 				titleName.classList.add('pointer');
 				if( ! titleName.dataset.prev_titleName || titleName.dataset.prev_titleName != titleName.textContent){
-					console.log({
-						roomId: roomHandler.roomId,
-						workspaceId: workspaceHandler.workspaceId,
-						title: titleName.textContent,
-						groupId: li.dataset.group_id,
-						parentGroupId: parentRoot.dataset.parent_group_id
-					})
 					window.myAPI.noticeBoard.createNoticeBoardGroup({
 						roomId: roomHandler.roomId,
 						workspaceId: workspaceHandler.workspaceId,

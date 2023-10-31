@@ -51,7 +51,7 @@ div[is="content-block"]{
 
 /* 채팅 영역 시작 [S] */
 
-#toolbar{
+.toolbar{
 	background-color: #d7d7d7cf;
     padding-left: 1%;
     padding-right: 1%;
@@ -62,7 +62,7 @@ div[is="content-block"]{
     flex-wrap: wrap;
 }
 
-#toolbar button{
+.toolbar button{
 	background: none;
 	border: none;
 	outline: none;
@@ -76,7 +76,7 @@ div[is="content-block"]{
     min-height: 22px;
 }
 
-#toolbar > button:hover{
+.toolbar > button:hover{
 	background-color: #c7c7c7;
 }
 

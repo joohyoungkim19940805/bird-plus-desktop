@@ -96,6 +96,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
 
+	createSubWindow : (param) => ipcRenderer.send('createSubWindow', param), 
+
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},

@@ -21,6 +21,13 @@ class EventStreamIpcController {
 	}
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
+		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed()){
+				delete mainWindow.subWindow[k];
+				return;
+			}
+			v.webContents.send(eventName, data);
+		})
 	}
 	initWorkspaceStream(event, workspaceId){
 		//log.debug('param.workspaceId ::: ', workspaceId);
@@ -66,6 +73,7 @@ class EventStreamIpcController {
 			windowUtil.isLogin( result => {
 				if( ! result.isLogin){
 					axios.defaults.headers.common['Authorization'] = '';
+					this.source.close();
 					this.#send('needLoginRequest', result);
 				}
 			})

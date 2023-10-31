@@ -26,6 +26,13 @@ class LoginIpcController {
 	}
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
+		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed()){
+				delete mainWindow.subWindow[k];
+				return;
+			}
+			v.webContents.send(eventName, data);
+		})
 	}
 	changeLoginPage(event){
 		//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;

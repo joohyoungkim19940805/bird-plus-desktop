@@ -53,6 +53,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		{isDefaultStyle = true} = {}
 	){
 		super();
+		this.#undoManager = new UndoManager(this);
 		if(isDefaultStyle){
 			FreeWiilHandler.createDefaultStyle();
 		}
@@ -188,9 +189,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				if(this.isEmpty){
 					this.startFirstLine();
 				}
-				this.#undoManager = new UndoManager(this);
 			}
-			
 		}
 	}
 	disconnectedCallback(){

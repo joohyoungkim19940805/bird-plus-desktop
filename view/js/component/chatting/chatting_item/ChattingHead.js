@@ -221,7 +221,7 @@ export default new class ChattingHead{
   
         let isFirstOpen = false;
         this.#elementMap.noticeBoardIconButton.onclick = () => {
-            let flexLayout = roomContainer.wrap.closest('flex-layout');
+            let flexLayout = noticeBoardContainer.wrap.closest('flex-layout');
             if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
                 this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_close');
                 flexLayout.closeFlex(noticeBoardContainer.wrap).then(()=>{

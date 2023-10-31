@@ -27,7 +27,7 @@ export default new class ChattingRegist extends FreeWillEditor{
         id: 'chatting_regist_wrapper',
         innerHTML: `
             <div class="chatting_regist_container" data-bind_name="chattingRegistContainer">
-                <div id="toolbar" data-bind_name="toolbarWrapper">
+                <div class="toolbar" data-bind_name="toolbarWrapper">
                 </div>
             </div>
         `

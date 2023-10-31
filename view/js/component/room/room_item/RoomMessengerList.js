@@ -105,6 +105,18 @@ export default new class RoomMessengerList{
 				console.log(data);
 			})
 		}
+		this.#positionChanger.onDropDocumentOutCallback = ({target, event}) => {
+			window.myAPI.createSubWindow({
+				workspaceId: workspaceHandler.workspaceId,
+				roomId: target.dataset.room_id,
+				width: parseInt(window.outerWidth * 0.7),
+				height: parseInt(window.outerHeight * 0.7),
+				x: event.x,
+				y: event.y,
+				pageName: 'multipleChattingView',
+				pageId : target.dataset.room_id
+			})
+		}
 
 		this.#createMessengerView = new CreateMessengerView(this);
 
