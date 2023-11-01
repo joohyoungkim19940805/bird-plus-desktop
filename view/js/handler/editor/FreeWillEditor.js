@@ -29,7 +29,28 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#placeholder;
 	#undoManager;
 	isDefaultStyle = true;
-	#observerList = [];
+	#toolButtonObserver = new MutationObserver( (mutationList, observer) => {
+		mutationList.forEach((mutation) => {
+			//if(mutation.oldValue == mutation.mutation.target.dataset.tool_status){
+				// 동일한 동작이 수행되지 않도록 추가 2023 05 25
+			//	return;
+			//}
+			if(this.contentEditable == 'false'){
+				//observer.disconnect();
+				return;
+			}
+			let selection = window.getSelection();
+			if( ! selection.containsNode(this, true)){
+				return;
+			}
+			let focusNode = selection.focusNode;
+			if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && mutation.target.__Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
+				this.#renderingTools(Tool);
+			}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
+				this.#removerToos(Tool);
+			}
+		});
+	});
 	constructor(
 		tools={
 			'free-will-editor-strong' : Strong,
@@ -63,50 +84,37 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			};
 			this.tools = tools;
 			this.classList.add('free-will-editor');
-			FreeWillEditor.componentsMap = Object.entries(this.components).reduce( (total, [className, Component]) => {
+
+			Object.entries(this.components).forEach( ([className, Component]) => {
 				if(className.includes(' ')){
 					throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
+				}
+				if(FreeWillEditor.componentsMap[Component.name]){
+					return;
 				}
 				Component.toolHandler.defaultClass = className;
 				if( ! window.customElements.get(className)){
 					window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
 				}	
-				total[Component.name] = Component;
+				FreeWillEditor.componentsMap[Component.name] = Component;
 				return total;
-			}, {});
-
-			FreeWillEditor.toolsMap = Object.entries(this.tools).reduce( (total, [className, Tool]) => {
+			});
+			
+			Object.entries(this.tools).forEach( ([className, Tool]) => {
 				if(className.includes(' ')){
 					throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
+				}
+				if(FreeWillEditor.toolsMap[Tool.name]){
+					return;
 				}
 				if(this.isDefaultStyle){
 					Tool.createDefaultStyle();
 				}
 				Tool.toolHandler.defaultClass = className;
-				let observer = new MutationObserver( (mutationList, observer) => {
-					mutationList.forEach((mutation) => {
-						//if(mutation.oldValue == mutation.mutation.target.dataset.tool_status){
-							// 동일한 동작이 수행되지 않도록 추가 2023 05 25
-						//	return;
-						//}
-						let selection = window.getSelection();
-						if(this.contentEditable == 'false'){
-							//observer.disconnect();
-							return;
-						}else if( ! selection.containsNode(this, true)){
-							return;
-						}
-						let focusNode = selection.focusNode;
-						if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
-							this.#renderingTools(Tool);
-						}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
-							this.#removerToos(Tool);
-						}
-					});
-				});
+				Tool.toolHandler.toolButton.__Tool = Tool;
 				// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
 				// oldvalue로 구분할 수 있게 합시다.
-				observer.observe(Tool.toolHandler.toolButton, {
+				this.#toolButtonObserver.observe(Tool.toolHandler.toolButton, {
 					attributeFilter:['data-tool_status'],
 					attributeOldValue:true
 				})
@@ -114,9 +122,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				if( ! window.customElements.get(className)){
 					window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
 				}
-				total[Tool.name] = Tool;
-				return total;
-			}, {})
+				FreeWillEditor.toolsMap[Tool.name] = Tool;
+			})
+			
+			
 
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
@@ -191,6 +200,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	disconnectedCallback(){
         this.#isLoaded = false;
 		//this.contentEditable = false;
+		this.#toolButtonObserver.disconnect();
     }
 	
 	startFirstLine(){
