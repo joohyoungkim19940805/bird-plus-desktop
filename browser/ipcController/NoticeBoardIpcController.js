@@ -186,20 +186,10 @@ class NoticeBoardIpccontroller {
 					let promise = new Promise(res=>{
 						streamEndResolve = res;
 					})
-					stream.on('data', bufferArr => {
+                    stream.on('data', bufferArr => {
 						try{
                             let str = String(bufferArr);
-                            let first = str.charAt(0);
-                            let last = str.charAt(str.length - 1);
-                            while(first == '[' || first == ','){
-                                str = str.substring(1);
-                                first = str.charAt(0);
-                            }
-                            while(last == '[' || last == ','){
-                                str = str.substring(0, str.length - 2);    
-                                last = str.charAt(str.length - 1);
-                            }
-							let obj = JSON.parse(str);
+							let obj = JSON.parse(str.replace('data:'));
 							this.#send('noticeBoardAccept', obj)
 						}catch(ignore){}
 					})
@@ -252,17 +242,7 @@ class NoticeBoardIpccontroller {
 					stream.on('data', bufferArr => {
 						try{
                             let str = String(bufferArr);
-                            let first = str.charAt(0);
-                            let last = str.charAt(str.length - 1);
-                            while(first == '[' || first == ','){
-                                str = str.substring(1);
-                                first = str.charAt(0);
-                            }
-                            while(last == '[' || last == ','){
-                                str = str.substring(0, str.length - 2);    
-                                last = str.charAt(str.length - 1);
-                            }
-							let obj = JSON.parse(str);
+                            let obj = JSON.parse(str);
                             this.#send('noticeBoardDetailAccept', obj)
 						}catch(ignore){}
 					})

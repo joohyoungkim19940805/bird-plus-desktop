@@ -6,7 +6,7 @@ export default class ToolHandler{
 	#toolButton;
 	#identity;
 	#connectedFriends = [];
-
+	#buttonMap = {};
 	/**
 	 * 
 	 * @param {FreedomInterface} identity
@@ -17,7 +17,7 @@ export default class ToolHandler{
 		//다른 부분 선택시에 동작하지 않도록 수정 필요(에디터만 셀렉션체인지인 경우)
 		document.addEventListener("selectionchange", (event) => {
 			let selection = window.getSelection();
-			if(document.activeElement !== selection.focusNode?.parentElement?.closest('.free-will-editor')){
+			if(! document.activeElement.classList.contains('free-will-editor')){
 				return;
 			}
 			/**
@@ -94,14 +94,11 @@ export default class ToolHandler{
 	}
 
 	set toolButton(toolButton){
-		if( ! toolButton || ! toolButton.nodeType || ! toolButton.nodeType == Node.ELEMENT_NODE){
+		if( ! toolButton || ! toolButton.nodeType || toolButton.nodeType != Node.ELEMENT_NODE){
 			throw new Error('toolButton is not element');
 		}
-		if(this.#toolButton){
-			toolButton.onclick = this.#toolButton.onclick;
-			this.#toolButton.remove();
-		}
 		this.#toolButton = toolButton;
+
 	}
 	
 	get toolButton(){
@@ -126,6 +123,5 @@ export default class ToolHandler{
 	get connectedFriends(){
 		return this.#connectedFriends;
 	}
-
 
 }

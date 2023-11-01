@@ -130,6 +130,8 @@ export default class Image extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
+    static tempMemory = {};
+
     file = new DataTransfer().files;
 
 	constructor(dataset){
@@ -139,9 +141,9 @@ export default class Image extends FreedomInterface {
         let imageLoadPromise = new Promise(resolve => {
             imageLoadPromiseResolve = resolve;
         })
-
-		if( ! dataset && Object.keys(this.dataset).length == 0){
-            //this.dataset.url = URL.createObjectURL(this.files[0]);
+        console.log(this.dataset);
+        if( ! dataset && Object.keys(this.dataset).length == 0){
+            this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
             this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
@@ -154,7 +156,18 @@ export default class Image extends FreedomInterface {
         }else if( ! this.dataset.url && this.dataset.base_64){
             imageLoadPromiseResolve(this.dataset.base_64)
         }else if(this.dataset.url){
-            
+            imageLoadPromiseResolve();
+            fetch(this.dataset.url)
+                .then(res => res.blob())
+                .then(imgBlob => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(imgBlob);
+                    reader.onloadend = () => {
+                        this.dataset.base_64 = reader.result;
+                    }
+                });
+        }else{
+            //imageLoadPromiseResolve(this.dataset.url);
         }
 
         if( ! this.file.files && ! this.dataset.name){
@@ -163,16 +176,20 @@ export default class Image extends FreedomInterface {
         }
         
         let imgLoadEndPromise = imageLoadPromise.then( async (base64) => {
+            console.log(base64);
+            if( ! base64){
+                return;
+            }
             this.dataset.base_64 = base64;
             return fetch(this.dataset.base_64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                    return imgUrl;
+                    this.dataset.url = imgUrl;
+                    return this.dataset.url;
                 })
             })
         })
-
         Image.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
@@ -198,8 +215,9 @@ export default class Image extends FreedomInterface {
             //src: imgUrl
         });*/
         let image = document.createElement('img');
+
         imgLoadEndPromise.then(imgUrl => {
-            image.src = imgUrl;
+            image.src = imgUrl || this.dataset.url;
         })
 
         //if(this.file.files.length != 0){
@@ -254,7 +272,6 @@ export default class Image extends FreedomInterface {
         }
 
         description.onclick = (event) => {
-
             if(description.dataset.open_status == '▼'){
                 description.dataset.open_status = '▶'
                 imageContanier.style.height = window.getComputedStyle(image).height;

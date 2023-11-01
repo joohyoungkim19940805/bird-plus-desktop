@@ -147,7 +147,7 @@ export default class Video extends FreedomInterface {
         })
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){
-            //this.dataset.url = URL.createObjectURL(this.files[0]);
+            this.dataset.url = URL.createObjectURL(Video.selectedFile.files[0]);
             this.dataset.name = Video.selectedFile.files[0].name;
             this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
             this.dataset.size = Video.selectedFile.files[0].size;
@@ -160,7 +160,7 @@ export default class Video extends FreedomInterface {
         }else if( ! this.dataset.url && this.dataset.base_64){
             videoLoadPromiseResolve(this.dataset.base_64)
         }else if(this.dataset.url){
-            
+            videoLoadPromiseResolve(this.dataset.url)
         }
 
         let videoLoadEndPromise = videoLoadPromise.then( async (base64) => {

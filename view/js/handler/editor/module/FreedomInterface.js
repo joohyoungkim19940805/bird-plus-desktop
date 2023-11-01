@@ -108,80 +108,62 @@ export default class FreedomInterface extends HTMLElement {
 	#disconnectedChildAfterCallBack = () => {}
 	#deleteOption;
 	parentEditor;
-	
+	#childListObserver = new MutationObserver( (mutationList, observer) => {
+		mutationList.forEach((mutation) => {
+			//console.log(mutation);
+			let {addedNodes, removedNodes} = mutation;
+			let connectedChildPromise = new Promise(resolve => {
+				if(addedNodes.length != 0){
+					
+					let resultList;
+					if( ! this.constructor.toolHandler.isInline){
+						let lastItemIndex;
+						resultList = [...addedNodes].map((e,i)=>{
+							if( ! e.classList?.contains(Line.toolHandler.defaultClass)){
+								let lineElement = this.parentEditor.createLine();
+								lineElement.replaceChildren(e);
+								this.append(lineElement);
+								if( i == addedNodes.length - 1){
+									lastItemIndex = i;
+								}
+								return lineElement;
+							}
+							return e;
+						});
+						if(lastItemIndex){
+							resultList[lastItemIndex].line.lookAtMe();
+						}
+					}else{
+						resultList = addedNodes;
+					}
+					
+					this.connectedChildAfterCallBack(resultList);
+					//this.connectedChildAfterCallBack(addedNodes);
+				}
+				resolve();
+			})
+			
+			let disconnectedChildPromise = new Promise(resolve => {
+				if(removedNodes.length != 0){
+					this.disconnectedChildAfterCallBack(removedNodes);
+				}
+				resolve();
+			})
+			
+		})
+	});
 	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
 		super();
 		this.#deleteOption = deleteOption;
 		this.Tool = Tool;
 		this.classList.add(this.constructor.toolHandler.defaultClass)
-		const removeFun = () => {
-			if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE){
-				document.removeEventListener('selectionchange', removeFun, true);
-				return;
-			}else if(this.isToolEmpty()){
-				let thisLine = this.parentEditor?.getLine(this);
-				this.remove();
-				if(thisLine){
-					thisLine.line.lookAtMe();
-				}
-				document.removeEventListener('selectionchange', removeFun, true);
-			}else if( ! this.isConnected){
-				document.removeEventListener('selectionchange', removeFun, true);
-			}
-		}
-		document.addEventListener('selectionchange',removeFun, true);
-		
+
+		document.addEventListener('selectionchange', this.removeFun, true);
+
 		if(dataset){
 			Object.assign(this.dataset, dataset);
 		}
-
 		
-
-		let childListObserver = new MutationObserver( (mutationList, observer) => {
-			mutationList.forEach((mutation) => {
-				//console.log(mutation);
-				let {addedNodes, removedNodes} = mutation;
-				let connectedChildPromise = new Promise(resolve => {
-					if(addedNodes.length != 0){
-						
-						let resultList;
-						if( ! this.constructor.toolHandler.isInline){
-							let lastItemIndex;
-							resultList = [...addedNodes].map((e,i)=>{
-								if( ! e.classList?.contains(Line.toolHandler.defaultClass)){
-									let lineElement = this.parentEditor.createLine();
-									lineElement.replaceChildren(e);
-									this.append(lineElement);
-									if( i == addedNodes.length - 1){
-										lastItemIndex = i;
-									}
-									return lineElement;
-								}
-								return e;
-							});
-							if(lastItemIndex){
-								resultList[lastItemIndex].line.lookAtMe();
-							}
-						}else{
-							resultList = addedNodes;
-						}
-						
-						this.connectedChildAfterCallBack(resultList);
-						//this.connectedChildAfterCallBack(addedNodes);
-					}
-					resolve();
-				})
-				
-				let disconnectedChildPromise = new Promise(resolve => {
-					if(removedNodes.length != 0){
-						this.disconnectedChildAfterCallBack(removedNodes);
-					}
-					resolve();
-				})
-				
-			})
-		});
-		childListObserver.observe(this, {childList:true})
 
 		if( ! this.constructor.toolHandler.isInline){
 			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
@@ -189,8 +171,24 @@ export default class FreedomInterface extends HTMLElement {
 			})
 		}
 	}
-
+	removeFun(){
+		if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE){
+			document.removeEventListener('selectionchange', this.removeFun, true);
+			return;
+		}else if(this.isToolEmpty()){
+			let thisLine = this.parentEditor?.getLine(this);
+			this.remove();
+			if(thisLine){
+				thisLine.line.lookAtMe();
+			}
+			document.removeEventListener('selectionchange', this.removeFun, true);
+		}else if( ! this.isConnected){
+			document.removeEventListener('selectionchange', this.removeFun, true);
+		}
+	}
 	connectedCallback(){
+		this.#childListObserver.observe(this, {childList:true})
+
 		if( ! this.#isLoaded){
 			
 			this.#isLoaded = true;
@@ -265,6 +263,8 @@ export default class FreedomInterface extends HTMLElement {
 			console.error(err)
 		}finally{
 			this.constructor.toolHandler.connectedFriends = this;
+			this.#childListObserver.disconnect(this, {childList:true})
+			document.removeEventListener('selectionchange', this.removeFun, true);
 		}
 	}
 

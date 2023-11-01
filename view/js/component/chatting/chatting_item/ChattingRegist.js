@@ -23,6 +23,29 @@ export default new class ChattingRegist extends FreeWillEditor{
     static{
         window.customElements.define('free-will-editor', ChattingRegist);
     }
+	static tools = {
+        'free-will-strong' : Strong,
+        'free-will-color' : Color,
+        'free-will-background' : Background,
+        'free-will-strikethrough' : Strikethrough,
+        'free-will-underline' : Underline,
+        'free-will-font-family' : FontFamily,
+        'free-will-font-quote' : Quote,
+        'free-will-numeric-point' : NumericPoint,
+        'free-will-bullet-point' : BulletPoint,
+        'free-will-sort' : Sort,
+        'free-will-editor-font-size' : FontSize,
+        'free-will-editor-italic' : Italic,
+        'free-will-editor-image' : Image,
+        'free-will-editor-video' : Video,
+        'free-will-editor-code' : Code,
+        'free-will-editor-link' : Hyperlink,
+    }
+
+    static option = {
+        isDefaultStyle : true
+    }
+
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_regist_wrapper',
         innerHTML: `
@@ -40,58 +63,36 @@ export default new class ChattingRegist extends FreeWillEditor{
         }, {})
     })();
 	
-    constructor({isReadOnly = false} = {}){
+    constructor(){
 
-		let tools = {
-			'free-will-strong' : Strong,
-			'free-will-color' : Color,
-			'free-will-background' : Background,
-			'free-will-strikethrough' : Strikethrough,
-			'free-will-underline' : Underline,
-			'free-will-font-family' : FontFamily,
-			'free-will-font-quote' : Quote,
-			'free-will-numeric-point' : NumericPoint,
-			'free-will-bullet-point' : BulletPoint,
-			'free-will-sort' : Sort,
-			'free-will-editor-font-size' : FontSize,
-			'free-will-editor-italic' : Italic,
-			'free-will-editor-image' : Image,
-			'free-will-editor-video' : Video,
-			'free-will-editor-code' : Code,
-			'free-will-editor-link' : Hyperlink,
-		}
-		let option = {
-			isDefaultStyle : true
-		}
-		super(tools, option);
+		super(ChattingRegist.tools, ChattingRegist.option);
 
-		if( ! isReadOnly){
-            this.#elementMap.chattingRegistContainer.append(this);
-
-            this.#elementMap.toolbarWrapper.append(
-                Strong.toolHandler.toolButton,
-                Color.toolHandler.toolButton,
-                Background.toolHandler.toolButton,
-                Strikethrough.toolHandler.toolButton,
-                Underline.toolHandler.toolButton,
-                FontFamily.toolHandler.toolButton,
-                Quote.toolHandler.toolButton,
-                NumericPoint.toolHandler.toolButton,
-                BulletPoint.toolHandler.toolButton,
-                Sort.toolHandler.toolButton,
-                FontSize.toolHandler.toolButton,
-                Italic.toolHandler.toolButton,
-                Image.toolHandler.toolButton,
-                Video.toolHandler.toolButton,
-                Code.toolHandler.toolButton,
-                Hyperlink.toolHandler.toolButton,
-            );
-            
-            super.placeholder = '텍스트를 입력해주세요.'
-			super.spellcheck = true
-			//super.dataset.visibility_not = ''
-			this.#addEvent();
+		this.#elementMap.chattingRegistContainer.append(this);
+		
+		let toolList = Object.values(ChattingRegist.tools).map(e=>e.toolHandler.toolButton);
+		let toolCloneList = toolList.map(e=>{
+			let clone = e.cloneNode(true);
+			clone.style.color = '#7c7c7c59';
+			clone.style.textDecorationColor = '#40404069';
+			return clone;
+		});
+		this.#elementMap.toolbarWrapper.append(...toolList);
+		this.onfocus = (event) => {
+			this.#elementMap.toolbarWrapper.replaceChildren(...toolList);
 		}
+
+		this.onblur = (event) => {
+			if(event.relatedTarget?.hasAttribute('data-tool_status')){
+				return;
+			}
+			this.#elementMap.toolbarWrapper.replaceChildren(...toolCloneList);
+		}
+		
+		super.placeholder = '텍스트를 입력해주세요.'
+		super.spellcheck = true
+		//super.dataset.visibility_not = ''
+		this.#addEvent();
+
 	}
 	#addEvent(){
 		this.onkeydown = (event) => {

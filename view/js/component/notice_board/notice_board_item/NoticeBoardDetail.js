@@ -25,19 +25,28 @@ class NoticeBoardLine extends FreeWillEditor{
     static{
         window.customElements.define('notice-board-line', NoticeBoardLine);
     }
-    static tools = {
+	static tools = {
         'free-will-strong' : Strong,
+        'free-will-color' : Color,
+        'free-will-background' : Background,
+        'free-will-strikethrough' : Strikethrough,
+        'free-will-underline' : Underline,
+        'free-will-font-family' : FontFamily,
+        'free-will-font-quote' : Quote,
+        'free-will-numeric-point' : NumericPoint,
+        'free-will-bullet-point' : BulletPoint,
+        'free-will-sort' : Sort,
+        'free-will-editor-font-size' : FontSize,
+        'free-will-editor-italic' : Italic,
+        'free-will-editor-image' : Image,
+        'free-will-editor-video' : Video,
+        'free-will-editor-code' : Code,
+        'free-will-editor-link' : Hyperlink,
     }
+
     static option = {
         isDefaultStyle : true
     }
-    static toolbarWrapper = [
-        (() => {
-            let btn = Strong.toolHandler.toolButton.cloneNode(true);
-            btn.onclick = Strong.toolHandler.toolButton.onclick;
-            return btn;
-        })()
-    ];
     
     parentLi;
     parentClass;
@@ -96,6 +105,7 @@ export default new class NoticeBoardDetail{
             .then(li => {
                 this.#addMemory(li);
             }).then( async () => {
+                console.log(data);
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
                     .map(async item=> {
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
@@ -136,6 +146,8 @@ export default new class NoticeBoardDetail{
             }
         }
 
+        let toolList = Object.values(NoticeBoardLine.tools).map(e=>e.toolHandler.toolButton);
+
         document.addEventListener('selectionchange', event => {
             if(document.activeElement.constructor != NoticeBoardLine){
                 return;
@@ -153,10 +165,10 @@ export default new class NoticeBoardDetail{
             this.#prevStartOffset = range.startOffset;
             this.#prevEndOffset = range.endOffset;
             this.#prevContent = range.commonAncestorContainer;
-            console.log(document.activeElement);
+
             if( ! selection.isCollapsed){
                 this.#elementMap.noticeBoardDetailContainer.append(this.#elementMap.test);
-                this.#elementMap.test.append(...NoticeBoardLine.toolbarWrapper)
+                this.#elementMap.test.replaceChildren(...toolList);
                 common.processingElementPosition(this.#elementMap.test ,document.activeElement)
             }else{
                 this.#elementMap.test.remove();
@@ -193,10 +205,10 @@ export default new class NoticeBoardDetail{
                 className: 'notice_board_detail_item_position_change_icon',
                 textContent: '〓'
             })
-            editor.startFirstLine()
             if(! data){
                 li.append(addButton);
                 li.dataset.is_empty = '';
+                editor.startFirstLine();
             }else{
                 let {content} = data;
                 delete data.content;
@@ -232,15 +244,17 @@ export default new class NoticeBoardDetail{
                 isPositionChangeIconOver = false;
                 li.draggable = false;
             }
-            li.onpointerdown = (event) => {
-                if(isPositionChangeIconOver){
-                    return;
-                }
-                li.setPointerCapture(event.pointerId);
-            }
-            li.onpointerup = (event) => {
-                li.releasePointerCapture(event.pointerId);
-            }
+            //li.onpointerdown = (event) => {
+                //console.log(isPositionChangeIconOver);
+                //if(isPositionChangeIconOver || ! editor.isConnected){
+                //    return;
+                //}
+                //li.setPointerCapture(event.pointerId);
+            //}
+            //li.onpointerup = (event) => {
+                //li.releasePointerCapture(event.pointerId);
+            //}
+            /*
             li.__dragendCallback = () => {
                 let selection = window.getSelection()
                 let range = selection.getRangeAt(0);
@@ -253,12 +267,14 @@ export default new class NoticeBoardDetail{
                     selection.setPosition(editor, editor.childNodes.length);
                 }
             }
-
-            addButton.onclick = () => {
+            */
+            addButton.onclick = (event) => {
+                console.log(event, editor.isConnected);
                 if(editor.isConnected){
                     return;
                 }
                 li.append(editor);
+                console.log('append end');
                 li.append(positionChangeIcon);
                 addButton.remove();
                 window.getSelection().setPosition(editor, editor.childNodes.length);
@@ -267,11 +283,22 @@ export default new class NoticeBoardDetail{
             editor.onfocus = (event) => {
                 prevHTML = editor.innerHTML;
             }
-            editor.onblur = () => {
-
+            editor.onblur = (event) => {
+                if(editor.matches(':hover') || this.#elementMap.test.matches(':hover')){
+                    return;
+                }
+                if( ! event.relatedTarget?.hasAttribute('data-tool_status')){
+                    this.#elementMap.test.remove();
+                }
                 if(editor.isEmpty){
                     editor.remove();
+                    positionChangeIcon.remove();
                     li.append(addButton);
+                    if(li.matches(':hover')){
+                        addButton.classList.add('active');
+                    }else{
+                        addButton.classList.remove('active');
+                    }
                     return ;
                 }else if(prevHTML == editor.innerHTML){
                     return;

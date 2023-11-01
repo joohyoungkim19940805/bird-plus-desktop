@@ -419,9 +419,15 @@ class FlexLayout extends HTMLElement {
 			//let resizeWeight = this.mathWeight(notCloseList, this.forResizeList.length);
 			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.3s';
-				e.ontransitionend = () => {
+				e.ontransitionend = (event) => {
+					if(event.propertyName != 'flex-grow'){
+						return;
+					}
 					e.style.transition = '';
-					//e.ontransitionend = '';
+					if(e == resizeTarget && resizeTarget._closeEndCallBack){
+						console.log('2');
+						resizeTarget._closeEndCallBack();
+					}
 				}
 				
 				if(e == resizeTarget){
@@ -447,13 +453,6 @@ class FlexLayout extends HTMLElement {
 				this.resize(notCloseList, this.forResizeList.length);
 			}
 
-			resizeTarget.ontransitionend = () => {
-				resizeTarget.style.transition = '';
-				if(resizeTarget._closeEndCallBack){
-					resizeTarget._closeEndCallBack();
-				}
-				//resizeTarget.ontransitionend = '';
-			}
 			resolve(resizeTarget);
 		});
 	}
@@ -469,7 +468,7 @@ class FlexLayout extends HTMLElement {
 
 			let notCloseList = this.forResizeList.filter(e=>e.style.flex != '0 1 0%' && e != resizeTarget);
 			let notCloseAndOpenTargetList = [...notCloseList, resizeTarget];
-			let resizeWeight = this.mathWeight(notCloseAndOpenTargetList, this.forResizeList.length);
+			//let resizeWeight = this.mathWeight(notCloseAndOpenTargetList, this.forResizeList.length);
 			let openTargetGrow = 1;
 			if(isPrevSizeOpen && resizeTarget.hasAttribute('data-prev_grow')){
 				openTargetGrow = parseFloat(resizeTarget.dataset.prev_grow) || 1;
@@ -479,9 +478,15 @@ class FlexLayout extends HTMLElement {
 			//notCloseList.forEach(e=>{
 			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.3s';
-				e.ontransitionend = () => {
+				e.ontransitionend = (event) => {
+					if(event.propertyName != 'flex-grow'){
+						return;
+					}
 					e.style.transition = '';
-					//e.ontransitionend = '';
+					if(e == resizeTarget && resizeTarget._openEndCallBack){
+						console.log('1');
+						resizeTarget._openEndCallBack();
+					}
 				}
 				
 				if(isResize){
@@ -501,13 +506,6 @@ class FlexLayout extends HTMLElement {
 				this.resize(notCloseAndOpenTargetList, this.forResizeList.length);
 			}
 
-			resizeTarget.ontransitionend = ()=>{
-				resizeTarget.style.transition = '';
-				if(resizeTarget._openEndCallBack){
-					resizeTarget._openEndCallBack();
-				}
-				//resizeTarget.ontransitionend = '';
-			}
 			resolve(resizeTarget)
 		})
 	}

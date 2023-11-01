@@ -389,21 +389,9 @@ class RoomIpcController {
 					stream.on('data', bufferArr => {
 						try{
                             let str = String(bufferArr);
-                            let first = str.charAt(0);
-                            let last = str.charAt(str.length - 1);
-                            while(first == '[' || first == ','){
-                                str = str.substring(1);
-                                first = str.charAt(0);
-                            }
-                            while(last == '[' || last == ','){
-                                str = str.substring(0, str.length - 2);    
-                                last = str.charAt(str.length - 1);
-                            }
 							let obj = JSON.parse(str);
 							this.#send('roomInAccountAccept', obj)
-						}catch(ignore){
-							//log.error(err);
-						}
+						}catch(ignore){}
 					})
 					stream.on('end', () => {
 						log.debug('end searchRoomJoinedAccountList stream ::: ')

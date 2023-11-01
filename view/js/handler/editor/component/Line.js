@@ -105,7 +105,7 @@ export default class Line {
 			}
 		}
 		*/
-		
+		/*
 		let observer = new MutationObserver( (mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				if(Line.isElementTextEmpty(this.lineElement)){
@@ -122,7 +122,7 @@ export default class Line {
 			childList:true,
 			subtree: true
 		})
-		
+		*/
 	}
 	/*
 	connectedCallback(){

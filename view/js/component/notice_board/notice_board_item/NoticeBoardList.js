@@ -371,8 +371,12 @@ export default new class NoticeBoardList{
 			}
 
 			if(flexLayout.isVisible(noticeBoardDetail.element)){
-				flexLayout.closeFlex(noticeBoardDetail.element).then(() => {
-				})
+				noticeBoardHandler.noticeBoardId = data.id;
+				this.prevOpenFlexTarget = titleName;
+				titleName.classList.add('active');
+				titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+				//flexLayout.closeFlex(noticeBoardDetail.element).then(() => {
+				//})
 			}else{
 				flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(() => {
 					this.prevOpenFlexTarget = titleName;

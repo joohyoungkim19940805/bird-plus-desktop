@@ -6,7 +6,7 @@ export default class UndoManager{
     #editor;
     #history = [];
     #historyIndex = 0;
-    #historyLimit = 2000;
+    #historyLimit = 50;
     #UndoRedo = class UndoRedo{
         #html
         #time
@@ -23,8 +23,6 @@ export default class UndoManager{
     }
 
     #lastCursorPositionRect;
-
-    #isWait = false;
     //#isUndoSwitch = false;
 
     /**
@@ -34,11 +32,11 @@ export default class UndoManager{
     //레인지를 저장해뒀다가 쓰기
     constructor(targetEditor){
         this.#editor = targetEditor;
-        if(this.#editor.contentEditable == 'true'){
-            //this.addCursorMove();
+        //if(this.#editor.contentEditable == 'true'){
+            this.addCursorMove();
             this.addUndoKey();
             this.addUserInput();
-        }
+        //}
 
     }
 
@@ -70,13 +68,12 @@ export default class UndoManager{
     }
 
     rememberCursor(){
-        if( ! this.#lastCursorPositionRect || (this.#lastCursorPositionRect.x == newRect.x && this.#lastCursorPositionRect.y == newRect.y)){
-            return
-        }    
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
         let newRect = range.getBoundingClientRect();
-
+        if(this.#lastCursorPositionRect && (this.#lastCursorPositionRect.x == newRect.x && this.#lastCursorPositionRect.y == newRect.y)){
+            return
+        }
         let {focusNode, focusOffset} = selection
 
         let target;
@@ -121,7 +118,6 @@ export default class UndoManager{
 
     addUndoKey(){
         this.#editor.addEventListener('keydown', (event) => {
-            console.log(document.activeElement, this.#editor)
             if(document.activeElement !== this.#editor){
 				return;
 			}
@@ -179,14 +175,11 @@ export default class UndoManager{
         //console.log('y key redo',undoRedo.html)
         this.#editor.innerHTML = undoRedo.html;
     }
-    addUndoRedo(){
-        if(
-            document.activeElement !== this.#editor ||
-            this.#history[0]?.html.trim() == this.#editor.innerHTML.trim() 
-        ){
+    addUndoRedo(isCheckSkip = false){
+        if(document.activeElement !== this.#editor && ! isCheckSkip){
             return;
         }
-    
+
         this.rememberCursor();
 
         let undoRedo = new this.#UndoRedo(this.#editor.innerHTML.trim());
@@ -199,31 +192,21 @@ export default class UndoManager{
         //console.log('history', this.#history);
     }
     addUserInput(){
+        let prevMils = new Date().getTime();
         this.#editor.addEventListener('keydown', (event) => {
-            console.log(document.activeElement, this.#editor)
-            if(document.activeElement !== this.#editor){
+            if(document.activeElement !== this.#editor || (new Date().getTime() - prevMils) < 500){
 				return;
 			}
+            prevMils = new Date().getTime();
             let {ctrlKey, key, altKey} = event;
             if(ctrlKey || altKey || ctrlKey && (key == 'z' || key == 'y')){
                 return;
             }
-            if(this.#isWait){
-                return;
-            }
-            this.#isWait = true;
-            //this.#isUndoSwitch = true;
-            let timer = 50;
-
-            if(this.#history.length != 0 && this.#history[0].html.trim() == this.#editor.innerHTML.trim()){
-                this.#isWait = false;
-                return;
-            }
             
-            setTimeout(()=>{
-                this.addUndoRedo();
-                this.#isWait = false;
-            }, timer);
+            if(this.#history.length != 0 && this.#history[0].html.trim() == this.#editor.innerHTML.trim()){
+                return;
+            }
+            this.addUndoRedo();
         });
         /*
         let addElementObserver = new MutationObserver( (mutationList, observer) => {

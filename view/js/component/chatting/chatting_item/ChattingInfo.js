@@ -3,6 +3,57 @@ import roomHandler from "../../../handler/room/RoomHandler"
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler"
 import chattingRegist from "./ChattingRegist"
 import common from "./../../../common"
+import FreeWillEditor from "../../../handler/editor/FreeWillEditor"
+import Strong from "./../../../handler/editor/tools/Strong"
+import Color from "./../../../handler/editor/tools/Color"
+import Background from "./../../../handler/editor/tools/Background"
+import Strikethrough from "./../../../handler/editor/tools/Strikethrough"
+import Underline from "./../../../handler/editor/tools/Underline"
+import FontFamily from "./../../../handler/editor/tools/FontFamily"
+import Quote from "./../../../handler/editor/tools/Quote"
+import NumericPoint from "./../../../handler/editor/tools/NumericPoint"
+import BulletPoint from "./../../../handler/editor/tools/BulletPoint"
+import Sort from "./../../../handler/editor/tools/Sort"
+import FontSize from "./../../../handler/editor/tools/FontSize"
+import Italic from "./../../../handler/editor/tools/Italic"
+import Image from "./../../../handler/editor/tools/Image"
+import Video from "./../../../handler/editor/tools/Video"
+import Code from "./../../../handler/editor/tools/Code"
+import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
+
+class ChattingInfoLine extends FreeWillEditor{
+    static{
+        window.customElements.define('chatting-info-line', ChattingInfoLine);
+    }
+    static tools = {
+        'free-will-strong' : Strong,
+        'free-will-color' : Color,
+        'free-will-background' : Background,
+        'free-will-strikethrough' : Strikethrough,
+        'free-will-underline' : Underline,
+        'free-will-font-family' : FontFamily,
+        'free-will-font-quote' : Quote,
+        'free-will-numeric-point' : NumericPoint,
+        'free-will-bullet-point' : BulletPoint,
+        'free-will-sort' : Sort,
+        'free-will-editor-font-size' : FontSize,
+        'free-will-editor-italic' : Italic,
+        'free-will-editor-image' : Image,
+        'free-will-editor-video' : Video,
+        'free-will-editor-code' : Code,
+        'free-will-editor-link' : Hyperlink,
+    }
+
+    static option = {
+        isDefaultStyle : true
+    }
+    constructor(){
+        super(ChattingInfoLine.tools, ChattingInfoLine.option);
+        super.contentEditable = false;
+        super.placeholder = ''
+    }
+}
+
 export default new class ChattingInfo{
     
     #memory = {}
@@ -30,10 +81,14 @@ export default new class ChattingInfo{
                 let promise;
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
                 if(memory && memory.length != 0){
-                    promise = Promise.resolve(
-                        memory
-                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                    );
+                    promise = new Promise(res => {
+                        setTimeout(()=>{ 
+                            res(
+                               memory
+                               .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                           )
+                       },50);
+                    })
                 }else{
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                         .then(async data=> 
@@ -45,7 +100,23 @@ export default new class ChattingInfo{
                                     this.#processingTimeGrouping(
                                         this.#liList.at(-2), 
                                         this.#liList.at(-1)
-                                    ); 
+                                    ).then(() => {
+                                        if(this.elementMap.chattingContentList.querySelectorAll('.time_grouping').length == 0){
+                                            let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
+                                            let timeText; 
+                                            if(date.toDateString() == new Date().toDateString()){
+                                                timeText = 'to day'
+                                            }else{
+                                                timeText = date.toLocaleDateString(undefined, {
+                                                    weekday: 'short',
+                                                    month: 'short',
+                                                    day: '2-digit',
+                                                    formatMatcher: 'best fit'
+                                                })
+                                            }
+                                            this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                                        }
+                                    }); 
                                 }
                                 return liList;
                             })
@@ -104,11 +175,26 @@ export default new class ChattingInfo{
                         return;
                     }
                     this.#elementMap.chattingContentList.prepend(liElement);
-
                     this.#processingTimeGrouping(
-                        this.#liList[0] || liElement,
+                        this.#liList[0],
                         liElement
-                    ); 
+                    ).then(() => {
+                        if(this.elementMap.chattingContentList.querySelectorAll('.time_grouping').length == 0){
+                            let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
+                            let timeText; 
+                            if(date.toDateString() == new Date().toDateString()){
+                                timeText = 'to day'
+                            }else{
+                                timeText = date.toLocaleDateString(undefined, {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: '2-digit',
+                                    formatMatcher: 'best fit'
+                                })
+                            }
+                            this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                        }
+                    }); 
                     this.#liList.unshift(liElement);
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
                         9999999
@@ -242,12 +328,12 @@ export default new class ChattingInfo{
                     </div>
                 `
             });
-            let content = new chattingRegist.constructor({isReadOnly : true});
-            content.contentEditable = false;
+            let content = new ChattingInfoLine();
             content.parseLowDoseJSON(chatting).then((e)=>{
                 resolve(li)
             });
             li.append(content);
+            delete data.chatting
             common.jsonToSaveElementDataset(data, li);
 
             Object.assign(li.dataset, {
@@ -308,14 +394,19 @@ export default new class ChattingInfo{
 
     async #processingTimeGrouping(li, prevItem){
         return new Promise(resolve=>{
-            if( ! prevItem){
+            if( ! prevItem || ! li){
+                resolve();
                 return;
             }
             let prevDate = new Date(Number(prevItem.dataset.create_mils));
-            let prevDateYearMonth = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, prevDate.getDate());
-            let currentDate = new Date(Number(li.dataset.create_mils));
-            let currentDateYearMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+            let prevDateYearMonth = new Date(Number(prevItem.dataset.create_mils));
+            prevDateYearMonth.setHours(0,0,0,0);
+            //let currentDate = new Date(Number(li.dataset.create_mils));
+            let currentDateYearMonth = new Date(Number(li.dataset.create_mils));
+            currentDateYearMonth.setHours(0,0,0,0);
             let diffMils = prevDateYearMonth.getTime() - currentDateYearMonth.getTime();
+
+            //하루 이상 차이 나는 경우
             if(Math.abs(diffMils) < this.#day){
                 resolve();
                 return;
@@ -325,6 +416,7 @@ export default new class ChattingInfo{
             }
             
             let timeText;
+
             
             if(prevDate.toDateString() == new Date().toDateString()){
                 timeText = 'to day'
@@ -336,16 +428,22 @@ export default new class ChattingInfo{
                     formatMatcher: 'best fit'
                 })
             }
-            //첫번째 매개변수 html 객체와 두번째 매개변수 html 객체간에 하루 이상 차이 나는 경우
-            let timeGroupingElement = Object.assign(document.createElement('div'), {
-                className: 'time_grouping',
-                innerHTML: `
-                    <small class="time_grouping_text">${timeText}</small>
-                `
-            })
-            prevItem.prepend(timeGroupingElement)
-            resolve();
+            resolve(
+                this.#createTimeGroupingElement(prevItem, timeText)
+            );
         });
+    }
+
+    #createTimeGroupingElement(target, timeText){
+
+        let timeGroupingElement = Object.assign(document.createElement('div'), {
+            className: 'time_grouping',
+            innerHTML: `
+                <small class="time_grouping_text">${timeText}</small>
+            `
+        })
+        target.prepend(timeGroupingElement)
+        return timeGroupingElement;
     }
 
     reset(){

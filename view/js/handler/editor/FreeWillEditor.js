@@ -23,14 +23,13 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	
 	static componentsMap = {};
 	static toolsMap = {};
-
 	#isLoaded = false;
 	components;
 	tools;
-	toolsElement = {};
 	#placeholder;
 	#undoManager;
 	isDefaultStyle = true;
+	#observerList = [];
 	constructor(
 		tools={
 			'free-will-editor-strong' : Strong,
@@ -69,7 +68,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
 				}
 				Component.toolHandler.defaultClass = className;
-				//Component.toolHandler.parentEditor = this;
 				if( ! window.customElements.get(className)){
 					window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
 				}	
@@ -85,8 +83,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					Tool.createDefaultStyle();
 				}
 				Tool.toolHandler.defaultClass = className;
-				//Tool.toolHandler.parentEditor = this;
-				this.toolsElement[className] = Tool.toolHandler.toolButton
 				let observer = new MutationObserver( (mutationList, observer) => {
 					mutationList.forEach((mutation) => {
 						//if(mutation.oldValue == mutation.mutation.target.dataset.tool_status){
@@ -281,7 +277,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine)
 		})
 		.then(lastApplyTool=> {
-			this.#undoManager.addUndoRedo();
+			this.#undoManager.addUndoRedo(true);
 			//selection.setPosition(lastApplyTool, 0)
 		})
 		/*
@@ -313,7 +309,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			}
 			startLine.line.cancelTool(TargetTool, selection, endLine);
 		}).then(()=>{
-			this.#undoManager.addUndoRedo();
+			this.#undoManager.addUndoRedo(true);
 			/*[...this.children]
 			.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
 			.forEach(lineElement=>{
