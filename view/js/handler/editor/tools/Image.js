@@ -141,7 +141,6 @@ export default class Image extends FreedomInterface {
         let imageLoadPromise = new Promise(resolve => {
             imageLoadPromiseResolve = resolve;
         })
-        console.log(this.dataset);
         if( ! dataset && Object.keys(this.dataset).length == 0){
             this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
@@ -176,7 +175,6 @@ export default class Image extends FreedomInterface {
         }
         
         let imgLoadEndPromise = imageLoadPromise.then( async (base64) => {
-            console.log(base64);
             if( ! base64){
                 return;
             }
@@ -194,14 +192,13 @@ export default class Image extends FreedomInterface {
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
         this.createDefaultContent(imgLoadEndPromise);
-
 	}
 
     createDefaultContent(imgLoadEndPromise){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
-        wrap.draggable = 'false'
+        wrap.draggable = false
 
         this.shadowRoot.append(wrap);
 
@@ -217,6 +214,7 @@ export default class Image extends FreedomInterface {
         let image = document.createElement('img');
 
         imgLoadEndPromise.then(imgUrl => {
+            console.log(111);
             image.src = imgUrl || this.dataset.url;
         })
 
@@ -227,7 +225,15 @@ export default class Image extends FreedomInterface {
         imageContanier.append(image);
 
         image.onload = () => {
-            //imageContanier.style.height = window.getComputedStyle(image).height;
+            let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+			let scrollTarget;
+			if(range.endContainer.nodeType == Node.TEXT_NODE){
+				scrollTarget = range.endContainer.parentElement
+			}else{
+				scrollTarget = range.endContainer;
+			}
+			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+			//imageContanier.style.height = window.getComputedStyle(image).height;
         }
         image.onerror = () => {
             //imageContanier.style.height = window.getComputedStyle(image).height;

@@ -12,7 +12,10 @@ export default class FreedomInterface extends HTMLElement {
 	static globalKeydownEventPromise = new Promise(resolve=>{
 		this.globalKeydownEventPromiseResolve = resolve;
 	})
-	
+	static globalSelectionChangeEventPromiseResolve;
+	static globalSelectionChangeEventPromise = new Promise(resolve=>{
+		this.globalSelectionChangeEventPromiseResolve = resolve;
+	})
 	static{
 		document.addEventListener('mousemove', (event) => {
 			//mousePos = { x: event.clientX, y: event.clientY };
@@ -32,6 +35,13 @@ export default class FreedomInterface extends HTMLElement {
 				this.globalKeydownEventPromiseResolve = resolve;
 			})
 		})
+		document.addEventListener('selectionchange', (event) => {
+			this.globalSelectionChangeEventPromiseResolve(event);
+			this.globalSelectionChangeEventPromise = new Promise(resolve=>{
+				this.globalSelectionChangeEventPromiseResolve = resolve;
+			})
+		});
+
 	}
 	static isMouseInnerElement(element){
 		if( ! this.globalMouseEvent) return;
@@ -46,6 +56,19 @@ export default class FreedomInterface extends HTMLElement {
 		let newEvent = undefined;
 		const simpleObserver = () => {
 			this.globalKeydownEventPromise.then((event)=>{
+				newEvent = event;
+				callBack({oldEvent, newEvent});
+				oldEvent = event;
+				simpleObserver();
+			})
+		}
+		simpleObserver();
+	}
+	static globalSelectionChangeEventListener(element, callBack = ({oldEvent, newEvent})=>{}){
+		let oldEvent = undefined;
+		let newEvent = undefined;
+		const simpleObserver = () => {
+			this.globalSelectionChangeEventPromise.then((event)=>{
 				newEvent = event;
 				callBack({oldEvent, newEvent});
 				oldEvent = event;
@@ -164,26 +187,20 @@ export default class FreedomInterface extends HTMLElement {
 			Object.assign(this.dataset, dataset);
 		}
 		
+		FreedomInterface.globalSelectionChangeEventListener(this, ({oldEvent, newEvent}) => {
+			if(this.#deleteOption != FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE && this.isToolEmpty()){
+				let thisLine = this.parentEditor?.getLine(this);
+				this.remove();
+				if(thisLine){
+					thisLine.line.lookAtMe();
+				}
+			}
+		})
 
 		if( ! this.constructor.toolHandler.isInline){
-			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
+			/*FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
 				//console.log(newEvent);
-			})
-		}
-	}
-	removeFun(){
-		if(this.#deleteOption == FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE){
-			document.removeEventListener('selectionchange', this.removeFun, true);
-			return;
-		}else if(this.isToolEmpty()){
-			let thisLine = this.parentEditor?.getLine(this);
-			this.remove();
-			if(thisLine){
-				thisLine.line.lookAtMe();
-			}
-			document.removeEventListener('selectionchange', this.removeFun, true);
-		}else if( ! this.isConnected){
-			document.removeEventListener('selectionchange', this.removeFun, true);
+			})*/
 		}
 	}
 	connectedCallback(){
@@ -275,7 +292,6 @@ export default class FreedomInterface extends HTMLElement {
 		}
         return this.innerText.length == 0 || (this.innerText.length == 1 && (this.innerText == '\n' || this.innerText == '\u200B'));
     }
-
 	/**
 	 * @param {Function}
 	 */

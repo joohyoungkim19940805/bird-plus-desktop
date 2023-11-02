@@ -1,5 +1,6 @@
 import FreeWillEditor from "../FreeWillEditor";
 import Line from '../component/Line'
+import FreedomInterface from "../module/FreedomInterface"
 
 // 추후 indexed db 사용 검토
 export default class UndoManager{
@@ -59,12 +60,12 @@ export default class UndoManager{
             this.#lastCursorPositionRect = newRect;
         });
         */
-        document.addEventListener("selectionchange", (event) => {
+        FreedomInterface.globalSelectionChangeEventListener(this, ({oldEvent, newEvent}) => {
             if(document.activeElement !== this.#editor){
 				return;
 			}
             this.rememberCursor();
-        });
+		})
     }
 
     rememberCursor(){

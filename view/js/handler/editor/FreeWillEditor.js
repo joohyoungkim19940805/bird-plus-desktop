@@ -44,7 +44,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				return;
 			}
 			let focusNode = selection.focusNode;
-			if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && mutation.target.__Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
+			let Tool = mutation.target.__Tool;
+			if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
 				this.#renderingTools(Tool);
 			}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
 				this.#removerToos(Tool);
@@ -52,28 +53,27 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		});
 	});
 	constructor(
-		tools={
-			'free-will-editor-strong' : Strong,
-			'free-will-editor-color' : Color,
-			'free-will-editor-background' : Background,
-			'free-will-editor-strikethrough' : Strikethrough,
-			'free-will-editor-underline' : Underline,
-			'free-will-editor-font-family' : FontFamily,
-			'free-will-editor-font-quote' : Quote,
-			'free-will-editor-numeric-point' : NumericPoint,
-			'free-will-editor-bullet-point' : BulletPoint,
-			'free-will-editor-sort' : Sort,
-			'free-will-editor-font-size' : FontSize,
-			'free-will-editor-italic' : Italic,
-			'free-will-editor-image' : Image,
-			'free-will-editor-video' : Video,
-			'free-will-editor-code' : Code,
-			'free-will-editor-link' : Hyperlink,
-		},
+		tools = [
+			Strong,
+			Color,
+			Background,
+			Strikethrough,
+			Underline,
+			FontFamily,
+			Quote,
+			NumericPoint,
+			BulletPoint,
+			Sort,
+			FontSize,
+			Italic,
+			Image,
+			Video,
+			Code,
+			Hyperlink,
+		],
 		{isDefaultStyle = true} = {}
 	){
 		super();
-		this.#undoManager = new UndoManager(this);
 		if(isDefaultStyle){
 			FreeWiilHandler.createDefaultStyle();
 		}
@@ -97,20 +97,15 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					window.customElements.define(className, Component, Component.toolHandler.extendsElement && Component.toolHandler.extendsElement != '' ? {extends:Component.toolHandler.extendsElement} : undefined);
 				}	
 				FreeWillEditor.componentsMap[Component.name] = Component;
-				return total;
 			});
 			
-			Object.entries(this.tools).forEach( ([className, Tool]) => {
-				if(className.includes(' ')){
-					throw new DOMException(`The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`);
-				}
+			this.tools.forEach( (Tool) => {
 				if(FreeWillEditor.toolsMap[Tool.name]){
 					return;
 				}
 				if(this.isDefaultStyle){
 					Tool.createDefaultStyle();
 				}
-				Tool.toolHandler.defaultClass = className;
 				Tool.toolHandler.toolButton.__Tool = Tool;
 				// attribute에 value가 없어서 oldvalue가 ''이 나옵니다.
 				// oldvalue로 구분할 수 있게 합시다.
@@ -119,8 +114,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					attributeOldValue:true
 				})
 				
-				if( ! window.customElements.get(className)){
-					window.customElements.define(className, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
+				if( ! window.customElements.get(Tool.toolHandler.defaultClass)){
+					window.customElements.define(Tool.toolHandler.defaultClass, Tool, Tool.toolHandler.extendsElement && Tool.toolHandler.extendsElement != '' ? {extends:Tool.toolHandler.extendsElement} : undefined);
 				}
 				FreeWillEditor.toolsMap[Tool.name] = Tool;
 			})
@@ -185,6 +180,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	}
 
 	connectedCallback(){
+		this.#undoManager = new UndoManager(this);
 		if( ! this.#isLoaded){
             this.#isLoaded = true;
 			if(this.contentEditable == 'inherit' || this.contentEditable == true){
@@ -198,6 +194,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		}
 	}
 	disconnectedCallback(){
+		this.#undoManager = null;
         this.#isLoaded = false;
 		//this.contentEditable = false;
 		this.#toolButtonObserver.disconnect();
@@ -271,7 +268,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
-		console.log(selection);
 		//if( ! anchorNodeLine || ! focusNodeLine){
 		//	return;
 		//}
@@ -288,6 +284,15 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 		.then(lastApplyTool=> {
 			this.#undoManager.addUndoRedo(true);
+			let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+			let scrollTarget;
+			if(range.endContainer.nodeType == Node.TEXT_NODE){
+				scrollTarget = range.endContainer.parentElement
+			}else{
+				scrollTarget = range.endContainer;
+			}
+			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+			applyToolAfterSelection.setPosition(scrollTarget, scrollTarget.childNodes.length - 1);
 			//selection.setPosition(lastApplyTool, 0)
 		})
 		/*
@@ -331,29 +336,32 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 	}
 	
-	async getLowDoseJSON(targetElement = this){
+	async getLowDoseJSON(targetElement = this, {beforeCallback = (node) => {}, afterCallback = (json)=> {}} = {}){
 		return Promise.all([...targetElement.childNodes]
 			.map(async (node, index)=>{
 				return new Promise(resolve =>{
 					if(targetElement == this && node.nodeType == Node.TEXT_NODE){
 						resolve(undefined);
 					}
-					resolve(this.#toJSON(node))
+					beforeCallback(node);
+					resolve( this.#toJSON(node, {beforeCallback, afterCallback}) )
 				})
 			})).then(jsonList=>jsonList.filter(e=>e != undefined))
 	}
 
-	async #toJSON(node){
+	async #toJSON(node, {beforeCallback, afterCallback}){
 		return new Promise(resolve=>{
 			let obj = {};
 			if(node.nodeType == Node.TEXT_NODE){
 				obj.type = Node.TEXT_NODE;
 				obj.name = node.constructor.name;
 				obj.text = node.textContent
+				afterCallback(obj);
+				resolve(obj);
 			}else if(node.nodeType == Node.ELEMENT_NODE){
 				obj.type = Node.ELEMENT_NODE;
 				obj.name = node.constructor.name;
-				obj.tagName = node.tagName.toLowerCase();
+				obj.tagName = node.localName;
 				obj.data = Object.assign({}, node.dataset);
 				if(node.hasAttribute('is_cursor')){
 					obj.cursor_offset = node.getAttribute('cursor_offset');
@@ -362,38 +370,43 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					obj.cursor_scroll_x = node.getAttribute('cursor__scroll_x');
 					obj.cursor_scroll_y = node.getAttribute('cursor_scroll_y');
 				}
-				this.getLowDoseJSON(node)
+				this.getLowDoseJSON(node, {beforeCallback, afterCallback})
 				.then(jsonList => {
 					obj.childs = jsonList.filter(e=> e != undefined)
+					afterCallback(obj);
+					resolve(obj);
 				})
 			}else{
+				afterCallback(undefined)
 				resolve(undefined);
 			}
-			resolve(obj);
+			
 		})
 	}
 
-	parseLowDoseJSON(json){
+	async parseLowDoseJSON(json, {beforeCallback = (json) => {}, afterCallback = (node)=> {}} = {}){
 		return new Promise(resolve => {
 			let jsonObj = json;
 			if(typeof json == 'string'){
 				jsonObj = JSON.parse(json);
 			}
+
 			if(jsonObj instanceof Array){
 				resolve(
-					Promise.all(this.#toHTML(jsonObj, this))
+					Promise.all(this.#toHTML(jsonObj, {beforeCallback, afterCallback}))
 					.then(htmlList => {
 						this.replaceChildren(...htmlList.filter(e=> e != undefined))
 					})
 				);
 			}
-			resolve();
+			resolve(undefined);
 		})
 	}
 
-	#toHTML(objList, parent = this){
+	#toHTML(objList, {beforeCallback, afterCallback}){
 		return objList.filter(e=>e!=undefined).map(async jsonNode => {
 			return new Promise(resolve => {
+				beforeCallback(jsonNode);
 				let node = undefined;
 				if(jsonNode.type == Node.TEXT_NODE){
 					node = document.createTextNode(jsonNode.text);
@@ -410,9 +423,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 						node = document.createElement(jsonNode.tagName);
 						Object.assign(node.dataset, jsonNode.data);
 					}
-
+					afterCallback(node)
 					if(jsonNode.childs.length != 0){
-						Promise.all(this.#toHTML(jsonNode.childs, node)).then(childList => {
+						Promise.all(this.#toHTML(jsonNode.childs, {beforeCallback, afterCallback})).then(childList => {
 							node.append(...childList);
 						})
 					}

@@ -160,16 +160,29 @@ export default class Video extends FreedomInterface {
         }else if( ! this.dataset.url && this.dataset.base_64){
             videoLoadPromiseResolve(this.dataset.base_64)
         }else if(this.dataset.url){
-            videoLoadPromiseResolve(this.dataset.url)
+            videoLoadPromiseResolve()
+            fetch(this.dataset.url)
+                .then(res => res.blob())
+                .then(videoBlob => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(videoBlob);
+                    reader.onloadend = () => {
+                        this.dataset.base_64 = reader.result;
+                    }
+                });
         }
 
         let videoLoadEndPromise = videoLoadPromise.then( async (base64) => {
+            if( ! base64){
+                return;
+            }
             this.dataset.base_64 = base64;
             return fetch(this.dataset.base_64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                    return videoUrl;
+                    this.dataset.url = videoUrl;
+                    return this.dataset.url;
                 })
             })
         })
@@ -184,7 +197,7 @@ export default class Video extends FreedomInterface {
         let wrap = Object.assign(document.createElement('div'),{
 
         });
-        wrap.draggable = 'false'
+        wrap.draggable = false
 
         this.shadowRoot.append(wrap);
 
@@ -194,11 +207,10 @@ export default class Video extends FreedomInterface {
 
         let video = Object.assign(document.createElement('video'), {
             //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            src: this.dataset.url,
             loop: true,
         });
         videoLoadEndPromise.then(videoUrl => {
-            video.src = videoUrl;
+            video.src = videoUrl || this.dataset.url;
         })
 
         if(
@@ -221,9 +233,20 @@ export default class Video extends FreedomInterface {
             this.videoIsNotWorking();
         }
         videoContanier.append(video);
-
+        video.onload = () => {
+            
+        }
         video.onloadeddata = () => {
             //videoContanier.style.height = window.getComputedStyle(video).height;
+            let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+			let scrollTarget;
+			if(range.endContainer.nodeType == Node.TEXT_NODE){
+				scrollTarget = range.endContainer.parentElement
+			}else{
+				scrollTarget = range.endContainer;
+			}
+			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+			
             video.play();
         }
         video.onerror = () => {

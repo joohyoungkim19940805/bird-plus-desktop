@@ -114,7 +114,7 @@ export default class Palette {
 		})
 
         new Array('mouseup', 'touchend').forEach(eventName => {
-			window.addEventListener('mouseup', () => {
+			window.addEventListener(eventName, () => {
 				if( ! this.#componentMap){
 					return;
 				}

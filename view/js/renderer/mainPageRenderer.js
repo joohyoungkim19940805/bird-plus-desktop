@@ -30,7 +30,7 @@ new MutationObserver( (mutationList, observer) => {
 		let {addedNodes, removedNodes} = mutation;
 		new Promise(resolve=> {
 			addedNodes.forEach(async e => {
-				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target'))){
+				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target')) || e.isContentEditable){
 					return;
 				}
 				new Promise(res=>{
@@ -42,7 +42,7 @@ new MutationObserver( (mutationList, observer) => {
 		})
 		new Promise(resolve=> {
 			removedNodes.forEach(async e => {
-				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target'))){
+				if(e.nodeType !== Node.ELEMENT_NODE || (e.nodeType === Node.ELEMENT_NODE && e.hasAttribute('data-is_not_visible_target')) || e.isContentEditable){
 					return;
 				}
 				new Promise(res=>{
@@ -59,6 +59,7 @@ new MutationObserver( (mutationList, observer) => {
 })
 
 window.addEventListener("DOMContentLoaded", (event) => {
+	document.body.classList.add('default')
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{
 		workspaceIdResolve = resolve;

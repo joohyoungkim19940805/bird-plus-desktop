@@ -71,7 +71,6 @@ export default new class NoticeBoardList{
 					orderSort: e.dataset.order_sort,
 					parentGroupId: e.dataset.parent_group_id,
 				}
-				console.log(obj);
 				if(! parentRoot.dataset.parent_group_id){
 					delete obj.parentGroupId
 				}
@@ -105,9 +104,7 @@ export default new class NoticeBoardList{
 		}
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
-			console.log(data);
 			let {content = data} = data;
-			console.log(content);
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
 			this.createItemElement(
 				content, 
@@ -117,7 +114,6 @@ export default new class NoticeBoardList{
 				let bindName = ! content.groupId ? 'id' : 'group_id'
 				this.#elementMap.noticeBoardList.querySelectorAll(`[data-${bindName}="${id}"]`).forEach((e,i)=>{
 					if(e == li) {
-						console.log(li);
 						return
 					}
 					e.remove();
@@ -130,7 +126,6 @@ export default new class NoticeBoardList{
 
 		});
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDeleteAccept', (data) => {
-			console.log(data);
 			let {content} = data;
 			let id = content.groupId || content.id;
 			if(! id) return;

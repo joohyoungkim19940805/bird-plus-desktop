@@ -173,7 +173,7 @@ export default class Line {
 	
 	async #applyOnlyOneLine(range, tool, TargetTool){
 		return await new Promise(resolve=>{
-			//let {startOffset, endOffset, startContainer,endContainer} = range;
+			let {startOffset, endOffset, startContainer,endContainer} = range;
 
 			let selection = window.getSelection();
 
@@ -186,6 +186,17 @@ export default class Line {
 				if( ! this.lineElement.childNodes[i] || ! selection.containsNode(this.lineElement.childNodes[i], true)){
 					break;
 				}
+				let iter = document.createNodeIterator(this.lineElement.childNodes[i], NodeFilter.SHOW_TEXT)
+				let targetNode;
+				while(targetNode = iter.nextNode()){
+					if(targetNode == endContainer){
+						// this.lineElement.childNodes[i] == endContainer == targetNode
+						let clone = targetNode.cloneNode(true);
+						clone.textContent = targetNode.textContent.substring(endOffset);
+						targetNode.after(clone);
+						targetNode.textContent = targetNode.textContent.substring(0, endOffset);
+					}
+				}
 				nodeList.push(this.lineElement.childNodes[i]);
 			}
 			//nodeList.forEach(e=>e.remove())
@@ -197,8 +208,6 @@ export default class Line {
 				let startTarget = this.lineElement.childNodes[startNodeToPrevNodeIndex];
 				startTarget.after(tool);
 			}
-			console.log('tool',tool);
-			console.log('tool.textContent',tool.textContent);
 			
 			/*
 			range.setStart(startContainer, startOffset);
@@ -256,7 +265,6 @@ export default class Line {
 			if(targetStartLineItem){
 				let itemRemoveList = [];
 				let itemAppendList = [];
-				let i = 0;
 				while(targetStartLineItem){
 					if(targetStartLineItem.nodeType == Node.ELEMENT_NODE){
 						if(tool == targetStartLineItem){
@@ -269,12 +277,7 @@ export default class Line {
 						itemRemoveList.push(targetStartLineItem);
 					}
 					targetStartLineItem = targetStartLineItem.nextSibling;	
-					
-					i += 1;
-					if( i > 1000){
-						console.error('while infiniti loop error ::: applyMultipleLineAll');
-						break;
-					}
+
 				}
 				[...tool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)?.appendData(itemAppendList.join(''));
 				itemRemoveList.forEach(e=>e.remove())
@@ -286,19 +289,13 @@ export default class Line {
 				nextTool.append(tool.parentElement.nextSibling);
 				tool.parentElement.after(nextTool);
 				let nextItem = nextTool.nextSibling;
-				
-				let i = 0;
+
 				while(nextItem){		
 					if(nextTool == nextItem){
 						break;
 					}
 					nextTool.append(nextItem);
 
-					i += 1;
-					if(i > 1000){
-						console.error('while infiniti loop error ::: applyMultipleLineAll');
-						break;
-					}
 				}
 			}
 			
@@ -306,7 +303,6 @@ export default class Line {
 			let targetLine = Line.getLine(startContainer).nextElementSibling; 
 			let middleTargetTool;
 			
-			let i = 0;
 			while(targetLine){
 				if(targetLine === endLine){
 					break;
@@ -320,11 +316,6 @@ export default class Line {
 				range.surroundContents(middleTargetTool);
 				targetLine = targetLine.nextElementSibling;
 
-				i += 1;
-				if(i > 1000){
-					console.error('while infiniti loop error ::: applyMultipleLineAll');
-					break;
-				}
 			}
 
 			if(Line.prototype.isPrototypeOf(endContainer.line)){
@@ -339,8 +330,6 @@ export default class Line {
 				if(targetEndLineItem){
 					let itemRemoveList = [];
 					let itemAppendList = [];
-					
-					let i = 0;
 
 					while(targetEndLineItem){
 						if(targetEndLineItem.nodeType == Node.ELEMENT_NODE){
@@ -361,13 +350,6 @@ export default class Line {
 							itemAppendList.unshift(targetEndLineItem.textContent)
 						}
 						targetEndLineItem = targetEndLineItem.previousSibling;
-
-						i += 1;
-
-						if(i > 1000){
-							console.error('while infiniti loop error ::: applyMultipleLineAll');
-							break;
-						}
 					}
 					//let targetTextNode = [...endTool.childNodes].find(e=>e.nodeType == Node.TEXT_NODE)
 					//itemAppendList.push(targetTextNode.data);
@@ -612,28 +594,21 @@ export default class Line {
 
 			let nextLine = this.lineElement.nextElementSibling;
 
-			let i = 0;
 
 			while(nextLine){
 				if(nextLine == endLine){
 					break;
 				}
 				nextLine.childNodes.forEach(e=>{
-					console.log(4);
+					//console.log(4);
 					this.#findCancels(e, TargetTool);
 				})
 				nextLine = nextLine.nextElementSibling;
 
-				i += 1;
-
-				if(i > 1000){
-					console.error('while infiniti loop error ::: cancelMultipleLineAll');
-					break;
-				}
 			}
 
 			if(endOffset == endContainer.length){
-				console.log(1)
+				//console.log(1)
 				this.#findCancels(endLine, TargetTool);
 			}else
 			if(endPrevSibling && endPrevSibling.nodeType == Node.TEXT_NODE){

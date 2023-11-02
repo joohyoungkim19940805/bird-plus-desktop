@@ -25,24 +25,24 @@ class ChattingInfoLine extends FreeWillEditor{
     static{
         window.customElements.define('chatting-info-line', ChattingInfoLine);
     }
-    static tools = {
-        'free-will-strong' : Strong,
-        'free-will-color' : Color,
-        'free-will-background' : Background,
-        'free-will-strikethrough' : Strikethrough,
-        'free-will-underline' : Underline,
-        'free-will-font-family' : FontFamily,
-        'free-will-font-quote' : Quote,
-        'free-will-numeric-point' : NumericPoint,
-        'free-will-bullet-point' : BulletPoint,
-        'free-will-sort' : Sort,
-        'free-will-editor-font-size' : FontSize,
-        'free-will-editor-italic' : Italic,
-        'free-will-editor-image' : Image,
-        'free-will-editor-video' : Video,
-        'free-will-editor-code' : Code,
-        'free-will-editor-link' : Hyperlink,
-    }
+    static tools = [
+        Strong,
+        Color,
+        Background,
+        Strikethrough,
+        Underline,
+        FontFamily,
+        Quote,
+        NumericPoint,
+        BulletPoint,
+        Sort,
+        FontSize,
+        Italic,
+        Image,
+        Video,
+        Code,
+        Hyperlink,
+    ]
 
     static option = {
         isDefaultStyle : true

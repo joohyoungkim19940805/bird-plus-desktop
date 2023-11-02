@@ -297,38 +297,57 @@ class FlexLayout extends HTMLElement {
 	#addResizePanelEvent(resizePanel){
 		this.totalMovement = 0;
 		this.parentSize = 0;
-		resizePanel.addEventListener('mousedown', () => {
-			this.totalMovement = 0;
-			this.parentSize = this.getBoundingClientRect()[this.sizeName];
-			
-			resizePanel.setAttribute('data-is_mouse_down', '');
-			resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
-			document.body.style.cursor = this.resizeCursor;
+		let prevTouchEvent;
+		new Array('mousedown', 'touchstart').forEach(eventName => {
+			resizePanel.addEventListener(eventName, () => {
+				this.totalMovement = 0;
+				prevTouchEvent = undefined;
+				this.parentSize = this.getBoundingClientRect()[this.sizeName];
+				
+				resizePanel.setAttribute('data-is_mouse_down', '');
+				resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
+				document.body.style.cursor = this.resizeCursor;
+			})
 		})
-		window.addEventListener('mouseup', (event) => {
-			this.totalMovement = 0;
-			this.parentSize = 0;
-			
-			resizePanel.removeAttribute('data-is_mouse_down');
-			resizePanel.querySelector('.hover').removeAttribute('data-is_hover', '');
-			
-			if(document.body.style.cursor == 'ew-resize' || document.body.style.cursor == 'ns-resize'){
-				document.body.style.cursor = '';
-			}
-
+		new Array('mouseup', 'touchend').forEach(eventName => {
+			window.addEventListener(eventName, (event) => {
+				this.totalMovement = 0;
+				this.parentSize = 0;
+				prevTouchEvent = undefined;
+				resizePanel.removeAttribute('data-is_mouse_down');
+				resizePanel.querySelector('.hover').removeAttribute('data-is_hover', '');
+				
+				if(document.body.style.cursor == 'ew-resize' || document.body.style.cursor == 'ns-resize'){
+					document.body.style.cursor = '';
+				}
+	
+			})
+		})
+		new Array('mouseup', 'touchend').forEach(eventName => {
+			resizePanel.addEventListener(eventName, () => {
+				resizePanel.removeAttribute('data-is_mouse_down');
+				this.totalMovement = 0;
+				this.parentSize = 0;
+				prevTouchEvent = undefined;
+			})
 		})
 		
-		resizePanel.addEventListener('mouseup', () => {
-			resizePanel.removeAttribute('data-is_mouse_down');
-			this.totalMovement = 0;
-			this.parentSize = 0;
+		new Array('mousemove', 'touchmove').forEach(eventName => {
+			window.addEventListener(eventName, (event) => {
+				if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
+					return;
+				}
+				if(eventName == 'touchmove' && ! prevTouchEvent){
+					prevTouchEvent = event;
+					return;
+				}else if(eventName == 'touchmove'){
+					event.movementX = (prevTouchEvent.touches[0].pageX - event.touches[0].pageX) * -1
+					event.movementY = (prevTouchEvent.touches[0].pageY - event.touches[0].pageY) * -1
+				}
+				this.moveMouseFlex(resizePanel, event);
+			})
 		})
-		window.addEventListener('mousemove', (event) => {
-			if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
-				return;
-			}
-			this.moveMouseFlex(resizePanel, event);
-		})
+		
 	}
 
 	moveMouseFlex(resizePanel, event){
@@ -386,18 +405,12 @@ class FlexLayout extends HTMLElement {
 				return false;
 			}
 		};
-		let i = 0
 		while(isCloseCheck()){
 			let nextTarget = target[direction]?.[direction];
 			if(! nextTarget){
 				break;
 			}
 			target = nextTarget;
-			i += 1;
-			if(i > 1000){
-				console.error('while infiniti loop error ::: findNotCloseFlexContent');
-				break;
-			}
 		}
 		return target;
 	}

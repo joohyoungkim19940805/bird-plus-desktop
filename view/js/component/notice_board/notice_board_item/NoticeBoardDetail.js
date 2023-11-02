@@ -25,24 +25,24 @@ class NoticeBoardLine extends FreeWillEditor{
     static{
         window.customElements.define('notice-board-line', NoticeBoardLine);
     }
-	static tools = {
-        'free-will-strong' : Strong,
-        'free-will-color' : Color,
-        'free-will-background' : Background,
-        'free-will-strikethrough' : Strikethrough,
-        'free-will-underline' : Underline,
-        'free-will-font-family' : FontFamily,
-        'free-will-font-quote' : Quote,
-        'free-will-numeric-point' : NumericPoint,
-        'free-will-bullet-point' : BulletPoint,
-        'free-will-sort' : Sort,
-        'free-will-editor-font-size' : FontSize,
-        'free-will-editor-italic' : Italic,
-        'free-will-editor-image' : Image,
-        'free-will-editor-video' : Video,
-        'free-will-editor-code' : Code,
-        'free-will-editor-link' : Hyperlink,
-    }
+	static tools = [
+        Strong,
+        Color,
+        Background,
+        Strikethrough,
+        Underline,
+        FontFamily,
+        Quote,
+        NumericPoint,
+        BulletPoint,
+        Sort,
+        FontSize,
+        Italic,
+        Image,
+        Video,
+        Code,
+        Hyperlink,
+    ]
 
     static option = {
         isDefaultStyle : true
@@ -98,7 +98,20 @@ export default new class NoticeBoardDetail{
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardDetailList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
-
+            window.myAPI.noticeBoard.updateNoticeBoardDetailOrder(
+                changeList.filter(e=> ! e.hasAttribute('data-is_empty')).map(e=>{
+                    let obj = {
+                        id: e.dataset.id,
+                        workspaceId: e.dataset.workspace_id,
+                        roomId: e.dataset.room_id,
+                        orderSort: e.dataset.order_sort,
+                        emptyLineCount: this.#mathEmptyLineCount(e, 'notice-board-line')
+                    }
+                    return obj
+                })
+            ).then(result => {
+                console.log(result);
+            })
         };
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
             this.createItemElement(data)
@@ -305,25 +318,9 @@ export default new class NoticeBoardDetail{
                 }
                 
 
-                let emptyLineCount = 0;
-                let prevItem = li.previousElementSibling;
+                let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
                 
-                let i = 0;
-                while(prevItem){
-                    let prevContent = prevItem.querySelector('notice-board-line');
-                    if(! prevContent){
-                        emptyLineCount += 1;
-                        prevItem = prevItem.previousElementSibling;
-                    }else {
-                        break;    
-                    }
-
-                    i += 1;
-                    if(i > 1000){
-                        console.error('while infiniti loop error ::: addItemEvent');
-                        break;
-                    }
-                }
+                li.dataset.empty_line_count = emptyLineCount;
                 editor.getLowDoseJSON().then(jsonList => {
                     window.myAPI.noticeBoard.createNoticeBoardDetail({
                         id : li.dataset.id,
@@ -340,6 +337,22 @@ export default new class NoticeBoardDetail{
 
             resolve(li);
         });
+    }
+
+    #mathEmptyLineCount(target, standardQuerySelectorName){
+        let emptyLineCount = 0;
+        let prevItem = target.previousElementSibling;
+        
+        while(prevItem){
+            let prevContent = prevItem.querySelector(standardQuerySelectorName);
+            if(! prevContent){
+                emptyLineCount += 1;
+                prevItem = prevItem.previousElementSibling;
+            }else {
+                break;    
+            }
+        }
+        return emptyLineCount
     }
 
     #callData(){

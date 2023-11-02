@@ -33,11 +33,11 @@ class NoticeBoardIpccontroller {
 		ipcMain.handle('deleteNoticeBoard', async (event, param = {}) => {
 			return this.deleteNoticeBoard(event, param);
 		});
-        /*ipcMain.handle('updateNoticeBoardGroup', async (event, param = {}) => {
-			return this.updateNoticeBoardGroup(event, param);
-		});*/
 		ipcMain.handle('updateNoticeBoardOrder', async (event, param = []) => {
 			return this.updateNoticeBoardOrder(event, param);
+		});
+        ipcMain.handle('updateNoticeBoardDetailOrder', async (event, param = []) => {
+			return this.updateNoticeBoardDetailOrder(event, param);
 		});
 	}
 
@@ -344,7 +344,7 @@ class NoticeBoardIpccontroller {
                 .then(windowUtil.responseCheck)
                 .then(response => response.data)
                 .catch(err=>{
-                    log.error('IPC deleteNoticeBoard error : ', JSON.stringify(err));
+                    log.error('IPC updateNoticeBoardOrder error : ', JSON.stringify(err));
                     //axios.defaults.headers.common['Authorization'] = '';
                     if(err.response){
                         return err.response.data;
@@ -361,18 +361,10 @@ class NoticeBoardIpccontroller {
 			return undefined;
 		})
     }
-    /*
-    updateNoticeBoardGroup(event, param = {}){
+    updateNoticeBoardDetailOrder(event, param = []){
         return windowUtil.isLogin( result => {
             if(result.isLogin){
-                param = Object.entries(param).reduce((total, [k,v]) => {
-                    if(v != undefined && v != ''){
-                        total[k] = v;
-                    }
-                    return total;
-                },{});
-
-                return axios.post(`${__serverApi}/api/notice-board/update/group`, JSON.stringify(param), {
+                return axios.post(`${__serverApi}/api/notice-board/update/detail-order`, JSON.stringify(param), {
                     headers:{
                         'Content-Type': 'application/json'
                     }
@@ -380,7 +372,7 @@ class NoticeBoardIpccontroller {
                 .then(windowUtil.responseCheck)
                 .then(response => response.data)
                 .catch(err=>{
-                    log.error('IPC deleteNoticeBoardGroup error : ', JSON.stringify(err));
+                    log.error('IPC updateNoticeBoardDetailOrder error : ', JSON.stringify(err));
                     //axios.defaults.headers.common['Authorization'] = '';
                     if(err.response){
                         return err.response.data;
@@ -396,7 +388,7 @@ class NoticeBoardIpccontroller {
 			log.error('error stack :::', error.stack)
 			return undefined;
 		})
-    }*/
+    }
 }
 const noticeBoardIpccontroller = new NoticeBoardIpccontroller();
 module.exports = noticeBoardIpccontroller

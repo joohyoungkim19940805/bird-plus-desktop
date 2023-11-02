@@ -20,19 +20,6 @@ div[is="content-block"]{
 	display: flex;
 }
 
-.content_wrapper.options_wrapper{
-    background-color: aliceblue;
-}
-
-.content_wrapper.chating_wrapper{
-    background-color: #f3f3f3;
-}
-.content_wrapper.chating_wrapper > *{
-}
-.content_wrapper.thread_wrapper{
-    background-color: aquamarine;
-}
-
 /* chating_wrapper 크기 조절*/
 .chating_block{
     display: inline-flex;
@@ -51,7 +38,7 @@ div[is="content-block"]{
 
 /* 채팅 영역 시작 [S] */
 
-.toolbar{
+body.default .toolbar{
 	background-color: #d7d7d7cf;
     padding-left: 1%;
     padding-right: 1%;
