@@ -25,7 +25,7 @@ body > #container{
 
 
 /* a태그 색상 검은색 */
-a.non_color{
+.non_color{
 	text-decoration: none;
     color: black;
 }
@@ -41,13 +41,6 @@ summary::marker {
 summary{
     list-style: none ;
 }
-
-/* a태그 색상 검은색 */
-a.non_color{
-	text-decoration: none;
-    color: black;
-}
-
 
 /* summary 마크 화살표 제거 */
 summary::marker {
@@ -78,31 +71,6 @@ li{
     text-align: -webkit-match-parent;
 }
 */
-
-.wrap{
-	display: flex;
-}
-
-.side_wrap{
-	justify-content: space-between;
-}
-
-ul.sidebar{
-	position: absolute;
-}
-
-aside{
-	position: absolute;
-}
-aside#left_side{
-	left: 0rem;
-	top: 50%;
-}
-
-aside#right_side{
-	right: 0rem;
-	top: 50%;
-}
 
 label{
 	font-family: serif;
