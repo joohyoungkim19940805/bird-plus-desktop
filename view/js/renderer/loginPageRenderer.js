@@ -1,7 +1,6 @@
 
 new class LoginPageRenderer{
 	constructor(){
-		console.log(document.getElementById('login_btn'));
 		let loginBtn = document.getElementById('login_btn');
 		let statusText = document.querySelector('.status_text');
 		loginBtn.onclick = (event) =>{
@@ -35,7 +34,6 @@ new class LoginPageRenderer{
 		}
 		document.querySelector('.login_wrap').onkeyup = (event) =>{
 			statusText.textContent = '';
-			console.log(event.key);
 			if(event.key == 'Enter'){
 				loginBtn.onclick(event);
 			}

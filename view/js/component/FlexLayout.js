@@ -438,7 +438,6 @@ class FlexLayout extends HTMLElement {
 					}
 					e.style.transition = '';
 					if(e == resizeTarget && resizeTarget._closeEndCallBack){
-						console.log('2');
 						resizeTarget._closeEndCallBack();
 					}
 				}
@@ -497,7 +496,6 @@ class FlexLayout extends HTMLElement {
 					}
 					e.style.transition = '';
 					if(e == resizeTarget && resizeTarget._openEndCallBack){
-						console.log('1');
 						resizeTarget._openEndCallBack();
 					}
 				}
