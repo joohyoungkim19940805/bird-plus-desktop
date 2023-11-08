@@ -152,7 +152,7 @@ export default class Image extends FreedomInterface {
                 imageLoadPromiseResolve(event.target.result)
             };  
             reader.readAsDataURL(Image.selectedFile.files[0]);
-        }else if( ! this.dataset.url && this.dataset.base_64){
+        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base_64){
             imageLoadPromiseResolve(this.dataset.base_64)
         }else if(this.dataset.url){
             imageLoadPromiseResolve();

@@ -8,7 +8,8 @@ const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('ele
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){
-		return 'http://localhost:8079';
+		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+		return 'https://localhost:8443';
 	}
 })();
 const log = require('electron-log');
@@ -90,6 +91,7 @@ app.whenReady().then(()=>{
 		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
 		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
 		const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpccontroller.js'));
+		const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
 		
 		ipcMain.handle('getProjectPath', (event) => {
 			return global.__project_path;

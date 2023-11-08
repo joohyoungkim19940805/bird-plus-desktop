@@ -156,4 +156,6 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchNoticeBoardList : (param) => ipcRenderer.invoke('searchNoticeBoardList', param),
 		searchNoticeBoardDetailList : (param) => ipcRenderer.invoke('searchNoticeBoardDetailList', param),
 	},
+
+	testImage : (param) => ipcRenderer.invoke('testImage', param)
 })

@@ -97,8 +97,33 @@ export default new class ChattingRegist extends FreeWillEditor{
 	#addEvent(){
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
-			if(key == 'Enter' && altKey && this.innerText.replaceAll('\n', '') != ''){
-				this.getLowDoseJSON().then(jsonList => {
+			console.log(event);
+			if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+				return;
+			}else if(key == 'Enter' && this.innerText.replaceAll('\n', '') != ''){
+				event.preventDefault();
+				this.getLowDoseJSON(this, {
+					afterCallback : async (json) => {
+						
+						if(json.tagName == 'free-will-editor-image'){
+							console.log(json);
+							let {name, base_64, url} = json.data;
+							await window.myAPI.testImage({}).then(async result => {
+								console.log('result!!!',result);
+								let {code, data} = result;
+								if(code == 0){
+									console.log(data);
+									fetch(data, {
+										method:"PUT",
+										body: await fetch(base_64).then(async res=>res.blob())
+									})
+								}
+							})
+						}
+						console.log('json',json);
+					}
+				}).then(jsonList => {
+					console.log(jsonList);
 					window.myAPI.chatting.sendChatting({
 						workspaceId: workspaceHandler.workspaceId,
 						roomId: roomHandler.roomId,
