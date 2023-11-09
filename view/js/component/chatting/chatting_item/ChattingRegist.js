@@ -105,22 +105,35 @@ export default new class ChattingRegist extends FreeWillEditor{
 				this.getLowDoseJSON(this, {
 					afterCallback : async (json) => {
 						
-						if(json.tagName == 'free-will-editor-image'){
+						if(json.tagName == Image.toolHandler.defaultClass){
 							console.log(json);
-							let {name, base_64, url} = json.data;
-							await window.myAPI.testImage({}).then(async result => {
+							let {name, base64, size, last_modified, content_type} = json.data;
+							await window.myAPI.testImage({
+								name, base64, size, last_modified, content_type
+							}).then(async result => {
 								console.log('result!!!',result);
 								let {code, data} = result;
 								if(code == 0){
 									console.log(data);
 									fetch(data, {
 										method:"PUT",
-										body: await fetch(base_64).then(async res=>res.blob())
+										headers: {
+											'Content-Encoding' : 'base64',
+											//'Content-Type': content_type,
+											'Content-Type' : 'application/octet-stream',
+											'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+											'x-amz-server-side-encryption-customer-key': 'zCl8fl7i8t8q4IVZpQTp5QkIwR+S1RH2m3lpgnaMI+g=',
+											'x-amz-server-side-encryption-customer-key-md5': 'WPgosOwwFY/pIMDVwcxnpg==',
+										},
+										body: {data:await fetch(base64).then(async res=>res.blob())}
+									}).then(res=>{
+										if( ! (res.status == 200 || res.status == 201) ){
+											throw new Error('fail');
+										} 
 									})
 								}
 							})
 						}
-						console.log('json',json);
 					}
 				}).then(jsonList => {
 					console.log(jsonList);

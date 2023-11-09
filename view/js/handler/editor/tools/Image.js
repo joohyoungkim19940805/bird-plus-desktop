@@ -144,16 +144,17 @@ export default class Image extends FreedomInterface {
         if( ! dataset && Object.keys(this.dataset).length == 0){
             this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
-            this.dataset.lastModified = Image.selectedFile.files[0].lastModified;
+            this.dataset.last_modified = Image.selectedFile.files[0].lastModified;
             this.dataset.size = Image.selectedFile.files[0].size;
+            this.dataset.content_type = Image.selectedFile.files[0].type;
             this.file.files = Image.selectedFile.files;
             let reader = new FileReader();  
             reader.onload = (event) => { 
                 imageLoadPromiseResolve(event.target.result)
             };  
             reader.readAsDataURL(Image.selectedFile.files[0]);
-        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base_64){
-            imageLoadPromiseResolve(this.dataset.base_64)
+        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
+            imageLoadPromiseResolve(this.dataset.base64)
         }else if(this.dataset.url){
             imageLoadPromiseResolve();
             fetch(this.dataset.url)
@@ -162,7 +163,7 @@ export default class Image extends FreedomInterface {
                     const reader = new FileReader();
                     reader.readAsDataURL(imgBlob);
                     reader.onloadend = () => {
-                        this.dataset.base_64 = reader.result;
+                        this.dataset.base64 = reader.result;
                     }
                 });
         }else{
@@ -178,8 +179,8 @@ export default class Image extends FreedomInterface {
             if( ! base64){
                 return;
             }
-            this.dataset.base_64 = base64;
-            return fetch(this.dataset.base_64)
+            this.dataset.base64 = base64;
+            return fetch(this.dataset.base64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))

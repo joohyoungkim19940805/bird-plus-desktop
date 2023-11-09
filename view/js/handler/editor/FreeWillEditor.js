@@ -48,7 +48,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
 				this.#renderingTools(Tool);
 			}else if(mutation.target.dataset.tool_status == 'cancel' && mutation.oldValue != 'cancel'){// && window.getSelection().isCollapsed == false){
-				this.#removerToos(Tool);
+				this.#removerTools(Tool);
 			}
 		});
 	});
@@ -307,7 +307,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		*/
 	}
 
-	#removerToos(TargetTool){
+	#removerTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, focusNode} = selection;
 		/*

@@ -18,7 +18,9 @@ class ApiS3IpcController {
 		mainWindow.webContents.send(eventName, data);
 	}
 	testImage(event, param){
+		let {name, base_64, size, lastModified, content_type} = param;
 		return windowUtil.isLogin( result => {
+			console.log(typeof result);
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/generate-presigned-url/test/`, JSON.stringify(param), {
 					headers:{
@@ -28,6 +30,20 @@ class ApiS3IpcController {
 				.then(windowUtil.responseCheck)
 				.then(response => {
 					return response.data;
+					console.log('response ::: ', response);
+					let {code, data} = response.data;
+					let base64Data = new Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+					//let blob = new File(new Blob([Buffer.from(base_64,"base64").buffer], {type: content_type}), 'test.png', {type:content_type});
+					axios.put(data, {
+						data: base64Data
+					}, {
+						headers: {
+							'Content-Encoding' : 'base64',
+							'Content-Type': content_type
+						}
+					}).then(res=>{
+						console.log('aws response ::: ', res);
+					}).catch(er=>log.error(er));
 				}).catch(err=>{
 					log.error('IPC sendChatting error', err);
 					return err.response.data;

@@ -157,8 +157,8 @@ export default class Video extends FreedomInterface {
                 videoLoadPromiseResolve(event.target.result)
             };  
             reader.readAsDataURL(Video.selectedFile.files[0]);
-        }else if( ! this.dataset.url && this.dataset.base_64){
-            videoLoadPromiseResolve(this.dataset.base_64)
+        }else if( ! this.dataset.url && this.dataset.base64){
+            videoLoadPromiseResolve(this.dataset.base64)
         }else if(this.dataset.url){
             videoLoadPromiseResolve()
             fetch(this.dataset.url)
@@ -167,7 +167,7 @@ export default class Video extends FreedomInterface {
                     const reader = new FileReader();
                     reader.readAsDataURL(videoBlob);
                     reader.onloadend = () => {
-                        this.dataset.base_64 = reader.result;
+                        this.dataset.base64 = reader.result;
                     }
                 });
         }
@@ -176,8 +176,8 @@ export default class Video extends FreedomInterface {
             if( ! base64){
                 return;
             }
-            this.dataset.base_64 = base64;
-            return fetch(this.dataset.base_64)
+            this.dataset.base64 = base64;
+            return fetch(this.dataset.base64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))

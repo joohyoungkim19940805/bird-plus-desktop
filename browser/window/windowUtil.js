@@ -29,6 +29,7 @@ class WindowUtil{
                 }
 
                 if(! response.isLogin){
+                    axios.defaults.headers.common['Authorization'] = '';
                     mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
                         mainWindow.titleBarStyle = 'visibble'
                         mainWindow.show();
@@ -38,20 +39,6 @@ class WindowUtil{
                 }
                 return callBack(response);
             }
-        }).catch(error=>{
-            log.error(error);
-            log.error('isLogin error callBack ::: ', callBack.toString());
-            log.error(error.data);
-            axios.defaults.headers.common['Authorization'] = '';
-            error.isLogin=false;
-            mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
-                mainWindow.titleBarStyle = 'visibble'
-                mainWindow.show();
-                mainWindow.isOpening = false;
-                return 'done';
-            })
-            return callBack(error);
-            //throw error;
         })
     }
 
