@@ -102,13 +102,15 @@ export default new class ChattingRegist extends FreeWillEditor{
 				return;
 			}else if(key == 'Enter' && this.innerText.replaceAll('\n', '') != ''){
 				event.preventDefault();
+				let promiseList = [];
 				this.getLowDoseJSON(this, {
-					afterCallback : async (json) => {
-						
-						if(json.tagName == Image.toolHandler.defaultClass){
-							console.log(json);
+					afterCallback : (json) => {
+						if(json.tagName != Image.toolHandler.defaultClass){
+							return;
+						}
+						promiseList.push(new Promise(resolve => {
 							let {name, base64, size, last_modified, content_type} = json.data;
-							await window.myAPI.testImage({
+							window.myAPI.testImage({
 								name, base64, size, last_modified, content_type
 							}).then(async result => {
 								console.log('result!!!',result);
@@ -130,13 +132,17 @@ export default new class ChattingRegist extends FreeWillEditor{
 										if( ! (res.status == 200 || res.status == 201) ){
 											throw new Error('fail');
 										} 
+										resolve(data);
 									})
 								}
 							})
-						}
+						}))
 					}
 				}).then(jsonList => {
 					console.log(jsonList);
+					new Promise(resolve => {
+						jsonList.flatMap(e=> e.child)
+					})
 					window.myAPI.chatting.sendChatting({
 						workspaceId: workspaceHandler.workspaceId,
 						roomId: roomHandler.roomId,

@@ -11,15 +11,26 @@ export default new class Common{
 		}
 		return new Promise(resolve=>{
 			let underbarKeyNameObject = Object.entries(data).reduce((total, [k,v]) => {
-				if(! v){
-					return total;
-				}
 				let key = k.match(this.#keyRegx).map(e=> e.toLowerCase()).join('_');
 				total[key] = v;
 				return total;
 			}, {});
 			Object.assign(element.dataset, underbarKeyNameObject);
 			resolve(element);
+		})
+	}
+	underbarNameToCamelName(obj){
+		return new Promise(resolve => {
+			resolve(Object.entries(obj).reduce((total, [k,v]) => {
+				let key = k.split('_').map((e,i)=>{
+					if(i == 0){
+						return e.charAt(0).toLowerCase() + e.substring(1);
+					}
+					return e.charAt(0).toUpperCase() + e.substring(1)
+				}).join('');
+				total[key] = v;
+				return total;
+			}, {}))
 		})
 	}
 	/**
