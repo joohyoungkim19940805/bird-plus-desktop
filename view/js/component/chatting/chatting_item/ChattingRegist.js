@@ -18,6 +18,7 @@ import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 
 import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "./../../../handler/room/RoomHandler";
+import common from "../../../common";
 
 export default new class ChattingRegist extends FreeWillEditor{
     static{
@@ -94,7 +95,8 @@ export default new class ChattingRegist extends FreeWillEditor{
 		this.#addEvent();
 
 	}
-	#addEvent(){
+	async #addEvent(){
+		let accountInfo = await window.myAPI.account.getAccountInfo();
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
 			console.log(event);
@@ -108,46 +110,124 @@ export default new class ChattingRegist extends FreeWillEditor{
 						if(json.tagName != Image.toolHandler.defaultClass){
 							return;
 						}
-						promiseList.push(new Promise(resolve => {
-							let {name, base64, size, last_modified, content_type} = json.data;
-							window.myAPI.testImage({
-								name, base64, size, last_modified, content_type
-							}).then(async result => {
-								console.log('result!!!',result);
+						promiseList.push(new Promise(async resolve => {
+							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
+
+							Promise.all( [common.generateKeyPair(common.signAlgorithm, ["sign", "verify"]), common.generateKeyPair(common.secretAlgorithm, ["encrypt", "decrypt"])] )
+							.then( ([signKeyPair, encDncKeyPair]) => {
+								let exportSignKeyPromise = window.crypto.subtle.exportKey('spki', signKeyPair.publicKey).then(exportKey => {
+									return new Promise( resolve => resolve(String.fromCharCode.apply(null, new Uint8Array(exportKey))) );
+								}).then(exportKeyString => {
+									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
+								});
+								let signDataPromise = common.keySign(`${roomHandler.roomId},${workspaceHandler.workspaceId},${name},${accountInfo.accountName}}`, signKeyPair.privateKey)
+								
+								let exportEncKeyPromise = window.crypto.subtle.exportKey('spki', encDncKeyPair.publicKey).then(exportKey => {
+									return new Promise( resolve => resolve(String.fromCharCode.apply(null, new Uint8Array(exportKey))) );
+								}).then(exportKeyString => {
+									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
+								});
+								return Promise.all( [exportSignKeyPromise, signDataPromise, exportEncKeyPromise, Promise.resolve(encDncKeyPair)] )		
+							}).then( async ([exportSignKey, signData, exportEncKey, encDncKeyPair]) => {
+								let result = window.myAPI.s3.generatePutObjectPresignedUrl({
+									data: signData.message, sign: signData.signature, dataKey: exportSignKey, encryptionKey: exportEncKey, uploadType: 'CHATTING'
+								})
 								let {code, data} = result;
-								if(code == 0){
-									console.log(data);
-									fetch(data, {
-										method:"PUT",
-										headers: {
-											'Content-Encoding' : 'base64',
-											//'Content-Type': content_type,
-											'Content-Type' : 'application/octet-stream',
-											'x-amz-server-side-encryption-customer-algorithm': 'AES256',
-											'x-amz-server-side-encryption-customer-key': 'zCl8fl7i8t8q4IVZpQTp5QkIwR+S1RH2m3lpgnaMI+g=',
-											'x-amz-server-side-encryption-customer-key-md5': 'WPgosOwwFY/pIMDVwcxnpg==',
-										},
-										body: {data:await fetch(base64).then(async res=>res.blob())}
-									}).then(res=>{
-										if( ! (res.status == 200 || res.status == 201) ){
-											throw new Error('fail');
-										} 
-										resolve(data);
-									})
+
+								if(code != 0){
+									return ;
+								}
+								encDncKeyPair
+								let res = await this.fetchPutObject(putUrl);
+
+								if( ! (res.status == 200 || res.status == 201) ){
+									return;
 								}
 							})
+
+
+							console.log('result!!!',result);
+							
+							let {code, data : putUrl} = result;
+
+							if(code != 0) {
+								resolve();
+								return;
+							}
+
+							console.log(putUrl);
+							
+							let res = await this.fetchPutObject(putUrl);
+
+							if( ! (res.status == 200 || res.status == 201) ){
+								resolve();
+								return;
+							}
+							
+							window.myAPI.s3.generateGetObjectPresignedUrl({
+								name, base64, size, lastModified, contentType
+							}).then(async result => {
+								console.log('result!!!',result);
+								let {code, data : getUrl} = result;
+
+								if(code != 0) {
+									resolve();
+									return;
+								}
+
+								fetch(getUrl, {
+									method: "GET",
+									headers: {
+										'Content-Type' : contentType,
+										'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+										'x-amz-server-side-encryption-customer-key': 'zCl8fl7i8t8q4IVZpQTp5QkIwR+S1RH2m3lpgnaMI+g=',
+										'x-amz-server-side-encryption-customer-key-md5': 'WPgosOwwFY/pIMDVwcxnpg==',
+									},
+								}).then(async res=>{
+									console.log('res', res);
+									res.headers.forEach((e, i)=>{
+										console.log('headers ::: ' + i + ' ', e);
+									})
+									return res.arrayBuffer()
+								}).then(buffer =>{
+
+									let newBlob = new Blob([buffer], { type: contentType });
+									console.log(newBlob);
+									console.log(typeof newBlob);
+										
+									let imgUrl = URL.createObjectURL(newBlob);
+
+									console.log('imgUrl', imgUrl);
+									let img = document.createElement('img');
+									img.id = 'test_img';
+									img.src = imgUrl;
+									document.body.append(img);
+									json.url = getUrl
+									resolve(getUrl);
+								})
+							})
+
 						}))
 					}
 				}).then(jsonList => {
-					console.log(jsonList);
-					new Promise(resolve => {
-						jsonList.flatMap(e=> e.child)
-					})
+					console.log('befoer ::: ', jsonList);
 					window.myAPI.chatting.sendChatting({
 						workspaceId: workspaceHandler.workspaceId,
 						roomId: roomHandler.roomId,
 						chatting: JSON.stringify(jsonList)
 					}).then(res=>{
+						console.log(res);
+						let {data} = res
+						console.log(data);
+						console.log('after ::: ', jsonList);
+						/*
+						window.myAPI.chatting.sendChatting({
+							id : data.id,
+							workspaceId: workspaceHandler.workspaceId,
+							roomId: roomHandler.roomId,
+							chatting: JSON.stringify(jsonList)
+						});
+						*/
 						this.innerText = '';
 					});
 				})
@@ -164,9 +244,106 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 		//collapsed == false = 범위 선택 x
 	}
+	async fetchPutObject(putUrl, key, md5){
+		return fetch(putUrl, {
+			method:"PUT",
+			headers: {
+				'Content-Encoding' : 'base64',
+				'Content-Type' : 'application/octet-stream',
+				'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+				'x-amz-server-side-encryption-customer-key': key,
+				'x-amz-server-side-encryption-customer-key-md5': md5,
+			},
+			body: {data:await fetch(base64).then(async res=>res.blob())}
+		})
+	}
 
     get element(){
         return this.#element;
     }
 
 }();
+
+/*
+afterCallback : (json) => {
+						if(json.tagName != Image.toolHandler.defaultClass){
+							return;
+						}
+						promiseList.push(new Promise(async resolve => {
+							let {name, base64, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
+							let result = await window.myAPI.s3.generatePutObjectPresignedUrlForSSE_C({
+								name, base64, size, lastModified, contentType
+							})
+							console.log('result!!!',result);
+							let {code, data : putUrl} = result;
+
+							if(code != 0) {
+								resolve();
+								return;
+							}
+
+							console.log(putUrl);
+							
+							let res = await fetch(putUrl, {
+								method:"PUT",
+								headers: {
+									'Content-Encoding' : 'base64',
+									//'Content-Type': content_type,
+									'Content-Type' : 'application/octet-stream',
+									'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+									'x-amz-server-side-encryption-customer-key': 'zCl8fl7i8t8q4IVZpQTp5QkIwR+S1RH2m3lpgnaMI+g=',
+									'x-amz-server-side-encryption-customer-key-md5': 'WPgosOwwFY/pIMDVwcxnpg==',
+								},
+								body: {data:await fetch(base64).then(async res=>res.blob())}
+							})
+
+							if( ! (res.status == 200 || res.status == 201) ){
+								resolve();
+							}
+							
+							window.myAPI.s3.generateGetObjectPresignedUrlForSSE_C({
+								name, base64, size, lastModified, contentType
+							}).then(async result => {
+								console.log('result!!!',result);
+								let {code, data : getUrl} = result;
+
+								if(code != 0) {
+									resolve();
+									return;
+								}
+
+								fetch(getUrl, {
+									method: "GET",
+									headers: {
+										'Content-Type' : contentType,
+										'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+										'x-amz-server-side-encryption-customer-key': 'zCl8fl7i8t8q4IVZpQTp5QkIwR+S1RH2m3lpgnaMI+g=',
+										'x-amz-server-side-encryption-customer-key-md5': 'WPgosOwwFY/pIMDVwcxnpg==',
+									},
+								}).then(async res=>{
+									console.log('res', res);
+									res.headers.forEach((e, i)=>{
+										console.log('headers ::: ' + i + ' ', e);
+									})
+									return res.arrayBuffer()
+								}).then(buffer =>{
+
+									let newBlob = new Blob([buffer], { type: contentType });
+									console.log(newBlob);
+									console.log(typeof newBlob);
+										
+									let imgUrl = URL.createObjectURL(newBlob);
+
+									console.log('imgUrl', imgUrl);
+									let img = document.createElement('img');
+									img.id = 'test_img';
+									img.src = imgUrl;
+									document.body.append(img);
+									json.url = getUrl
+									resolve(getUrl);
+								})
+							})
+
+						}))
+					}
+*/

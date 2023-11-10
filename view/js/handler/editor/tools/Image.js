@@ -193,6 +193,10 @@ export default class Image extends FreedomInterface {
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
         this.createDefaultContent(imgLoadEndPromise);
+        
+        this.disconnectedAfterCallback = () => {
+            URL.revokeObjectURL(this.dataset.url);
+        }
 	}
 
     createDefaultContent(imgLoadEndPromise){

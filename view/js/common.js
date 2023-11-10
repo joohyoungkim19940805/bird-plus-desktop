@@ -1,8 +1,43 @@
 export default new class Common{
 	#keyRegx = /[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g;
+	
+	signAlgorithm = {
+		name: "RSASSA-PKCS1-v1_5",
+		// Consider using a 4096-bit key for systems that require long-term security
+		modulusLength: 2048,
+		publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+		hash: "SHA-256",
+	}
+
+	secretAlgorithm = {
+		name: "RSA-OAEP",
+		modulusLength: 2048,
+		publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+		hash: "SHA-256",
+	}
+
+	encoder = TextEncoder();
+	decoder = TextDecoder();
+
 	constructor(){
 
 	}
+
+	async generateKeyPair(algorithm, keyUsages){
+		return window.crypto.subtle.generateKey(
+			ChattingRegist.algorithm,
+			true,
+			keyUsages//["sign", "verify"]
+		);
+	}
+
+	async keySign(data, privateKey){
+		let message = this.encoder.encode(data);
+		return window.crypto.subtle.sign(this.algorithm.name, privateKey, message).then(signature=>{
+			return {message, signature};
+		})
+	}
+
 	jsonToSaveElementDataset(data, element){
 		if( ! element){
 			throw new Error('element is undefined')
@@ -19,7 +54,7 @@ export default new class Common{
 			resolve(element);
 		})
 	}
-	underbarNameToCamelName(obj){
+	async underbarNameToCamelName(obj){
 		return new Promise(resolve => {
 			resolve(Object.entries(obj).reduce((total, [k,v]) => {
 				let key = k.split('_').map((e,i)=>{
