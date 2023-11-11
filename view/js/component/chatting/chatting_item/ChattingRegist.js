@@ -20,6 +20,8 @@ import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "./../../../handler/room/RoomHandler";
 import common from "../../../common";
 
+import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
+
 export default new class ChattingRegist extends FreeWillEditor{
     static{
         window.customElements.define('free-will-editor', ChattingRegist);
@@ -115,26 +117,26 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
 
-							Promise.all( [common.generateKeyPair(common.signAlgorithm, ["sign", "verify"]), common.generateKeyPair(common.secretAlgorithm, ["encrypt", "decrypt"])] )
+							Promise.all( [s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.signAlgorithm, ["sign", "verify"]), s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.secretAlgorithm, ["encrypt", "decrypt"])] )
 							.then( ([signKeyPair, encDncKeyPair]) => {
-								let exportSignKeyPromise = window.crypto.subtle.exportKey('spki', signKeyPair.publicKey).then(exportKey => {
-									return new Promise( resolve => resolve(String.fromCharCode(...new Uint8Array(exportKey))) );
-								}).then(exportKeyString => {
-									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
-								});
-
-								let exportEncKeyPromise = window.crypto.subtle.exportKey('spki', encDncKeyPair.publicKey).then(exportKey => {
-									return new Promise( resolve => resolve(String.fromCharCode(...new Uint8Array(exportKey))) );
-								}).then(exportKeyString => {
-									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
-								});
-								return Promise.all( [exportSignKeyPromise, exportEncKeyPromise, Promise.resolve(encDncKeyPair), Promise.resolve(signKeyPair)] )		
+								return Promise.all( [
+									s3EncryptionUtil.exportKey('spki', signKeyPair.publicKey),
+									s3EncryptionUtil.exportKey('spki', encDncKeyPair.publicKey), 
+									Promise.resolve(encDncKeyPair), 
+									Promise.resolve(signKeyPair)
+								] )		
 							}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
 
-								let signData = await common.keySign(`${roomHandler.roomId},${workspaceHandler.workspaceId},${name},${accountInfo.accountName},${exportEncKey}}`, signKeyPair.privateKey)
+								let signData = await s3EncryptionUtil.keySign(
+									`${roomHandler.roomId},${workspaceHandler.workspaceId},${name},${accountInfo.accountName},${exportEncKey}}`, 
+									signKeyPair.privateKey
+								)
 								
 								let result = await window.myAPI.s3.generatePutObjectPresignedUrl({
-									data: window.btoa(String.fromCodePoint(...signData.message)), dataKey: exportSignKey, sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), uploadType: 'CHATTING'
+									data: window.btoa(String.fromCodePoint(...signData.message)), 
+									dataKey: exportSignKey, 
+									sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), 
+									uploadType: 'CHATTING'
 								})
 								let {code, data} = result;
 								
@@ -143,11 +145,11 @@ export default new class ChattingRegist extends FreeWillEditor{
 								}
 								
 								Promise.all([
-									common.convertBase64ToBuffer(data.encryptionKey).then((buffer) => {
-										return common.decryptMessage(encDncKeyPair.privateKey, buffer, common.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+									s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then((buffer) => {
+										return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									}),
-									common.convertBase64ToBuffer(data.encryptionMd).then((buffer) => {
-										return common.decryptMessage(encDncKeyPair.privateKey, buffer, common.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+									s3EncryptionUtil.convertBase64ToBuffer(data.encryptionMd).then((buffer) => {
+										return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									})
 								]).then( async ([k,m]) => {
 									let res = await this.fetchPutObject(data.presignedUrl,k,m, json.data.base64);
