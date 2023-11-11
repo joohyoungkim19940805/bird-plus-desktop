@@ -96,7 +96,8 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 	}
 	async #addEvent(){
-		let accountInfo = await window.myAPI.account.getAccountInfo();
+		let accountInfo = (await window.myAPI.account.getAccountInfo()).data;
+		console.log(accountInfo);
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
 			console.log(event);
@@ -111,41 +112,54 @@ export default new class ChattingRegist extends FreeWillEditor{
 							return;
 						}
 						promiseList.push(new Promise(async resolve => {
+
 							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
 
 							Promise.all( [common.generateKeyPair(common.signAlgorithm, ["sign", "verify"]), common.generateKeyPair(common.secretAlgorithm, ["encrypt", "decrypt"])] )
 							.then( ([signKeyPair, encDncKeyPair]) => {
 								let exportSignKeyPromise = window.crypto.subtle.exportKey('spki', signKeyPair.publicKey).then(exportKey => {
-									return new Promise( resolve => resolve(String.fromCharCode.apply(null, new Uint8Array(exportKey))) );
+									return new Promise( resolve => resolve(String.fromCharCode(...new Uint8Array(exportKey))) );
 								}).then(exportKeyString => {
 									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 								});
-								let signDataPromise = common.keySign(`${roomHandler.roomId},${workspaceHandler.workspaceId},${name},${accountInfo.accountName}}`, signKeyPair.privateKey)
-								
+
 								let exportEncKeyPromise = window.crypto.subtle.exportKey('spki', encDncKeyPair.publicKey).then(exportKey => {
-									return new Promise( resolve => resolve(String.fromCharCode.apply(null, new Uint8Array(exportKey))) );
+									return new Promise( resolve => resolve(String.fromCharCode(...new Uint8Array(exportKey))) );
 								}).then(exportKeyString => {
 									return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 								});
-								return Promise.all( [exportSignKeyPromise, signDataPromise, exportEncKeyPromise, Promise.resolve(encDncKeyPair)] )		
-							}).then( async ([exportSignKey, signData, exportEncKey, encDncKeyPair]) => {
-								let result = window.myAPI.s3.generatePutObjectPresignedUrl({
-									data: signData.message, sign: signData.signature, dataKey: exportSignKey, encryptionKey: exportEncKey, uploadType: 'CHATTING'
+								return Promise.all( [exportSignKeyPromise, exportEncKeyPromise, Promise.resolve(encDncKeyPair), Promise.resolve(signKeyPair)] )		
+							}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
+
+								let signData = await common.keySign(`${roomHandler.roomId},${workspaceHandler.workspaceId},${name},${accountInfo.accountName},${exportEncKey}}`, signKeyPair.privateKey)
+								
+								let result = await window.myAPI.s3.generatePutObjectPresignedUrl({
+									data: window.btoa(String.fromCodePoint(...signData.message)), dataKey: exportSignKey, sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), uploadType: 'CHATTING'
 								})
 								let {code, data} = result;
-
+								
 								if(code != 0){
 									return ;
 								}
-								encDncKeyPair
-								let res = await this.fetchPutObject(putUrl);
+								
+								Promise.all([
+									common.convertBase64ToBuffer(data.encryptionKey).then((buffer) => {
+										return common.decryptMessage(encDncKeyPair.privateKey, buffer, common.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+									}),
+									common.convertBase64ToBuffer(data.encryptionMd).then((buffer) => {
+										return common.decryptMessage(encDncKeyPair.privateKey, buffer, common.secretAlgorithm).then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+									})
+								]).then( async ([k,m]) => {
+									let res = await this.fetchPutObject(data.presignedUrl,k,m, json.data.base64);
 
-								if( ! (res.status == 200 || res.status == 201) ){
-									return;
-								}
+									if( ! (res.status == 200 || res.status == 201) ){
+										return;
+									}
+								})
+
+								resolve();
 							})
-
-
+							/*
 							console.log('result!!!',result);
 							
 							let {code, data : putUrl} = result;
@@ -206,7 +220,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 									resolve(getUrl);
 								})
 							})
-
+							*/
 						}))
 					}
 				}).then(jsonList => {
@@ -244,7 +258,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 		//collapsed == false = 범위 선택 x
 	}
-	async fetchPutObject(putUrl, key, md5){
+	async fetchPutObject(putUrl, key, md5, fildBase64){
 		return fetch(putUrl, {
 			method:"PUT",
 			headers: {
@@ -254,7 +268,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 				'x-amz-server-side-encryption-customer-key': key,
 				'x-amz-server-side-encryption-customer-key-md5': md5,
 			},
-			body: {data:await fetch(base64).then(async res=>res.blob())}
+			body: {data:await fetch(fildBase64).then(async res=>res.blob())}
 		})
 	}
 

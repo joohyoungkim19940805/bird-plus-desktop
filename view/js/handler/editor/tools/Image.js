@@ -134,6 +134,8 @@ export default class Image extends FreedomInterface {
 
     file = new DataTransfer().files;
 
+    imgLoadEndCallback = (event) => {};
+
 	constructor(dataset){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
         
@@ -230,7 +232,7 @@ export default class Image extends FreedomInterface {
         imageContanier.append(image);
 
         image.onload = () => {
-            let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+            /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;
 			if(range.endContainer.nodeType == Node.TEXT_NODE){
 				scrollTarget = range.endContainer.parentElement
@@ -238,20 +240,22 @@ export default class Image extends FreedomInterface {
 				scrollTarget = range.endContainer;
 			}
 			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+            */
+           this.imgLoadEndCallback();
 			//imageContanier.style.height = window.getComputedStyle(image).height;
         }
         image.onerror = () => {
             //imageContanier.style.height = window.getComputedStyle(image).height;
         }
-
+        let description = this.createDescription(image, imageContanier);
+        wrap.append(...[description,imageContanier].filter(e=>e != undefined));
+        
+        Image.imageBox.addImageHoverEvent(image);
+        if(this.nextSibling?.tagName == 'BR'){
+            this.nextSibling.remove()
+        }
         super.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(image, imageContanier);
-            wrap.append(...[description,imageContanier].filter(e=>e != undefined));
-            
-            Image.imageBox.addImageHoverEvent(image);
-            if(this.nextSibling?.tagName == 'BR'){
-                this.nextSibling.remove()
-            }
+
         }
 
         super.disconnectedAfterCallback = () => {

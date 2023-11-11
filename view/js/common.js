@@ -16,8 +16,8 @@ export default new class Common{
 		hash: "SHA-256",
 	}
 
-	encoder = TextEncoder();
-	decoder = TextDecoder();
+	encoder = new TextEncoder();
+	decoder = new TextDecoder();
 
 	constructor(){
 
@@ -25,7 +25,7 @@ export default new class Common{
 
 	async generateKeyPair(algorithm, keyUsages){
 		return window.crypto.subtle.generateKey(
-			ChattingRegist.algorithm,
+			algorithm,
 			true,
 			keyUsages//["sign", "verify"]
 		);
@@ -33,9 +33,20 @@ export default new class Common{
 
 	async keySign(data, privateKey){
 		let message = this.encoder.encode(data);
-		return window.crypto.subtle.sign(this.algorithm.name, privateKey, message).then(signature=>{
+		return window.crypto.subtle.sign(this.signAlgorithm.name, privateKey, message).then(signature=>{
 			return {message, signature};
 		})
+	}
+
+	async decryptMessage(privateKey, ciphertext, algorithm) {
+		return window.crypto.subtle.decrypt(
+			{ name: algorithm.name },
+			privateKey,
+			ciphertext,
+		).catch(err=>{
+			console.error(err.message);
+			console.error(err.stack);
+		});
 	}
 
 	jsonToSaveElementDataset(data, element){
@@ -92,4 +103,11 @@ export default new class Common{
 		}
 		element.style.left = x + 'px';
 	}
+
+	async convertBase64ToBuffer(base64){
+		return fetch(`data:application/octet-binary;base64,${base64}`)
+		.then(res=>res.arrayBuffer())
+		.then(buffer=>new Uint8Array(buffer))
+	}
+
 }
