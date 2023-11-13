@@ -1,8 +1,7 @@
 import chattingHandler from "../../../handler/chatting/ChattingHandler"
 import roomHandler from "../../../handler/room/RoomHandler"
 import workspaceHandler from "../../../handler/workspace/WorkspaceHandler"
-import chattingRegist from "./ChattingRegist"
-import common from "./../../../common"
+
 import FreeWillEditor from "../../../handler/editor/FreeWillEditor"
 import Strong from "./../../../handler/editor/tools/Strong"
 import Color from "./../../../handler/editor/tools/Color"
@@ -20,6 +19,11 @@ import Image from "./../../../handler/editor/tools/Image"
 import Video from "./../../../handler/editor/tools/Video"
 import Code from "./../../../handler/editor/tools/Code"
 import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
+
+import common from "../../../common";
+
+import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
+
 
 class ChattingInfoLine extends FreeWillEditor{
     static{
@@ -47,6 +51,130 @@ class ChattingInfoLine extends FreeWillEditor{
     static option = {
         isDefaultStyle : true
     }
+    static{
+        
+        window.addEventListener('load', async () => {
+            let accountInfo = (await window.myAPI.account.getAccountInfo()).data;
+
+            const imageOrVidepCallback = (targetTools) => {
+                this.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, targetTools.dataset.new_file_name, accountInfo.accountName)
+                .then( (result) => {
+                    if(! result){
+                        return;
+                    }
+                    let {data, encDncKeyPair} = result;
+                    return Promise.all([
+                        s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then( async (buffer) => {
+                            return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                        }),
+                        s3EncryptionUtil.convertBase64ToBuffer(data.encryptionMd).then( async (buffer) => {
+                            return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                        })
+                    ]).then( async ([k,m]) => {
+                        return fetch(data.presignedUrl, {
+                            method:"GET",
+                            headers: {
+                                'Content-Encoding' : 'base64',
+                                'Content-Type' : 'application/octet-stream',
+                                'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+                                'x-amz-server-side-encryption-customer-key': k,
+                                'x-amz-server-side-encryption-customer-key-md5': m,
+                            }
+                        }).then(async response=> {
+                            if(response.status != 200 && response.status != 201){
+                                throw new Error('s3 connect failed')
+                            }
+                            return response.body;
+                        }).then((body) => {
+                            const reader = body.getReader();
+                            return new ReadableStream(
+                                {
+                                    start(controller) {
+                                        return pump();
+                                        function pump() {
+                                            return reader.read().then(({ done, value }) => {
+                                                // When no more data needs to be consumed, close the stream
+                                                if (done) {
+                                                    controller.close();
+                                                    return;
+                                                }
+                                                // Enqueue the next data chunk into our target stream
+                                                controller.enqueue(value);
+                                                return pump();
+                                            });
+                                        }
+                                    },
+                                }
+                            );
+                            /*
+                            let newBlob = new Blob([buffer], { type: imageEditor.dataset.content_type });
+                            let imgUrl = URL.createObjectURL(newBlob);
+                            */
+                        })
+                        .then(stream => new Response(stream))
+                        .then(res => res.blob())
+                        .then(blob => URL.createObjectURL(blob))
+                        .then(url => {
+                            targetTools.dataset.url = url;
+                            if(targetTools.image){
+                                targetTools.image.src = url;
+                            }else{
+                                targetTools.video.src = url;
+                            }
+                        })
+                        .catch(err=>{
+                            console.error(err);
+                        })
+                    
+                    })
+                })
+            }
+
+            Image.customImageCallback = (imageEditor) => imageOrVidepCallback(imageEditor)
+            Video.customVideoCallback = (videoEditor) => imageOrVidepCallback(videoEditor)
+            
+        })
+    }
+    static mergeUint8Arrays(oneArr = [], twoArr = []){
+        let result = new Uint8Array(oneArr.length + twoArr.length);
+        result.set(oneArr);
+        result.set(twoArr, oneArr.length);
+        return result;
+    }
+    
+    static async callS3PresignedUrl(callFunction, fileName, accountName){
+		return Promise.all( [s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.signAlgorithm, ["sign", "verify"]), s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.secretAlgorithm, ["encrypt", "decrypt"])] )
+		.then( ([signKeyPair, encDncKeyPair]) => {
+			return Promise.all( [
+				s3EncryptionUtil.exportKey('spki', signKeyPair.publicKey),
+				s3EncryptionUtil.exportKey('spki', encDncKeyPair.publicKey), 
+				Promise.resolve(encDncKeyPair), 
+				Promise.resolve(signKeyPair)
+			] )		
+		}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
+
+			let signData = await s3EncryptionUtil.keySign(
+				`${roomHandler.roomId},${workspaceHandler.workspaceId},${fileName},${accountName},${exportEncKey}}`, 
+				signKeyPair.privateKey
+			)
+			
+			let result = await callFunction({
+				data: window.btoa(String.fromCodePoint(...signData.message)), 
+				dataKey: exportSignKey, 
+				sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), 
+				uploadType: 'CHATTING'
+			})
+			let {code, data} = result;
+			
+			if(code != 0){
+				return ;
+			}
+			
+			return {data, encDncKeyPair};
+		})
+	}
     constructor(){
         super(ChattingInfoLine.tools, ChattingInfoLine.option);
         super.contentEditable = false;
@@ -93,13 +221,18 @@ export default new class ChattingInfo{
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                         .then(async data=> 
                             this.createPage(data).then(liList => {        
+                                let lastVisibleTarget = liList.at(-1);
+                                if(lastVisibleTarget){
+                                    this.#lastItemVisibleObserver.disconnect();
+                                    this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                                }
                                 if(this.#page >= data.totalPages){
                                     this.#lastItemVisibleObserver.disconnect();
                                     // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                     // 날짜 관련 함수 코드 실행
                                     this.#processingTimeGrouping(
-                                        this.#liList.at(-2), 
-                                        this.#liList.at(-1)
+                                        liList.at(-2), 
+                                        liList.at(-1)
                                     ).then(() => {
                                         if(this.elementMap.chattingContentList.querySelectorAll('.time_grouping').length == 0){
                                             let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
@@ -124,12 +257,12 @@ export default new class ChattingInfo{
                 }
                 
                 promise.then(liList => {
-                    this.#lastItemVisibleObserver.disconnect();
-                    let lastVisibleTarget = liList.at(-1);
-                    if(lastVisibleTarget){
-                        this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                    if(liList.length == 0){
+                        return;
                     }
-                    this.#liList.push(...liList);
+                    this.#liList = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                        .flatMap(e=>Object.values(e))
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                     let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                     visibilityLastItem?.previousElementSibling?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
@@ -174,6 +307,27 @@ export default new class ChattingInfo{
                     if(roomHandler.roomId != chattingData.roomId){
                         return;
                     }
+                    let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                    if(memory && memory.length != 0){
+                        this.#page = memory.length - 1;
+                        this.#liList = memory.flatMap(e=>Object.values(e))
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                        this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
+                        let isConnectedAwait = setInterval(()=>{
+                            if( ! this.#liList[0]){
+                                clearInterval(isConnectedAwait);
+                                return;
+                            }
+                            if( ! this.#liList[0].isConnected){
+                                return;
+                            }
+                            this.#elementMap.chattingContentList.scrollBy(undefined, 
+                                this.#elementMap.chattingContentList.scrollHeight
+                            )
+                            clearInterval(isConnectedAwait);
+                        },50);
+                    }
+                    /*
                     this.#elementMap.chattingContentList.prepend(liElement);
                     this.#processingTimeGrouping(
                         this.#liList[0],
@@ -199,6 +353,7 @@ export default new class ChattingInfo{
                     this.#elementMap.chattingContentList.scrollBy(undefined, 
                         9999999
                     )
+                    */
                 });
             }
         }
@@ -218,7 +373,13 @@ export default new class ChattingInfo{
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                     .then(async data=> 
                         this.createPage(data)
-                        .then(liList => {        
+                        .then(liList => {       
+                            let lastVisibleTarget = liList.at(-1);
+                            if(lastVisibleTarget){
+                                this.#lastItemVisibleObserver.disconnect();
+                                this.#lastItemVisibleObserver.observe(lastVisibleTarget)
+                            } 
+
                             if(this.#page >= data.totalPages){
                                 this.#lastItemVisibleObserver.disconnect();
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
@@ -248,12 +409,7 @@ export default new class ChattingInfo{
                         )
                         clearInterval(isConnectedAwait);
                     },50);
-                   
-                    this.#lastItemVisibleObserver.disconnect();
-                    let lastVisibleTarget = liList.at(-1);
-                    if(lastVisibleTarget){
-                        this.#lastItemVisibleObserver.observe(lastVisibleTarget)
-                    }
+
                 })
             },
             runTheFirst: false
@@ -385,6 +541,7 @@ export default new class ChattingInfo{
         if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
             this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
         }
+
         this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
     }
 

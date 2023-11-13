@@ -53,10 +53,11 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 	}
 
 	async exportKey(exportType, key){
-		return window.crypto.subtle.exportKey(exportType, signKeyPair.publicKey).then(exportKey => {
+		return window.crypto.subtle.exportKey(exportType, key).then(exportKey => {
 			return new Promise( resolve => resolve(String.fromCharCode(...new Uint8Array(exportKey))) );
 		}).then(exportKeyString => {
 			return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 		});
 	}
+	
 }

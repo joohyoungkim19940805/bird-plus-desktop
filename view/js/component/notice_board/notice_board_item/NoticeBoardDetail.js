@@ -321,7 +321,7 @@ export default new class NoticeBoardDetail{
                 let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
                 
                 li.dataset.empty_line_count = emptyLineCount;
-                editor.getLowDoseJSON().then(jsonList => {
+                editor.getLowDoseJSON(editor).then(jsonList => {
                     window.myAPI.noticeBoard.createNoticeBoardDetail({
                         id : li.dataset.id,
                         noticeBoardId: noticeBoardHandler.noticeBoardId,

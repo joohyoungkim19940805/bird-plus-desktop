@@ -7,6 +7,8 @@ export default class Image extends FreedomInterface {
 
     static imageBox = new ImageBox();
 
+    static customImageCallback; 
+
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-image-style'
 	});
@@ -130,19 +132,15 @@ export default class Image extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-    static tempMemory = {};
-
     file = new DataTransfer().files;
 
     imgLoadEndCallback = (event) => {};
 
+    image = document.createElement('img');
+
 	constructor(dataset){
 		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
         
-        let imageLoadPromiseResolve;
-        let imageLoadPromise = new Promise(resolve => {
-            imageLoadPromiseResolve = resolve;
-        })
         if( ! dataset && Object.keys(this.dataset).length == 0){
             this.dataset.url = URL.createObjectURL(Image.selectedFile.files[0]);
             this.dataset.name = Image.selectedFile.files[0].name;
@@ -150,58 +148,52 @@ export default class Image extends FreedomInterface {
             this.dataset.size = Image.selectedFile.files[0].size;
             this.dataset.content_type = Image.selectedFile.files[0].type;
             this.file.files = Image.selectedFile.files;
-            let reader = new FileReader();  
-            reader.onload = (event) => { 
-                imageLoadPromiseResolve(event.target.result)
-            };  
+            const reader = new FileReader();  
             reader.readAsDataURL(Image.selectedFile.files[0]);
-        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
-            imageLoadPromiseResolve(this.dataset.base64)
-        }else if(this.dataset.url){
-            imageLoadPromiseResolve();
-            fetch(this.dataset.url)
-                .then(res => res.blob())
-                .then(imgBlob => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(imgBlob);
-                    reader.onloadend = () => {
-                        this.dataset.base64 = reader.result;
-                    }
-                });
-        }else{
-            //imageLoadPromiseResolve(this.dataset.url);
-        }
-
-        if( ! this.file.files && ! this.dataset.name){
-            this.remove();
-            throw new Error(`this file is ${this.file.files}`);
-        }
-        
-        let imgLoadEndPromise = imageLoadPromise.then( async (base64) => {
-            if( ! base64){
-                return;
+            reader.onloadend = () => {
+                this.dataset.base64 = reader.result;
+                fetch(this.dataset.base64)
+                .then(async res=>{
+                    return res.blob().then(blob=>{
+                        let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
+                        this.dataset.url = imgUrl;
+                        this.image.src = this.dataset.url;
+                    })
+                })
             }
-            this.dataset.base64 = base64;
-            return fetch(this.dataset.base64)
+        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
+            fetch(this.dataset.base64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
                     this.dataset.url = imgUrl;
-                    return this.dataset.url;
+                    this.image.src = this.dataset.url;
                 })
             })
-        })
+        }else if(Image.customImageCallback && typeof Image.customImageCallback == 'function'){
+            Image.customImageCallback(this);
+        }else if(this.dataset.url){
+            this.image.src = this.dataset.url;
+        }
+
+        if( ! this.file.files && ! this.dataset.name){
+            this.remove();
+            throw new Error(`this file is undefined ${this.file.files}`);
+        }
+        
         Image.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
-        this.createDefaultContent(imgLoadEndPromise);
+        this.createDefaultContent();
         
         this.disconnectedAfterCallback = () => {
-            URL.revokeObjectURL(this.dataset.url);
+            if( ! this.dataset.url.startsWith('http')){
+                URL.revokeObjectURL(this.dataset.url);
+            }
         }
 	}
 
-    createDefaultContent(imgLoadEndPromise){
+    createDefaultContent(){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
@@ -218,20 +210,14 @@ export default class Image extends FreedomInterface {
             //src: this.dataset.url
             //src: imgUrl
         });*/
-        let image = document.createElement('img');
-
-        imgLoadEndPromise.then(imgUrl => {
-            console.log(111);
-            image.src = imgUrl || this.dataset.url;
-        })
 
         //if(this.file.files.length != 0){
-        image.dataset.image_name = this.dataset.name
+        this.image.dataset.image_name = this.dataset.name
         //}
 
-        imageContanier.append(image);
+        imageContanier.append(this.image);
 
-        image.onload = () => {
+        this.image.onload = () => {
             /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;
 			if(range.endContainer.nodeType == Node.TEXT_NODE){
@@ -241,16 +227,16 @@ export default class Image extends FreedomInterface {
 			}
 			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
             */
-           this.imgLoadEndCallback();
+           //this.imgLoadEndCallback();
 			//imageContanier.style.height = window.getComputedStyle(image).height;
         }
-        image.onerror = () => {
+        this.image.onerror = () => {
             //imageContanier.style.height = window.getComputedStyle(image).height;
         }
-        let description = this.createDescription(image, imageContanier);
+        let description = this.createDescription(this.image, imageContanier);
         wrap.append(...[description,imageContanier].filter(e=>e != undefined));
         
-        Image.imageBox.addImageHoverEvent(image);
+        Image.imageBox.addImageHoverEvent(this.image);
         if(this.nextSibling?.tagName == 'BR'){
             this.nextSibling.remove()
         }
@@ -262,7 +248,7 @@ export default class Image extends FreedomInterface {
         
         }
 
-        return image;
+        return this.image;
     }
 
     /**
@@ -339,6 +325,7 @@ export default class Image extends FreedomInterface {
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
             //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
+            console.log(this.childNodes);
             aticle.append(...this.childNodes);
             aticle.slot = Image.slotName;
             this.append(aticle);

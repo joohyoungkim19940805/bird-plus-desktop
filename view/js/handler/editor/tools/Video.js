@@ -7,6 +7,8 @@ export default class Video extends FreedomInterface {
 
     static videoBox = new VideoBox();
 
+    static customVideoCallback;
+
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-video-style'
 	});
@@ -138,13 +140,15 @@ export default class Video extends FreedomInterface {
      */
     file = new DataTransfer().files;
 
+    videoLoadEndCallback = (event) => {};
+
+    video = Object.assign(document.createElement('video'), {
+        loop: true,
+        controls: true
+    });
+
 	constructor(dataset){
 		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-
-        let videoLoadPromiseResolve;
-        let videoLoadPromise = new Promise(resolve => {
-            videoLoadPromiseResolve = resolve;
-        })
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){
             this.dataset.url = URL.createObjectURL(Video.selectedFile.files[0]);
@@ -152,48 +156,47 @@ export default class Video extends FreedomInterface {
             this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
             this.dataset.size = Video.selectedFile.files[0].size;
             this.file.files = Video.selectedFile.files;
-            let reader = new FileReader();  
-            reader.onload = (event) => { 
-                videoLoadPromiseResolve(event.target.result)
-            };  
+            const reader = new FileReader();  
             reader.readAsDataURL(Video.selectedFile.files[0]);
-        }else if( ! this.dataset.url && this.dataset.base64){
-            videoLoadPromiseResolve(this.dataset.base64)
-        }else if(this.dataset.url){
-            videoLoadPromiseResolve()
-            fetch(this.dataset.url)
-                .then(res => res.blob())
-                .then(videoBlob => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(videoBlob);
-                    reader.onloadend = () => {
-                        this.dataset.base64 = reader.result;
-                    }
-                });
-        }
-
-        let videoLoadEndPromise = videoLoadPromise.then( async (base64) => {
-            if( ! base64){
-                return;
+            reader.onloadend = () => {
+                this.dataset.base64 = reader.result;
+                fetch(this.dataset.base64)
+                .then(async res=>{
+                    return res.blob().then(blob=>{
+                        let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
+                        console.log('videoUrl??', videoUrl)
+                        this.dataset.url = videoUrl;
+                        this.video.src = this.dataset.url;
+                    })
+                })
             }
-            this.dataset.base64 = base64;
-            return fetch(this.dataset.base64)
+        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
+            fetch(this.dataset.base64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
                     this.dataset.url = videoUrl;
-                    return this.dataset.url;
+                    this.video.src = this.dataset.url;
                 })
             })
-        })
+        }else if(Video.customVideoCallback && typeof Video.customVideoCallback == 'function'){
+            Video.customVideoCallback(this);
+        }else if(this.dataset.url){
+            this.video.src = this.dataset.url;
+        }
+
+        if( ! this.file.files && ! this.dataset.name){
+            this.remove();
+            throw new Error(`this file is undefined ${this.file.files}`);
+        }
 
         Video.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
-        this.createDefaultContent(videoLoadEndPromise);
+        this.createDefaultContent();
 	}
 
-    createDefaultContent(videoLoadEndPromise){
+    createDefaultContent(){
         let wrap = Object.assign(document.createElement('div'),{
 
         });
@@ -205,40 +208,23 @@ export default class Video extends FreedomInterface {
             className: `${Video.defaultStyle.id} video-contanier`
         });
 
-        let video = Object.assign(document.createElement('video'), {
-            //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            loop: true,
-        });
-        videoLoadEndPromise.then(videoUrl => {
-            video.src = videoUrl || this.dataset.url;
-        })
-
-        if(
-            (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
-            (
-                this.dataset.name && 
-                video.canPlayType(
-                    `video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`
-                ) == ''
-            )
-        ){
-            /*
-            let file = new File(
-                [this.dataset.url],
-                this.files[0].name.split('.')[0] + '.mp4',
-                { type: 'video/mp4' }
-            );
-            video.src = URL.createObjectURL(file);
-            */
-            this.videoIsNotWorking();
+        videoContanier.append(this.video);
+        this.video.onload = () => {
+            if(
+                (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
+                (
+                    this.dataset.name && 
+                    this.video.canPlayType(
+                        `video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`
+                    ) == ''
+                )
+            ){
+                this.videoIsNotWorking();
+            }
         }
-        videoContanier.append(video);
-        video.onload = () => {
-            
-        }
-        video.onloadeddata = () => {
+        this.video.onloadeddata = () => {
             //videoContanier.style.height = window.getComputedStyle(video).height;
-            let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+            /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;
 			if(range.endContainer.nodeType == Node.TEXT_NODE){
 				scrollTarget = range.endContainer.parentElement
@@ -246,19 +232,19 @@ export default class Video extends FreedomInterface {
 				scrollTarget = range.endContainer;
 			}
 			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
-			
-            video.play();
+			*/
+            this.video.play();
         }
-        video.onerror = () => {
+        this.video.onerror = () => {
             //videoContanier.style.height = window.getComputedStyle(video).height;
         }
         
         super.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(video, videoContanier);
+            let description = this.createDescription(this.video, videoContanier);
 
             wrap.append(...[description,videoContanier].filter(e=>e != undefined));
             
-            Video.videoBox.addVideoHoverEvent(video);
+            Video.videoBox.addVideoHoverEvent(this.video);
             if(this.nextSibling?.tagName == 'BR'){
                 this.nextSibling.remove()
             }

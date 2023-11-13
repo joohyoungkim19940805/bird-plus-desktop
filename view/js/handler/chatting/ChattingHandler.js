@@ -6,8 +6,6 @@ export default new class ChattingHandler{
     constructor(){
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingAccept', data => {
 			let {content} = data;
-			console.log('data',data);
-			console.log('content', content);
 			//let {id, accountId, accountName, chatting, createAt, createBy, roomId, updateAt, updateBy} = data.content;
 			this.#lastChattingId = content.id;
 			this.#lastChatting = content;
