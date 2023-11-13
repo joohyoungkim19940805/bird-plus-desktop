@@ -120,7 +120,8 @@ export default new class ChattingRegist extends FreeWillEditor{
 						promiseList.push(new Promise(async resolve => {
 
 							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
-							let isUpload = await this.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, name,accountInfo.accountName)
+							let putSignData = `${roomHandler.roomId},${workspaceHandler.workspaceId},${fileName},${accountInfo.accountName}`;
+							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData)
 							.then( (result) => {
 								if(! result){
 									return;
@@ -139,7 +140,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 											.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									})
 								]).then( async ([k,m]) => {
-									let res = await this.fetchPutObject(data.presignedUrl, k, m, json.data.base64);
+									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, json.data.base64);
 									if( ! (res.status == 200 || res.status == 201) ){
 										return;
 									}
@@ -151,8 +152,9 @@ export default new class ChattingRegist extends FreeWillEditor{
 								resolve();
 								return;
 							}
-
-							this.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, json.data.new_file_name, accountInfo.accountName)
+							let getSignData = `${roomHandler.roomId},${workspaceHandler.workspaceId},${json.data.new_file_name},${accountInfo.accountName}`;
+							
+							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData)
 							.then( (result) => {
 								if(! result){
 									return;
@@ -197,38 +199,6 @@ export default new class ChattingRegist extends FreeWillEditor{
 		}
 	}
 
-	async callS3PresignedUrl(callFunction, fileName, accountName){
-		return Promise.all( [s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.signAlgorithm, ["sign", "verify"]), s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.secretAlgorithm, ["encrypt", "decrypt"])] )
-		.then( ([signKeyPair, encDncKeyPair]) => {
-			return Promise.all( [
-				s3EncryptionUtil.exportKey('spki', signKeyPair.publicKey),
-				s3EncryptionUtil.exportKey('spki', encDncKeyPair.publicKey), 
-				Promise.resolve(encDncKeyPair), 
-				Promise.resolve(signKeyPair)
-			] )		
-		}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
-
-			let signData = await s3EncryptionUtil.keySign(
-				`${roomHandler.roomId},${workspaceHandler.workspaceId},${fileName},${accountName},${exportEncKey}}`, 
-				signKeyPair.privateKey
-			)
-			
-			let result = await callFunction({
-				data: window.btoa(String.fromCodePoint(...signData.message)), 
-				dataKey: exportSignKey, 
-				sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), 
-				uploadType: 'CHATTING'
-			})
-			let {code, data} = result;
-			
-			if(code != 0){
-				return ;
-			}
-			
-			return {data, encDncKeyPair};
-		})
-	}
-
 	#chattingLineBreak(){
 		if(document.activeElement != this){
 			return;
@@ -236,19 +206,6 @@ export default new class ChattingRegist extends FreeWillEditor{
 		let range = window.getSelection().getRangeAt(0)
 
 		//collapsed == false = 범위 선택 x
-	}
-	async fetchPutObject(putUrl, key, md5, fildBase64){
-		return fetch(putUrl, {
-			method:"PUT",
-			headers: {
-				'Content-Encoding' : 'base64',
-				'Content-Type' : 'application/octet-stream',
-				'x-amz-server-side-encryption-customer-algorithm': 'AES256',
-				'x-amz-server-side-encryption-customer-key': key,
-				'x-amz-server-side-encryption-customer-key-md5': md5,
-			},
-			body: await fetch(fildBase64).then(async res=>res.blob())
-		})
 	}
 
     get element(){

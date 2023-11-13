@@ -56,7 +56,7 @@ class ChattingInfoLine extends FreeWillEditor{
         window.addEventListener('load', async () => {
             let accountInfo = (await window.myAPI.account.getAccountInfo()).data;
 
-            const imageOrVidepCallback = (targetTools) => {
+            const imageOrVideoCallback = (targetTools) => {
                 this.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, targetTools.dataset.new_file_name, accountInfo.accountName)
                 .then( (result) => {
                     if(! result){
@@ -132,8 +132,8 @@ class ChattingInfoLine extends FreeWillEditor{
                 })
             }
 
-            Image.customImageCallback = (imageEditor) => imageOrVidepCallback(imageEditor)
-            Video.customVideoCallback = (videoEditor) => imageOrVidepCallback(videoEditor)
+            Image.customImageCallback = (imageEditor) => imageOrVideoCallback(imageEditor)
+            Video.customVideoCallback = (videoEditor) => imageOrVideoCallback(videoEditor)
             
         })
     }

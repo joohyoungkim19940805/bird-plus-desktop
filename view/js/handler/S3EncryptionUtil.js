@@ -59,5 +59,49 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 			return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 		});
 	}
-	
+	async callS3PresignedUrl(callFunction, signData ){//,fileName, accountName){
+		return Promise.all( [this.generateKeyPair(this.signAlgorithm, ["sign", "verify"]), this.generateKeyPair(this.secretAlgorithm, ["encrypt", "decrypt"])] )
+		.then( ([signKeyPair, encDncKeyPair]) => {
+			return Promise.all( [
+				this.exportKey('spki', signKeyPair.publicKey),
+				this.exportKey('spki', encDncKeyPair.publicKey), 
+				Promise.resolve(encDncKeyPair), 
+				Promise.resolve(signKeyPair)
+			] )		
+		}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
+
+			let sign = await this.keySign(
+				`${signData},${exportEncKey}`, 
+				signKeyPair.privateKey
+			)
+			
+			let result = await callFunction({
+				data: window.btoa(String.fromCodePoint(...sign.message)), 
+				dataKey: exportSignKey, 
+				sign: window.btoa( String.fromCodePoint(...new Uint8Array(sign.signature)) ), 
+				uploadType: 'CHATTING'
+			})
+			let {code, data} = result;
+			
+			if(code != 0){
+				return ;
+			}
+			
+			return {data, encDncKeyPair};
+		})
+	}
+
+	async fetchPutObject(putUrl, key, md5, fildBase64){
+		return fetch(putUrl, {
+			method:"PUT",
+			headers: {
+				'Content-Encoding' : 'base64',
+				'Content-Type' : 'application/octet-stream',
+				'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+				'x-amz-server-side-encryption-customer-key': key,
+				'x-amz-server-side-encryption-customer-key-md5': md5,
+			},
+			body: await fetch(fildBase64).then(async res=>res.blob())
+		})
+	}
 }
