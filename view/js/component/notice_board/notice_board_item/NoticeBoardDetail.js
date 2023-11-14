@@ -103,14 +103,13 @@ export default new class NoticeBoardDetail{
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
             window.myAPI.noticeBoard.updateNoticeBoardDetailOrder(
                 changeList.filter(e=> ! e.hasAttribute('data-is_empty')).map(e=>{
-                    let obj = {
+                    return {
                         id: e.dataset.id,
                         workspaceId: e.dataset.workspace_id,
                         roomId: e.dataset.room_id,
                         orderSort: e.dataset.order_sort,
                         emptyLineCount: this.#mathEmptyLineCount(e, 'notice-board-line')
                     }
-                    return obj
                 })
             ).then(result => {
                 console.log(result);
@@ -123,9 +122,10 @@ export default new class NoticeBoardDetail{
             }).then( async () => {
 
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-                    .map(async item=> {
+                    .map(async (item, i)=> {
+                        let weight = i + 1;
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                            .map((e,i)=> this.createItemElement(e, Number(item.dataset.order_sort) + i )));
+                            .map((e,j)=> this.createItemElement(e, (Number(item.dataset.order_sort) + j) * weight)));
                         result.push(item);
                         return result;
                     })
@@ -345,8 +345,6 @@ export default new class NoticeBoardDetail{
                     emptyLineCount,
                     orderSort: ([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
                 };
-                console.log([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li))
-                console.log( Math.abs(Number(this.#elementMap.noticeBoardDetailList.lastElementChild.dataset.order_sort) || 0))
                 li.dataset.empty_line_count = emptyLineCount;
                 
                 this.#uploadNoticeBoard(editor, param);
@@ -484,9 +482,11 @@ export default new class NoticeBoardDetail{
 
     async refresh(){
         let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-            .map(async item=> {
+            .map(async (item, i)=> {
+                let weight = i + 1;
                 let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                    .map((e,i)=> this.createItemElement(e, Number(item.dataset.order_sort) + i) ));
+                    .map((e,j)=> this.createItemElement(e, (Number(item.dataset.order_sort) + j) * weight)));
+                    
                 result.push(item);
                 return result;
             })
