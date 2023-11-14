@@ -30,9 +30,12 @@ export default new class NoticeBoardContainer{
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);
-
+		let t = false;
 		this.#wrap._openEndCallBack = () => {
-			noticeBoardList.refresh();
+			if(!t){
+				//t = true;
+				noticeBoardList.refresh();
+			}
 		}
 	}
 

@@ -21,6 +21,10 @@ import roomHandler from "../../../handler/room/RoomHandler";
 import common from "./../../../common"
 import PositionChanger from "../../../handler/PositionChangeer";
 import noticeBoardHandler from "../../../handler/notice_board/NoticeBoardHandler";
+
+import { accountHandler } from "../../../handler/account/AccountHandler";
+import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
+
 class NoticeBoardLine extends FreeWillEditor{
     static{
         window.customElements.define('notice-board-line', NoticeBoardLine);
@@ -59,7 +63,6 @@ class NoticeBoardLine extends FreeWillEditor{
         
         super.placeholder = ''
         super.spellcheck = true
-        super.contentEditable = true;
     }
 
 }
@@ -118,7 +121,7 @@ export default new class NoticeBoardDetail{
             .then(li => {
                 this.#addMemory(li);
             }).then( async () => {
-                console.log(data);
+
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
                     .map(async item=> {
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
@@ -214,10 +217,13 @@ export default new class NoticeBoardDetail{
                 textContent: '+'
             });
             let editor = new NoticeBoardLine(li, this);
+            editor.contentEditable = false;
+            editor.classList.add('pointer');
             let positionChangeIcon = Object.assign(document.createElement('span'),{
-                className: 'notice_board_detail_item_position_change_icon',
+                className: 'notice_board_detail_item_position_change_icon pointer',
                 textContent: '〓'
             })
+            
             if(! data){
                 li.append(addButton);
                 li.dataset.is_empty = '';
@@ -245,16 +251,16 @@ export default new class NoticeBoardDetail{
                     return;
                 }
             }
-            let isPositionChangeIconOver = false;
+            //let isPositionChangeIconOver = false;
             positionChangeIcon.onmousemove = () => {
                 li.draggable = true;
             }
             positionChangeIcon.onmouseover = () => {
-                isPositionChangeIconOver = true;
+                //isPositionChangeIconOver = true;
                 li.draggable = true;
             }
             positionChangeIcon.onmouseout = () => {
-                isPositionChangeIconOver = false;
+                //isPositionChangeIconOver = false;
                 li.draggable = false;
             }
             //li.onpointerdown = (event) => {
@@ -283,6 +289,9 @@ export default new class NoticeBoardDetail{
             */
             addButton.onclick = (event) => {
                 console.log(event, editor.isConnected);
+                editor.contentEditable = true;
+                editor.classList.remove('pointer');
+                editor.firstLine.innerText = '\n'
                 if(editor.isConnected){
                     return;
                 }
@@ -292,11 +301,20 @@ export default new class NoticeBoardDetail{
                 addButton.remove();
                 window.getSelection().setPosition(editor, editor.childNodes.length);
             }
-            let prevHTML;
+            let prevText;
+            editor.onclick = () => {
+                if(editor.contentEditable == 'false'){
+                    editor.classList.remove('pointer')
+                    editor.contentEditable = true;
+                    editor.firstLine.innerText = '\n'
+                }
+            }
             editor.onfocus = (event) => {
-                prevHTML = editor.innerHTML;
+                prevText = editor.innerText;
             }
             editor.onblur = (event) => {
+                editor.contentEditable = false;
+                editor.classList.add('pointer');
                 if(editor.matches(':hover') || this.#elementMap.test.matches(':hover')){
                     return;
                 }
@@ -313,30 +331,116 @@ export default new class NoticeBoardDetail{
                         addButton.classList.remove('active');
                     }
                     return ;
-                }else if(prevHTML == editor.innerHTML){
+                }else if(prevText == editor.innerText){
                     return;
                 }
-                
+                prevText = editor.innerText;
 
                 let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
-                
+                let param = {
+                    id: li.dataset.id,
+                    noticeBoardId: noticeBoardHandler.noticeBoardId,
+                    roomId: roomHandler.roomId,
+                    workspaceId: workspaceHandler.workspaceId,
+                    emptyLineCount,
+                    orderSort: ([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
+                };
+                console.log([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li))
+                console.log( Math.abs(Number(this.#elementMap.noticeBoardDetailList.lastElementChild.dataset.order_sort) || 0))
                 li.dataset.empty_line_count = emptyLineCount;
-                editor.getLowDoseJSON(editor).then(jsonList => {
-                    window.myAPI.noticeBoard.createNoticeBoardDetail({
-                        id : li.dataset.id,
-                        noticeBoardId: noticeBoardHandler.noticeBoardId,
-                        roomId: roomHandler.roomId,
-                        workspaceId: workspaceHandler.workspaceId,
-                        emptyLineCount,
-                        orderSort: [...this.#elementMap.noticeBoardDetailList.children].reverse().findIndex(e=>e==li) - Math.abs(Number(this.#elementMap.noticeBoardDetailList.lastElementChild.dataset.order_sort) || 0),
-                        content : JSON.stringify(jsonList)
-                    })
-                })
+                
+                this.#uploadNoticeBoard(editor, param);
 
             }
 
             resolve(li);
         });
+    }
+
+    /**
+     * 
+     * @param {NoticeBoardLine} editor 
+     * @param {Object} param
+     */
+    async #uploadNoticeBoard(editor, param){
+        let promiseList = [];
+        let accountInfo = (await accountHandler.accountInfo);
+        editor.contentEditable = false;
+        editor.getLowDoseJSON(editor, {
+            afterCallback: (json) => {
+                if(json.tagName != Image.toolHandler.defaultClass && json.tagName != Video.toolHandler.defaultClass){
+                    return;
+                }
+                promiseList.push(new Promise(async resolve => {
+
+                    let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
+                    let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData)
+                    .then( (result) => {
+                        if(! result){
+                            return;
+                        }
+                        let {data, encDncKeyPair} = result;
+
+                        json.data.new_file_name = data.newFileName;
+
+                        return Promise.all([
+                            s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then( async (buffer) => {
+                                return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                    .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                            }),
+                            s3EncryptionUtil.convertBase64ToBuffer(data.encryptionMd).then( async (buffer) => {
+                                return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                    .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                            })
+                        ]).then( async ([k,m]) => {
+                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, json.data.base64);
+                            if( ! (res.status == 200 || res.status == 201) ){
+                                return;
+                            }
+                            return true;
+                        })
+                    })
+
+                    if( ! isUpload){
+                        resolve();
+                        return;
+                    }
+                    let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
+                    
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData)
+                    .then( (result) => {
+                        if(! result){
+                            return;
+                        }
+                        let {data, encDncKeyPair} = result;
+
+                        json.data.url = data.presignedUrl;
+                        json.data.base64 = '';
+                        resolve(json);
+                    })
+                }))
+            }
+        }).then(jsonList => {
+            param.content = JSON.stringify(jsonList);
+            console.log(param);
+            window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
+                let {data} = res
+                this.innerText = '';
+                Promise.all(promiseList).then((fileTargetList) => {
+                    if(fileTargetList.length == 0){
+                        //editor.contentEditable = true;
+                        return;
+                    }
+                    param.id = data.id;
+                    param.content = JSON.stringify(jsonList);
+                    window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(response=>{
+                        //editor.contentEditable = true;
+                        console.log('response', response)
+                    });
+                })
+            });
+        })
     }
 
     #mathEmptyLineCount(target, standardQuerySelectorName){

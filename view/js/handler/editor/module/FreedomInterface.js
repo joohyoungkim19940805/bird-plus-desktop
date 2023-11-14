@@ -232,7 +232,7 @@ export default class FreedomInterface extends HTMLElement {
 				//this.parentLine.prepend(document.createTextNode('\u00A0'));
 				//this.parentLine.prepend(document.createElement('br'));
 				//this.before(document.createElement('br'));
-				this.parentLine.before(this.parentEditor.createLine());
+				//this.parentLine.before(this.parentEditor.createLine());
 				let nextLine = this.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
 					this.parentEditor.createLine();

@@ -34,11 +34,11 @@ export default new class ChattingHandler{
     }
 
 	get lastChattingId(){
-		return this.#lastChattingId;
+		return Number(this.#lastChattingId);
 	}
 
 	get lastChatting(){
-		return this.#lastChatting
+		return Number(this.#lastChatting);
 	}
 
 }

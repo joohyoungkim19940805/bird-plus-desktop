@@ -22,6 +22,8 @@ import common from "../../../common";
 
 import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
 
+import { accountHandler } from "../../../handler/account/AccountHandler"
+
 export default new class ChattingRegist extends FreeWillEditor{
     static{
         window.customElements.define('free-will-editor', ChattingRegist);
@@ -79,7 +81,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 	}
 	async #addEvent(){
-		let accountInfo = (await window.myAPI.account.getAccountInfo()).data;
+		let accountInfo = (await accountHandler.accountInfo);
 
 		let toolList = Object.values(ChattingRegist.tools).map(e=>e.toolHandler.toolButton);
 		let toolCloneList = toolList.map(e=>{
@@ -120,7 +122,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 						promiseList.push(new Promise(async resolve => {
 
 							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
-							let putSignData = `${roomHandler.roomId},${workspaceHandler.workspaceId},${fileName},${accountInfo.accountName}`;
+							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
 							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData)
 							.then( (result) => {
 								if(! result){
@@ -152,7 +154,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 								resolve();
 								return;
 							}
-							let getSignData = `${roomHandler.roomId},${workspaceHandler.workspaceId},${json.data.new_file_name},${accountInfo.accountName}`;
+							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
 							
 							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData)
 							.then( (result) => {
@@ -160,8 +162,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 									return;
 								}
 								let {data, encDncKeyPair} = result;
-								
-								console.log('json !!!! ',json);
+
 								json.data.url = data.presignedUrl;
 								json.data.base64 = '';
 								resolve(json);
@@ -169,7 +170,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 						}))
 					}
 				}).then(jsonList => {
-					console.log('befoer ::: ', jsonList);
+
 					window.myAPI.chatting.sendChatting({
 						workspaceId: workspaceHandler.workspaceId,
 						roomId: roomHandler.roomId,

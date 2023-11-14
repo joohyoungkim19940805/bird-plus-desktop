@@ -35,7 +35,7 @@ export default new class RoomHandler{
     }
 
     get roomId(){
-        return this.#roomId;
+        return Number(this.#roomId);
     }
 
     get room(){

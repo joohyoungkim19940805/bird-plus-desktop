@@ -266,7 +266,6 @@ export default new class ChattingHead{
             `
         });
         common.jsonToSaveElementDataset(obj, li);
-        console.log(li.dataset);
         return li
     }
 

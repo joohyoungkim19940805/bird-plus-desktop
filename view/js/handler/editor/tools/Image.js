@@ -194,6 +194,7 @@ export default class Image extends FreedomInterface {
 	}
 
     createDefaultContent(){
+        console.log('????')
         let wrap = Object.assign(document.createElement('div'),{
 
         });

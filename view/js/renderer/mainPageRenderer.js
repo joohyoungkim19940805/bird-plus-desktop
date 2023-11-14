@@ -5,6 +5,97 @@ import noticeBoardContainer from "../component/notice_board/NoticeBoardContainer
 import roomHandler from "../handler/room/RoomHandler"
 import chattingHandler from "../handler/chatting/ChattingHandler"
 
+import Image from "../handler/editor/tools/Image"
+import Video from "../handler/editor/tools/Video"
+
+import { accountHandler } from "../handler/account/AccountHandler"
+import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
+import workspaceHandler from "../handler/workspace/WorkspaceHandler"
+
+window.addEventListener('load', async () => {
+	let accountInfo = (await accountHandler.accountInfo);
+	
+	const imageOrVideoCallback = (targetTools) => {
+		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountInfo.accountName}`
+		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData)
+		.then( (result) => {
+			if(! result){
+				return;
+			}
+			let {data, encDncKeyPair} = result;
+			return Promise.all([
+				s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then( async (buffer) => {
+					return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+						.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+				}),
+				s3EncryptionUtil.convertBase64ToBuffer(data.encryptionMd).then( async (buffer) => {
+					return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+						.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+				})
+			]).then( async ([k,m]) => {
+				return fetch(data.presignedUrl, {
+					method:"GET",
+					headers: {
+						'Content-Encoding' : 'base64',
+						'Content-Type' : 'application/octet-stream',
+						'x-amz-server-side-encryption-customer-algorithm': 'AES256',
+						'x-amz-server-side-encryption-customer-key': k,
+						'x-amz-server-side-encryption-customer-key-md5': m,
+					}
+				}).then(async response=> {
+					if(response.status != 200 && response.status != 201){
+						throw new Error('s3 connect failed')
+					}
+					return response.body;
+				}).then((body) => {
+					const reader = body.getReader();
+					return new ReadableStream(
+						{
+							start(controller) {
+								return pump();
+								function pump() {
+									return reader.read().then(({ done, value }) => {
+										// When no more data needs to be consumed, close the stream
+										if (done) {
+											controller.close();
+											return;
+										}
+										// Enqueue the next data chunk into our target stream
+										controller.enqueue(value);
+										return pump();
+									});
+								}
+							},
+						}
+					);
+					/*
+					let newBlob = new Blob([buffer], { type: imageEditor.dataset.content_type });
+					let imgUrl = URL.createObjectURL(newBlob);
+					*/
+				})
+				.then(stream => new Response(stream))
+				.then(res => res.blob())
+				.then(blob => URL.createObjectURL(blob))
+				.then(url => {
+					targetTools.dataset.url = url;
+					if(targetTools.image){
+						targetTools.image.src = url;
+					}else{
+						targetTools.video.src = url;
+					}
+				})
+				.catch(err=>{
+					console.error(err);
+				})
+			
+			})
+		})
+	}
+
+	Image.customImageCallback = (imageEditor) => imageOrVideoCallback(imageEditor)
+	Video.customVideoCallback = (videoEditor) => imageOrVideoCallback(videoEditor)
+});	
+
 const visibleObserver = new IntersectionObserver((entries, observer) => {
 	entries.forEach(entry =>{
 		let {isIntersecting, target} = entry;

@@ -71,7 +71,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 		}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
 
 			let sign = await this.keySign(
-				`${signData},${exportEncKey}`, 
+				`${signData}:${exportEncKey}`, 
 				signKeyPair.privateKey
 			)
 			
@@ -81,6 +81,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 				sign: window.btoa( String.fromCodePoint(...new Uint8Array(sign.signature)) ), 
 				uploadType: 'CHATTING'
 			})
+			console.log(result);
 			let {code, data} = result;
 			
 			if(code != 0){

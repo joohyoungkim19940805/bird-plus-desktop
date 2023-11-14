@@ -322,8 +322,6 @@ class FlexLayout extends HTMLElement {
 				}
 	
 			})
-		})
-		new Array('mouseup', 'touchend').forEach(eventName => {
 			resizePanel.addEventListener(eventName, () => {
 				resizePanel.removeAttribute('data-is_mouse_down');
 				this.totalMovement = 0;
@@ -331,7 +329,6 @@ class FlexLayout extends HTMLElement {
 				prevTouchEvent = undefined;
 			})
 		})
-		
 		new Array('mousemove', 'touchmove').forEach(eventName => {
 			window.addEventListener(eventName, (event) => {
 				if( ! resizePanel.hasAttribute('data-is_mouse_down') || ! resizePanel.__resizeTarget ){
@@ -437,6 +434,7 @@ class FlexLayout extends HTMLElement {
 						return;
 					}
 					e.style.transition = '';
+					e.ontransitionend = '';
 					if(e == resizeTarget && resizeTarget._closeEndCallBack){
 						resizeTarget._closeEndCallBack();
 					}
@@ -471,6 +469,7 @@ class FlexLayout extends HTMLElement {
 
 	openFlex(resizeTarget, {isPrevSizeOpen = false, isResize = false} = {}){
 		return new Promise(resolve=>{
+			
 			if( ! resizeTarget.hasAttribute('data-is_resize')){
 				resolve(resizeTarget)
 				return;
@@ -486,7 +485,6 @@ class FlexLayout extends HTMLElement {
 				openTargetGrow = parseFloat(resizeTarget.dataset.prev_grow) || 1;
 				resizeTarget.removeAttribute('data-prev_grow');
 			}
-			
 			//notCloseList.forEach(e=>{
 			notCloseAndOpenTargetList.forEach(e=>{
 				e.style.transition = 'flex 0.3s';
@@ -495,6 +493,7 @@ class FlexLayout extends HTMLElement {
 						return;
 					}
 					e.style.transition = '';
+					e.ontransitionend = '';
 					if(e == resizeTarget && resizeTarget._openEndCallBack){
 						resizeTarget._openEndCallBack();
 					}

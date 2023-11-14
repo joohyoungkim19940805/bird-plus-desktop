@@ -67,7 +67,7 @@ export default new class WorkspaceHandler{
         });
     }
     get workspaceId(){
-        return this.#workspaceId;
+        return Number(this.#workspaceId);
     }
     get workspace(){
         return this.#workspace;

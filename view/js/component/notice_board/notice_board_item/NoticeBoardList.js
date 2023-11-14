@@ -120,8 +120,10 @@ export default new class NoticeBoardList{
 				});
 				let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
 					.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-				this.#positionChanger.addPositionChangeEvent(list, parentRoot)
-				parentRoot.replaceChildren(...list);
+				if(list.length != 0){
+					this.#positionChanger.addPositionChangeEvent(list, parentRoot)
+					parentRoot.replaceChildren(...list);
+				}
 			})
 
 		});
@@ -417,7 +419,6 @@ export default new class NoticeBoardList{
 		return window.myAPI.noticeBoard.searchNoticeBoardList({
             workspaceId, roomId, searchTitle, searchContent, parentGroupId
         }).then((data = {}) => {
-			console.log(data);
             return data.data;
         })
 	}

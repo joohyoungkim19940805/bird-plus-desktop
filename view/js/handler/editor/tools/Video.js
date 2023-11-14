@@ -194,6 +194,12 @@ export default class Video extends FreedomInterface {
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
         this.createDefaultContent();
+
+        this.disconnectedAfterCallback = () => {
+            if( ! this.dataset.url.startsWith('http')){
+                URL.revokeObjectURL(this.dataset.url);
+            }
+        }
 	}
 
     createDefaultContent(){

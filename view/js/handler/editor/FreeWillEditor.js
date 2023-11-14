@@ -23,6 +23,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	
 	static componentsMap = {};
 	static toolsMap = {};
+
 	#isLoaded = false;
 	components;
 	tools;
@@ -40,9 +41,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				return;
 			}
 			let selection = window.getSelection();
-			if( ! selection.containsNode(this, true)){
+			/*if( ! selection.containsNode(this, true)){
+				console.log(222)
 				return;
-			}
+			}*/
 			let focusNode = selection.focusNode;
 			let Tool = mutation.target.__Tool;
 			if(mutation.target.dataset.tool_status == 'active' && mutation.oldValue != 'active' && Tool.prototype.isPrototypeOf(focusNode.parentElement) == false){
@@ -199,7 +201,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		//this.contentEditable = false;
 		this.#toolButtonObserver.disconnect();
     }
-	
+
 	startFirstLine(){
 		let lineElement = super.createLine();
 		lineElement.line.isFirstLine = true;

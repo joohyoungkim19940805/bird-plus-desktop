@@ -907,6 +907,7 @@ export default class Palette {
 				color: white;
 				font-size: 13px;
 				min-width: 300px;
+				z-index: 9999;
 				-webkit-user-select:none;
 				-moz-user-select:none;
 				-ms-user-select:none;
