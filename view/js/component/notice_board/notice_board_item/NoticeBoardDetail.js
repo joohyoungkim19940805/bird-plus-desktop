@@ -123,9 +123,16 @@ export default new class NoticeBoardDetail{
 
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
                     .map(async (item, i)=> {
-                        let weight = i + 1;
+                        //let weight = i + 1;
+                       
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                            .map((e,j)=> this.createItemElement(e, (Number(item.dataset.order_sort) + j) * weight)));
+                            .map((e,j)=> {
+                                console.log(item);
+                                console.log(Number(item.dataset.order_sort) + j);
+                                return this.createItemElement(e, Number(item.dataset.order_sort) + j)
+                            })
+        
+                        )
                         result.push(item);
                         return result;
                     })
@@ -201,6 +208,7 @@ export default new class NoticeBoardDetail{
             let li = Object.assign(document.createElement('li'),{
                 className : 'notice_board_detail_item'
             });
+            li.dataset.is_not_visible_target = '';
             if(! data) li.dataset.order_sort = emptyIndex + 1; 
             li.style.minHeight = (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 + 'px';
             this.#addItemEvent(li, data);
@@ -306,18 +314,21 @@ export default new class NoticeBoardDetail{
                 if(editor.contentEditable == 'false'){
                     editor.classList.remove('pointer')
                     editor.contentEditable = true;
-                    editor.firstLine.innerText = '\n'
+                    if(editor.isEmpty){
+                        editor.firstLine.innerText = '\n'
+                    }
+                    window.getSelection().setPosition(editor, editor.childNodes.length);
                 }
             }
             editor.onfocus = (event) => {
                 prevText = editor.innerText;
             }
             editor.onblur = (event) => {
-                editor.contentEditable = false;
-                editor.classList.add('pointer');
-                if(editor.matches(':hover') || this.#elementMap.test.matches(':hover')){
+                if(editor.matches(':hover') || this.#elementMap.test.matches(':hover') || document.activeElement == editor){
                     return;
                 }
+                editor.contentEditable = false;
+                editor.classList.add('pointer');
                 if( ! event.relatedTarget?.hasAttribute('data-tool_status')){
                     this.#elementMap.test.remove();
                 }
@@ -343,7 +354,7 @@ export default new class NoticeBoardDetail{
                     roomId: roomHandler.roomId,
                     workspaceId: workspaceHandler.workspaceId,
                     emptyLineCount,
-                    orderSort: ([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
+                    orderSort: li.dataset.order_sort //([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
                 };
                 li.dataset.empty_line_count = emptyLineCount;
                 
@@ -373,7 +384,7 @@ export default new class NoticeBoardDetail{
 
                     let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
                     let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
-                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData)
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'NOTICE')
                     .then( (result) => {
                         if(! result){
                             return;
@@ -406,7 +417,7 @@ export default new class NoticeBoardDetail{
                     }
                     let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
                     
-                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData)
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'NOTICE')
                     .then( (result) => {
                         if(! result){
                             return;
@@ -415,6 +426,7 @@ export default new class NoticeBoardDetail{
 
                         json.data.url = data.presignedUrl;
                         json.data.base64 = '';
+                        json.data.upload_type = 'NOTICE';
                         resolve(json);
                     })
                 }))
@@ -422,6 +434,9 @@ export default new class NoticeBoardDetail{
         }).then(jsonList => {
             param.content = JSON.stringify(jsonList);
             console.log(param);
+            Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {}).forEach(e=>{
+                e.dataset.empty_line_count = this.#mathEmptyLineCount(e, 'notice-board-line');
+            })
             window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
                 let {data} = res
                 this.innerText = '';
@@ -483,10 +498,12 @@ export default new class NoticeBoardDetail{
     async refresh(){
         let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
             .map(async (item, i)=> {
-                let weight = i + 1;
+                //let weight = i + 1;
                 let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                    .map((e,j)=> this.createItemElement(e, (Number(item.dataset.order_sort) + j) * weight)));
-                    
+                .map((e,j)=> {
+                    return this.createItemElement(e, Number(item.dataset.order_sort) + j + 1)
+                })
+            )
                 result.push(item);
                 return result;
             })

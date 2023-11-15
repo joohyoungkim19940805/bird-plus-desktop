@@ -235,7 +235,7 @@ export default class FreedomInterface extends HTMLElement {
 				//this.parentLine.before(this.parentEditor.createLine());
 				let nextLine = this.parentEditor.getNextLine(this.parentLine);
 				if( ! nextLine){
-					this.parentEditor.createLine();
+					this.parentEditor.createLine().innerText = '\n';
 				}else{
 					nextLine.line.lookAtMe();
 				}

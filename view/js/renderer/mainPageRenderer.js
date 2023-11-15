@@ -17,7 +17,7 @@ window.addEventListener('load', async () => {
 	
 	const imageOrVideoCallback = (targetTools) => {
 		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountInfo.accountName}`
-		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData)
+		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, targetTools.dataset.upload_type)
 		.then( (result) => {
 			if(! result){
 				return;

@@ -248,7 +248,7 @@ export default class Video extends FreedomInterface {
         super.connectedAfterOnlyOneCallback = () => {
             let description = this.createDescription(this.video, videoContanier);
 
-            wrap.append(...[description,videoContanier].filter(e=>e != undefined));
+            wrap.replaceChildren(...[description,videoContanier].filter(e=>e != undefined));
             
             Video.videoBox.addVideoHoverEvent(this.video);
             if(this.nextSibling?.tagName == 'BR'){
@@ -312,13 +312,17 @@ export default class Video extends FreedomInterface {
         aticle.draggable = 'false';
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+            let randomId = Array.from(
+                window.crypto.getRandomValues(new Uint32Array(16)),
+                (e)=>e.toString(32).padStart(2, '0')
+            ).join('');
             //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
             aticle.append(...this.childNodes);
-            aticle.slot = Video.descriptionName;
+            aticle.slot = Video.descriptionName + '-' + randomId;
             this.append(aticle);
             
             let slot = Object.assign(document.createElement('slot'),{
-                name: Video.descriptionName
+                name: Video.descriptionName + '-' + randomId
             });
 
             return slot;

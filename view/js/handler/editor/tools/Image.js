@@ -107,6 +107,8 @@ export default class Image extends FreedomInterface {
                 max-width: 100%;
                 height: auto;
                 aspect-ratio: attr(width) / attr(height);
+                image-rendering: crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
             }
         ` 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
@@ -194,7 +196,6 @@ export default class Image extends FreedomInterface {
 	}
 
     createDefaultContent(){
-        console.log('????')
         let wrap = Object.assign(document.createElement('div'),{
 
         });
@@ -219,6 +220,9 @@ export default class Image extends FreedomInterface {
         imageContanier.append(this.image);
 
         this.image.onload = () => {
+            if(this.dataset.width){
+                this.image.width = this.dataset.width;
+            }
             /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;
 			if(range.endContainer.nodeType == Node.TEXT_NODE){
@@ -233,16 +237,17 @@ export default class Image extends FreedomInterface {
         }
         this.image.onerror = () => {
             //imageContanier.style.height = window.getComputedStyle(image).height;
+            this.image.dataset.error = '';
         }
-        let description = this.createDescription(this.image, imageContanier);
-        wrap.append(...[description,imageContanier].filter(e=>e != undefined));
-        
-        Image.imageBox.addImageHoverEvent(this.image);
-        if(this.nextSibling?.tagName == 'BR'){
-            this.nextSibling.remove()
-        }
-        super.connectedAfterOnlyOneCallback = () => {
 
+        super.connectedAfterOnlyOneCallback = () => {
+            let description = this.createDescription(this.image, imageContanier);
+            wrap.replaceChildren(...[description,imageContanier].filter(e=>e != undefined));
+            
+            Image.imageBox.addImageHoverEvent(this.image, this);
+            if(this.nextSibling?.tagName == 'BR'){
+                this.nextSibling.remove()
+            }
         }
 
         super.disconnectedAfterCallback = () => {
@@ -325,14 +330,18 @@ export default class Image extends FreedomInterface {
         aticle.draggable = 'false'; 
 
         if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+            let randomId = Array.from(
+                window.crypto.getRandomValues(new Uint32Array(16)),
+                (e)=>e.toString(32).padStart(2, '0')
+            ).join('');
+            console.log(randomId);
             //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
-            console.log(this.childNodes);
             aticle.append(...this.childNodes);
-            aticle.slot = Image.slotName;
+            aticle.slot = Image.slotName + '-' + randomId
             this.append(aticle);
             
             let slot = Object.assign(document.createElement('slot'),{
-                name: Image.slotName
+                name: Image.slotName + '-' + randomId
             });
             return slot;
         }else{

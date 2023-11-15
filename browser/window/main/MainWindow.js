@@ -38,6 +38,7 @@ class MainWindow extends BrowserWindow{
 		super({
 			width : 800,
 			height : 300,
+			icon: path.join(__project_path, 'view/image/icon.ico'),
 			webPreferences : {
 				preload : path.join(__project_path, 'browser/preload/preload.js'),
 				protocol: "file",
@@ -52,6 +53,7 @@ class MainWindow extends BrowserWindow{
 				x: 15,
 				y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 			},
+			title: 'Grease Lightning Chat'
 		});
 		super.webContents.openDevTools();
 		//super.setTitleBarOverlay
@@ -97,9 +99,14 @@ class MainWindow extends BrowserWindow{
 			birdPlusOptions.position = super.getPosition();
 		})
 
+		/*ipcMain.on('setTitle', async (event, param) => {
+			console.log(param);
+			super.setTitle = param.title;
+		});*/
+
 		ipcMain.on('createSubWindow', async (event, param) => {
 			this.createSubWindow(param);
-		})
+		});
 
 		//새창 팝업 열릴시 트리거
 		super.webContents.setWindowOpenHandler((event) => {
@@ -207,6 +214,7 @@ class MainWindow extends BrowserWindow{
 			{
 				width : param.width,
 				height : param.height,
+				icon: path.join(__project_path, 'view/image/icon.ico'),
 				webPreferences : {
 					preload : path.join(__project_path, 'browser/preload/preload.js'),
 					protocol: "file",
@@ -221,7 +229,8 @@ class MainWindow extends BrowserWindow{
 					y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 				},
 				x: parseInt( param.x - (param.width / 2) ),
-				y: parseInt( param.y - 20) //parseInt( param.y - (param.height / 2) )
+				y: parseInt( param.y - 20), //parseInt( param.y - (param.height / 2) )
+				title: param.title
 			}
 		)
 		window.loadFile(path.join(__project_path, `view/html/${param.pageName}.html`)).then(e=>{

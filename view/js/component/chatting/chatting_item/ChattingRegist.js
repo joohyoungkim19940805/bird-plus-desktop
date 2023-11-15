@@ -123,7 +123,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
 							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
-							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData)
+							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'CHATTING')
 							.then( (result) => {
 								if(! result){
 									return;
@@ -156,7 +156,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 							}
 							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
 							
-							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData)
+							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'CHATTING')
 							.then( (result) => {
 								if(! result){
 									return;
@@ -165,6 +165,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 								json.data.url = data.presignedUrl;
 								json.data.base64 = '';
+								json.data.upload_type = 'CHATTING';
 								resolve(json);
 							})
 						}))

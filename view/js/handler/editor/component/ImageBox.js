@@ -10,6 +10,17 @@ export default class ImageBox {
         
         innerHTML:`
             <div class="image-resize-container">
+                <div>
+                    <label class="image-box-resize-label" for="image-box-resize-width">width </label>
+                    <input list="image-box-resize-datalist" class="image-box-resize-input" id="image-box-resize-width" type="number" autocomplete="off"/>
+                    <div>
+                        <label class="image-box-resize-label-error-message" for="image-box-resize-width"></label>
+                    </div>
+                </div>
+                <div>
+                    <label class="image-box-resize-label" for="image-box-resize-height">height(auto) </label>
+                    <input list="image-box-resize-datalist" class="image-box-resize-input" id="image-box-resize-height" type="number" autocomplete="off" disabled/>
+                </div>
             </div>
             <div class="image-button-container">
                 <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
@@ -40,6 +51,9 @@ export default class ImageBox {
     #removeEventPromise = new Promise(resolve=>{
 		this.#removeEventPromiseResolve = resolve;
 	});
+    
+    #image;
+    #resizeRememberTarget;
 
     constructor(){
         let style = document.querySelector(`#${this.#style.id}`);
@@ -59,15 +73,60 @@ export default class ImageBox {
             threshold: 0.1,
             root: document
         }).observe(this.#imageBox);
+        
+        let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
+        
+        window.addEventListener('keyup', (event) => {
+            if( ! this.image || ! this.resizeRememberTarget || ! width.hasAttribute('data-is_ctrl') || ! this.image.parentElement.matches(':hover')){//|| this.image.getRootNode()?.activeElement != width){
+                return;
+            }
+            width.removeAttribute('data-is_ctrl');
+        })
+
+        window.addEventListener('keydown', (event) => {
+            
+            let eventPath = event.composedPath()
+
+            if( ! this.image || ! this.resizeRememberTarget || eventPath[0] == width || ! this.image.parentElement.matches(':hover')){//|| this.image.getRootNode()?.activeElement != width){
+                return;
+            }
+            if(event.ctrlKey){
+                width.dataset.is_ctrl = '';
+            }else{
+                width.removeAttribute('data-is_ctrl');
+            }
+        })
+        
+        /**
+         * @see https://www.chromestatus.com/feature/6662647093133312
+         */
+        window.addEventListener('wheel', (event) => {
+            
+            if( ! this.image || ! this.resizeRememberTarget || ! this.image.parentElement.hasAttribute('data-is_resize_click') || event.composedPath()[0] == width || ! this.image.parentElement.matches(':hover')){// || this.image.getRootNode()?.activeElement != width){
+                return;
+            }
+
+            if(width.hasAttribute('data-is_ctrl')){
+                width.value = Number(width.value) + (event.deltaY * -1)
+            }else{
+                width.value = Number(width.value) + (event.deltaY * -1 / 100)
+            }
+            this.oninputEvent(this.image, width, width, height, this.resizeRememberTarget);
+        })
     }
 
     /**
      * 
      * @param {HTMLImageElement} image 
      */
-    addImageHoverEvent(image){
+    addImageHoverEvent(image, resizeRememberTarget){
         //image.parentElement.onmouseover = () => {
+
         image.parentElement.onmouseenter = () => {
+            if(! image.src || image.src == '' || image.hasAttribute('data-error')){
+                return;
+            }
+            
             let root = image.getRootNode();
             if(root != document){
                 root.append(this.#style);
@@ -82,10 +141,20 @@ export default class ImageBox {
                 /* 리사이즈 있는 버전 주석 처리 20230821
                 this.#addRresizeEvent(image),
                 */
+                this.#addRresizeEvent(image, resizeRememberTarget)
                 this.#addButtonIconEvent(image)
                 let appendAwait = setInterval(()=>{
                     if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement && ! this.#imageBox.classList.contains('start')){
                         this.#imageBox.classList.add('start');
+                        this.image = image;
+                        this.resizeRememberTarget = resizeRememberTarget;
+                        image.parentElement.onclick = () => {
+                            if(! image.src || image.src == '' || image.hasAttribute('data-error')){
+                                return;
+                            }
+                            image.parentElement.toggleAttribute('data-is_resize_click');
+                            
+                        }
                         clearInterval(appendAwait);
                     }
                 }, 50)
@@ -94,6 +163,9 @@ export default class ImageBox {
         }
         image.parentElement.onmouseleave = () => {
             this.#imageBox.classList.remove('start');
+            //this.image = undefined;
+            //this.resizeRememberTarget = undefined;
+            image.parentElement.removeAttribute('data-is_resize_click');
             if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
                 /*
                 this.#imageBox.classList.remove('start');
@@ -111,32 +183,64 @@ export default class ImageBox {
      * 
      * @param {HTMLImageElement} image 
      */
-    /* 리사이즈 있는 버전 주석 처리 20230821
-    #addRresizeEvent(image){
+    //리사이즈 있는 버전 주석 처리 20230821
+    #addRresizeEvent(image, resizeRememberTarget){
         return new Promise(resolve => {
             let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
             width.value = image.width, height.value = image.height;
             
-            const oninputEvent = (event) => {
-                if(isNaN(Number(event.target.value))){
-                    event.target.value = event.target.value.replace(/\D/g, '');
-                    return;
-                }else if(Number(event.target.value) < 50){
-                    width.labels[0].textContent = 'width(min 50) : ';
-                    return;
-                }else{
-                    width.labels[0].textContent = 'width : ';
-                }
-                let sizeName = event.target.id.includes('width') ? 'width': 'height';
-                image[sizeName] = event.target.value;
+            width.labels[0].textContent = 'width : ';
+            width.labels[1].textContent = '';
+            
+            this.prevValue = undefined;
 
-                width.value = image.width, height.value = image.height;
+            width.oninput = (event) => this.oninputEvent(image, event.target, width, height, resizeRememberTarget);
+            width.onkeydown = (event) => {
+                if(event.ctrlKey){
+                    width.dataset.is_ctrl = '';
+                }else{
+                    width.removeAttribute('data-is_ctrl');
+                }
             }
-            width.oninput = oninputEvent, height.oninput = oninputEvent;
+            width.onkeyup = (event) => {
+                width.removeAttribute('data-is_ctrl');
+            }
+            width.onblur = () => {
+                width.removeAttribute('data-is_ctrl');
+            }
+            width.onwheel = (event) => {
+                event.preventDefault();
+                if(width.hasAttribute('data-is_ctrl')){
+                    width.value = Number(width.value) + (event.deltaY * -1)
+                }else{
+                    width.value = Number(width.value) + (event.deltaY * -1 / 100)
+                }
+                this.oninputEvent(image, event.target, width, height, resizeRememberTarget);
+            }
+            //height.oninput = (event) => oninputEvent(event);
             resolve({width, height});
         });
     }
-    */
+    oninputEvent(image, target, width, height, resizeRememberTarget) {
+        if(isNaN(Number(target.value))){
+            target.value = target.value.replace(/\D/g, '');
+            return;
+        }else if(Number(target.value) < 50){
+            width.labels[1].textContent = '(min 50)';
+            target.value = 50;
+        }else{
+            width.labels[1].textContent = '';
+        }
+        let sizeName = target.id.includes('width') ? 'width': 'height';
+        image[sizeName] = target.value;
+
+        width.value = image.width, height.value = image.height;
+        if(this.prevValue && Number(this.prevValue) == Number(width.value)){
+            width.labels[1].textContent = `(max ${this.prevValue}) : `
+        }
+        this.prevValue = width.value
+        resizeRememberTarget.dataset.width = width.value;
+    }
     #addButtonIconEvent(image){
         return new Promise(resolve => {
             let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')
@@ -170,7 +274,7 @@ export default class ImageBox {
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
-                background: linear-gradient(to bottom, #9b878769 -73%, #ffffff29 115%);
+                background: linear-gradient(to bottom, #ff8787 -73%, #ffffffcf 115%);
                 color: white;
                 padding-bottom: 1.5%;
                 top:-20%;
@@ -263,4 +367,17 @@ export default class ImageBox {
         return this.#style;
     }
 
+    set image(image){
+        this.#image = image; 
+    }
+
+    get image(){
+        return this.#image;
+    }
+    set resizeRememberTarget(resizeRememberTarget){
+        this.#resizeRememberTarget = resizeRememberTarget;
+    }
+    get resizeRememberTarget(){
+        return this.#resizeRememberTarget;
+    }
 }

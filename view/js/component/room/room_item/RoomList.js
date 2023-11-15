@@ -116,7 +116,8 @@ export default new class RoomList{
 				x: event.x,
 				y: event.y,
 				pageName: 'multipleChattingView',
-				pageId : target.dataset.room_id
+				pageId : target.dataset.room_id,
+				title : roomHandler.room.roomName
 			})
 		}
 

@@ -59,7 +59,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 			return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 		});
 	}
-	async callS3PresignedUrl(callFunction, signData ){//,fileName, accountName){
+	async callS3PresignedUrl(callFunction, signData, uploadType ){//,fileName, accountName){
 		return Promise.all( [this.generateKeyPair(this.signAlgorithm, ["sign", "verify"]), this.generateKeyPair(this.secretAlgorithm, ["encrypt", "decrypt"])] )
 		.then( ([signKeyPair, encDncKeyPair]) => {
 			return Promise.all( [
@@ -79,7 +79,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 				data: window.btoa(String.fromCodePoint(...sign.message)), 
 				dataKey: exportSignKey, 
 				sign: window.btoa( String.fromCodePoint(...new Uint8Array(sign.signature)) ), 
-				uploadType: 'CHATTING'
+				uploadType
 			})
 			console.log(result);
 			let {code, data} = result;

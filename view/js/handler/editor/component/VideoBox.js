@@ -11,6 +11,14 @@ export default class VideoBox {
         
         innerHTML:`
             <div class="video-resize-container">
+                <div>
+                    <label class="video-box-resize-label" for="video-box-resize-width">width : </label>
+                    <input list="video-box-resize-datalist" class="video-box-resize-input" id="video-box-resize-width" type="number" autocomplete="off"/>
+                </div>
+                <div>
+                    <label class="video-box-resize-label" for="video-box-resize-height">height(auto) : </label>
+                    <input list="video-box-resize-datalist" class="video-box-resize-input" id="video-box-resize-height" type="number" autocomplete="off" disabled/>
+                </div>
             </div>
             <div class="video-button-container">
                 <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
@@ -82,6 +90,7 @@ export default class VideoBox {
                 /* 리사이즈 있는 버전 주석 처리 20230821
                 this.#addRresizeEvent(video),
                 */
+                this.#addRresizeEvent(video)
                 this.#addButtonIconEvent(video)
                 let appendAwait = setInterval(()=>{
                     if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement && ! this.#videoBox.classList.contains('start')){
@@ -111,7 +120,7 @@ export default class VideoBox {
      * 
      * @param {HTMLVideoElement} video 
      */
-    /* 리사이즈 있는 버전 주석 처리 20230821
+    //리사이즈 있는 버전 주석 처리 20230821
     #addRresizeEvent(video){
         return new Promise(resolve => {
             let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
@@ -136,7 +145,7 @@ export default class VideoBox {
             resolve({width, height});
         });
     }
-    */
+    
     #addButtonIconEvent(video){
         return new Promise(resolve => {
             let [download, newWindow] = this.#videoBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')

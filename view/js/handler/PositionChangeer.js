@@ -21,6 +21,8 @@ export default class PositionChanger{
 			throw new Error('data-order_sort is not defined or is not number')
 		}
 		let parent = wrapper || this.#wrapper;
+		parent.dataset.is_position_change = '';
+		let pointerEventTargetList = [];
 		return new Promise(resolve => {
 			
 			let lastItem = [...parent.children].filter(e=>e.hasAttribute('data-order_sort')).pop() // or at(-1)
@@ -33,8 +35,11 @@ export default class PositionChanger{
 					//this.#targetItem = event.target;
 					child.forEach(async e => {
 						[...e.children].forEach((ee)=>{
-							if(ee.tagName == 'UL') return;
+							if(ee.hasAttribute('data-is_position_change')) {
+								return;
+							}
 							ee.style.pointerEvents = 'none';
+							ee.dataset.is_pointer_target = ''
 						})
 					})
 				}
@@ -51,11 +56,13 @@ export default class PositionChanger{
 						});
 					}
 					this.#targetItem = undefined;
-					child.forEach(async e => {
-						[...e.children].forEach((ee)=>{
-							if(ee.tagName == 'UL') return;
-							ee.style.pointerEvents = '';
+					
+					new Promise(res => {
+						document.querySelectorAll('[data-is_pointer_target]').forEach(e=>{
+							e.style.pointerEvents = '';
+							e.removeAttribute('data-is_pointer_target');
 						})
+						res();
 					})
 					if(item.__dragendCallback){
 						item.__dragendCallback();
@@ -79,6 +86,7 @@ export default class PositionChanger{
 					event.stopPropagation();
 					event.preventDefault();
 					event.target.style.borderTop = '';
+
 					if(! this.#targetItem){
 						return;
 					}

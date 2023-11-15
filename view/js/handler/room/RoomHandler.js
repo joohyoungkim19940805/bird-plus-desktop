@@ -31,6 +31,8 @@ export default new class RoomHandler{
                     res();
                 })
             });
+            //window.myAPI.setTitle({title:this.#room.roomName})
+            document.head.querySelector('title').textContent = this.#room.roomName + ' - Grease Lightning Chat';
         });
     }
 
