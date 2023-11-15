@@ -66,7 +66,7 @@ class OpeningIpcController {
 		 * 3 + 1 인경우 데이터 예시 = Array 3 : ['and', 'Mary'], 4 : ['and', 'Samantha'], 5: ['and', 'arrived'], 6 : ['and', 'at']
 		 * 2 + 1 인경우 데이터 예시 = Array 3 : ['and', 'Mary'], 4 : ['and', 'Samantha'], 5: ['and', 'arrived']
 		 */
-		let windowSize = 2 + 1; 
+		let windowSize = 2 + 1;
 		for( let i = 0, i_len = tokens.length ; i < i_len ; i += 1 ){
 			let token = tokens[i];
 			for( let j = i - windowSize, j_len = i + windowSize ; j < j_len ; j += 1 ){
@@ -128,7 +128,6 @@ class OpeningIpcController {
 		let weights = layer.getWeights();
 		log.debug('layer>>>>> ', layer);
 		log.debug('weights>>>>> ', weights);
-
 	}
 }
 const openingIpcController = new OpeningIpcController();

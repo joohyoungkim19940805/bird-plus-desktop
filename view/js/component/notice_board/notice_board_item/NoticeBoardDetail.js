@@ -496,18 +496,21 @@ export default new class NoticeBoardDetail{
     }
 
     async refresh(){
-        let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-            .map(async (item, i)=> {
-                //let weight = i + 1;
-                let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                .map((e,j)=> {
-                    return this.createItemElement(e, Number(item.dataset.order_sort) + j + 1)
+        let list = (
+            await Promise.all(
+                Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+                .map(async (item, i)=> {
+                    //let weight = i + 1;
+                    let result = await Promise.all(
+                        [...new Array(Number(item.dataset.empty_line_count || 0))].map((e,j)=> {
+                            return this.createItemElement(e, Number(item.dataset.order_sort) + j + 1)
+                        })
+                    )
+                    result.push(item);
+                    return result;
                 })
             )
-                result.push(item);
-                return result;
-            })
-        )).flatMap(e=>e)
+        ).flatMap(e=>e)
         .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
         if(list.length == 0){
             this.#callData();
