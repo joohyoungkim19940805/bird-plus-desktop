@@ -11,11 +11,60 @@ import Video from "../handler/editor/tools/Video"
 import { accountHandler } from "../handler/account/AccountHandler"
 import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
 import workspaceHandler from "../handler/workspace/WorkspaceHandler"
+import IndexedDBHandler from "../handler/IndexedDBHandler"
 
+/*
+indexedDBHandler.open().then(()=>{
+	indexedDBHandler.addItem({
+		fileName:'test',
+		lastModified:'1111',
+		targetId: '1',
+		uploadType: 'abcd'
+	});
+})
+*/
 window.addEventListener('load', async () => {
+
 	let accountInfo = (await accountHandler.accountInfo);
 	
-	const imageOrVideoCallback = (targetTools) => {
+	const indexedDBHandler = new IndexedDBHandler({
+		dbName: 'fileDB',
+		storeName: `s3Memory`,
+		columnInfo: {
+			fileName: ['fileName', 'fileName', {unique : true}],
+			originFileName: ['originFileName', 'originFileName'],
+			fileData : ['fileData', 'fileData'],
+			lastModified: ['lastModified', 'lastModified'],
+			targetId: ['targetId', 'targetId'],
+			uploadType: ['uploadType', 'uploadType'],
+			roomId: ['roomId', 'roomId'],
+			workspaceId: ['workspaceId', 'workspaceId']
+		},
+		keyPathNameList: ['fileName'],
+		pkAutoIncrement : false
+	});
+
+	const dbOpenPromise = indexedDBHandler.open();
+
+	const imageOrVideoCallback = async (targetTools) => {
+		const isHasRememberFile = await new Promise(resolve => {
+			dbOpenPromise.then(() => {
+				indexedDBHandler.getItem(targetTools.dataset.new_file_name).then(result=>{
+					resolve(result);
+				});
+			})
+		})
+		if(isHasRememberFile.result){
+			let url = URL.createObjectURL(isHasRememberFile.result.fileData, targetTools.dataset.content_type)
+			targetTools.dataset.url = url;
+			if(targetTools.image){
+				targetTools.image.src = url;
+			}else{
+				targetTools.video.src = url;
+			}
+			return;
+		}
+
 		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountInfo.accountName}`
 		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, targetTools.dataset.upload_type)
 		.then( (result) => {
@@ -75,7 +124,24 @@ window.addEventListener('load', async () => {
 				})
 				.then(stream => new Response(stream))
 				.then(res => res.blob())
-				.then(blob => URL.createObjectURL(blob))
+				.then(async blob => {
+					let newBlob = new Blob([blob], { type: targetTools.dataset.content_type });
+					return dbOpenPromise.then( async () => {
+						return indexedDBHandler.addItem({
+							fileName: targetTools.dataset.new_file_name,
+							originFileName: targetTools.dataset.name,
+							fileData: newBlob,
+							lastModified: targetTools.dataset.last_modified,
+							targetId: targetTools.dataset.target_id,
+							uploadType: targetTools.dataset.upload_type,
+							roomId: roomHandler.roomId,
+							workspaceId: workspaceHandler.workspaceId
+						}).then(()=>{
+							return URL.createObjectURL(newBlob)
+						})
+					})
+					
+				})
 				.then(url => {
 					targetTools.dataset.url = url;
 					if(targetTools.image){
@@ -99,7 +165,7 @@ window.addEventListener('load', async () => {
 const visibleObserver = new IntersectionObserver((entries, observer) => {
 	entries.forEach(entry =>{
 		let {isIntersecting, target} = entry;
-		if(target.hasAttribute('data-visibility_not')){
+		if(target.hasAttribute('slot') || target.hasAttribute('data-visibility_not')){
 			return;
 		}
 		if (isIntersecting){
@@ -150,6 +216,7 @@ new MutationObserver( (mutationList, observer) => {
 })
 
 window.addEventListener("DOMContentLoaded", (event) => {
+
 	document.body.classList.add('default')
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{

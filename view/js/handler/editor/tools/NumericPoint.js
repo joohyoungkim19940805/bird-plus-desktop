@@ -70,6 +70,24 @@ export default class NumericPoint extends FreedomInterface {
 	
 	constructor(dataset){
 		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
+		super.connectedChildAfterCallBack = (list) => {
+			let lastItem = list.at(-1);
+			if(lastItem.nodeType == Node.ELEMENT_NODE){
+				let inter = setInterval(()=>{
+					if(lastItem.isConnected){
+						clearInterval(inter);
+						window.getSelection().setPosition(lastItem, lastItem.childNodes.length)
+					}
+				}, 50);
+			}else if(lastItem.nodeType == Node.TEXT_NODE){
+				let inter = setInterval(()=>{
+					if(lastItem.isConnected){
+						clearInterval(inter);
+						window.getSelection().setPosition(lastItem, lastItem.length)
+					}
+				}, 50);
+			}
+		}
 		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -79,7 +97,7 @@ export default class NumericPoint extends FreedomInterface {
 				nextLine.line.lookAtMe();
 			}
 		}
-
+		/*
 		super.disconnectedChildAfterCallBack = (removedNodes) => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){

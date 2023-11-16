@@ -189,8 +189,10 @@ export default class Image extends FreedomInterface {
         this.createDefaultContent();
         
         this.disconnectedAfterCallback = () => {
-            if( ! this.dataset.url.startsWith('http')){
-                URL.revokeObjectURL(this.dataset.url);
+            if(this.dataset.url.startsWith('blob:file')){
+                setTimeout(() => {
+                    URL.revokeObjectURL(this.dataset.url);
+                }, 1000 * 60 * 2)
             }
         }
 	}
@@ -240,7 +242,7 @@ export default class Image extends FreedomInterface {
             this.image.dataset.error = '';
         }
 
-        super.connectedAfterOnlyOneCallback = () => {
+        this.connectedAfterOnlyOneCallback = () => {
             let description = this.createDescription(this.image, imageContanier);
             wrap.replaceChildren(...[description,imageContanier].filter(e=>e != undefined));
             
@@ -248,10 +250,6 @@ export default class Image extends FreedomInterface {
             if(this.nextSibling?.tagName == 'BR'){
                 this.nextSibling.remove()
             }
-        }
-
-        super.disconnectedAfterCallback = () => {
-        
         }
 
         return this.image;
@@ -334,7 +332,6 @@ export default class Image extends FreedomInterface {
                 window.crypto.getRandomValues(new Uint32Array(16)),
                 (e)=>e.toString(32).padStart(2, '0')
             ).join('');
-            console.log(randomId);
             //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
             aticle.append(...this.childNodes);
             aticle.slot = Image.slotName + '-' + randomId

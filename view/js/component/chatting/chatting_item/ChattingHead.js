@@ -225,7 +225,7 @@ export default new class ChattingHead{
             if(this.#elementMap.noticeBoardIconButton.hasAttribute('data-is_close')){
                 this.#elementMap.noticeBoardIconButton.removeAttribute('data-is_close');
                 flexLayout.closeFlex(noticeBoardContainer.wrap).then(()=>{
-                    noticeBoardContainer.wrap.dataset.is_resize = false;
+                    //noticeBoardContainer.wrap.dataset.is_resize = false;
                     flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true}).then(()=>{
                     
                     });

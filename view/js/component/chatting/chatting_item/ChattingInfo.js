@@ -52,37 +52,6 @@ class ChattingInfoLine extends FreeWillEditor{
         isDefaultStyle : true
     }
     
-    static async callS3PresignedUrl(callFunction, fileName, accountName){
-		return Promise.all( [s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.signAlgorithm, ["sign", "verify"]), s3EncryptionUtil.generateKeyPair(s3EncryptionUtil.secretAlgorithm, ["encrypt", "decrypt"])] )
-		.then( ([signKeyPair, encDncKeyPair]) => {
-			return Promise.all( [
-				s3EncryptionUtil.exportKey('spki', signKeyPair.publicKey),
-				s3EncryptionUtil.exportKey('spki', encDncKeyPair.publicKey), 
-				Promise.resolve(encDncKeyPair), 
-				Promise.resolve(signKeyPair)
-			] )		
-		}).then( async ([exportSignKey, exportEncKey, encDncKeyPair, signKeyPair]) => {
-
-			let signData = await s3EncryptionUtil.keySign(
-				`${roomHandler.roomId},${workspaceHandler.workspaceId},${fileName},${accountName},${exportEncKey}}`, 
-				signKeyPair.privateKey
-			)
-			
-			let result = await callFunction({
-				data: window.btoa(String.fromCodePoint(...signData.message)), 
-				dataKey: exportSignKey, 
-				sign: window.btoa( String.fromCodePoint(...new Uint8Array(signData.signature)) ), 
-				uploadType: 'CHATTING'
-			})
-			let {code, data} = result;
-			
-			if(code != 0){
-				return ;
-			}
-			
-			return {data, encDncKeyPair};
-		})
-	}
     constructor(){
         super(ChattingInfoLine.tools, ChattingInfoLine.option);
         super.contentEditable = false;

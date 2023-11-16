@@ -121,9 +121,9 @@ export default new class ChattingRegist extends FreeWillEditor{
 						}
 						promiseList.push(new Promise(async resolve => {
 
-							let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
+							let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
 							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
-							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'CHATTING')
+							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'CHATTING', {newFileName})
 							.then( (result) => {
 								if(! result){
 									return;
@@ -142,7 +142,18 @@ export default new class ChattingRegist extends FreeWillEditor{
 											.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									})
 								]).then( async ([k,m]) => {
-									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, json.data.base64);
+									let base64 = json.data.base64;
+									if(! base64){
+										let blob = await fetch(json.data.url).then(res=>res.blob())
+										base64 = await new Promise(resolve => {
+											const reader = new FileReader();
+											reader.readAsDataURL(blob);
+											reader.onloadend = () => {
+												resolve(reader.result);
+											}
+										});
+									}
+									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, base64);
 									if( ! (res.status == 200 || res.status == 201) ){
 										return;
 									}
@@ -164,7 +175,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 								let {data, encDncKeyPair} = result;
 
 								json.data.url = data.presignedUrl;
-								json.data.base64 = '';
+								delete json.data.base64
 								json.data.upload_type = 'CHATTING';
 								resolve(json);
 							})
@@ -185,6 +196,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 								window.getSelection().setPosition(this, 1)
 								return;
 							}
+							fileTargetList.forEach(e=>e.data.target_id = data.id);
 							window.myAPI.chatting.sendChatting({
 								id: data.id,
 								workspaceId: workspaceHandler.workspaceId,

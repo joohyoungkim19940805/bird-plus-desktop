@@ -24,6 +24,7 @@ import noticeBoardHandler from "../../../handler/notice_board/NoticeBoardHandler
 
 import { accountHandler } from "../../../handler/account/AccountHandler";
 import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
+import { rsqrt } from "@tensorflow/tfjs";
 
 class NoticeBoardLine extends FreeWillEditor{
     static{
@@ -127,11 +128,12 @@ export default new class NoticeBoardDetail{
                        
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
                             .map((e,j)=> {
-                                console.log(item);
-                                console.log(Number(item.dataset.order_sort) + j);
-                                return this.createItemElement(e, Number(item.dataset.order_sort) + j)
+                                return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
+                                    console.log(emptyItem);
+                                    emptyItem.dataset.connect_target_id = item.dataset.id;
+                                    return emptyItem;
+                                })
                             })
-        
                         )
                         result.push(item);
                         return result;
@@ -321,7 +323,7 @@ export default new class NoticeBoardDetail{
                 }
             }
             editor.onfocus = (event) => {
-                prevText = editor.innerText;
+                prevText = editor.innerHTML;
             }
             editor.onblur = (event) => {
                 if(editor.matches(':hover') || this.#elementMap.test.matches(':hover') || document.activeElement == editor){
@@ -342,10 +344,10 @@ export default new class NoticeBoardDetail{
                         addButton.classList.remove('active');
                     }
                     return ;
-                }else if(prevText == editor.innerText){
+                }else if(prevText == editor.innerHTML){
                     return;
                 }
-                prevText = editor.innerText;
+                prevText = editor.innerHTML;
 
                 let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
                 let param = {
@@ -382,9 +384,10 @@ export default new class NoticeBoardDetail{
                 }
                 promiseList.push(new Promise(async resolve => {
 
-                    let {name, size, lastModified, contentType} = await common.underbarNameToCamelName(json.data);
+                    let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
+                    console.log(json.data, json.data.new_file_name);
                     let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
-                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'NOTICE')
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'NOTICE', {newFileName})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -403,7 +406,18 @@ export default new class NoticeBoardDetail{
                                     .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
                             })
                         ]).then( async ([k,m]) => {
-                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, json.data.base64);
+                            let base64 = json.data.base64;
+                            if(! base64){
+                                let blob = await fetch(json.data.url).then(res=>res.blob())
+                                base64 = await new Promise(resolve => {
+                                    const reader = new FileReader();
+                                    reader.readAsDataURL(blob);
+                                    reader.onloadend = () => {
+                                        resolve(reader.result);
+                                    }
+                                });
+                            }
+                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, base64);
                             if( ! (res.status == 200 || res.status == 201) ){
                                 return;
                             }
@@ -425,7 +439,7 @@ export default new class NoticeBoardDetail{
                         let {data, encDncKeyPair} = result;
 
                         json.data.url = data.presignedUrl;
-                        json.data.base64 = '';
+                        delete json.data.base64;
                         json.data.upload_type = 'NOTICE';
                         resolve(json);
                     })
@@ -445,6 +459,7 @@ export default new class NoticeBoardDetail{
                         //editor.contentEditable = true;
                         return;
                     }
+                    fileTargetList.forEach(e=>e.data.target_id = data.id);
                     param.id = data.id;
                     param.content = JSON.stringify(jsonList);
                     window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(response=>{
@@ -494,7 +509,6 @@ export default new class NoticeBoardDetail{
         this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId][data.dataset.id] = data;
 		
     }
-
     async refresh(){
         let list = (
             await Promise.all(
@@ -503,7 +517,10 @@ export default new class NoticeBoardDetail{
                     //let weight = i + 1;
                     let result = await Promise.all(
                         [...new Array(Number(item.dataset.empty_line_count || 0))].map((e,j)=> {
-                            return this.createItemElement(e, Number(item.dataset.order_sort) + j + 1)
+                            return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
+                                emptyItem.dataset.connect_target_id = item.dataset.id;
+                                return emptyItem;
+                            })
                         })
                     )
                     result.push(item);

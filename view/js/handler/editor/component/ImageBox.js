@@ -22,9 +22,12 @@ export default class ImageBox {
                     <input list="image-box-resize-datalist" class="image-box-resize-input" id="image-box-resize-height" type="number" autocomplete="off" disabled/>
                 </div>
             </div>
+            <div class="image-key-description-container" style="display:none;">
+                <kbd>Ctrl</kbd>+<kbd>Wheel</kbd>OR<kbd>Shift</kbd>+<kbd>Wheel</kbd>
+            </div>
             <div class="image-button-container">
                 <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
-                <a href="javascript:void(0);" class="new-window-css-gg-path-trim"></a>
+                <a href="javascript:void(0);" class="new-window-css-gg-expand"></a>
             </div>
         `
         /* 리사이즈 있는 버전 주석처리 20230821
@@ -121,13 +124,12 @@ export default class ImageBox {
      */
     addImageHoverEvent(image, resizeRememberTarget){
         //image.parentElement.onmouseover = () => {
-
+        let keyDescription = this.#imageBox.querySelector('.image-key-description-container')   
         image.parentElement.onmouseenter = () => {
             if(! image.src || image.src == '' || image.hasAttribute('data-error')){
                 return;
             }
-            
-            let root = image.getRootNode();
+             let root = image.getRootNode();
             if(root != document){
                 root.append(this.#style);
             }else{
@@ -153,7 +155,12 @@ export default class ImageBox {
                                 return;
                             }
                             image.parentElement.toggleAttribute('data-is_resize_click');
-                            
+                            this.falsh(image.parentElement);
+                            if(image.parentElement.hasAttribute('data-is_resize_click')){
+                                keyDescription.style.display = '';
+                            }else {
+                                keyDescription.style.display = 'none';
+                            }
                         }
                         clearInterval(appendAwait);
                     }
@@ -166,6 +173,8 @@ export default class ImageBox {
             //this.image = undefined;
             //this.resizeRememberTarget = undefined;
             image.parentElement.removeAttribute('data-is_resize_click');
+            keyDescription.style.display = 'none';
+            this.falsh(image.parentElement);
             if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
                 /*
                 this.#imageBox.classList.remove('start');
@@ -177,6 +186,33 @@ export default class ImageBox {
                 */
             }
         }
+    }
+
+    falsh(target){
+        return new Promise(resolve => {
+            let flash = document.createElement('div');
+            Object.assign(flash.style, {
+                position: 'absolute',top: '0px',left: '0px',
+                width: '100%',height: '100%', background: 'rgba(255, 255, 255, 0.4)',
+                transition: 'opacity 0.2s ease 0s', opacity: 0
+            })
+            target.append(flash);
+            let flashAwait = setInterval(()=>{
+                if( ! flash.isConnected){
+                    return; 
+                }
+                clearInterval(flashAwait);
+                flash.style.opacity = 1;
+                flash.ontransitionend = () => {
+                    flash.style.opacity = 0;
+                    flash.ontransitionend = () => {
+                        console.log('end!');
+                        flash.remove();
+                        resolve();
+                    }
+                }
+            }, 50)
+        });
     }
 
     /**
@@ -243,8 +279,8 @@ export default class ImageBox {
     }
     #addButtonIconEvent(image){
         return new Promise(resolve => {
-            let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')
-            download.href = image.src, newWindow.href = image.src;
+            let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-expand')
+            download.href = image.src, newWindow.href = image.src
             download.download = image.dataset.image_name;
             newWindow.target = '_blank';
             resolve({download, newWindow});
@@ -286,10 +322,13 @@ export default class ImageBox {
                 opacity: 1;
                 transition: all 0.5s;
             }
-            .image-box-wrap .image-button-container, .image-box-wrap .image-resize-container{
+            .image-box-wrap .image-button-container,
+            .image-box-wrap .image-resize-container, 
+            .image-box-wrap .image-key-description-container{
                 display: flex;
                 gap: 1.5vw;
                 padding: 1.7%;
+                align-items: baseline;
             }
             .image-box-wrap .image-resize-container .image-box-resize-label{
                 background: linear-gradient(to right, #e50bff, #004eff);
@@ -362,6 +401,60 @@ export default class ImageBox {
                 background: currentColor;
                 bottom: 0;
                 right: 0
+            }
+            .image-box-wrap .image-button-container .new-window-css-gg-expand {
+                box-sizing: border-box;
+                position: relative;
+                display: block;
+                transform: scale(var(--ggs,1));
+                width: 7px;
+                height: 7px;
+                border-bottom: 2px solid;
+                border-left: 2px solid;
+                margin-top: 10px;
+                margin-right: 5px;
+                margin-left: 9px;
+                color:#0000005c;
+            }
+            .image-box-wrap .image-button-container .new-window-css-gg-expand::after,
+            .image-box-wrap .image-button-container .new-window-css-gg-expand::before {
+                content: "";
+                display: block;
+                box-sizing: border-box;
+                position: absolute;
+            }
+            .image-box-wrap .image-button-container .new-window-css-gg-expand::after {
+                background: currentColor;
+                bottom: 4px;
+                transform: rotate(-44deg);
+                width: 14px;
+                height: 2px;
+                left: -2px
+            }
+            .image-box-wrap .image-button-container .new-window-css-gg-expand::before {
+                width: 7px;
+                height: 7px;
+                border-top: 2px solid;
+                border-right: 2px solid;
+                left: 5px;
+                top: -7px
+            }
+
+            .image-box-wrap kbd {
+                background-color: #eee;
+                border-radius: 3px;
+                border: 1px solid #b4b4b4;
+                box-shadow:
+                0 1px 1px rgba(0, 0, 0, 0.2),
+                0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+                color: #333;
+                display: inline-block;
+                font-size: 0.85em;
+                font-weight: 700;
+                line-height: 1;
+                padding: 2px 4px;
+                white-space: nowrap;
+                height: fit-content;
             }
         `
         return this.#style;

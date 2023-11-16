@@ -21,9 +21,13 @@ class ApiS3IpcController {
 		mainWindow.webContents.send(eventName, data);
 	}
 	generatePutObjectPresignedUrl(event, param){
-		let {name, base64, size, lastModified, contentType} = param;
 		return windowUtil.isLogin( result => {
-			console.log(typeof result);
+			param = Object.entries(param).reduce((total, [k,v]) => {
+				if(v != undefined && v != ''){
+					total[k] = v;
+				}
+				return total;
+			},{});
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/generate-presigned-url/create/`, JSON.stringify(param), {
 					headers:{
@@ -47,9 +51,13 @@ class ApiS3IpcController {
 		});
 	}
 	generateGetObjectPresignedUrl(event, param){
-		let {name, base64, size, lastModified, contentType} = param;
 		return windowUtil.isLogin( result => {
-			console.log(typeof result);
+			param = Object.entries(param).reduce((total, [k,v]) => {
+				if(v != undefined && v != ''){
+					total[k] = v;
+				}
+				return total;
+			},{});
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/generate-presigned-url/search/`, JSON.stringify(param), {
 					headers:{

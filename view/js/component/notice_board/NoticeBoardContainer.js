@@ -1,5 +1,6 @@
 import noticeBoardList from "./notice_board_item/NoticeBoardList"
 import noticeBoardDetail from "./notice_board_item/NoticeBoardDetail"
+import roomHandler from "../../handler/room/RoomHandler";
 
 export default new class NoticeBoardContainer{
 
@@ -30,12 +31,21 @@ export default new class NoticeBoardContainer{
 		
 		this.#container.replaceChildren(...this.#contentList);
 		this.#wrap.querySelector('.content').append(this.#container);
-		let t = false;
-		this.#wrap._openEndCallBack = () => {
-			if(!t){
-				//t = true;
+		let isFirstOpen = false;
+		let prevRoomId; 
+		this.#wrap._openEndCallBack = (flexLayout) => {
+			if(isFirstOpen && prevRoomId == roomHandler.roomId){
+				return;
+			}
+			noticeBoardList.refresh();
+			isFirstOpen = true;
+			prevRoomId = roomHandler.roomId
+			/*
+			console.log(flexLayout);
+			if( ! flexLayout.isVisible(this.#wrap)){
 				noticeBoardList.refresh();
 			}
+			*/
 		}
 	}
 

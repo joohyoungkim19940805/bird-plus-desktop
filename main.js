@@ -60,7 +60,7 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
-	
+	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
 		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우

@@ -153,9 +153,9 @@ export default class FreedomInterface extends HTMLElement {
 							}
 							return e;
 						});
-						if(lastItemIndex){
-							resultList[lastItemIndex].line.lookAtMe();
-						}
+						//if(lastItemIndex){
+						//	resultList[lastItemIndex].line.lookAtMe();
+						//}
 					}else{
 						resultList = addedNodes;
 					}
@@ -177,6 +177,8 @@ export default class FreedomInterface extends HTMLElement {
 	});
 	constructor(Tool, dataset, {deleteOption = FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_DELETE} = {}){
 		super();
+		this.#childListObserver.disconnect();
+		this.#childListObserver.observe(this, {childList:true})
 		this.#deleteOption = deleteOption;
 		this.Tool = Tool;
 		this.classList.add(this.constructor.toolHandler.defaultClass)
@@ -204,7 +206,6 @@ export default class FreedomInterface extends HTMLElement {
 		}
 	}
 	connectedCallback(){
-		this.#childListObserver.observe(this, {childList:true})
 
 		if( ! this.#isLoaded){
 			

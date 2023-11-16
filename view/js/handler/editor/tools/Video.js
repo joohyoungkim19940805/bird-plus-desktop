@@ -195,9 +195,12 @@ export default class Video extends FreedomInterface {
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
         this.createDefaultContent();
 
+
         this.disconnectedAfterCallback = () => {
-            if( ! this.dataset.url.startsWith('http')){
-                URL.revokeObjectURL(this.dataset.url);
+            if(this.dataset.url.startsWith('blob:file')){
+                setTimeout(() => {
+                    URL.revokeObjectURL(this.dataset.url);
+                }, 1000 * 60 * 2)
             }
         }
 	}
@@ -245,7 +248,7 @@ export default class Video extends FreedomInterface {
             //videoContanier.style.height = window.getComputedStyle(video).height;
         }
         
-        super.connectedAfterOnlyOneCallback = () => {
+        this.connectedAfterOnlyOneCallback = () => {
             let description = this.createDescription(this.video, videoContanier);
 
             wrap.replaceChildren(...[description,videoContanier].filter(e=>e != undefined));
@@ -256,8 +259,6 @@ export default class Video extends FreedomInterface {
             }
         }
 
-        super.disconnectedAfterCallback = () => {
-        }
     }
 
     createDescription(video, videoContanier){

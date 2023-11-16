@@ -224,7 +224,7 @@ class RoomIpcController {
 	updateRoomFavorites(event, param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.post(`${__serverApi}/api/room/update/room-favorites-order`, JSON.stringify(param), {
+				return axios.post(`${__serverApi}/api/room/update/favorites-order`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}

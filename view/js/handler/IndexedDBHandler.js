@@ -25,22 +25,42 @@ export default class IndexedDBHandler{
 
 	#container;
 
+	#keyPathNameList
+
+	#pkAutoIncrement
+
 	/**
 	 * 생성자
 	 * @author mozu123
+	 * @example 	
+	#columnInfo = {
+		boTempId:['boTempId','boTempId',{unique : true}],
+		boTempName:['boTempName','boTempName'],
+		boTempInsertTime:['boTempInsertTime','boTempInsertTime'],
+		boTempData:['boTempData','boTempData']
+	};
 	 */
 	constructor({
 		dbName = undefined,
 		columnInfo = undefined,
-		storeName = undefined
+		storeName = undefined,
+		keyPathNameList = [],
+		pkAutoIncrement = true
 	}){
 		if( ! dbName ){
 			throw new Error('dbName is undefined');
 		}else if( ! columnInfo ){
 			throw new Error('columnInfo is undefined');
 		}else if( ! storeName ){
-			throw new Error('storeName is ubdefined')
-		}else{
+			throw new Error('storeName is undefined')
+		}else if( keyPathNameList.length == 0 ){
+			throw new Error('keyPathName is undefined')
+		}else if(keyPathNameList.filter(e=>columnInfo[e]).length != keyPathNameList.length){
+			throw new Error('invalid key path name')
+		}else if(pkAutoIncrement == true && keyPathNameList.length > 1){
+			throw new Error('multiple key not use autoIncrement : true');
+		}
+		else{
 			this.#dbName = dbName;
 			this.#columnInfo = columnInfo;
 			this.#storeName = storeName;	
@@ -50,6 +70,8 @@ export default class IndexedDBHandler{
 					return obj;
 				}, {})
 			)
+			this.#keyPathNameList = keyPathNameList;
+			this.#pkAutoIncrement = pkAutoIncrement;
 		}
 	}
 
@@ -71,10 +93,12 @@ export default class IndexedDBHandler{
 			 * @param {Event} e 
 			 */
 			dbOpenRequest.onsuccess = (e) => {
+
 				this.isOpen = true;
 				this.#db = e.target.result;
 				let storeName = Object.entries(this.#db.objectStoreNames).find(([idx, storeName]) => storeName == this.DB_STORE_NAME)
 				let isNewAddStore = ! storeName;
+
 				let isNeedChangeIndex = false;
 
 				if( ! isNewAddStore){
@@ -89,11 +113,14 @@ export default class IndexedDBHandler{
 				}
 
 				if( isNewAddStore || isNeedChangeIndex ){
+					
 					let newVersion = Number(this.#db.version) + 1;
+					console.log(this.#storeName, newVersion);
 					// 기존 버전과 비교하였을 때 변경사항이 있어서 업그레이드(기존 정보 마이그레이션)가 필요 한 경우
+					console.log(dbOpenRequest);
 					this.close().then( closeResult => {
 						const secondOpenRequest = indexedDB.open(this.DB_NAME, newVersion);
-					
+						console.log(secondOpenRequest)
 						/**
 						 * DB에 변동사항이 생겨 업그레이드가 필요하다면, 기존 db를 닫은 후 다시 열어서 신규 정보를 업그레이드 하는 이벤트가 동작하도록 한다.
 						 * @author mozu123
@@ -112,11 +139,17 @@ export default class IndexedDBHandler{
 							this.#db = event.target.result;
 							resolve(this.isOpen);
 						}
+						secondOpenRequest.onblocked = (e) => {
+							console.error(e);
+						}
 					});
 					
 				}else{
 					resolve(this.isOpen);
 				}
+			}
+			dbOpenRequest.onblocked = (e) => {
+				console.log(e);
 			}
 			/**
 			 * db open시 어떤 이유로 인해 오류가 발생할 때 동작하는 이벤트
@@ -141,13 +174,15 @@ export default class IndexedDBHandler{
 			if( ! this.#db || ! this.isOpen){
 				resolve(false)
 			}
+			this.#db.onabort = (e) => console.log(e)
+			this.#db.onerror = (e) => console.log(e);
 			this.#db.close();
+			this.isOpen = false;
 			this.#db.onclose = (event) => {
-				console.log(event)
 				this.isOpen = false;
 				resolve(true)
 			}
-			
+			resolve(true);
 		})
 	}
 
@@ -170,7 +205,7 @@ export default class IndexedDBHandler{
 		return this.#columnInfo;
 	}
 
-	get columnContainer(){
+	get template(){
 		return JSON.parse(this.#container);
 	}
 
@@ -191,7 +226,7 @@ export default class IndexedDBHandler{
 				t[indexName]=idx
 				return t;
 			},{});
-
+			
 			Object.entries(this.#columnInfo).forEach(([indexName, column])=>{
 				if( ! oldIndexCheckMapper[ column[0] ]){
 					objectStore.createIndex(...column);
@@ -204,7 +239,9 @@ export default class IndexedDBHandler{
 				}
 			})
 		}else{
-			objectStore = event.target.result.createObjectStore(this.DB_STORE_NAME,{keyPath : 'id', autoIncrement : true});
+			//let keyPath = Object.values(this.#columnInfo).find(column => column.some(e=>e.unique))[0];
+			let keyPath = this.#pkAutoIncrement || this.#keyPathNameList.length == 1 ? this.#keyPathNameList[0] : this.#keyPathNameList
+			objectStore = event.target.result.createObjectStore(this.DB_STORE_NAME, { keyPath , autoIncrement : this.#pkAutoIncrement });
 			Object.entries(this.#columnInfo).forEach( ([indexName, column]) => objectStore.createIndex(...column) );
 		}
 	}
@@ -214,7 +251,7 @@ export default class IndexedDBHandler{
 	 * @param {Object} data : indexed db에 저장할 데이터 
 	 * @returns {Promise}
 	 */
-	addItem(data = this.container){
+	addItem(data = this.#container){
 		return new Promise( (resolve, reject ) => {
 			if( ! this.isOpen || ! this.#db){
 				reject(new Error('indexedDB가 열려있지 않습니다.'));
@@ -233,7 +270,7 @@ export default class IndexedDBHandler{
 					//alert('임시 저장을 완료하였습니다.');
 					//console.log(e.type);
 				}
-				resolve(e.type);
+				resolve(e);
 			}
 			transaction.onerror = (e)=>{
 				//error code
@@ -249,13 +286,13 @@ export default class IndexedDBHandler{
 	 * @author mozu123
 	 * @param {Object} data 
 	 */
-	tempSaveButtonClickEvent(data){
+	/*tempSaveButtonClickEvent(data){
 		if( ! data){
 			throw new Error('임시 저장 할 데이터가 비어 있습니다.');
 		}
 		let boTempName = window.prompt('임시 저장 내용을 식별할 명칭을 지정해주세요.\n입력하지 않을시 현재 시간으로 저장됩니다.', new Date().toLocaleString());
 		this.addTempItem(data, boTempName);
-	}
+	}*/
 
 	/**
 	 * 임시 저장 목록에서 특정 조건을 만족하는 데이터만 추출할 떄 사용 할 함수 -> 미완성 (안만듬)
@@ -264,12 +301,28 @@ export default class IndexedDBHandler{
 	 */
 	//getTempFilterList({boTempId, boTempName, boTempInsertTime, pageNum=1, pageSize=5, startDateTime, endDateTime}){}
 	
+	getItem(key){
+		return new Promise( (resolve, reject) => {
+			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readonly');
+			let objectStore = transaction.objectStore(this.DB_STORE_NAME);
+			let request = objectStore.get(key);
+			request.onerror = (event) => {
+				console.error(event);
+				reject(request);
+			}
+
+			request.onsuccess = (event) => {
+				resolve(request);
+			}
+		})
+	}
+
 	/**
 	 * 임시 저장 목록을 불러오는 함수 pageNum의 기본값은 1, pageSize의 기본값은 5
 	 * @author mozu123
 	 * @param {Object} param0 : 페이지 정보를 가지고 있는 객체
 	 */
-	getTempList({pageNum=1, pageSize=5}){
+	getList({pageNum=1, pageSize=5}){
 		return new Promise((resolve, reject) => {
 
 			let start = (pageSize * (pageNum - 1));
@@ -316,7 +369,7 @@ export default class IndexedDBHandler{
 	 * @param  {...String} idList : 삭제 할 id 목록
 	 * @returns {Promise} result : 삭제 몇건 했는지 count 한 정보를 담은 Object
 	 */
-	deleteTempItem(...idList){
+	deleteList(...idList){
 		return new Promise((resolve, reject) => {
 			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readwrite')
 			let store = transaction.objectStore(this.DB_STORE_NAME);
@@ -340,4 +393,5 @@ export default class IndexedDBHandler{
 			transaction.onabort = (e) => reject(e);
 		})
 	}
+
 }

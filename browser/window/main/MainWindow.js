@@ -121,6 +121,7 @@ class MainWindow extends BrowserWindow{
 			}
 			*/
 			let {url} = event;
+			console.log('event !! ::: ',event);
 			log.debug('MainWindow Line 100 ::: open url :::', url);
 			if(url.includes('blob:file:///')){
 				return {
