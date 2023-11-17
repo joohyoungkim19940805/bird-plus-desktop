@@ -26,12 +26,15 @@ export default class ImageBox {
                 <kbd>Ctrl</kbd>+<kbd>Wheel</kbd>OR<kbd>Shift</kbd>+<kbd>Wheel</kbd>
             </div>
             <div class="image-button-container">
-                <a href="javascript:void(0);" download>
+                <a href="javascript:void(0);" class="download" download>
                     <i class="download-css-gg-push-down"></i>
                 </a>
-                <a href="javascript:void(0);">
+                <a href="javascript:void(0);" class="new-window">
                     <i class="new-window-css-gg-expand"></i>
                 </a>
+                <span class="image-editor">
+                    <i class="image-editor-css-gg-pen"></i>
+                </span>
             </div>
         `
         /* 리사이즈 있는 버전 주석처리 20230821
@@ -168,24 +171,22 @@ export default class ImageBox {
             }
         }
         image.parentElement.onmouseleave = () => {
-            this.#imageBox.classList.remove('start');
-            //this.image = undefined;
-            //this.resizeRememberTarget = undefined;
+            //this.#imageBox.classList.remove('start');
             if(image.parentElement.hasAttribute('data-is_resize_click')){
                 keyDescription.style.display = 'none';
                 this.falsh(image.parentElement);
             }
             image.parentElement.removeAttribute('data-is_resize_click');
-            if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
-                /*
+            /*if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
+                
                 this.#imageBox.classList.remove('start');
                 this.#imageBox.ontransitionend = () => {
                     if(this.#imageBox.isConnected){
                         this.#imageBox.remove();
                     }
                 }
-                */
-            }
+                
+            }*/
         }
     }
 
@@ -304,6 +305,20 @@ export default class ImageBox {
 		this.#style.sheet.insertRule(style);
 	}
     
+    set image(image){
+        this.#image = image; 
+    }
+
+    get image(){
+        return this.#image;
+    }
+    set resizeRememberTarget(resizeRememberTarget){
+        this.#resizeRememberTarget = resizeRememberTarget;
+    }
+    get resizeRememberTarget(){
+        return this.#resizeRememberTarget;
+    }
+
     createStyle(){
         this.#style.textContent = `
             .image-box-wrap{
@@ -313,7 +328,6 @@ export default class ImageBox {
                 width: 100%;
                 background: linear-gradient(to bottom, #ff8787 -73%, #ffffffcf 115%);
                 color: white;
-                padding-bottom: 1.5%;
                 top:-20%;
                 opacity: 0;
                 transition: all 1s;
@@ -414,7 +428,6 @@ export default class ImageBox {
                 border-left: 2px solid;
                 margin-top: 10px;
                 margin-right: 5px;
-                margin-left: 9px;
                 color:#0000005c;
             }
             .image-box-wrap .image-button-container .new-window-css-gg-expand::after,
@@ -440,11 +453,59 @@ export default class ImageBox {
                 left: 5px;
                 top: -7px
             }
+            .image-box-wrap .image-button-container .image-editor-css-gg-pen {
+                box-sizing: border-box;
+                position: absolute;
+                display: block;
+                transform: rotate(-45deg) scale(var(--ggs,1));
+                width: 11px;
+                height: 2px;
+                border-right: 2px solid transparent;
+                box-shadow: 0 0 0 2px, inset -2px 0 0;
+                border-top-right-radius: 1px;
+                border-bottom-right-radius: 1px;
+                background: #ffffff00;
+                top: 40%;
+                left: 40%;
+                right: 50%;
+                bottom: 50%;
+                color:#0000005c;
+            }
+            .image-box-wrap .image-button-container .image-editor-css-gg-pen::after,
+            .image-box-wrap .image-button-container .image-editor-css-gg-pen::before {
+                content: "";
+                display: block;
+                box-sizing: border-box;
+                position: absolute
+            }
+            .image-box-wrap .image-button-container .image-editor-css-gg-pen::before {
+                background: currentColor;
+                border-left: 1px;
+                right: -7px;
+                width: 3px;
+                height: 2px;
+                border-radius: 1px;
+                top: 0px;
+            }
+            .image-box-wrap .image-button-container .image-editor-css-gg-pen::after {
+                width: 0;
+                height: 0;
+                border-top: 3px solid transparent;
+                border-bottom: 3px solid transparent;
+                border-right: 6px dotted;
+                left: -8px;
+                top: -2px;
+            }
             .image-box-wrap .image-button-container .new-window,
-            .image-box-wrap .image-button-container .download{
+            .image-box-wrap .image-button-container .download,
+            .image-box-wrap .image-button-container .image-editor{
                 height: 100%;
                 width: 15px;
                 text-align: -webkit-center;
+                border: none;
+                background:none;
+                position:relative;
+                cursor: pointer;
             }
 
             .image-box-wrap kbd {
@@ -465,19 +526,5 @@ export default class ImageBox {
             }
         `
         return this.#style;
-    }
-
-    set image(image){
-        this.#image = image; 
-    }
-
-    get image(){
-        return this.#image;
-    }
-    set resizeRememberTarget(resizeRememberTarget){
-        this.#resizeRememberTarget = resizeRememberTarget;
-    }
-    get resizeRememberTarget(){
-        return this.#resizeRememberTarget;
     }
 }

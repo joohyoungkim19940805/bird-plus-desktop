@@ -14,6 +14,9 @@ export default class VideoBox {
                 <div>
                     <label class="video-box-resize-label" for="video-box-resize-width">width : </label>
                     <input list="video-box-resize-datalist" class="video-box-resize-input" id="video-box-resize-width" type="number" autocomplete="off"/>
+                    <div>
+                        <label class="video-box-resize-label-error-message" for="video-box-resize-width"></label>
+                    </div>
                 </div>
                 <div>
                     <label class="video-box-resize-label" for="video-box-resize-height">height(auto) : </label>
@@ -57,6 +60,9 @@ export default class VideoBox {
 		this.#removeEventPromiseResolve = resolve;
 	});
 
+    #video;
+    #resizeRememberTarget;
+
     constructor(){
         let style = document.querySelector(`#${this.#style.id}`);
         if(! style){
@@ -75,14 +81,59 @@ export default class VideoBox {
             threshold: 0.1,
             root: document
         }).observe(this.#videoBox);
+
+        let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
+        
+        window.addEventListener('keyup', (event) => {
+            if( ! this.video || ! this.resizeRememberTarget || ! width.hasAttribute('data-is_ctrl') || ! this.video.parentElement.matches(':hover')){//|| this.video.getRootNode()?.activeElement != width){
+                return;
+            }
+            width.removeAttribute('data-is_ctrl');
+        })
+
+        window.addEventListener('keydown', (event) => {
+            
+            let eventPath = event.composedPath()
+
+            if( ! this.video || ! this.resizeRememberTarget || eventPath[0] == width || ! this.video.parentElement.matches(':hover')){//|| this.video.getRootNode()?.activeElement != width){
+                return;
+            }
+            if(event.ctrlKey){
+                width.dataset.is_ctrl = '';
+            }else{
+                width.removeAttribute('data-is_ctrl');
+            }
+        })
+        
+        /**
+         * @see https://www.chromestatus.com/feature/6662647093133312
+         */
+        window.addEventListener('wheel', (event) => {
+            
+            if( ! this.video || ! this.resizeRememberTarget || ! this.video.parentElement.hasAttribute('data-is_resize_click') || event.composedPath()[0] == width || ! this.video.parentElement.matches(':hover')){// || this.video.getRootNode()?.activeElement != width){
+                return;
+            }
+
+            if(width.hasAttribute('data-is_ctrl')){
+                width.value = Number(width.value) + (event.deltaY * -1)
+            }else{
+                width.value = Number(width.value) + (event.deltaY * -1 / 100)
+            }
+            this.oninputEvent(this.video, width, width, height, this.resizeRememberTarget);
+        })
     }
 
     /**
      * 
      * @param {HTMLVideoElement} video 
      */
-    addVideoHoverEvent(video){
-        video.parentElement.onmouseover = () => {
+    addVideoHoverEvent(video, resizeRememberTarget){
+        //video.parentElement.onmouseover = () => {
+        let keyDescription = this.#videoBox.querySelector('.video-key-description-container')
+        video.parentElement.onmouseenter = () => {
+            if(! video.src || video.src == '' || video.hasAttribute('data-error')){
+                return;
+            }
             let root = video.getRootNode();
             if(root != document){
                 root.append(this.#style);
@@ -92,34 +143,49 @@ export default class VideoBox {
 
             if(video.parentElement && (video.parentElement !== this.#videoBox.parentElement || ! this.#videoBox.classList.contains('start'))){
                 video.parentElement.append(this.#videoBox);
-                //this.#videoBox.ontransitionend = '';
-                //this.#videoBox.classList.remove('start');
-                /* 리사이즈 있는 버전 주석 처리 20230821
-                this.#addRresizeEvent(video),
-                */
-                this.#addRresizeEvent(video)
+
+                this.#addRresizeEvent(video, resizeRememberTarget)
                 this.#addButtonIconEvent(video)
                 let appendAwait = setInterval(()=>{
                     if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement && ! this.#videoBox.classList.contains('start')){
                         this.#videoBox.classList.add('start');
+                        this.video = video;
+                        this.resizeRememberTarget = resizeRememberTarget;
+                        video.parentElement.onclick = (event) => {
+                            if(! video.src || video.src == '' || event.composedPath()[0] != video || video.hasAttribute('data-error')){
+                                return;
+                            }
+                            video.parentElement.toggleAttribute('data-is_resize_click');
+                            this.falsh(video.parentElement);
+                            if(video.parentElement.hasAttribute('data-is_resize_click')){
+                                keyDescription.style.display = '';
+                            }else {
+                                keyDescription.style.display = 'none';
+                            }
+                        }
                         clearInterval(appendAwait);
                     }
                 }, 50)
             }
-
         }
         video.parentElement.onmouseleave = () => {
             this.#videoBox.classList.remove('start');
-            if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement){
-                /*
+            this.#videoBox.classList.remove('start');
+            if(video.parentElement.hasAttribute('data-is_resize_click')){
+                keyDescription.style.display = 'none';
+                this.falsh(video.parentElement);
+            }
+            video.parentElement.removeAttribute('data-is_resize_click');
+            /*if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement){
+                
                 this.#videoBox.classList.remove('start');
                 this.#videoBox.ontransitionend = () => {
                     if(this.#videoBox.isConnected){
                         this.#videoBox.remove();
                     }
                 }
-                */
-            }
+                
+            }*/
         }
     }
 
@@ -154,15 +220,14 @@ export default class VideoBox {
      * @param {HTMLVideoElement} video 
      */
     //리사이즈 있는 버전 주석 처리 20230821
-    #addRresizeEvent(video){
+    #addRresizeEvent(video, resizeRememberTarget){
         return new Promise(resolve => {
             let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
-            width.value = video.width, height.value = video.height;
+            let rect = video.getBoundingClientRect();
+            width.value = parseInt(rect.width), height.value = parseInt(rect.height);
             
             width.labels[0].textContent = 'width : ';
             width.labels[1].textContent = '';
-            
-            this.prevValue = undefined;
 
             width.oninput = (event) => this.oninputEvent(video, event.target, width, height, resizeRememberTarget);
             width.onkeydown = (event) => {
@@ -191,7 +256,9 @@ export default class VideoBox {
             resolve({width, height});
         });
     }
-    oninputEvent(image, target, width, height, resizeRememberTarget) {
+    oninputEvent(video, target, width, height, resizeRememberTarget) {
+        let parentRect = video.parentElement.getBoundingClientRect();
+
         if(isNaN(Number(target.value))){
             target.value = target.value.replace(/\D/g, '');
             return;
@@ -202,18 +269,20 @@ export default class VideoBox {
             width.labels[1].textContent = '';
         }
         let sizeName = target.id.includes('width') ? 'width': 'height';
-        image[sizeName] = target.value;
+        video[sizeName] = target.value;
 
-        width.value = image.width, height.value = image.height;
-        if(this.prevValue && Number(this.prevValue) == Number(width.value)){
-            width.labels[1].textContent = `(max ${this.prevValue}) : `
+        let videoRect = video.getBoundingClientRect();
+
+        width.value = parseInt(videoRect.width), height.value = parseInt(videoRect.height);
+        if(parseInt(parentRect.width) <= Number(target.value)){
+            width.labels[1].textContent = `(max ${target.value}) : `
         }
-        this.prevValue = width.value
         resizeRememberTarget.dataset.width = width.value;
     }
     #addButtonIconEvent(video){
         return new Promise(resolve => {
-            let [download, newWindow] = this.#videoBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-path-trim')
+            let [download, newWindow] = [...this.#videoBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-expand')]
+                .map(e=>e.parentElement)
             download.href = video.src, newWindow.href = video.src;
             download.download = video.dataset.video_name;
             newWindow.target = '_blank';
@@ -237,6 +306,20 @@ export default class VideoBox {
 		this.#style.sheet.insertRule(style);
 	}
     
+    set video(video){
+        this.#video = video; 
+    }
+
+    get video(){
+        return this.#video;
+    }
+    set resizeRememberTarget(resizeRememberTarget){
+        this.#resizeRememberTarget = resizeRememberTarget;
+    }
+    get resizeRememberTarget(){
+        return this.#resizeRememberTarget;
+    }
+
     createStyle(){
         this.#style.textContent = `
             .video-box-wrap{
@@ -244,9 +327,8 @@ export default class VideoBox {
                 display: flex;
                 justify-content: space-between;
                 width: 100%;
-                background: linear-gradient(to bottom, #9b878769 -73%, #ffffff29 115%);
+                background: linear-gradient(to bottom, #ff8787 -73%, #ffffffcf 115%);
                 color: white;
-                padding-bottom: 1.5%;
                 top:-20%;
                 opacity: 0;
                 transition: all 1s;

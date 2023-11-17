@@ -18,25 +18,38 @@ document.addEventListener('DOMContentLoaded', () => {
 					padding: 2px 4px;
 					white-space: nowrap;
 				}
+				blockquote {
+					margin: 0;
+				}
+				
+				blockquote {
+					padding: 15px;
+					background: #eee;
+					border-radius: 5px;
+				}
+				  
 			`
 		})
 	);
-	let target = document.querySelector('img');
+	let target = document.querySelector('img') || document.querySelector('video');
+	if(target.tagName == 'VIDEO'){
+		 target.loop = true;
+		 return;
+	}
 	target.style.zoom = '100%';
 	let div = Object.assign(document.createElement('div'),{
 		innerHTML: `
 			<p>
-				<kbd>Ctrl</kbd> + <kbd>-</kbd>  OR  <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>+</kbd>
+				<kbd>Ctrl -</kbd> <kbd>Ctrl Shift +</kbd> Is Zoom Control <kbd>Mouse Down + Drag</kbd> Is Scroll Control
 			</p>
-			<br>
-			<div style="width: 100%;display: flex;justify-content: flex-end;padding-bottom: 2%;gap: 2vw;">
+			<div style="width: 100%;display: flex;justify-content: flex-start;padding-bottom: 2%;gap: 2vw;">
 				Mouse Zoom Mode Change : 
 				<div>
 					<label for="img-zoom-in" style="border: outset;">+</label>
 					<input type="radio" id="img-zoom-in" name="img-zoom" hidden/>
 				</div>
 				<div>
-					<label for="img-zoom-out" style="border: outset;">-</label>
+					<label for="img-zoom-out" style="border: outset; padding-left:1.6px; padding-right:1.6px;">-</label>
 					<input type="radio" id="img-zoom-out" name="img-zoom" hidden/>
 				</div>
 			</div>
@@ -45,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	Object.assign(div.style, {
 		position: 'sticky',
 		top:0,
+		left:0,
 		color: 'white'
 	})
 	/*
@@ -77,6 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		})
 	}
+	div.querySelectorAll('#img-zoom-in, #img-zoom-out').forEach(e=>{
+		e.onclick = (event) => {
+			if(e.labels[0].style.border != 'groove'){
+				return;
+			}
+			e.labels[0].style.border = 'outset';
+			zoomStatus = '';
+			target.style.cursor = '';
+		}
+	})
 
 	target.onclick = () => {
 		if(zoomStatus === ''){

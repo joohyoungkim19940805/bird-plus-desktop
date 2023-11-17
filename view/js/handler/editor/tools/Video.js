@@ -155,6 +155,7 @@ export default class Video extends FreedomInterface {
             this.dataset.name = Video.selectedFile.files[0].name;
             this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
             this.dataset.size = Video.selectedFile.files[0].size;
+            this.dataset.content_type = Video.selectedFile.files[0].type;
             this.file.files = Video.selectedFile.files;
             const reader = new FileReader();  
             reader.readAsDataURL(Video.selectedFile.files[0]);
@@ -164,7 +165,6 @@ export default class Video extends FreedomInterface {
                 .then(async res=>{
                     return res.blob().then(blob=>{
                         let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                        console.log('videoUrl??', videoUrl)
                         this.dataset.url = videoUrl;
                         this.video.src = this.dataset.url;
                     })
@@ -253,7 +253,7 @@ export default class Video extends FreedomInterface {
 
             wrap.replaceChildren(...[description,videoContanier].filter(e=>e != undefined));
             
-            Video.videoBox.addVideoHoverEvent(this.video);
+            Video.videoBox.addVideoHoverEvent(this.video, this);
             if(this.nextSibling?.tagName == 'BR'){
                 this.nextSibling.remove()
             }
