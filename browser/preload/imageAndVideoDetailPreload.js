@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			`
 		})
 	);
-	let image = document.querySelector('img');
-	image.style.zoom = '100%';
+	let target = document.querySelector('img');
+	target.style.zoom = '100%';
 	let div = Object.assign(document.createElement('div'),{
 		innerHTML: `
 			<p>
@@ -61,11 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	let zoomStatus = '';
 	div.onchange = (event) => {
 		if(event.target.id == 'img-zoom-in'){
-			image.style.cursor = 'zoom-in';
+			target.style.cursor = 'zoom-in';
 			zoomStatus = 'in'
 			
 		}else if(event.target.id == 'img-zoom-out'){
-			image.style.cursor = 'zoom-out';
+			target.style.cursor = 'zoom-out';
 			zoomStatus = 'out'
 		}
 		console.log(event.target);
@@ -78,18 +78,57 @@ document.addEventListener('DOMContentLoaded', () => {
 		})
 	}
 
-	image.onclick = () => {
+	target.onclick = () => {
 		if(zoomStatus === ''){
 			return;
+		}else if(target.hasAttribute('data-is_move')){
+			target.removeAttribute('data-is_move');
+			return;
 		}
-		let zoomValue = parseInt(image.style.zoom);
+		let zoomValue = parseInt(target.style.zoom);
 		if(zoomStatus === 'in'){
 			zoomValue += 25;
 		}else{
 			zoomValue -= 25;
 		}
-		image.style.zoom = `${zoomValue}%`;
+		target.style.zoom = `${zoomValue}%`;
 	}
+	target.draggable = false;
+	target.onmousedown = (event) => {
+		target.dataset.is_mouse_down = '';
+		target.dataset.x = event.clientX;
+		target.dataset.y = event.clientY;
+	}
+	target.onmouseup = () => {
+		target.removeAttribute('data-is_mouse_down');
+		target.removeAttribute('data-x');
+		target.removeAttribute('data-y');
+	}
+	window.addEventListener('mouseup', () => {
+		target.removeAttribute('data-is_mouse_down');
+		target.removeAttribute('data-x');
+		target.removeAttribute('data-y');
+	})
+	window.addEventListener('mousemove', (event) => {
+		if( ! target.hasAttribute('data-is_mouse_down')){
+			return ;
+		}
+		let isMove = ( 
+			Math.abs(event.clientX - Number(target.dataset.x)) >= 30 || 
+			Math.abs(event.clientY - Number(target.dataset.y)) >= 30
+		)
+		if(isMove){
+			target.dataset.is_move = '';
+		}
+		new Promise(resolve=>{
+			window.scrollBy((event.movementX * -1), undefined)
+			resolve();
+		})
+		new Promise(resolve=>{
+			window.scrollBy(undefined, (event.movementY * -1));
+			resolve();
+		})
+	})
 
 })
 //document.querySelector('img').style =

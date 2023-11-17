@@ -26,8 +26,12 @@ export default class ImageBox {
                 <kbd>Ctrl</kbd>+<kbd>Wheel</kbd>OR<kbd>Shift</kbd>+<kbd>Wheel</kbd>
             </div>
             <div class="image-button-container">
-                <a href="javascript:void(0);" class="download-css-gg-push-down" download></a>
-                <a href="javascript:void(0);" class="new-window-css-gg-expand"></a>
+                <a href="javascript:void(0);" download>
+                    <i class="download-css-gg-push-down"></i>
+                </a>
+                <a href="javascript:void(0);">
+                    <i class="new-window-css-gg-expand"></i>
+                </a>
             </div>
         `
         /* 리사이즈 있는 버전 주석처리 20230821
@@ -138,11 +142,7 @@ export default class ImageBox {
 
             if(image.parentElement && (image.parentElement !== this.#imageBox.parentElement || ! this.#imageBox.classList.contains('start'))){
                 image.parentElement.append(this.#imageBox);
-                //this.#imageBox.ontransitionend = '';
-                //this.#imageBox.classList.remove('start');
-                /* 리사이즈 있는 버전 주석 처리 20230821
-                this.#addRresizeEvent(image),
-                */
+
                 this.#addRresizeEvent(image, resizeRememberTarget)
                 this.#addButtonIconEvent(image)
                 let appendAwait = setInterval(()=>{
@@ -150,8 +150,8 @@ export default class ImageBox {
                         this.#imageBox.classList.add('start');
                         this.image = image;
                         this.resizeRememberTarget = resizeRememberTarget;
-                        image.parentElement.onclick = () => {
-                            if(! image.src || image.src == '' || image.hasAttribute('data-error')){
+                        image.parentElement.onclick = (event) => {
+                            if(! image.src || image.src == '' || event.composedPath()[0] != image || image.hasAttribute('data-error')){
                                 return;
                             }
                             image.parentElement.toggleAttribute('data-is_resize_click');
@@ -166,15 +166,16 @@ export default class ImageBox {
                     }
                 }, 50)
             }
-
         }
         image.parentElement.onmouseleave = () => {
             this.#imageBox.classList.remove('start');
             //this.image = undefined;
             //this.resizeRememberTarget = undefined;
+            if(image.parentElement.hasAttribute('data-is_resize_click')){
+                keyDescription.style.display = 'none';
+                this.falsh(image.parentElement);
+            }
             image.parentElement.removeAttribute('data-is_resize_click');
-            keyDescription.style.display = 'none';
-            this.falsh(image.parentElement);
             if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement){
                 /*
                 this.#imageBox.classList.remove('start');
@@ -206,7 +207,6 @@ export default class ImageBox {
                 flash.ontransitionend = () => {
                     flash.style.opacity = 0;
                     flash.ontransitionend = () => {
-                        console.log('end!');
                         flash.remove();
                         resolve();
                     }
@@ -279,7 +279,8 @@ export default class ImageBox {
     }
     #addButtonIconEvent(image){
         return new Promise(resolve => {
-            let [download, newWindow] = this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-expand')
+            let [download, newWindow] = [...this.#imageBox.querySelectorAll('.download-css-gg-push-down, .new-window-css-gg-expand')]
+                .map(e=>e.parentElement)
             download.href = image.src, newWindow.href = image.src
             download.download = image.dataset.image_name;
             newWindow.target = '_blank';
@@ -438,6 +439,12 @@ export default class ImageBox {
                 border-right: 2px solid;
                 left: 5px;
                 top: -7px
+            }
+            .image-box-wrap .image-button-container .new-window,
+            .image-box-wrap .image-button-container .download{
+                height: 100%;
+                width: 15px;
+                text-align: -webkit-center;
             }
 
             .image-box-wrap kbd {
