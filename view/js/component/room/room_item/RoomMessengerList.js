@@ -139,7 +139,7 @@ export default new class RoomMessengerList{
 			}
 		}
 
-		this.#createMessengerView.onOpenCloseCallBack = (status) => {
+		this.#createMessengerView.onOpenCloseCallback = (status) => {
 			this.#createMessengerView.reset();
 			if(status == 'open'){
 				this.#createMessengerView.callData(this.#createMessengerView.page, this.#createMessengerView.size, workspaceHandler.workspaceId, this.#createMessengerView.form.fullName.value)

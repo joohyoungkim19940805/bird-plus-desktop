@@ -79,7 +79,7 @@ export default new class NoticeBoardList{
 				console.log(data);
 			})
 		}
-		this.#positionChanger.onIfCancelCallBack = (target, item) => {
+		this.#positionChanger.onIfCancelCallback = (target, item) => {
 			if(! item.dataset.parent_group_id && ! target.dataset.group_id){
 				return true
 			}
@@ -350,12 +350,12 @@ export default new class NoticeBoardList{
 				flexLayout.closeFlex(noticeBoardDetail.element)
 			}
 			noticeBoardDetail.element.dataset.prev_grow = 1.5;
-			noticeBoardDetail.element._openEndCallBack = () => {
+			noticeBoardDetail.element._openEndCallback = () => {
 				titleName.classList.add('active');
 				//titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
 				titleName.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
 			}
-			noticeBoardDetail.element._closeEndCallBack = () => {
+			noticeBoardDetail.element._closeEndCallback = () => {
 				noticeBoardDetail.element.dataset.prev_grow = 1.5;
 				if( ! titleName.classList.contains('active') && this.prevOpenFlexTarget != titleName){
 					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(()=>{

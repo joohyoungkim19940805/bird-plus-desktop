@@ -8,17 +8,17 @@ class WeightHistoryLayer extends HTMLElement{
 	/**
 	 * 저장 이력의 데이터를 불러오기 할 때의 콜백 함수
 	 */
-	#historyDataLoadButtonClickCallBack = '';
+	#historyDataLoadButtonClickCallback = '';
 	
 	/**
 	 * 저장 이력 정보를 불러오기 전에 실행 할 콜백 함수
 	 */
-	#historyDataLoadBeforeCallBack = '';
+	#historyDataLoadBeforeCallback = '';
 	
 	/**
 	 * 저장 이력 정보를 불러온 후 실행 할 콜백 함수
 	 */
-	#historyDataLoadAfterCallBack = '';
+	#historyDataLoadAfterCallback = '';
 
 	/**
 	 * 이 레이어의 부모 (이 레이어를 실행시킨 주체)
@@ -113,28 +113,28 @@ class WeightHistoryLayer extends HTMLElement{
 	}
 	
 	/**
-	 * historyDataLoadButtonClickCallBack의 setter
+	 * historyDataLoadButtonClickCallback의 setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 저장 이력의 데이터를 불러오기 할 때의 콜백 함수
 	 */
-	set historyDataLoadButtonClickCallBack(callBackFun){
-		this.#historyDataLoadButtonClickCallBack = callBackFun;
+	set historyDataLoadButtonClickCallback(callBackFun){
+		this.#historyDataLoadButtonClickCallback = callBackFun;
 	}
 	/**
-	 * historyDataLoadBeforeCallBack의 setter
+	 * historyDataLoadBeforeCallback의 setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 저장 이력 정보를 불러오기 전에 실행 할 콜백 함수
 	 */
-	set historyDataLoadBeforeCallBack(callBackFun){
-		this.#historyDataLoadBeforeCallBack = callBackFun;
+	set historyDataLoadBeforeCallback(callBackFun){
+		this.#historyDataLoadBeforeCallback = callBackFun;
 	}
 	/**
-	 * historyDataLoadAfterCallBack의 setter
+	 * historyDataLoadAfterCallback의 setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 저장 이력 정보를 불러온 후 실행 할 콜백 함수
 	 */
-	set historyDataLoadAfterCallBack(callBackFun){
-		this.#historyDataLoadAfterCallBack = callBackFun;
+	set historyDataLoadAfterCallback(callBackFun){
+		this.#historyDataLoadAfterCallback = callBackFun;
 	}
 	/**
 	 * layerParent의 setter
@@ -193,8 +193,8 @@ class WeightHistoryLayer extends HTMLElement{
 	 */
 	landingHistory(){
 		return new Promise(resolve=>{
-			if(this.#historyDataLoadBeforeCallBack instanceof Function){
-				this.#historyDataLoadBeforeCallBack();
+			if(this.#historyDataLoadBeforeCallback instanceof Function){
+				this.#historyDataLoadBeforeCallback();
 			}
             $.ajax({
                 dataType:'json',
@@ -224,8 +224,8 @@ class WeightHistoryLayer extends HTMLElement{
                         className:'btn-sm btn-func',
                         textContent:'불러오기',
                         onclick:()=>{
-                            if(this.#historyDataLoadButtonClickCallBack instanceof Function){
-                                this.#historyDataLoadButtonClickCallBack(queryMst);
+                            if(this.#historyDataLoadButtonClickCallback instanceof Function){
+                                this.#historyDataLoadButtonClickCallback(queryMst);
                             }
                             //진짜 리무브가 아니라 document에서만 리무브하는 것이므로 주의할 것
                             this.remove();
@@ -259,8 +259,8 @@ class WeightHistoryLayer extends HTMLElement{
                     this.#LastTempObserver.observe(this.#trList[this.#trList.length -1]);
                 }
                 
-                if(this.#historyDataLoadAfterCallBack instanceof Function){
-                    return this.#historyDataLoadAfterCallBack();
+                if(this.#historyDataLoadAfterCallback instanceof Function){
+                    return this.#historyDataLoadAfterCallback();
                 }
             });
             return setTimeout(resolve(this.prevQueryMst), 0);

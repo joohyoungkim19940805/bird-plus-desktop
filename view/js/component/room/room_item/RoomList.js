@@ -141,7 +141,7 @@ export default new class RoomList{
 			}
 		}
 
-		this.#createRoomView.onOpenCloseCallBack = (status) => {
+		this.#createRoomView.onOpenCloseCallback = (status) => {
 			this.#createRoomView.reset();
 			if(status == 'open'){
 				this.#createRoomView.callData(this.#createRoomView.page, this.#createRoomView.size, workspaceHandler.workspaceId, this.#createRoomView.form.fullName.value)

@@ -4,7 +4,7 @@ export default class PositionChanger{
 	#childList = [];
 	#onDropEndChangePositionCallback = (changeList) => {};
 	#onDropDocumentOutCallback = (target) => {console.log('out!!', target)}; 
-	#onIfCancelCallBack = (target) => {return false;};
+	#onIfCancelCallback = (target) => {return false;};
 	constructor({wrapper}){
 		if( ! wrapper){
 			throw new Error('wrapper is undefined');
@@ -92,9 +92,9 @@ export default class PositionChanger{
 					}
 					//return;
 					let target = this.#targetItem;
-					let cancle = this.onIfCancelCallBack(target, item)
+					let cancle = this.onIfCancelCallback(target, item)
 					if((typeof cancle) != 'boolean'){
-						throw new Error('onIfCancelCallBack is only return Boolean');
+						throw new Error('onIfCancelCallback is only return Boolean');
 					}else if(cancle){
 						return;
 					}
@@ -152,11 +152,11 @@ export default class PositionChanger{
 		return this.#onDropDocumentOutCallback;
 	}
 
-	set onIfCancelCallBack(callBack){
-		this.#onIfCancelCallBack = callBack
+	set onIfCancelCallback(callBack){
+		this.#onIfCancelCallback = callBack
 	}
-	get onIfCancelCallBack(){
-		return this.#onIfCancelCallBack;
+	get onIfCancelCallback(){
+		return this.#onIfCancelCallback;
 	}
 
 }

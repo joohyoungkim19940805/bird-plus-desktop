@@ -52,7 +52,7 @@ export default new class ChattingHead{
     constructor(){
 		
         this.#accountInviteRoomView = new AccountInviteRoomView(this);
-		this.#accountInviteRoomView.onOpenCloseCallBack = (status) => {
+		this.#accountInviteRoomView.onOpenCloseCallback = (status) => {
 			this.#accountInviteRoomView.reset();
 			if(status == 'open'){
 				this.#accountInviteRoomView.callData(this.#accountInviteRoomView.page, this.#accountInviteRoomView.size, workspaceHandler.workspaceId, this.#accountInviteRoomView.form.fullName.value)

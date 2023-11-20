@@ -70,7 +70,7 @@ export default class NumericPoint extends FreedomInterface {
 	
 	constructor(dataset){
 		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
-		super.connectedChildAfterCallBack = (list) => {
+		super.connectedChildAfterCallback = (list) => {
 			let lastItem = list.at(-1);
 			if(lastItem.nodeType == Node.ELEMENT_NODE){
 				let inter = setInterval(()=>{
@@ -98,7 +98,7 @@ export default class NumericPoint extends FreedomInterface {
 			}
 		}
 		/*
-		super.disconnectedChildAfterCallBack = (removedNodes) => {
+		super.disconnectedChildAfterCallback = (removedNodes) => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

@@ -78,7 +78,7 @@ export default class Quote extends FreedomInterface {
 			}
 		}
 
-        super.disconnectedChildAfterCallBack = () => {
+        super.disconnectedChildAfterCallback = () => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

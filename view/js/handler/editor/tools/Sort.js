@@ -109,7 +109,7 @@ export default class Sort extends FreedomInterface {
 			}
 		}
 
-		super.disconnectedChildAfterCallBack = (removedNodes) => {
+		super.disconnectedChildAfterCallback = (removedNodes) => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
 			if( ! nextLine){
 				this.parentEditor.createLine();

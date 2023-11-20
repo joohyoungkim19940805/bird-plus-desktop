@@ -11,17 +11,17 @@ class TempQueryLayer extends HTMLElement{
 	/**
 	 * 임시 저장 이력의 데이터를 불러오기 버튼을 클릭 할 때의 콜백 함수
 	 */
-	#tempDataLoadButtonClickCallBack = '';
+	#tempDataLoadButtonClickCallback = '';
 	
 	/**
 	 * 임시 저장 이력 정보를 불러오기 전에 실행 할 콜백 함수
 	 */
-	#tempDataLoadBeforeCallBack = '';
+	#tempDataLoadBeforeCallback = '';
 	
 	/**
 	 * 임시 저장 이력 정보를 불러온 후 실행 할 콜백 함수
 	 */
-	#tempDataLoadAfterCallBack = '';
+	#tempDataLoadAfterCallback = '';
 	
 	/**
 	 * 이 레이어를 띄우는 부모 element (레이어를 띄우는 주체)
@@ -119,28 +119,28 @@ class TempQueryLayer extends HTMLElement{
 	}
 	
 	/**
-	 * tempDataLoadButtonClickCallBack setter
+	 * tempDataLoadButtonClickCallback setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 임시 저장 이력의 데이터를 불러오기 할 때의 콜백 함수
 	 */
-	set tempDataLoadButtonClickCallBack(callBackFun){
-		this.#tempDataLoadButtonClickCallBack = callBackFun;
+	set tempDataLoadButtonClickCallback(callBackFun){
+		this.#tempDataLoadButtonClickCallback = callBackFun;
 	}
 	/**
-	 * tempDataLoadBeforeCallBack setter
+	 * tempDataLoadBeforeCallback setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 임시 저장 이력 정보를 불러오기 전에 실행 할 콜백 함수
 	 */
-	set tempDataLoadBeforeCallBack(callBackFun){
-		this.#tempDataLoadBeforeCallBack = callBackFun;
+	set tempDataLoadBeforeCallback(callBackFun){
+		this.#tempDataLoadBeforeCallback = callBackFun;
 	}
 	/**
-	 * tempDataLoadAfterCallBack setter
+	 * tempDataLoadAfterCallback setter
 	 * @author mozu123
 	 * @param {Function} callBackFun : 임시 저장 이력 정보를 불러온 후 실행 할 콜백 함수
 	 */
-	set tempDataLoadAfterCallBack(callBackFun){
-		this.#tempDataLoadAfterCallBack = callBackFun;
+	set tempDataLoadAfterCallback(callBackFun){
+		this.#tempDataLoadAfterCallback = callBackFun;
 	}
 	/**
 	 * layerParent의 setter
@@ -168,28 +168,28 @@ class TempQueryLayer extends HTMLElement{
 	}
 	
 	/**
-	 * tempDataLoadButtonClickCallBack getter
+	 * tempDataLoadButtonClickCallback getter
 	 * @author mozu123
-	 * @return {Function} tempDataLoadButtonClickCallBack
+	 * @return {Function} tempDataLoadButtonClickCallback
 	 */
-	get tempDataLoadButtonClickCallBack(){
-		return this.#tempDataLoadButtonClickCallBack;
+	get tempDataLoadButtonClickCallback(){
+		return this.#tempDataLoadButtonClickCallback;
 	}
 	/**
-	 * tempDataLoadBeforeCallBack getter
+	 * tempDataLoadBeforeCallback getter
 	 * @author mozu123
-	 * @return {Function} tempDataLoadBeforeCallBack
+	 * @return {Function} tempDataLoadBeforeCallback
 	 */
-	get tempDataLoadBeforeCallBack(){
-		return this.#tempDataLoadBeforeCallBack;
+	get tempDataLoadBeforeCallback(){
+		return this.#tempDataLoadBeforeCallback;
 	}
 	/**
-	 * tempDataLoadAfterCallBack getter
+	 * tempDataLoadAfterCallback getter
 	 * @author mozu123
-	 * @return {Function} tempDataLoadAfterCallBack
+	 * @return {Function} tempDataLoadAfterCallback
 	 */
-	get tempDataLoadAfterCallBack(){
-		return this.#tempDataLoadAfterCallBack;
+	get tempDataLoadAfterCallback(){
+		return this.#tempDataLoadAfterCallback;
 	}
 	/**
 	 * layerParent의 getter
@@ -222,8 +222,8 @@ class TempQueryLayer extends HTMLElement{
 	 */
 	landingTempData(){
 		return this.#indexedDBHandler.getTempList(this).then(result=>{
-			if(this.#tempDataLoadBeforeCallBack instanceof Function){
-				this.#tempDataLoadBeforeCallBack();
+			if(this.#tempDataLoadBeforeCallback instanceof Function){
+				this.#tempDataLoadBeforeCallback();
 			}
 			this.#trList.push(...result.data.map(temp=>{
 				let tr = document.createElement('tr')
@@ -254,8 +254,8 @@ class TempQueryLayer extends HTMLElement{
 					className:'btn-sm btn-func',
 					textContent:'불러오기',
 					onclick:()=>{
-						if(this.#tempDataLoadButtonClickCallBack instanceof Function){
-							this.#tempDataLoadButtonClickCallBack(temp.boTempData);
+						if(this.#tempDataLoadButtonClickCallback instanceof Function){
+							this.#tempDataLoadButtonClickCallback(temp.boTempData);
 						}
 						//진짜 리무브가 아니라 document에서만 리무브하는 것이므로 주의할 것, (제이쿼리 리무브와는 다르다. 제이쿼리와는...)
 						this.remove();
@@ -287,8 +287,8 @@ class TempQueryLayer extends HTMLElement{
 				this.#LastTempObserver.observe(this.#trList[this.#trList.length -1]);
 			}
 			
-			if(this.#tempDataLoadAfterCallBack instanceof Function){
-				return this.#tempDataLoadAfterCallBack();
+			if(this.#tempDataLoadAfterCallback instanceof Function){
+				return this.#tempDataLoadAfterCallback();
 			}
 			return true;
 		}).catch(e=>console.log(e));

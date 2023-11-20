@@ -152,8 +152,8 @@ class BirdPlusOptions{
 			let matchingMonitor = screen.getDisplayMatching(rect);
 			let isWidthFullSize = this.#size.w / matchingMonitor.size.width >= 0.95;
 			let isHeightFuulSize = this.#size.h / matchingMonitor.size.height >= 0.95;
-			log.log('isWidthFullSize',isWidthFullSize)
-			log.log('isHeightFuulSize',isHeightFuulSize)
+			//log.log('isWidthFullSize',isWidthFullSize)
+			//log.log('isHeightFuulSize',isHeightFuulSize)
 			
 			if(isWidthFullSize && isHeightFuulSize){
 				window.maximize();

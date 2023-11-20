@@ -33,7 +33,7 @@ export default new class NoticeBoardContainer{
 		this.#wrap.querySelector('.content').append(this.#container);
 		let isFirstOpen = false;
 		let prevRoomId; 
-		this.#wrap._openEndCallBack = (flexLayout) => {
+		this.#wrap._openEndCallback = (flexLayout) => {
 			if(isFirstOpen && prevRoomId == roomHandler.roomId){
 				return;
 			}

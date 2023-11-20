@@ -16,7 +16,7 @@ export default class LayerPopupTemplate{
 		containerBox.append(container);
 		return container;
 	})();
-	#onOpenCloseCallBack = () => {}
+	#onOpenCloseCallback = () => {}
 	#dimIsClick = false;
 	constructor(){
 		new MutationObserver( (mutationList)=> {
@@ -33,8 +33,8 @@ export default class LayerPopupTemplate{
 
 						}
 					}, 50);
-					if(this.onOpenCloseCallBack instanceof Function){
-						this.onOpenCloseCallBack('open');
+					if(this.onOpenCloseCallback instanceof Function){
+						this.onOpenCloseCallback('open');
 					}
 				}
 			});
@@ -67,11 +67,11 @@ export default class LayerPopupTemplate{
 
 	}
 
-	set onOpenCloseCallBack(onOpenCloseCallBack){
-		this.#onOpenCloseCallBack = onOpenCloseCallBack;
+	set onOpenCloseCallback(onOpenCloseCallback){
+		this.#onOpenCloseCallback = onOpenCloseCallback;
 	}
-	get onOpenCloseCallBack(){
-		return this.#onOpenCloseCallBack;
+	get onOpenCloseCallback(){
+		return this.#onOpenCloseCallback;
 	}
 
 	get dim(){
@@ -98,8 +98,8 @@ export default class LayerPopupTemplate{
 			res();
 		});
 		new Promise(res=>{
-			if(this.onOpenCloseCallBack instanceof Function){
-				this.onOpenCloseCallBack('close');
+			if(this.onOpenCloseCallback instanceof Function){
+				this.onOpenCloseCallback('close');
 			}
 			res();
 		})

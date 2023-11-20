@@ -127,8 +127,8 @@ export default class FreedomInterface extends HTMLElement {
 	#connectedAfterCallback = () => {}
 	#connectedAfterOnlyOneCallback = ()=> {}
 	#disconnectedAfterCallback = ()=> {}
-	#connectedChildAfterCallBack = () => {}
-	#disconnectedChildAfterCallBack = () => {}
+	#connectedChildAfterCallback = () => {}
+	#disconnectedChildAfterCallback = () => {}
 	#deleteOption;
 	parentEditor;
 	#childListObserver = new MutationObserver( (mutationList, observer) => {
@@ -160,15 +160,15 @@ export default class FreedomInterface extends HTMLElement {
 						resultList = addedNodes;
 					}
 					
-					this.connectedChildAfterCallBack(resultList);
-					//this.connectedChildAfterCallBack(addedNodes);
+					this.connectedChildAfterCallback(resultList);
+					//this.connectedChildAfterCallback(addedNodes);
 				}
 				resolve();
 			})
 			
 			let disconnectedChildPromise = new Promise(resolve => {
 				if(removedNodes.length != 0){
-					this.disconnectedChildAfterCallBack(removedNodes);
+					this.disconnectedChildAfterCallback(removedNodes);
 				}
 				resolve();
 			})
@@ -338,28 +338,28 @@ export default class FreedomInterface extends HTMLElement {
 	/**
 	 * @param {Function}
 	 */
-	set connectedChildAfterCallBack(connectedChildAfterCallBack){
-		this.#connectedChildAfterCallBack = connectedChildAfterCallBack;
+	set connectedChildAfterCallback(connectedChildAfterCallback){
+		this.#connectedChildAfterCallback = connectedChildAfterCallback;
 	}
 
 	/**
 	 * @returns {Function}
 	 */
-	get connectedChildAfterCallBack(){
-		return this.#connectedChildAfterCallBack;
+	get connectedChildAfterCallback(){
+		return this.#connectedChildAfterCallback;
 	}
 
 	/**
 	 * @param {Function}
 	 */
-	set disconnectedChildAfterCallBack(disconnectedChildAfterCallBack){
-		this.#disconnectedChildAfterCallBack = disconnectedChildAfterCallBack;
+	set disconnectedChildAfterCallback(disconnectedChildAfterCallback){
+		this.#disconnectedChildAfterCallback = disconnectedChildAfterCallback;
 	}
 
 	/**
 	 * @returns {Function}
 	 */
-	get disconnectedChildAfterCallBack(){
-		return this.#disconnectedChildAfterCallBack;
+	get disconnectedChildAfterCallback(){
+		return this.#disconnectedChildAfterCallback;
 	}
 }

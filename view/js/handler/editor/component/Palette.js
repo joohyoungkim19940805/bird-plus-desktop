@@ -75,7 +75,7 @@ export default class Palette {
 	}={}){
 		
         this.#openPositionMode = openPositionMode;
-		if( ! this.#openPositionMode || ! (this.#openPositionMode instanceof Palette.OpenPositionMode)){
+		if( ! this.#openPositionMode ){//|| ! (this.#openPositionMode instanceof Palette.OpenPositionMode)){
 			throw new Error('this is not OpenPositionMode');
 		}
 		this.#openPosition = openPosition;

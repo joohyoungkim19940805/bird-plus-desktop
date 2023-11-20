@@ -435,8 +435,8 @@ class FlexLayout extends HTMLElement {
 					}
 					e.style.transition = '';
 					e.ontransitionend = '';
-					if(e == resizeTarget && resizeTarget._closeEndCallBack){
-						resizeTarget._closeEndCallBack(this);
+					if(e == resizeTarget && resizeTarget._closeEndCallback){
+						resizeTarget._closeEndCallback(this);
 					}
 				}
 				
@@ -494,8 +494,8 @@ class FlexLayout extends HTMLElement {
 					}
 					e.style.transition = '';
 					e.ontransitionend = '';
-					if(e == resizeTarget && resizeTarget._openEndCallBack){
-						resizeTarget._openEndCallBack(this);
+					if(e == resizeTarget && resizeTarget._openEndCallback){
+						resizeTarget._openEndCallback(this);
 					}
 				}
 				
