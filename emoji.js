@@ -1,5 +1,7 @@
 `1F471 1F3FB  ; fully-qualified     # 👱🏻 E1.0 person: light skin tone, blond hair`
 
+//한바퀴 더돌려서 스킨 톤 처리하는 건 어떤지?
+
 document.body.textContent.substring(document.body.textContent.indexOf('# group:')).split('# group:').filter(e=>e.trim() != '').reduce((groupTotal,groupText)=>{
     let subgroupList = groupText.split('# subgroup:');
     let groupTitle = subgroupList.shift().replaceAll('\n', '').trim();
