@@ -1,3 +1,8 @@
+html{
+    font-size: 1.9vmax;
+    -webkit-text-size-adjust : 100%;  /* 크롬, 사파리, 오페라 신버전 */
+    -moz-text-size-adjust : 100%;  /* 파이어폭스 */
+}
 body, html{
     width: 100vw;
     height: 100vh;

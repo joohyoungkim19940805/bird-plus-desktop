@@ -23,17 +23,57 @@ export default class ImageBox {
                 </div>
             </div>
             <div class="image-key-description-container" style="display:none;">
-                <kbd>Ctrl</kbd>+<kbd>Wheel</kbd>OR<kbd>Shift</kbd>+<kbd>Wheel</kbd>
+                <kbd>Ctrl</kbd><kbd>Wheel</kbd>OR<kbd>Shift</kbd><kbd>Wheel</kbd>
             </div>
             <div class="image-button-container">
                 <a href="javascript:void(0);" class="download" download>
-                    <i class="download-css-gg-push-down"></i>
+                    <svg style="zoom:125%;" class="download-css-gg-push-down"
+                        width="1rem"
+                        height="1rem"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                        d="M11.0001 1H13.0001V15.4853L16.2428 12.2427L17.657 13.6569L12.0001 19.3137L6.34326 13.6569L7.75748 12.2427L11.0001 15.4853V1Z"
+                        fill="#00000073"
+                        />
+                        <path d="M18 20.2877H6V22.2877H18V20.2877Z" fill="#00000073" />
+                    </svg>
                 </a>
                 <a href="javascript:void(0);" class="new-window">
-                    <i class="new-window-css-gg-expand"></i>
+                    <svg style="zoom: 150%;" class="new-window-css-gg-expand"
+                        width="1rem"
+                        height="1rem"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                        d="M12.3062 16.5933L12.2713 18.593L5.2724 18.4708L5.39457 11.4719L7.39426 11.5068L7.33168 15.092L15.2262 7.46833L11.6938 7.40668L11.7287 5.40698L18.7277 5.52915L18.6055 12.5281L16.6058 12.4932L16.6693 8.85507L8.72095 16.5307L12.3062 16.5933Z"
+                        fill="#00000073"
+                        />
+                    </svg>
                 </a>
                 <span class="image-editor">
-                    <i class="image-editor-css-gg-pen"></i>
+                    <svg class="image-editor-css-gg-pen"
+                        width="1rem"
+                        height="1rem"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M21.2635 2.29289C20.873 1.90237 20.2398 1.90237 19.8493 2.29289L18.9769 3.16525C17.8618 2.63254 16.4857 2.82801 15.5621 3.75165L4.95549 14.3582L10.6123 20.0151L21.2189 9.4085C22.1426 8.48486 22.338 7.1088 21.8053 5.99367L22.6777 5.12132C23.0682 4.7308 23.0682 4.09763 22.6777 3.70711L21.2635 2.29289ZM16.9955 10.8035L10.6123 17.1867L7.78392 14.3582L14.1671 7.9751L16.9955 10.8035ZM18.8138 8.98525L19.8047 7.99429C20.1953 7.60376 20.1953 6.9706 19.8047 6.58007L18.3905 5.16586C18 4.77534 17.3668 4.77534 16.9763 5.16586L15.9853 6.15683L18.8138 8.98525Z"
+                        fill="#00000073"
+                        />
+                        <path
+                        d="M2 22.9502L4.12171 15.1717L9.77817 20.8289L2 22.9502Z"
+                        fill="#00000073"
+                        />
+                    </svg>
                 </span>
             </div>
         `
@@ -57,11 +97,12 @@ export default class ImageBox {
         */
     });
 
+    /*
     #removeEventPromiseResolve;
     #removeEventPromise = new Promise(resolve=>{
 		this.#removeEventPromiseResolve = resolve;
 	});
-    
+    */
     #image;
     #resizeRememberTarget;
 
@@ -72,18 +113,39 @@ export default class ImageBox {
         }else{
             this.#style = style;
         }
-        new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry =>{
-                if ( ! entry.isIntersecting && this.#imageBox.isConnected && ! this.#imageBox.classList.contains('start')) {
-                    //this.#imageBox.remove();
-                    this.#removeEventPromiseResolve();
-                }
-            });
-        }, {
-            threshold: 0.1,
-            root: document
-        }).observe(this.#imageBox);
+
+        document.addEventListener('keydown',(event)=>{
+            if(this.#imageBox.hasAttribute('data-is_shft')){
+                return;
+            }
+            let {key} = event;
+            if(key === 'Shift'){
+                this.#imageBox.dataset.is_shft = '';
+            }
+        })
+
+        document.addEventListener('keyup', (event)=>{
+            if( ! this.#imageBox.hasAttribute('data-is_shft')){
+                return;
+            }    
+            let {key} = event;
+            if(key === 'Shift'){
+                this.#imageBox.removeAttribute('data-is_shft');
+            }
+        })
         
+        this.#imageBox.onwheel = (event) => {
+            if(this.#imageBox.hasAttribute('data-is_shft')){
+                return;
+            }
+            event.preventDefault();
+            let {deltaY} = event;
+            
+            this.#imageBox.scrollTo(
+                this.#imageBox.scrollLeft + deltaY, undefined
+            );
+        }
+       
         let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
         
         window.addEventListener('keyup', (event) => {
@@ -119,7 +181,7 @@ export default class ImageBox {
             if(width.hasAttribute('data-is_ctrl')){
                 width.value = Number(width.value) + (event.deltaY * -1)
             }else{
-                width.value = Number(width.value) + (event.deltaY * -1 / 100)
+                width.value = Number(width.value) + ((event.deltaY * -1) / 100)
             }
             this.oninputEvent(this.image, width, width, height, this.resizeRememberTarget);
         })
@@ -149,7 +211,7 @@ export default class ImageBox {
                 this.#addRresizeEvent(image, resizeRememberTarget)
                 this.#addButtonIconEvent(image)
                 let appendAwait = setInterval(()=>{
-                    if(this.#imageBox.isConnected && image.parentElement === this.#imageBox.parentElement && ! this.#imageBox.classList.contains('start')){
+                    if(this.#imageBox.isConnected && image.complete && image.parentElement === this.#imageBox.parentElement && ! this.#imageBox.classList.contains('start')){
                         this.#imageBox.classList.add('start');
                         this.image = image;
                         this.resizeRememberTarget = resizeRememberTarget;
@@ -157,6 +219,7 @@ export default class ImageBox {
                             if(! image.src || image.src == '' || event.composedPath()[0] != image || image.hasAttribute('data-error')){
                                 return;
                             }
+                            this.#imageBox.classList.add('start');
                             image.parentElement.toggleAttribute('data-is_resize_click');
                             this.falsh(image.parentElement);
                             if(image.parentElement.hasAttribute('data-is_resize_click')){
@@ -250,7 +313,7 @@ export default class ImageBox {
                 if(width.hasAttribute('data-is_ctrl')){
                     width.value = Number(width.value) + (event.deltaY * -1)
                 }else{
-                    width.value = Number(width.value) + (event.deltaY * -1 / 100)
+                    width.value = Number(width.value) + ((event.deltaY * -1) / 100)
                 }
                 this.oninputEvent(image, event.target, width, height, resizeRememberTarget);
             }
@@ -271,11 +334,14 @@ export default class ImageBox {
         let sizeName = target.id.includes('width') ? 'width': 'height';
         image[sizeName] = target.value;
 
-        width.value = image.width, height.value = image.height;
-        if(this.prevValue && Number(this.prevValue) == Number(width.value)){
-            width.labels[1].textContent = `(max ${this.prevValue}) : `
+        let imageRect = image.getBoundingClientRect();
+
+        //width.value = image.width, height.value = image.height;
+        if(this.prevValue && parseInt(this.prevValue) == parseInt(videoRect.width)){
+            width.value = parseInt(this.prevValue);
+            width.labels[1].textContent = `(max ${parseInt(this.prevValue)}) : `
         }
-        this.prevValue = width.value
+        this.prevValue = imageRect.width;
         resizeRememberTarget.dataset.width = width.value;
     }
     #addButtonIconEvent(image){
@@ -331,6 +397,31 @@ export default class ImageBox {
                 top:-20%;
                 opacity: 0;
                 transition: all 1s;
+                white-space: nowrap;
+                overflow-y: clip;
+                overflow-x: auto;
+            }
+            .image-box-wrap::-webkit-scrollbar{
+                display: none;
+            }
+            .image-box-wrap:hover::-webkit-scrollbar{
+                display: initial;
+                width: 7px;
+                height: 7px;
+            }
+            .image-box-wrap:hover::-webkit-scrollbar-track{
+                background: #00000040;
+                border-radius: 100px;
+                box-shadow: inset 0 0 5px #000000fc;
+            }
+            .image-box-wrap:hover::-webkit-scrollbar-thumb {
+                background: #0c0c0c38;
+                border-radius: 100px;
+                box-shadow: inset 0 0 5px #000000;
+            }
+            .image-box-wrap:hover::-webkit-scrollbar-thumb:hover {
+                /*background: #44070757;*/
+                background: #34000075; 
             }
             .image-box-wrap.start{
                 top: 0;
@@ -343,7 +434,7 @@ export default class ImageBox {
                 display: flex;
                 gap: 1.5vw;
                 padding: 1.7%;
-                align-items: baseline;
+                align-items: center;
             }
             .image-box-wrap .image-resize-container .image-box-resize-label{
                 background: linear-gradient(to right, #e50bff, #004eff);
@@ -357,151 +448,17 @@ export default class ImageBox {
                 background-origin: border-box;
                 background-clip: content-box, border-box;
                 background-color: #00000000; 
-                width: 3.2em;
+                width: 3.2rem;
+                height: 100%;
                 color: #ffb6b6;
+                font-size: 0.9rem;
                 text-align: center;
-            }
-            .image-box-wrap .image-button-container .download-css-gg-push-down{
-                box-sizing: border-box;
-                position: relative;
-                display: block;
-                transform: scale(var(--ggs,1));
-                width: 2px;
-                height: 16px;
-                background: currentColor;
-                color: #0000005c;
-            }
-            .image-box-wrap .image-button-container .download-css-gg-push-down::after, .image-box-wrap .image-button-container .download-css-gg-push-down::before{
-                content: "";
-                display: block;
-                box-sizing: border-box;
-                position: absolute;
-                width: 12px;
-                height: 2px;
-                border-bottom: 2px solid;
-                bottom: -5px;
-                left: -5px
-            }
-            .image-box-wrap .image-button-container .download-css-gg-push-down::after {
-                width: 8px;
-                height: 8px;
-                border-right: 2px solid;
-                transform: rotate(45deg);
-                left: -3px;
-                bottom: 0
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim {
-                display: block;
-                position: relative;
-                box-sizing: border-box;
-                transform: scale(var(--ggs,1));
-                width: 14px;
-                height: 14px;
-                color: #0000005c;
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::after,
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::before {
-                content: "";
-                position: absolute;
-                display: block;
-                box-sizing: border-box;
-                width: 10px;
-                height: 10px
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::after {
-                border-left: 3px solid;
-                border-top: 3px solid
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-path-trim::before {
-                background: currentColor;
-                bottom: 0;
-                right: 0
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-expand {
-                box-sizing: border-box;
-                position: relative;
-                display: block;
-                transform: scale(var(--ggs,1));
-                width: 7px;
-                height: 7px;
-                border-bottom: 2px solid;
-                border-left: 2px solid;
-                margin-top: 10px;
-                margin-right: 5px;
-                color:#0000005c;
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-expand::after,
-            .image-box-wrap .image-button-container .new-window-css-gg-expand::before {
-                content: "";
-                display: block;
-                box-sizing: border-box;
-                position: absolute;
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-expand::after {
-                background: currentColor;
-                bottom: 4px;
-                transform: rotate(-44deg);
-                width: 14px;
-                height: 2px;
-                left: -2px
-            }
-            .image-box-wrap .image-button-container .new-window-css-gg-expand::before {
-                width: 7px;
-                height: 7px;
-                border-top: 2px solid;
-                border-right: 2px solid;
-                left: 5px;
-                top: -7px
-            }
-            .image-box-wrap .image-button-container .image-editor-css-gg-pen {
-                box-sizing: border-box;
-                position: absolute;
-                display: block;
-                transform: rotate(-45deg) scale(var(--ggs,1));
-                width: 11px;
-                height: 2px;
-                border-right: 2px solid transparent;
-                box-shadow: 0 0 0 2px, inset -2px 0 0;
-                border-top-right-radius: 1px;
-                border-bottom-right-radius: 1px;
-                background: #ffffff00;
-                top: 40%;
-                left: 40%;
-                right: 50%;
-                bottom: 50%;
-                color:#0000005c;
-            }
-            .image-box-wrap .image-button-container .image-editor-css-gg-pen::after,
-            .image-box-wrap .image-button-container .image-editor-css-gg-pen::before {
-                content: "";
-                display: block;
-                box-sizing: border-box;
-                position: absolute
-            }
-            .image-box-wrap .image-button-container .image-editor-css-gg-pen::before {
-                background: currentColor;
-                border-left: 1px;
-                right: -7px;
-                width: 3px;
-                height: 2px;
-                border-radius: 1px;
-                top: 0px;
-            }
-            .image-box-wrap .image-button-container .image-editor-css-gg-pen::after {
-                width: 0;
-                height: 0;
-                border-top: 3px solid transparent;
-                border-bottom: 3px solid transparent;
-                border-right: 6px dotted;
-                left: -8px;
-                top: -2px;
             }
             .image-box-wrap .image-button-container .new-window,
             .image-box-wrap .image-button-container .download,
             .image-box-wrap .image-button-container .image-editor{
-                height: 100%;
-                width: 15px;
-                text-align: -webkit-center;
+                display: flex;
+                align-items: center;
                 border: none;
                 background:none;
                 position:relative;

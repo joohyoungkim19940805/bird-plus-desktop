@@ -61,6 +61,8 @@ body.default .toolbar{
 	border-bottom: groove 1px #ffffff40;
 	transition: all 0.7s;
     min-height: 22px;
+    display: flex;
+    align-self: center;
 }
 
 .toolbar > button:hover{

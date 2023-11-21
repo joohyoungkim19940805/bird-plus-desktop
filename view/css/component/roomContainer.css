@@ -43,7 +43,7 @@
     display: flex;
 }
 #room_wrapper .room_container .room_sticky .custom_details_summary .custom_details_wrapper .custom_details{
-    font-size: x-small;
+    font-size: 0.6rem;
 }
 #room_wrapper .room_container .room_sticky .custom_details_summary .custom_details_wrapper .custom_details_title{
     width: 100%;
@@ -69,6 +69,7 @@
     border: none;
     border-bottom: solid 2px #cbcbcbbd;
     border-left: solid 2px #cbcbcbbd;
+    font-size: 0.7rem;
 }
 
 #room_wrapper .room_container .room_content_list_scroll .room_scrollbar{

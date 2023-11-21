@@ -88,6 +88,7 @@ export default new class ChattingHead{
                 if(scrollTarget.hasAttribute('data-is_shft')){
                     return;
                 }
+                event.preventDefault();
                 let {deltaY} = event;
                 
                 scrollTarget.scrollTo(

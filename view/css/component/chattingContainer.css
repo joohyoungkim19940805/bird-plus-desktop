@@ -52,7 +52,7 @@
     outline: none;
     color: #ed7b7b;
     border-radius: 40%;
-    font-size: x-large;
+    font-size: 1.5rem;
     background: none;
 }
 /*#chatting_head_wrapper .chatting_head_container .chatting_head_info_wrapper .chatting_head_button_container .favorites_button.apply{
@@ -121,6 +121,7 @@
 }
 #chatting_info_wrapper .chatting_content_list > li{
     padding-bottom: 0.35%;
+    white-space: nowrap;
     /*border-top: solid 2px #00000012;*/
 }
 
@@ -148,13 +149,30 @@
     display: flex;
     gap: 0.7vw;
 }
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container{
+    width: 100%;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_profile{
+    margin-left: 5px;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_profile img{
+    width: 1.5rem;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper{
+    display: flex;
+    gap: 1vw; 
+}
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_name{
     font-weight: bold;
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_time{
     color: #c5c5c5;
 }
-/* chatting info(body) [S]*/
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper chatting-info-line{
+    padding-top: 0;
+    margin-top: 0;
+}
+/* chatting info(body) [E]*/
 
 /* chatting regist */
 #chatting_regist_wrapper .chatting_regist_container{

@@ -348,24 +348,29 @@ export default new class ChattingInfo{
             fullName,
             accountName
         } = data;
-        return new Promise(resolve => {
+        return new Promise(async resolve => {
             let li = Object.assign(document.createElement('li'), {
+            });
+            let descriptionWrap = Object.assign(document.createElement('div'),{
+                className: 'chatting_content_description_wrapper',
                 innerHTML: `
-                    <div class="chatting_content_description_wrapper">
-                        <div class="chatting_content_description_profile">
-                        </div>
+                    <div class="chatting_content_description_profile">
+                        <img src="${(await common.getProjectPathPromise())}view/image/user.png"/>
+                    </div>
+                    <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">
                             <div class="chatting_content_description_name">${fullName}</div>
+                            <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                         </div>
-                        <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                     </div>
                 `
             });
+            li.append(descriptionWrap);
             let content = new ChattingInfoLine();
             content.parseLowDoseJSON(chatting).then((e)=>{
                 resolve(li)
             });
-            li.append(content);
+            descriptionWrap.querySelector('.chatting_container').append(content);
             delete data.chatting
             common.jsonToSaveElementDataset(data, li);
 

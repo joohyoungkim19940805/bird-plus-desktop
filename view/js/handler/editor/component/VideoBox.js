@@ -24,18 +24,41 @@ export default class VideoBox {
                 </div>
             </div>
             <div class="video-key-description-container" style="display:none;">
-                <kbd>Ctrl</kbd>+<kbd>Wheel</kbd>OR<kbd>Shift</kbd>+<kbd>Wheel</kbd>
+                <kbd>Ctrl</kbd><kbd>Wheel</kbd>OR<kbd>Shift</kbd><kbd>Wheel</kbd>
             </div>
             <div class="video-button-container">
-                <a href="javascript:void(0);" download>
-                    <i class="download-css-gg-push-down"></i>
+                <a href="javascript:void(0);" class="download" download>
+                    <svg style="zoom:140%;" class="download-css-gg-push-down"
+                        width="1rem"
+                        height="1rem"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                        d="M11.0001 1H13.0001V15.4853L16.2428 12.2427L17.657 13.6569L12.0001 19.3137L6.34326 13.6569L7.75748 12.2427L11.0001 15.4853V1Z"
+                        fill="#00000073"
+                        />
+                        <path d="M18 20.2877H6V22.2877H18V20.2877Z" fill="#00000073" />
+                    </svg>
                 </a>
-                <a href="javascript:void(0);">
-                    <i class="new-window-css-gg-expand"></i>
+                <a href="javascript:void(0);" class="new-window">
+                    <svg style="zoom: 150%;" class="new-window-css-gg-expand"
+                        width="1rem"
+                        height="1rem"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                        d="M12.3062 16.5933L12.2713 18.593L5.2724 18.4708L5.39457 11.4719L7.39426 11.5068L7.33168 15.092L15.2262 7.46833L11.6938 7.40668L11.7287 5.40698L18.7277 5.52915L18.6055 12.5281L16.6058 12.4932L16.6693 8.85507L8.72095 16.5307L12.3062 16.5933Z"
+                        fill="#00000073"
+                        />
+                    </svg>
                 </a>
             </div>
         `
-        /* 리사이즈 있는 버전 주석처리 20230821
+        /* 리사이즈 있는 버전 주석처리 20230821 <i class="download-css-gg-push-down"></i>
         innerHTML: `
             <div class="video-resize-container">
                 <div>
@@ -54,12 +77,12 @@ export default class VideoBox {
         `
         */
     });
-
+    /*
     #removeEventPromiseResolve;
     #removeEventPromise = new Promise(resolve=>{
 		this.#removeEventPromiseResolve = resolve;
 	});
-
+    */
     #video;
     #resizeRememberTarget;
 
@@ -70,18 +93,38 @@ export default class VideoBox {
         }else{
             this.#style = style;
         }
-        new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry =>{
-                if ( ! entry.isIntersecting && this.#videoBox.isConnected && ! this.#videoBox.classList.contains('start')) {
-                    //this.#videoBox.remove();
-                    this.#removeEventPromiseResolve();
-                }
-            });
-        }, {
-            threshold: 0.1,
-            root: document
-        }).observe(this.#videoBox);
+        document.addEventListener('keydown',(event)=>{
+            if(this.#videoBox.hasAttribute('data-is_shft')){
+                return;
+            }
+            event.preventDefault();
+            let {key} = event;
+            if(key === 'Shift'){
+                this.#videoBox.dataset.is_shft = '';
+            }
+        })
 
+        document.addEventListener('keyup', (event)=>{
+            if( ! this.#videoBox.hasAttribute('data-is_shft')){
+                return;
+            }    
+            let {key} = event;
+            if(key === 'Shift'){
+                this.#videoBox.removeAttribute('data-is_shft');
+            }
+        })
+        
+        this.#videoBox.onwheel = (event) => {
+            if(this.#videoBox.hasAttribute('data-is_shft')){
+                return;
+            }
+            event.preventDefault();
+            let {deltaY} = event;
+            
+            this.#videoBox.scrollTo(
+                this.#videoBox.scrollLeft + deltaY, undefined
+            );
+        }
         let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
         
         window.addEventListener('keyup', (event) => {
@@ -109,17 +152,18 @@ export default class VideoBox {
          * @see https://www.chromestatus.com/feature/6662647093133312
          */
         window.addEventListener('wheel', (event) => {
-            
+
             if( ! this.video || ! this.resizeRememberTarget || ! this.video.parentElement.hasAttribute('data-is_resize_click') || event.composedPath()[0] == width || ! this.video.parentElement.matches(':hover')){// || this.video.getRootNode()?.activeElement != width){
                 return;
             }
-
+            
             if(width.hasAttribute('data-is_ctrl')){
                 width.value = Number(width.value) + (event.deltaY * -1)
             }else{
-                width.value = Number(width.value) + (event.deltaY * -1 / 100)
+                width.value = Number(width.value) + ((event.deltaY * -1) / 100)
             }
-            this.oninputEvent(this.video, width, width, height, this.resizeRememberTarget);
+            this.oninputEvent(this.video, width, height, this.resizeRememberTarget);
+            
         })
     }
 
@@ -147,7 +191,7 @@ export default class VideoBox {
                 this.#addRresizeEvent(video, resizeRememberTarget)
                 this.#addButtonIconEvent(video)
                 let appendAwait = setInterval(()=>{
-                    if(this.#videoBox.isConnected && video.parentElement === this.#videoBox.parentElement && ! this.#videoBox.classList.contains('start')){
+                    if(this.#videoBox.isConnected && video.readyState == 4 && video.parentElement === this.#videoBox.parentElement && ! this.#videoBox.classList.contains('start')){
                         this.#videoBox.classList.add('start');
                         this.video = video;
                         this.resizeRememberTarget = resizeRememberTarget;
@@ -169,7 +213,6 @@ export default class VideoBox {
             }
         }
         video.parentElement.onmouseleave = () => {
-            this.#videoBox.classList.remove('start');
             this.#videoBox.classList.remove('start');
             if(video.parentElement.hasAttribute('data-is_resize_click')){
                 keyDescription.style.display = 'none';
@@ -229,7 +272,9 @@ export default class VideoBox {
             width.labels[0].textContent = 'width : ';
             width.labels[1].textContent = '';
 
-            width.oninput = (event) => this.oninputEvent(video, event.target, width, height, resizeRememberTarget);
+            this.prevValue = undefined;
+
+            width.oninput = (event) => this.oninputEvent(video, width, height, resizeRememberTarget);
             width.onkeydown = (event) => {
                 if(event.ctrlKey){
                     width.dataset.is_ctrl = '';
@@ -248,35 +293,36 @@ export default class VideoBox {
                 if(width.hasAttribute('data-is_ctrl')){
                     width.value = Number(width.value) + (event.deltaY * -1)
                 }else{
-                    width.value = Number(width.value) + (event.deltaY * -1 / 100)
+                    width.value = Number(width.value) + ((event.deltaY * -1) / 100)
                 }
-                this.oninputEvent(video, event.target, width, height, resizeRememberTarget);
+
+                this.oninputEvent(video, width, height, resizeRememberTarget);
             }
             //height.oninput = (event) => oninputEvent(event);
             resolve({width, height});
         });
     }
-    oninputEvent(video, target, width, height, resizeRememberTarget) {
-        let parentRect = video.parentElement.getBoundingClientRect();
-
-        if(isNaN(Number(target.value))){
-            target.value = target.value.replace(/\D/g, '');
+    oninputEvent(video, width, height, resizeRememberTarget) {
+        if(isNaN(Number(width.value))){
+            width.value = width.value.replace(/\D/g, '');
             return;
-        }else if(Number(target.value) < 50){
+        }else if(Number(width.value) < 50){
             width.labels[1].textContent = '(min 50)';
-            target.value = 50;
+            width.value = 50;
         }else{
             width.labels[1].textContent = '';
         }
-        let sizeName = target.id.includes('width') ? 'width': 'height';
-        video[sizeName] = target.value;
+        let sizeName = width.id.includes('width') ? 'width': 'height';
+        video[sizeName] = width.value;
 
         let videoRect = video.getBoundingClientRect();
 
-        width.value = parseInt(videoRect.width), height.value = parseInt(videoRect.height);
-        if(parseInt(parentRect.width) <= Number(target.value)){
-            width.labels[1].textContent = `(max ${target.value}) : `
+        if(this.prevValue && parseInt(this.prevValue) == parseInt(videoRect.width)){
+            width.value = parseInt(this.prevValue);
+            width.labels[1].textContent = `(max ${parseInt(this.prevValue)}) : `
         }
+        this.prevValue = videoRect.width
+
         resizeRememberTarget.dataset.width = width.value;
     }
     #addButtonIconEvent(video){
@@ -332,6 +378,31 @@ export default class VideoBox {
                 top:-20%;
                 opacity: 0;
                 transition: all 1s;
+                white-space: nowrap;
+                overflow-y: clip;
+                overflow-x: auto;
+            }
+            .video-box-wrap::-webkit-scrollbar{
+                display: none;
+            }
+            .video-box-wrap:hover::-webkit-scrollbar{
+                display: initial;
+                width: 7px;
+                height: 7px;
+            }
+            .video-box-wrap:hover::-webkit-scrollbar-track{
+                background: #00000040;
+                border-radius: 100px;
+                box-shadow: inset 0 0 5px #000000fc;
+            }
+            .video-box-wrap:hover::-webkit-scrollbar-thumb {
+                background: #0c0c0c38;
+                border-radius: 100px;
+                box-shadow: inset 0 0 5px #000000;
+            }
+            .video-box-wrap:hover::-webkit-scrollbar-thumb:hover {
+                /*background: #44070757;*/
+                background: #34000075; 
             }
             .video-box-wrap.start{
                 top: 0;
@@ -344,6 +415,7 @@ export default class VideoBox {
                 display: flex;
                 gap: 1.5vw;
                 padding: 1.7%;
+                align-items: center;
             }
             .video-box-wrap .video-resize-container .video-box-resize-label{
                 background: linear-gradient(to right, #e50bff, #004eff);
@@ -357,109 +429,20 @@ export default class VideoBox {
                 background-origin: border-box;
                 background-clip: content-box, border-box;
                 background-color: #00000000; 
-                width: 3.2em;
+                width: 3.2rem;
+                height: 100%;
                 color: #ffb6b6;
+                font-size: 0.9rem;
                 text-align: center;
-            }
-            .video-box-wrap .video-button-container .download-css-gg-push-down{
-                box-sizing: border-box;
-                position: relative;
-                display: block;
-                transform: scale(var(--ggs,1));
-                width: 2px;
-                height: 16px;
-                background: currentColor;
-                color: #0000005c;
-            }
-            .video-box-wrap .video-button-container .download-css-gg-push-down::after,
-            .video-box-wrap .video-button-container .download-css-gg-push-down::before{
-                content: "";
-                display: block;
-                box-sizing: border-box;
-                position: absolute;
-                width: 12px;
-                height: 2px;
-                border-bottom: 2px solid;
-                bottom: -5px;
-                left: -5px
-            }
-            .video-box-wrap .video-button-container .download-css-gg-push-down::after {
-                width: 8px;
-                height: 8px;
-                border-right: 2px solid;
-                transform: rotate(45deg);
-                left: -3px;
-                bottom: 0
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-path-trim {
-                display: block;
-                position: relative;
-                box-sizing: border-box;
-                transform: scale(var(--ggs,1));
-                width: 14px;
-                height: 14px;
-                color: #0000005c;
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::after,
-            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::before {
-                content: "";
-                position: absolute;
-                display: block;
-                box-sizing: border-box;
-                width: 10px;
-                height: 10px
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::after {
-                border-left: 3px solid;
-                border-top: 3px solid
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-path-trim::before {
-                background: currentColor;
-                bottom: 0;
-                right: 0
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-expand {
-                box-sizing: border-box;
-                position: relative;
-                display: block;
-                transform: scale(var(--ggs,1));
-                width: 7px;
-                height: 7px;
-                border-bottom: 2px solid;
-                border-left: 2px solid;
-                margin-top: 10px;
-                margin-right: 5px;
-                margin-left: 9px;
-                color:#0000005c;
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-expand::after,
-            .video-box-wrap .video-button-container .new-window-css-gg-expand::before {
-                content: "";
-                display: block;
-                box-sizing: border-box;
-                position: absolute;
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-expand::after {
-                background: currentColor;
-                bottom: 4px;
-                transform: rotate(-44deg);
-                width: 14px;
-                height: 2px;
-                left: -2px
-            }
-            .video-box-wrap .video-button-container .new-window-css-gg-expand::before {
-                width: 7px;
-                height: 7px;
-                border-top: 2px solid;
-                border-right: 2px solid;
-                left: 5px;
-                top: -7px
             }
             .video-box-wrap .video-button-container .new-window,
             .video-box-wrap .video-button-container .download{
-                height: 100%;
-                width: 15px;
-                text-align: -webkit-center;
+                display: flex;
+                align-items: center;
+                border: none;
+                background:none;
+                position:relative;
+                cursor: pointer;
             }
 
             .video-box-wrap kbd {
