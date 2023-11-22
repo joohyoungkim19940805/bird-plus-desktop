@@ -87,7 +87,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				<ul id="account_invite_room_view_account_list">
 				</ul>
 				<div>
-					<button type="button" class="pointer" id="account_invite_room_view_button">Invite</button>
+					<button type="button" id="account_invite_room_view_button">Invite</button>
 				</div>
 			</from>
 		`

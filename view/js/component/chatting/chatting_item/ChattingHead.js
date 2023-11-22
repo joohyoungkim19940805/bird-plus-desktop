@@ -24,12 +24,12 @@ export default new class ChattingHead{
                         <datalist id="chatting_head_member_list" class="chatting_head_search_member_list" data-bind_name="searchMemberList">
                         </datalist>
                     </div>
-                    <button type="button" class="favorites_add_button pointer" data-bind_name="favoritesAddButton">☆</button>
-                    <button type="button" class="member_add_button pointer" data-bind_name="memberAddButton">+</button>
+                    <button type="button" class="favorites_add_button" data-bind_name="favoritesAddButton">☆</button>
+                    <button type="button" class="member_add_button" data-bind_name="memberAddButton">+</button>
                 </div>
             </div>
             <div class="chatting_head_menu_wrapper">
-                <button type="button" class="pointer css-gg-list" data-bind_name="noticeBoardIconButton" title="notice board">
+                <button type="button" class="css-gg-list" data-bind_name="noticeBoardIconButton" title="notice board">
                     <svg style="zoom:135%"
                         width="1rem"
                         height="1rem"

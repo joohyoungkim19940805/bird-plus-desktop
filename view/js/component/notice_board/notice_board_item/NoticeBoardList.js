@@ -28,7 +28,7 @@ export default new class NoticeBoardList{
 					</div>
                 </div> 
 				<div class="notice_board_list_content_button_wrapper">
-					<button class="pointer css-gg-folder-add" type="button" data-bind_name="rootFolderAdd">
+					<button class="css-gg-folder-add" type="button" data-bind_name="rootFolderAdd">
 						<svg style="zoom:125%;"
 						width="1rem"
 						height="1rem"
@@ -160,7 +160,7 @@ export default new class NoticeBoardList{
 			parentRoot.replaceChildren(...list);
 		})
         window.addEventListener('resize', (event) => {
-			let activeTitleName = this.#elementMap.noticeBoardList.querySelector('.notice_board_list_content_item_title_name.pointer.active');
+			let activeTitleName = this.#elementMap.noticeBoardList.querySelector('.notice_board_list_content_item_title_name.active');
             if(activeTitleName){
 				activeTitleName.scrollIntoView({ behavior: 'instant', block: "end", inline: "nearest" });
 			}
@@ -174,12 +174,12 @@ export default new class NoticeBoardList{
 			className: `notice_board_list_content_item`,
 			innerHTML : `
 			<div class="notice_board_list_content_item_title_wrapper">
-				<button class="marker pointer" data-is_open=${Boolean(data.isEmpty)}></button>
+				<button class="marker" data-is_open=${Boolean(data.isEmpty)}></button>
 				<div class="notice_board_list_content_item_title">
 					<b class="notice_board_list_content_item_title_name ${data.isEmpty ? '' : 'pointer'}" ${data.isEmpty ? '' : `data-prev_title-name="${data.title}"`} contentEditable=${Boolean(data.isEmpty)}>${data.title || ''}</b>
 				</div>
 				<div class="notice_board_list_content_button_wrapper">
-					<button class="css-gg-add pointer" type="button">
+					<button class="css-gg-add" type="button">
 						<svg style="zoom:125%;"
 						width="1rem"
 						height="1rem"
@@ -201,7 +201,7 @@ export default new class NoticeBoardList{
 							/>
 						</svg>
 					</button>
-					<button class="css-gg-folder-add pointer" type="button">
+					<button class="css-gg-folder-add" type="button">
 						<svg style="zoom:125%;"
 						width="1rem"
 						height="1rem"
@@ -262,7 +262,7 @@ export default new class NoticeBoardList{
 			})
 		})
 		let deleteButton  = Object.assign(document.createElement('button'),{
-			className: 'css-gg-remove pointer',
+			className: 'css-gg-remove',
 			innerHTML: `
 				<svg style="zoom:125%;"
 				width="1rem"
@@ -313,7 +313,7 @@ export default new class NoticeBoardList{
 					/>
 				</svg>
 			`,
-			className: 'css-gg-pen pointer',
+			className: 'css-gg-pen',
 			onclick : (event) => {
 				titleName.contentEditable = true;
 				updateButton.remove();
@@ -405,7 +405,7 @@ export default new class NoticeBoardList{
 		li.__parentRoot = parentRoot;
 		let [titleName, buttonWrapper] = li.querySelectorAll('.notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper');
 		let deleteButton  = Object.assign(document.createElement('button'),{
-			className: 'css-gg-remove pointer',
+			className: 'css-gg-remove',
 			innerHTML: `
 				<svg style="zoom:125%;"
 				width="1rem"
@@ -458,7 +458,7 @@ export default new class NoticeBoardList{
 					/>
 				</svg>
 			`,
-			className: 'css-gg-pen pointer',
+			className: 'css-gg-pen',
 			onclick : (event) => {
 				titleName.contentEditable = true;
 				updateButton.remove();

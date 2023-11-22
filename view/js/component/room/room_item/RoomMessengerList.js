@@ -20,7 +20,7 @@ export default new class RoomMessengerList{
 						<b class="pointer custom_details_title" data-bind_name="customDetailsTitle"><i>Messenger</i></b>
 					</div>
 					<div class="add_button_wrapper">
-						<button class="pointer add_button" data-bind_name="addButton">╊</button>
+						<button class="add_button" data-bind_name="addButton">╊</button>
 					</div>
 					</div>
 					<div class="room_functions" data-bind_name="roomFunctions">
