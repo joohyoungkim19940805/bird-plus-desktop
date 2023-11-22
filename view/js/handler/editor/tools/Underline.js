@@ -52,7 +52,11 @@ export default class Underline extends FreedomInterface {
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
 			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
 				text-decoration: 1px underline;
+			}
+			.${this.toolHandler.defaultClass} {
+				width: fit-content;
 			}
 		`
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
@@ -83,7 +87,9 @@ export default class Underline extends FreedomInterface {
 		if( ! dataset && Object.entries(this.dataset).length == 0){
 			this.dataset.rgba = Underline.palette.r + ',' + Underline.palette.g + ',' + Underline.palette.b + ',' + Underline.palette.a;
 		}
-		this.style.textDecoration = `underline rgba(${this.dataset.rgba}) 1px`;
+		this.style.borderBottom = `solid 2px rgba(${this.dataset.rgba})`
+		//this.style.backgroundImage = `linear-gradient(to right, rgba(${this.dataset.rgba}), rgba(${this.dataset.rgba}))`
+		//this.style.textDecoration = `underline rgba(${this.dataset.rgba}) 1px`;
 	}
 
 }

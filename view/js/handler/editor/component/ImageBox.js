@@ -177,7 +177,6 @@ export default class ImageBox {
             if( ! this.image || ! this.resizeRememberTarget || ! this.image.parentElement.hasAttribute('data-is_resize_click') || event.composedPath()[0] == width || ! this.image.parentElement.matches(':hover')){// || this.image.getRootNode()?.activeElement != width){
                 return;
             }
-
             if(width.hasAttribute('data-is_ctrl')){
                 width.value = Number(width.value) + (event.deltaY * -1)
             }else{
@@ -234,7 +233,7 @@ export default class ImageBox {
             }
         }
         image.parentElement.onmouseleave = () => {
-            //this.#imageBox.classList.remove('start');
+            this.#imageBox.classList.remove('start');
             if(image.parentElement.hasAttribute('data-is_resize_click')){
                 keyDescription.style.display = 'none';
                 this.falsh(image.parentElement);
@@ -337,7 +336,7 @@ export default class ImageBox {
         let imageRect = image.getBoundingClientRect();
 
         //width.value = image.width, height.value = image.height;
-        if(this.prevValue && parseInt(this.prevValue) == parseInt(videoRect.width)){
+        if(this.prevValue && parseInt(this.prevValue) == parseInt(imageRect.width)){
             width.value = parseInt(this.prevValue);
             width.labels[1].textContent = `(max ${parseInt(this.prevValue)}) : `
         }

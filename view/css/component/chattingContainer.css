@@ -64,7 +64,7 @@
     outline: none;
     background: none;
     border-radius: 40%;
-    font-size: x-large;
+    font-size: 1.4rem;
     font-weight: bold;
 }
 #chatting_head_wrapper .chatting_head_container .chatting_head_info_wrapper .chatting_head_button_container .member_add_button:active{
@@ -148,6 +148,7 @@
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper{
     display: flex;
     gap: 0.7vw;
+    position: relative;
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container{
     width: 100%;
@@ -172,10 +173,54 @@
     padding-top: 0;
     margin-top: 0;
 }
+
+    /* chatting info menu layer [S] */
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper{
+        position: absolute;
+        display: flex;
+        top: -1.6rem;
+        left: 2.2rem;
+        box-shadow: 0px 0px 13px #999;
+        border-radius: 6%;
+        background-color: white;
+        z-index: 9999;
+        align-items: center;
+        justify-content: space-between;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container{
+        border-right: ridge 3px #a095df;
+        padding-right: 1vw;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container button{
+        font-size: 1rem;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container button:hover{
+        zoom:125%;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container button:hover{
+        background-color: #c7c7c7;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container,
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container{
+        display: flex;
+        align-items: center;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoji{
+        position: relative;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoji .css-gg-add{
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+
+    /* chatting info menu layer [E] */
+
 /* chatting info(body) [E]*/
 
-/* chatting regist */
+/* chatting regist [S] */
 #chatting_regist_wrapper .chatting_regist_container{
     display: flex;
     flex-direction: column;
 }
+/* chatting regist [E] */

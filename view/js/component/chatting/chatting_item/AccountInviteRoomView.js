@@ -75,6 +75,9 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				#account_invite_room_view_account_list > li .create_room_view_account_info{
 					width: 100%
 				}
+				#account_invite_room_view_account_list #account_invite_room_view_button{
+					
+				}
 			</style>
 			<form id="account_invite_room_view">
 				<div>
@@ -84,7 +87,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				<ul id="account_invite_room_view_account_list">
 				</ul>
 				<div>
-					<button type="button" id="account_invite_room_view_button">Invite</button>
+					<button type="button" class="pointer" id="account_invite_room_view_button">Invite</button>
 				</div>
 			</from>
 		`

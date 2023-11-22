@@ -34,8 +34,8 @@ export default class Video extends FreedomInterface {
             className: `${this.#defaultStyle.id}-button`,
             innerHTML: `
             <svg class="${this.#defaultStyle.id} css-gg-video-icon"
-            width="1rem"
-            height="1rem"
+            width="0.9rem"
+            height="0.9rem"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -197,6 +197,8 @@ export default class Video extends FreedomInterface {
         let videoContanier = Object.assign(document.createElement('div'),{
             className: `${Video.defaultStyle.id} video-contanier`
         });
+
+        this.video.dataset.video_name = this.dataset.name
 
         videoContanier.append(this.video);
         this.video.onload = () => {

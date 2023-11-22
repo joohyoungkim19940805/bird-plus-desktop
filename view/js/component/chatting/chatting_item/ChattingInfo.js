@@ -23,7 +23,7 @@ import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 import common from "../../../common";
 
 import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
-
+import { emoji, defaultEmoji, toneTypeMapper, groupKindList, subgroupKindList } from "../../../emoji"
 
 class ChattingInfoLine extends FreeWillEditor{
     static{
@@ -387,7 +387,7 @@ export default new class ChattingInfo{
             });
             li.__editor = content;
             this.#addMemory(li, id);
-            this.#addItemEvent(li);
+            this.#addItemEvent(li, descriptionWrap);
             if( ! prevItemPromise && this.#lastLiItem){
                 this.#processingTimeGrouping(li, this.#lastLiItem);
             }else{
@@ -398,15 +398,131 @@ export default new class ChattingInfo{
         })
     }
 
-    #addItemEvent(li){
+    #addItemEvent(li, descriptionWrap){
         new Promise(resolve=> {
-            let likeAndScrapWrapper;
-            li.onmouseenter = (event) => {
+            let hoverButtonWrapper = Object.assign(document.createElement('div'),{
+                className: 'chatting_hover_wrapper',
+            });
+            let recommendEmojiContainer = Object.assign(document.createElement('div'),{
+                className: 'chatting_hover_recommend_emoji_container'
+            })
+            let buttonContainer = Object.assign(document.createElement('div'), {
+                className: 'chatting_hover_button_container'
+            })
+            let anotherEmoji = Object.assign(document.createElement('button'), {
+                className: 'chatting_hover_another_emoji',
+                innerHTML: `
+                <svg class="css-gg-smile" style="zoom:125%;"
+                width="1rem"
+                height="1rem"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M16 13H14C14 14.1046 13.1046 15 12 15C10.8954 15 10 14.1046 10 13H8C8 15.2091 9.79086 17 12 17C14.2091 17 16 15.2091 16 13Z"
+                        fill="currentColor"
+                    />
+                    <path
+                        d="M10 10C10 10.5523 9.55228 11 9 11C8.44772 11 8 10.5523 8 10C8 9.44771 8.44772 9 9 9C9.55228 9 10 9.44771 10 10Z"
+                        fill="currentColor"
+                    />
+                    <path
+                        d="M15 11C15.5523 11 16 10.5523 16 10C16 9.44771 15.5523 9 15 9C14.4477 9 14 9.44771 14 10C14 10.5523 14.4477 11 15 11Z"
+                        fill="currentColor"
+                    />
+                    <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                        fill="currentColor"
+                    />
+                </svg>
+                <svg class="css-gg-add" style="zoom:125%;"
+                width="0.5rem"
+                height="0.5rem"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                >
+                <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z"
+                    fill="currentColor"
+                />
+                <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7V11H7C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11V17C11 17.5523 11.4477 18 12 18C12.5523 18 13 17.5523 13 17V13H17C17.5523 13 18 12.5523 18 12C18 11.4477 17.5523 11 17 11H13V7Z"
+                    fill="currentColor"
+                />
+                </svg>
+                `
+            })
+            let updateButton = Object.assign(document.createElement('button'), {
+                className: 'css-gg-pen',
+                innerHTML: `
+                <svg style="zoom:125%;"
+				width="1rem"
+				height="1rem"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg">
+					<path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M21.2635 2.29289C20.873 1.90237 20.2398 1.90237 19.8493 2.29289L18.9769 3.16525C17.8618 2.63254 16.4857 2.82801 15.5621 3.75165L4.95549 14.3582L10.6123 20.0151L21.2189 9.4085C22.1426 8.48486 22.338 7.1088 21.8053 5.99367L22.6777 5.12132C23.0682 4.7308 23.0682 4.09763 22.6777 3.70711L21.2635 2.29289ZM16.9955 10.8035L10.6123 17.1867L7.78392 14.3582L14.1671 7.9751L16.9955 10.8035ZM18.8138 8.98525L19.8047 7.99429C20.1953 7.60376 20.1953 6.9706 19.8047 6.58007L18.3905 5.16586C18 4.77534 17.3668 4.77534 16.9763 5.16586L15.9853 6.15683L18.8138 8.98525Z"
+					fill="currentColor"
+					/>
+					<path
+					d="M2 22.9502L4.12171 15.1717L9.77817 20.8289L2 22.9502Z"
+					fill="currentColor"
+					/>
+				</svg>
+                `
+            })
+            let deleteButton = Object.assign(document.createElement('button'),{
+                className : `css-gg-trash`,
+                innerHTML: `
+                <svg style="zoom:125%"
+                width="1rem"
+                height="1rem"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+                        fill="currentColor"
+                    />
+                    <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+                    <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+                </svg>
+                `
+            })
+            recommendEmojiContainer.append(...defaultEmoji.map(e=>{
+                let button = document.createElement('button');
+                button.textContent = e.emoji;
+                return button;
+            }))
+            hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
+            buttonContainer.append(anotherEmoji, updateButton, deleteButton)
+            
+            descriptionWrap.onmouseenter = (event) => {
+                descriptionWrap.append(hoverButtonWrapper);
             }
-            li.onmouseleave = (event) => {
+            descriptionWrap.onmouseleave = (event) => {
+                hoverButtonWrapper.remove();
             }
             resolve();
         })
+    }
+
+    #addEmojiEvent(){
+
     }
 
     #addMemory(data, id){

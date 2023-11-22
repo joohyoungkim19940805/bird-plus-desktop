@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	let target = document.querySelector('img') || document.querySelector('video');
 	if(target.tagName == 'VIDEO'){
 		 target.loop = true;
+		 target.style.height = '100%';
+		 target.style.width = '100%';
 		 return;
 	}
 	target.style.zoom = '100%';

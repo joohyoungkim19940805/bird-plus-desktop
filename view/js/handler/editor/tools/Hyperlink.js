@@ -20,8 +20,8 @@ export default class Hyperlink extends FreedomInterface {
             className: `${this.#defaultStyle.id}-button`,
 			innerHTML: `
 				<svg class="${this.#defaultStyle.id} css-gg-link-icon"
-				width="1rem"
-				height="1rem"
+				width="0.9rem"
+				height="0.9rem"
 				viewBox="0 0 24 24"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -104,6 +104,7 @@ export default class Hyperlink extends FreedomInterface {
 				padding-left: 1em;
 				border-left: 5px solid #d7d7db;
 				width: 95%;
+				float: left;
 			}
 			.${this.toolHandler.defaultClass} > [data-hyperlink_child="${Hyperlink.toolHandler.defaultClass}-child"] > *{
 				font-size: 14px;

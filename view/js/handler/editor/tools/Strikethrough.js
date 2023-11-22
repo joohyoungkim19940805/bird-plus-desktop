@@ -52,6 +52,7 @@ export default class Strikethrough extends FreedomInterface {
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
 			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
 				text-decoration: 1px line-through;
 				text-decoration-color: #404040;
 			}

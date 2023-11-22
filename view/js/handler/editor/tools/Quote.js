@@ -32,6 +32,9 @@ export default class Quote extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
+			}
 			.${this.toolHandler.defaultClass} {
 				display: block;
 				padding-left: 1em;

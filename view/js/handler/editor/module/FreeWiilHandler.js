@@ -20,7 +20,7 @@ export default class FreeWiilHandler extends HTMLElement{
                 overflow: auto;
                 overflow-wrap: anywhere;
                 outline: none;
-                background-color: white;
+                background-color: inherit;
                 padding-top: 0.6%;
                 padding-left: 0.5%;
                 padding-right: 0.8%;
@@ -110,7 +110,7 @@ export default class FreeWiilHandler extends HTMLElement{
 
     /**
      * 
-     * @returns {Line}
+     * @returns {HTMLDivElement}
      */
     createLine(){
         let line = new Line();

@@ -32,6 +32,9 @@ export default class NumericPoint extends FreedomInterface {
     //list-style-type: disc;
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
+			}
 			.${this.toolHandler.defaultClass} {
 				display: block;
 				margin-inline: 1.3em;

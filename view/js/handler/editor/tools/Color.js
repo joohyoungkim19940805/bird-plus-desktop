@@ -50,7 +50,11 @@ export default class Color extends FreedomInterface {
 	}
 
 	static createDefaultStyle(){
-		this.#defaultStyle.textContent = ``
+		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
+			}
+		`
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
             document.head.append(this.#defaultStyle);

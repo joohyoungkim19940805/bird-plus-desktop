@@ -33,7 +33,7 @@ export default class BulletPoint extends FreedomInterface {
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
 			.${this.#defaultStyle.id}-button{
-				font-size: 14px;
+				font-size: 0.8rem;
 			}
 
 			.${this.toolHandler.defaultClass} {

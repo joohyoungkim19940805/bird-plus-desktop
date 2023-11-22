@@ -31,6 +31,7 @@ export default class Italic extends FreedomInterface {
 		this.#defaultStyle.textContent = `
 			.${this.#defaultStyle.id}-button{
 				font-style: italic;
+				font-size: 0.8rem;
 			}
 
 			.${this.toolHandler.defaultClass} {

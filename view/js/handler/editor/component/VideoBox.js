@@ -97,7 +97,6 @@ export default class VideoBox {
             if(this.#videoBox.hasAttribute('data-is_shft')){
                 return;
             }
-            event.preventDefault();
             let {key} = event;
             if(key === 'Shift'){
                 this.#videoBox.dataset.is_shft = '';
@@ -156,7 +155,6 @@ export default class VideoBox {
             if( ! this.video || ! this.resizeRememberTarget || ! this.video.parentElement.hasAttribute('data-is_resize_click') || event.composedPath()[0] == width || ! this.video.parentElement.matches(':hover')){// || this.video.getRootNode()?.activeElement != width){
                 return;
             }
-            
             if(width.hasAttribute('data-is_ctrl')){
                 width.value = Number(width.value) + (event.deltaY * -1)
             }else{

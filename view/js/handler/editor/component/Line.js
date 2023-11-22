@@ -165,14 +165,14 @@ export default class Line {
 	 * @returns 
 	 */
 	async #applyOnlyOneTool(tool, range){
-		return await new Promise(resolve=>{
+		return new Promise(resolve=>{
 			range.surroundContents(tool);
 			resolve(tool)
 		});
 	}
 	
 	async #applyOnlyOneLine(range, tool, TargetTool){
-		return await new Promise(resolve=>{
+		return new Promise(resolve=>{
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 
 			let selection = window.getSelection();
@@ -245,7 +245,7 @@ export default class Line {
 		});
 	}
 	async #applyMultipleLineAllBlock(range, tool ,TargetTool, endLine){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			let fragment = range.extractContents();
 			tool.append(...fragment.childNodes);
 			this.lineElement.append(tool);
@@ -253,7 +253,7 @@ export default class Line {
 		})
 	}
 	async #applyMultipleLineAll(range, tool, TargetTool, endLine){
-		return await new Promise(resolve=>{
+		return new Promise(resolve=>{
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 			
 			range.setStart(startContainer, startOffset);
@@ -373,7 +373,7 @@ export default class Line {
 	 * @returns 
 	 */
 	async applyTool(TargetTool, range, endLine){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			let tool = new TargetTool();
 			let {startOffset, endOffset, startContainer,endContainer} = range;
 
@@ -409,7 +409,7 @@ export default class Line {
 	}
 
 	async #cancelOnlyOneLine(range, tool, TargetTool){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			// this로 childern 돌려서 TargetTool 타입 체크랑 nodeType로 바깥으로 빼는 로직 만들기
 			let {startOffset, endOffset, startContainer, endContainer} = range;
 			this.lineElement.childNodes.forEach(e=>{
@@ -419,7 +419,7 @@ export default class Line {
 		});
 	}
 	async #cancelOnlyOneTool(range, tool, TargetTool){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;
 			/*
 			let textNode = document.createTextNode(startContainer.textContent.substring(startOffset, endOffset));
@@ -540,7 +540,7 @@ export default class Line {
 	}
 
 	async #cancelMultipleLineAll(range, tool, TargetTool, endLine){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			let {startOffset, endOffset, startContainer, endContainer} = range;
 			
 			let endTool = Line.getTool(endContainer, TargetTool);
@@ -646,7 +646,7 @@ export default class Line {
 	}
 
 	async cancelTool(TargetTool, selection, endLine){
-		return await new Promise(resolve => {
+		return new Promise(resolve => {
 			let {isCollapsed, anchorNode, anchorOffset} = selection;
 			let range = selection.getRangeAt(0);
 			let {startOffset, endOffset, startContainer, endContainer, commonAncestorContainer} = range;

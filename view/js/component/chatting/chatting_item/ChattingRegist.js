@@ -74,7 +74,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 		this.#elementMap.chattingRegistContainer.append(this);
 		
-		super.placeholder = '텍스트를 입력해주세요.'
+		super.placeholder = 'Enter Your Text Here'
 		super.spellcheck = true
 		//super.dataset.visibility_not = ''
 		this.#addEvent();
@@ -106,6 +106,16 @@ export default new class ChattingRegist extends FreeWillEditor{
 		this.onkeydown = (event) => {
 			let {altKey, ctrlKey, shiftKey, key} = event;
 			if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+				event.preventDefault();
+				let LineBreakMode;
+				if(altKey){
+					LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST
+				}else if(ctrlKey){
+					LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_LAST
+				}else{
+					LineBreakMode = FreeWillEditor.LineBreakMode.NO_CHANGE
+				}
+				this.lineBreak(LineBreakMode);
 				return;
 			}else if(key == 'Enter' && this.innerText.replaceAll('\n', '') != ''){
 				event.preventDefault();

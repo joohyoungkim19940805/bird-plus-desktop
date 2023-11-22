@@ -29,6 +29,9 @@ export default class Strong extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+			.${this.#defaultStyle.id}-button{
+				font-size: 0.8rem;
+			}
 			.${this.toolHandler.defaultClass} {
 				font-weight: bold;
 			}

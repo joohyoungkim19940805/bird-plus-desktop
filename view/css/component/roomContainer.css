@@ -52,11 +52,9 @@
 #room_wrapper .room_container .room_sticky .custom_details_summary .add_button_wrapper .add_button{
     display: flex;
     align-items: center;
-}
-#room_wrapper .room_container .room_sticky .custom_details_summary .add_button_wrapper .add_button{
     background: none;
     border: none;
-    font-size: xx-small;
+    font-size: 0.5rem;
     height: 100%;
 }
 #room_wrapper .room_container .room_sticky .custom_details_summary .add_button:hover{

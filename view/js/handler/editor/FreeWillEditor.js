@@ -24,6 +24,19 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	static componentsMap = {};
 	static toolsMap = {};
 
+	static LineBreakMode = class LineBreakMode{
+		static #LineBreakModeEnum = class LineBreakModeEnum{
+			value;
+			constructor(value){
+				this.value = value;
+				Object.freeze(this);
+			}
+		}
+		static NO_CHANGE = new this.#LineBreakModeEnum(1)
+		static NEXT_LINE_FIRST = new this.#LineBreakModeEnum(2);
+		static NEXT_LINE_LAST = new this.#LineBreakModeEnum(3);
+	}
+
 	#isLoaded = false;
 	components;
 	tools;
@@ -338,6 +351,34 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 	}
 	
+	async lineBreak(LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST){
+		let selection = window.getSelection();
+		return super.getLineRange(selection)
+		.then(({startLine, endLine}) => { 
+			if( ! startLine.line){
+				new Line(startLine);
+			}
+			if( ! endLine.line){
+				new Line(endLine);
+			}
+			let range = selection.getRangeAt(0);
+			let {startOffset, endOffset, startContainer,endContainer} = range;
+			let lastItem = startLine.lastChild
+			let lastItemEndOffset = lastItem.nodeType == Node.TEXT_NODE ? lastItem.length : lastItem.childNodes.length;
+			range.setStart(startContainer, startOffset);
+			range.setEnd(lastItem, lastItemEndOffset);
+			let lineElement = super.createLine();
+			lineElement.append(range.extractContents());
+			startLine.after(lineElement);
+			if(LineBreakMode == FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST){
+				window.getSelection().setPosition(lineElement, 0);
+			}else if(LineBreakMode == FreeWillEditor.LineBreakMode.NEXT_LINE_LAST){
+				lineElement.line.lookAtMe();
+			}
+
+		})
+	}
+
 	async getLowDoseJSON(targetElement = this, {beforeCallback = (node) => {}, afterCallback = (json)=> {}} = {}){
 		return Promise.all([...targetElement.childNodes]
 			.map(async (node, index)=>{

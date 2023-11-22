@@ -86,6 +86,8 @@ label{
 
 input, button{
 	outline: none;
+    background: none;
+    border: none;
 }
 
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
@@ -248,126 +250,6 @@ kbd {
     white-space: nowrap;
 }
 
-.css-gg-list{
-    box-sizing: border-box;
-    position: relative;
-    display: block;
-    transform: scale(var(--ggs,1));
-    width: 22px;
-    height: 20px;
-    border: 2px solid;
-    border-radius: 3px;
-    background: white;
-}
-.css-gg-list::after,
-.css-gg-list::before{
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: currentColor;
-    top: 3px;
-    left: 3px;
-    box-shadow:0 4px 0, 0 8px 0;
-}
-.css-gg-list::after{
-    border-radius: 3px;
-    width: 8px;
-    left: 7px;
-}
-
-.css-gg-folder-add {
-    background:linear-gradient(to left,currentColor 10px,transparent 0)no-repeat center center/2px 6px;
-    box-sizing: border-box;
-    position: relative;
-    display: block;
-    transform: scale(var(--ggs,1));
-    width: 22px;
-    height: 16px;
-    border: 2px solid;
-    border-radius: 3px;
-}
-.css-gg-folder-add::after,
-.css-gg-folder-add::before {
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-}
-.css-gg-folder-add::before {
-    background: currentColor;
-    left: 6px;
-    width: 6px;
-    height: 2px;
-    top: 5px;
-}
-.css-gg-folder-add::after {
-    width: 10px;
-    height: 4px;
-    border: 2px solid;
-    border-bottom: 0;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    top: -5px;
-}
-
-.css-gg-add {
-    box-sizing: border-box;
-    position: relative;
-    display: block;
-    width: 22px;
-    height: 22px;
-    border: 2px solid;
-    transform: scale(var(--ggs,1));
-    border-radius: 22px;
-    background: white;
-}
-.css-gg-add::after,
-.css-gg-add::before {
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-    width: 10px;
-    height: 2px;
-    background: currentColor;
-    border-radius: 5px;
-    top: 8px;
-    left: 4px;
-}
-.css-gg-add::after {
-    width: 2px;
-    height: 10px;
-    top: 4px;
-    left: 8px;
-}
-.css-gg-remove {
-    box-sizing: border-box;
-    position: relative;
-    display: block;
-    transform: scale(var(--ggs,1));
-    width: 22px;
-    height: 22px;
-    border: 2px solid;
-    border-radius: 22px;
-    background: none;
-}
-.css-gg-remove::before {
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-    width: 10px;
-    height: 2px;
-    background: currentColor;
-    border-radius: 5px;
-    top: 8px;
-    left: 4px;
-}
 .marker::before{
     content: '▶'
 }
@@ -389,58 +271,6 @@ kbd {
 [data-direction] > * > *{
     height: 100%;
     width: 100%;
-}
-
-.css-gg-pen {
-    box-sizing: border-box;
-    position: absolute;
-    display: block;
-    transform: rotate(-45deg) scale(var(--ggs,1));
-    width: 11px;
-    height: 2px;
-    border-right: 2px solid transparent;
-    box-shadow: 0 0 0 2px, inset -2px 0 0;
-    border-top-right-radius: 1px;
-    border-bottom-right-radius: 1px;
-    background: white;
-    top: 40%;
-    left: 40%;
-    right: 50%;
-    bottom: 50%;
-}
-.css-gg-pen::after,
-.css-gg-pen::before {
-    content: "";
-    display: block;
-    box-sizing: border-box;
-    position: absolute
-}
-.css-gg-pen::before {
-    background: currentColor;
-    border-left: 1px;
-    right: -7px;
-    width: 3px;
-    height: 2px;
-    border-radius: 1px;
-    top: 0px;
-}
-.css-gg-pen::after {
-    width: 0;
-    height: 0;
-    border-top: 3px solid transparent;
-    border-bottom: 3px solid transparent;
-    border-right: 6px dotted;
-    left: -8px;
-    top: -2px;
-}
-
-.icon_button{
-    border: none;
-    background: none;
-    position: relative;
-}
-.icon_button::before{
-    content: "\00a0";
 }
 
 .css-gg-arrows-breake-v {
