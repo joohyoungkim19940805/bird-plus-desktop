@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			`
 		})
 	);
+	document.head.append(Object.assign(document.createElement('title'),{
+		textContent: 'Grease Lightning Chat'
+	}))
 	let target = document.querySelector('img') || document.querySelector('video');
 	if(target.tagName == 'VIDEO'){
 		 target.loop = true;

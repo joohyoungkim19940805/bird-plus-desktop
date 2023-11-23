@@ -23,7 +23,9 @@ import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 import common from "../../../common";
 
 import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
-import { emoji, defaultEmoji, toneTypeMapper, groupKindList, subgroupKindList } from "../../../emoji"
+import { emoticon, defaultEmoji, toneTypeMapper, groupKind, subgroupKind } from "../../../handler/editor/module/emoticon"
+
+import EmoticonBox from "../../../handler/editor/component/EmoticonBox"
 
 class ChattingInfoLine extends FreeWillEditor{
     static{
@@ -168,6 +170,11 @@ export default new class ChattingInfo{
     #day = this.#hour * 24;
 
     #lastLiItem;
+
+    #emoticonBox = new EmoticonBox();
+
+    #lastEmoticonBoxTarget;
+
     /*
     this.timerElement.querySelector('.hour').textContent = `${Math.floor( ms / this.hour )}`.padStart(2,'0');
     this.timerElement.querySelector('.minute').textContent = `${Math.floor( ms % this.hour / this.minute )}`.padStart(2,'0');
@@ -175,7 +182,16 @@ export default new class ChattingInfo{
     this.timerElement.querySelector('.millisecond').textContent = `${ ms % this.second }`.padStart(2,'0').slice(0, 2);
     */
     constructor(){
-
+        this.#elementMap.chattingContentList.addEventListener("scroll", () => {
+			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
+				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
+			}
+		});
+        window.addEventListener('resize', (event) => {
+			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
+				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
+			}
+		})
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
@@ -362,6 +378,14 @@ export default new class ChattingInfo{
                             <div class="chatting_content_description_name">${fullName}</div>
                             <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                         </div>
+                        <ul class="chatting_reaction_list">
+                            <li class="chatting_reaction_item">
+                                <button class="chatting_reaction_button">
+                                    <span class="chatting_reaction_emoticon">😍</span>
+                                    <span class="chatting_reaction_count">125</span>
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 `
             });
@@ -370,7 +394,7 @@ export default new class ChattingInfo{
             content.parseLowDoseJSON(chatting).then((e)=>{
                 resolve(li)
             });
-            descriptionWrap.querySelector('.chatting_container').append(content);
+            descriptionWrap.querySelector('.chatting_container .chatting_content_description_name_wrapper').after(content);
             delete data.chatting
             common.jsonToSaveElementDataset(data, li);
 
@@ -404,13 +428,13 @@ export default new class ChattingInfo{
                 className: 'chatting_hover_wrapper',
             });
             let recommendEmojiContainer = Object.assign(document.createElement('div'),{
-                className: 'chatting_hover_recommend_emoji_container'
+                className: 'chatting_hover_recommend_emoticon_container'
             })
             let buttonContainer = Object.assign(document.createElement('div'), {
                 className: 'chatting_hover_button_container'
             })
             let anotherEmoji = Object.assign(document.createElement('button'), {
-                className: 'chatting_hover_another_emoji',
+                className: 'chatting_hover_another_emoticon',
                 innerHTML: `
                 <svg class="css-gg-smile" style="zoom:125%;"
                 width="1rem"
@@ -458,7 +482,26 @@ export default new class ChattingInfo{
                     fill="currentColor"
                 />
                 </svg>
-                `
+                `,
+                onclick : (event) => {
+                    anotherEmoji.toggleAttribute('open');
+                    if(anotherEmoji.hasAttribute('open')){
+                        if(this.#lastEmoticonBoxTarget != anotherEmoji){
+                            this.#lastEmoticonBoxTarget?.toggleAttribute('open');
+                            this.#lastEmoticonBoxTarget = anotherEmoji;
+                        }
+                        this.#emoticonBox.open(hoverButtonWrapper);
+                        //this.#emoticonBox.emoticonBox.style.position = 'absolute';
+                        //this.#emoticonBox.emoticonBox.style.bottom = '100%';
+                        common.processingElementPosition(this.#emoticonBox.emoticonBox, anotherEmoji)
+                        this.#emoticonBox.applyCallback = (emoticonObject) => {
+                            //emoticonObject
+                        }
+                    }else{
+                        this.#emoticonBox.close();
+                        this.#lastEmoticonBoxTarget = undefined;
+                    }
+                }
             })
             let updateButton = Object.assign(document.createElement('button'), {
                 className: 'css-gg-pen',
@@ -505,7 +548,7 @@ export default new class ChattingInfo{
             })
             recommendEmojiContainer.append(...defaultEmoji.map(e=>{
                 let button = document.createElement('button');
-                button.textContent = e.emoji;
+                button.textContent = e.emoticon;
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
@@ -514,15 +557,31 @@ export default new class ChattingInfo{
             descriptionWrap.onmouseenter = (event) => {
                 descriptionWrap.append(hoverButtonWrapper);
             }
+            let emoticonBoxSearch = this.#emoticonBox.emoticonBox.querySelector('#emoticon-box-search');
             descriptionWrap.onmouseleave = (event) => {
+                if(document.activeElement == emoticonBoxSearch){
+                    return;
+                }
                 hoverButtonWrapper.remove();
             }
             resolve();
         })
     }
 
-    #addEmojiEvent(){
-
+    #createReactionEmoticon(emoticonObject){
+        let li = Object.assign(document.createElement('li'),{
+            className: 'chatting_reaction_item'
+        });
+        let button = Object.assign(document.createElement('button'),{
+            className: 'chatting_reaction_button',
+            innerHTML: `
+                <span class="chatting_reaction_emoticon">${emoticonObject.emoticon}</span>
+                <span class="chatting_reaction_count">${emoticonObject.count}</span>
+            `,
+            onclick: (event) => ()=>{} 
+        })
+        li.append(button);
+        return li;
     }
 
     #addMemory(data, id){

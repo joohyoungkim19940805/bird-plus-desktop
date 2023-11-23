@@ -64,9 +64,7 @@ export default class Hyperlink extends FreedomInterface {
 		});
         window.addEventListener('resize', (event) => {
             if(this.hyperlinkBox.hyperlinkBox.isConnected){
-                this.hyperlinkBox.open().then(()=>{
-				    this.toolHandler.processingElementPosition(this.hyperlinkBox.hyperlinkBox);
-                });
+				this.toolHandler.processingElementPosition(this.hyperlinkBox.hyperlinkBox);
             }
 		})
 

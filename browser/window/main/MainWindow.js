@@ -55,11 +55,11 @@ class MainWindow extends BrowserWindow{
 			},
 			title: 'Grease Lightning Chat'
 		});
-		super.webContents.openDevTools();
+
 		//super.setTitleBarOverlay
 		
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
-			//console.log(e)
+			super.webContents.openDevTools();
 			this.#isOpening = true;
 			
 			autoUpdater.checkForUpdates().then(result=>{
@@ -80,7 +80,9 @@ class MainWindow extends BrowserWindow{
 		});
 
 		super.on('close', event => {
-			event.sender.hide();
+			console.log(event);
+			console.log(event.sender);
+			this.hide()
 			event.preventDefault(); // prevent quit process
 		})
 

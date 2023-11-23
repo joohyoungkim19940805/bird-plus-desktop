@@ -1,5 +1,19 @@
 
 export default class ToolHandler{
+
+	static processingElementPosition(element, target){
+		let {x, y, height} = target.getBoundingClientRect();
+		
+		let elementHeightPx = element.clientHeight;
+		let elementTop = (y - elementHeightPx)
+		if(elementTop > 0){
+			element.style.top = elementTop + 'px';
+		}else{
+			element.style.top = y + height + 'px';
+		}
+		element.style.left = x + 'px';
+	}
+
 	#extendsElement;
 	#defaultClass;
 	#isInline = true;
@@ -39,16 +53,7 @@ export default class ToolHandler{
 	}
 
 	processingElementPosition(element, target = this.#toolButton){
-		let {x, y, height} = target.getBoundingClientRect();
-		
-		let elementHeightPx = element.clientHeight;
-		let elementTop = (y - elementHeightPx)
-		if(elementTop > 0){
-			element.style.top = elementTop + 'px';
-		}else{
-			element.style.top = y + height + 'px';
-		}
-		element.style.left = x + 'px';
+		ToolHandler.processingElementPosition(element, target);
 	}
 
 	isLastTool(tool){

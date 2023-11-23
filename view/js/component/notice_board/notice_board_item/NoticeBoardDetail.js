@@ -447,7 +447,7 @@ export default new class NoticeBoardDetail{
             }
         }).then(jsonList => {
             param.content = JSON.stringify(jsonList);
-            console.log(param);
+
             Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {}).forEach(e=>{
                 e.dataset.empty_line_count = this.#mathEmptyLineCount(e, 'notice-board-line');
             })

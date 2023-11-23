@@ -11,6 +11,10 @@ body, html{
 	flex-direction: column;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 body::-webkit-scrollbar, html::-webkit-scrollbar{
 	display: none;

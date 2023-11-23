@@ -24,6 +24,7 @@ const fs = require('fs');
 
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
+autoUpdater.logger = log
 
 if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
@@ -63,6 +64,7 @@ app.whenReady().then(()=>{
 	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
 		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+		//autoUpdater.checkForUpdatesAndNotify();
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
 		// window 및 linux인 경우
 		const gotTheLock = app.requestSingleInstanceLock()

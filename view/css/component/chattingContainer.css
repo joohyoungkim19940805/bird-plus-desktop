@@ -109,6 +109,10 @@
 /* chatting info(body) [S]*/
 #chatting_info_wrapper{
     background-color: white;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 #chatting_info_wrapper .chatting_info_container{
     justify-content: flex-end;
@@ -173,7 +177,33 @@
     padding-top: 0;
     margin-top: 0;
 }
-
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list{
+    overflow-wrap: anywhere;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1%;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_item{
+    border-radius: 16px;
+    background-color: #e9e9e9;
+    display: flex;
+    align-items: center;
+    padding: 0.1vh 0vw 0.3vh 0vw;
+    margin-right: 0.2%;
+    margin-bottom: 0.3%;
+    transition: background-color 0.7s;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_item:hover{
+    background-color: #cbb7cd;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_button{
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_emoticon{
+    font-size: 0.7rem;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_count{
+    font-size: 0.6rem;
+}
     /* chatting info menu layer [S] */
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper{
         position: absolute;
@@ -181,34 +211,39 @@
         top: -1.6rem;
         left: 2.2rem;
         box-shadow: 0px 0px 13px #999;
-        border-radius: 6%;
+        border-radius: 11px;
         background-color: white;
         z-index: 9999;
         align-items: center;
         justify-content: space-between;
+        padding: 0.1rem;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container{
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoticon_container{
         border-right: ridge 3px #a095df;
         padding-right: 1vw;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container button{
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoticon_container button{
         font-size: 1rem;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container button:hover{
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoticon_container button:hover{
         zoom:125%;
     }
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container button:hover{
         background-color: #c7c7c7;
+        border-radius: 40%;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoji_container,
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container{
+        padding-left:1vw;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoticon_container,
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container{
         display: flex;
         align-items: center;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoji{
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoticon{
         position: relative;
     }
-    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoji .css-gg-add{
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoticon .css-gg-add{
         position: absolute;
         bottom: 0;
         right: 0;

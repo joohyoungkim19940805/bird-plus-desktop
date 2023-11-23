@@ -133,7 +133,7 @@ export default class HyperlinkBox{
 	createStyle(){
 		this.#style.textContent = `
 			.hyperlink-box-wrap{
-				background: #000000bf;
+				background: #343434;
 				position: fixed;
 				padding: 0.9%;
 				width: ${this.#hyperlinkBoxVw}vw;
@@ -152,6 +152,7 @@ export default class HyperlinkBox{
 				justify-content: space-around;
 				align-items: center;
 				justify-items: center;
+				z-index: 9999;
 			}
 			.hyperlink-box-wrap .url-input-text-wrapper{
 				width: inherit;
@@ -160,6 +161,8 @@ export default class HyperlinkBox{
 				width: -webkit-fill-available;
 				background-color: #ffffff00;
 				color: #b9b9b9;
+				border-bottom: solid 1px #4c4c4c;
+				border-left: solid 1px #4c4c4c;
 			}
 			.hyperlink-box-wrap .button-wrap{
 				display: flex;
