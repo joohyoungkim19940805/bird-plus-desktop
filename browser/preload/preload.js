@@ -159,6 +159,10 @@ contextBridge.exposeInMainWorld('myAPI', {
 	s3: {
 		generatePutObjectPresignedUrl : (param) => ipcRenderer.invoke('generatePutObjectPresignedUrl', param),
 		generateGetObjectPresignedUrl : (param) => ipcRenderer.invoke('generateGetObjectPresignedUrl', param),
+	},
+	emoticon: {
+		createEmotionReaction : (param) => ipcRenderer.invoke('createEmotionReaction', param),
+		getIsReaction : (param) => ipcRenderer.invoke('getIsReaction', param)
 	}
 
 })

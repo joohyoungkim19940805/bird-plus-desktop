@@ -15,7 +15,7 @@ export default new class ChattingHandler{
 			origin: "http://localhost:8079"
 			type: "message"
 			*/
-
+			
 			Object.values(this.#addChattingEventListener).forEach(async callBack => {
                 new Promise(res => {
                     callBack(content);

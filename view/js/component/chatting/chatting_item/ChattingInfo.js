@@ -307,7 +307,30 @@ export default new class ChattingInfo{
             },
             runTheFirst: false
         }
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingReactionAccept', event => {
+            let {content} = event
+            
+            let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+            let targetLi = memory.find(e=>e[content.chattingId])?.[content.chattingId];
+            if( ! targetLi){
+                return;
+            }
 
+            if(content.emoticonType == 'CODE'){
+                let ul = targetLi.querySelector('.chatting_reaction_list');
+                let duplicationLi = ul.querySelector(`[data-emoticon="${content.emoticon}"]`);
+                if(duplicationLi && content.count == 0){
+                    duplicationLi.remove();
+                    return;
+                }else if(duplicationLi){
+                    duplicationLi.dataset.count = content.count;
+                    duplicationLi.querySelector('.chatting_reaction_count').textContent = content.count;
+                }else{
+                    let emoticonItem = this.#createReactionEmoticon(content);
+                    ul.append(emoticonItem);
+                }
+            }
+        })
     }
 
     callData(page, size, workspaceId, roomId, chatting){
@@ -379,12 +402,6 @@ export default new class ChattingInfo{
                             <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                         </div>
                         <ul class="chatting_reaction_list">
-                            <li class="chatting_reaction_item">
-                                <button class="chatting_reaction_button">
-                                    <span class="chatting_reaction_emoticon">😍</span>
-                                    <span class="chatting_reaction_count">125</span>
-                                </button>
-                            </li>
                         </ul>
                     </div>
                 `
@@ -396,19 +413,18 @@ export default new class ChattingInfo{
             });
             descriptionWrap.querySelector('.chatting_container .chatting_content_description_name_wrapper').after(content);
             delete data.chatting
+            
+            if(data.reaction && data.reaction != ''){
+                let reactionList = JSON.parse(data.reaction).map(e=> {
+                    e.chattingId = data.id;
+                    return this.#createReactionEmoticon(e)
+                })
+                descriptionWrap.querySelector('.chatting_reaction_list').replaceChildren(...reactionList);
+            }
+            delete data.reaction;
+
             common.jsonToSaveElementDataset(data, li);
 
-            Object.assign(li.dataset, {
-                id,
-                room_id: roomId,
-                workpsace_id: workspaceId,
-                create_at: createAt,
-                update_at: updateAt,
-                create_mils: createMils,
-                update_mils: updateMils,
-                full_name: fullName,
-                account_name: accountName
-            });
             li.__editor = content;
             this.#addMemory(li, id);
             this.#addItemEvent(li, descriptionWrap);
@@ -495,7 +511,22 @@ export default new class ChattingInfo{
                         //this.#emoticonBox.emoticonBox.style.bottom = '100%';
                         common.processingElementPosition(this.#emoticonBox.emoticonBox, anotherEmoji)
                         this.#emoticonBox.applyCallback = (emoticonObject) => {
-                            //emoticonObject
+                            this.#emoticonBox.close();
+                            anotherEmoji.removeAttribute('open');
+                            this.#lastEmoticonBoxTarget?.removeAttribute('open');
+                            window.myAPI.emoticon.createEmotionReaction({
+                                emoticon: emoticonObject.emoticon,
+                                code: emoticonObject.code.join(','),
+                                description: emoticonObject.description,
+                                emoticonType: 'CODE',
+                                groupTitle: emoticonObject.groupTitle,
+                                subgroupTitle: emoticonObject.subgroupTitle,
+                                chattingId: li.dataset.id,
+                                roomId: roomHandler.roomId,
+                                workspaceId: workspaceHandler.workspaceId
+                            }).then(result => {
+                                console.log(result);
+                            })
                         }
                     }else{
                         this.#emoticonBox.close();
@@ -549,6 +580,21 @@ export default new class ChattingInfo{
             recommendEmojiContainer.append(...defaultEmoji.map(e=>{
                 let button = document.createElement('button');
                 button.textContent = e.emoticon;
+                button.onclick = () => {
+                    window.myAPI.emoticon.createEmotionReaction({
+                        emoticon: e.emoticon,
+                        code: e.code.join(','),
+                        description: e.description,
+                        emoticonType: 'CODE',
+                        groupTitle: e.groupTitle,
+                        subgroupTitle: e.subgroupTitle,
+                        chattingId: li.dataset.id,
+                        roomId: roomHandler.roomId,
+                        workspaceId: workspaceHandler.workspaceId
+                    }).then(result => {
+                        console.log(result);
+                    })
+                }
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
@@ -562,32 +608,60 @@ export default new class ChattingInfo{
                 if(document.activeElement == emoticonBoxSearch){
                     return;
                 }
-                hoverButtonWrapper.remove();
+                //hoverButtonWrapper.remove();
             }
             resolve();
         })
     }
 
-    #createReactionEmoticon(emoticonObject){
+    #createReactionEmoticon(emoticonData){
+        let targetEmoticonObject = emoticon[emoticonData.groupTitle][emoticonData.subgroupTitle].find(e=>e.emoticon == emoticonData.emoticon);
         let li = Object.assign(document.createElement('li'),{
             className: 'chatting_reaction_item'
         });
+        common.jsonToSaveElementDataset(emoticonData, li);
         let button = Object.assign(document.createElement('button'),{
             className: 'chatting_reaction_button',
+            type: 'button',
             innerHTML: `
-                <span class="chatting_reaction_emoticon">${emoticonObject.emoticon}</span>
-                <span class="chatting_reaction_count">${emoticonObject.count}</span>
+                <span class="chatting_reaction_emoticon">${emoticonData.emoticon}</span>
+                <span class="chatting_reaction_count">${emoticonData.reactionList.length}</span>
             `,
-            onclick: (event) => ()=>{} 
+            onclick: (event) => {
+                console.log({
+                    emoticon: targetEmoticonObject.emoticon,
+                    code: targetEmoticonObject.code.join(','),
+                    description: targetEmoticonObject.description,
+                    emoticonType: 'CODE',
+                    groupTitle: targetEmoticonObject.groupTitle,
+                    subgroupTitle: targetEmoticonObject.subgroupTitle,
+                    chattingId: emoticonData.chattingId,
+                    roomId: roomHandler.roomId,
+                    workspaceId: workspaceHandler.workspaceId
+                })
+                window.myAPI.emoticon.createEmotionReaction({
+                    emoticon: targetEmoticonObject.emoticon,
+                    code: targetEmoticonObject.code.join(','),
+                    description: targetEmoticonObject.description,
+                    emoticonType: 'CODE',
+                    groupTitle: targetEmoticonObject.groupTitle,
+                    subgroupTitle: targetEmoticonObject.subgroupTitle,
+                    chattingId: emoticonData.chattingId,
+                    roomId: roomHandler.roomId,
+                    workspaceId: workspaceHandler.workspaceId
+                }).then(result => {
+                    console.log(result);
+                })
+            }
         })
         li.append(button);
         return li;
     }
 
     #addMemory(data, id){
-        if(data.dataset.room_id != roomHandler.roomId || data.dataset.workpsace_id != workspaceHandler.workspaceId){
+        /*if(data.dataset.room_id != roomHandler.roomId || data.dataset.workpsace_id != workspaceHandler.workspaceId){
             return;
-        }
+        }*/
 
         if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
             this.#memory[workspaceHandler.workspaceId] = {};

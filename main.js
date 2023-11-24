@@ -94,7 +94,7 @@ app.whenReady().then(()=>{
 		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
 		const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpccontroller.js'));
 		const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
-		
+		const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
 		ipcMain.handle('getProjectPath', (event) => {
 			return global.__project_path;
 		})

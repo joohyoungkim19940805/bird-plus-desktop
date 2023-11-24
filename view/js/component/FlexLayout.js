@@ -44,7 +44,7 @@ class FlexLayout extends HTMLElement {
 			}
 			${this.#componentName} .${this.#resizePanelClass}{
 				background-color: #b1b1b1;
-				z-index: 9999;
+				z-index: 10;
 				display: flex;
 				justify-content: center;
 				flex: 0 0 0.1%;

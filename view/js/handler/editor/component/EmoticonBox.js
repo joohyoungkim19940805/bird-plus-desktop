@@ -66,8 +66,11 @@ export default class EmoticonBox{
                     type: 'radio',
                     checked: isAll,
                     onchange : (event) => {
+                        let isPrevChecked = this.#elementMap.emoticonSubgroupList.querySelector(`[data-subgroup_name]:not([data-subgroup_name="All"]) .emoticon-subgroup-input:checked`)
+                        let subgroupTitle = isPrevChecked?.closest('[data-subgroup_name]').dataset.subgroup_name;
+                        let isSubgroup = emoticon[e][subgroupTitle]
                         this.createSubGroupList(isAll ? undefined : e);
-                        this.createEmoticonList(isAll ? undefined : e, undefined);
+                        this.createEmoticonList(isAll ? undefined : e, isSubgroup ? subgroupTitle : undefined);
                     }
                 });
                 let label = Object.assign(document.createElement('label'), {
@@ -89,6 +92,7 @@ export default class EmoticonBox{
             let liList = ['All', ...targetGroup].map((e, i)=>{
                 let isAll = e == 'All';
                 let isPrevChecked = this.#elementMap.emoticonSubgroupList.querySelector(`[data-subgroup_name="${e}"] .emoticon-subgroup-input:checked`) != undefined;
+                
                 let li = Object.assign(document.createElement('li'),{
                     className: 'emoticon-subgroup-item'
                 });
@@ -127,12 +131,13 @@ export default class EmoticonBox{
     createEmoticonList(groupTitle, subgroupTitle, toneType){
         return new Promise(resolve => {
             let targetGroup;
-            if( ! groupTitle && ! subgroupTitle){
-                targetGroup = Object.values(emoticon).flatMap(e=> Object.values(e).flatMap(ee=>ee));
+            console.log(groupTitle, subgroupTitle)
+            if( ! groupTitle && subgroupTitle){
+                targetGroup = Object.values(emoticon).find(e=> e[subgroupTitle])?.[subgroupTitle] || [];
             }else if( groupTitle && ! subgroupTitle){
                 targetGroup = Object.values(emoticon[groupTitle]).flatMap(e=>e)
-            }else if( ! groupTitle && subgroupTitle){
-                targetGroup = Object.values(emoticon).find(e=> e[subgroupTitle])?.[subgroupTitle] || [];
+            }else if( ! groupTitle && ! subgroupTitle){
+                targetGroup = Object.values(emoticon).flatMap(e=> Object.values(e).flatMap(ee=>ee));
             }else{
                 targetGroup = emoticon[groupTitle][subgroupTitle];
             }
@@ -199,8 +204,8 @@ export default class EmoticonBox{
                 background: #343434;
                 position: fixed;
                 padding: 0.9%;
-                width: 45vw;
-                height: 30vh;
+                width: 47vw;
+                height: 39vh;
                 color: white;
                 min-width: 100px;
                 overflow: hidden;
@@ -220,6 +225,17 @@ export default class EmoticonBox{
                 color: white;
                 font-size: 0.9rem;
             }
+            .emoticon-box-wrap .emoticon-box-search-container{
+                width: 100%;
+                height: auto;
+                align-self: center;
+                text-align: center;
+            }
+            .emoticon-box-wrap .emoticon-box-search-container #emoticon-box-search{
+                font-size: 0.8rem;
+                height: 100%;
+                width: 100%;
+            }
             .emoticon-box-wrap .emoticon-box-content-wrapper{
                 display: flex;
                 height: 50%;
@@ -229,6 +245,7 @@ export default class EmoticonBox{
             .emoticon-box-wrap .emoticon-box-content-wrapper .emoticon-box-subgroup-container,
             .emoticon-box-wrap .emoticon-box-emoticon-container{
                 overflow-y: auto;
+                width: 100%;
             }
             .emoticon-box-wrap .emoticon-box-content-wrapper .emoticon-box-group-container::-webkit-scrollbar,
             .emoticon-box-wrap .emoticon-box-content-wrapper .emoticon-box-subgroup-container::-webkit-scrollbar,
@@ -255,6 +272,16 @@ export default class EmoticonBox{
                 background: #34000075; 
             }
             
+            .emoticon-box-wrap .emoticon-box-group-list li,
+            .emoticon-box-wrap .emoticon-box-subgroup-list li{
+                margin-bottom: 0.2vh;
+            }
+            .emoticon-box-wrap .emoticon-box-group-list li input.emoticon-group-input,
+            .emoticon-box-wrap .emoticon-box-subgroup-list li input.emoticon-subgroup-input{
+                width: 0.6rem;
+                height: 0.6rem;
+                margin-top: 0;
+            }
             .emoticon-box-wrap .emoticon-box-emoticon-container{
                 height: inherit;
                 width: 100%;
@@ -266,7 +293,7 @@ export default class EmoticonBox{
                 flex-wrap: wrap;
             }
             .emoticon-box-wrap .emoticon-box-emoticon-container .emoticon-box-emoticon-list .emoticon-item{
-                padding: 3px;
+                padding: 0.2rem;
                 transition: background-color 0.7s;
             }
             .emoticon-box-wrap .emoticon-box-emoticon-container .emoticon-box-emoticon-list .emoticon-item:hover{
