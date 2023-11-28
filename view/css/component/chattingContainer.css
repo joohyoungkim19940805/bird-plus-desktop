@@ -108,7 +108,6 @@
 
 /* chatting info(body) [S]*/
 #chatting_info_wrapper{
-    background-color: white;
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
@@ -165,6 +164,10 @@
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper{
     display: flex;
+    justify-content: space-between;
+}
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_name_container{
+    display: flex;
     gap: 1vw; 
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_name{
@@ -199,24 +202,29 @@
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_button{
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_emoticon{
-    font-size: 0.7rem;
+    font-size: 0.8rem;
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list .chatting_reaction_count{
-    font-size: 0.6rem;
+    font-size: 0.7rem;
 }
     /* chatting info menu layer [S] */
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper{
         position: absolute;
         display: flex;
         top: -1.6rem;
-        left: 2.2rem;
+        /* left: 2.2rem; */
+        right: 0.3rem;
         box-shadow: 0px 0px 13px #999;
         border-radius: 11px;
         background-color: white;
-        z-index: 9999;
+        z-index: 20;
         align-items: center;
         justify-content: space-between;
         padding: 0.1rem;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_recommend_emoticon_container{
         border-right: ridge 3px #a095df;
@@ -242,6 +250,9 @@
     }
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoticon{
         position: relative;
+    }
+    #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container > button{
+        display: flex;
     }
     #chatting_info_wrapper .chatting_content_list > li .chatting_hover_wrapper .chatting_hover_button_container .chatting_hover_another_emoticon .css-gg-add{
         position: absolute;

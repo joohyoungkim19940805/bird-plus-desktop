@@ -23,7 +23,7 @@ import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 import common from "../../../common";
 
 import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
-import { emoticon, defaultEmoji, toneTypeMapper, groupKind, subgroupKind } from "../../../handler/editor/module/emoticon"
+import { emoticon, defaultEmoticon, toneTypeMapper, groupKind, subgroupKind } from "../../../handler/editor/module/emoticon"
 
 import EmoticonBox from "../../../handler/editor/component/EmoticonBox"
 
@@ -398,8 +398,28 @@ export default new class ChattingInfo{
                     </div>
                     <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">
-                            <div class="chatting_content_description_name">${fullName}</div>
-                            <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
+                            <div class="chatting_content_description_name_container">
+                                <div class="chatting_content_description_name">${fullName}</div>
+                                <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
+                            </div>
+                            <div class="chatting_content_description_option_container">
+                                <button class="chatting_hover_on_off_button">
+                                    <svg width="1rem" height="1rem" style="zoom:125%;color: #bfbfbf;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M14 6C14 7.10457 13.1046 8 12 8C10.8954 8 10 7.10457 10 6C10 4.89543 10.8954 4 12 4C13.1046 4 14 4.89543 14 6Z"
+                                            fill="currentColor"
+                                        />
+                                        <path
+                                            d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z"
+                                            fill="currentColor"
+                                        />
+                                        <path
+                                            d="M14 18C14 19.1046 13.1046 20 12 20C10.8954 20 10 19.1046 10 18C10 16.8954 10.8954 16 12 16C13.1046 16 14 16.8954 14 18Z"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <ul class="chatting_reaction_list">
                         </ul>
@@ -415,7 +435,8 @@ export default new class ChattingInfo{
             delete data.chatting
             
             if(data.reaction && data.reaction != ''){
-                let reactionList = JSON.parse(data.reaction).map(e=> {
+                // createAt - 단순 솔팅용으로, mils가 아니기 때문에 시차 이슈 있을 수 있음 (단순 솔트로서 이슈 없을 뿐)
+                let reactionList = JSON.parse(data.reaction).sort((a,b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime()).map(e=> {
                     e.chattingId = data.id;
                     return this.#createReactionEmoticon(e)
                 })
@@ -452,13 +473,7 @@ export default new class ChattingInfo{
             let anotherEmoji = Object.assign(document.createElement('button'), {
                 className: 'chatting_hover_another_emoticon',
                 innerHTML: `
-                <svg class="css-gg-smile" style="zoom:125%;"
-                width="1rem"
-                height="1rem"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="css-gg-smile" style="zoom:125%;" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M16 13H14C14 14.1046 13.1046 15 12 15C10.8954 15 10 14.1046 10 13H8C8 15.2091 9.79086 17 12 17C14.2091 17 16 15.2091 16 13Z"
                         fill="currentColor"
@@ -478,13 +493,7 @@ export default new class ChattingInfo{
                         fill="currentColor"
                     />
                 </svg>
-                <svg class="css-gg-add" style="zoom:125%;"
-                width="0.5rem"
-                height="0.5rem"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg class="css-gg-add" style="zoom:125%;" width="0.5rem" height="0.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
@@ -516,7 +525,6 @@ export default new class ChattingInfo{
                             this.#lastEmoticonBoxTarget?.removeAttribute('open');
                             window.myAPI.emoticon.createEmotionReaction({
                                 emoticon: emoticonObject.emoticon,
-                                code: emoticonObject.code.join(','),
                                 description: emoticonObject.description,
                                 emoticonType: 'CODE',
                                 groupTitle: emoticonObject.groupTitle,
@@ -537,12 +545,7 @@ export default new class ChattingInfo{
             let updateButton = Object.assign(document.createElement('button'), {
                 className: 'css-gg-pen',
                 innerHTML: `
-                <svg style="zoom:125%;"
-				width="1rem"
-				height="1rem"
-				viewBox="0 0 24 24"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg">
+                <svg style="zoom:125%;" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
@@ -559,13 +562,7 @@ export default new class ChattingInfo{
             let deleteButton = Object.assign(document.createElement('button'),{
                 className : `css-gg-trash`,
                 innerHTML: `
-                <svg style="zoom:125%"
-                width="1rem"
-                height="1rem"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg style="zoom:125%" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         fill-rule="evenodd"
                         clip-rule="evenodd"
@@ -577,13 +574,12 @@ export default new class ChattingInfo{
                 </svg>
                 `
             })
-            recommendEmojiContainer.append(...defaultEmoji.map(e=>{
+            recommendEmojiContainer.append(...defaultEmoticon.map(e=>{
                 let button = document.createElement('button');
                 button.textContent = e.emoticon;
                 button.onclick = () => {
                     window.myAPI.emoticon.createEmotionReaction({
                         emoticon: e.emoticon,
-                        code: e.code.join(','),
                         description: e.description,
                         emoticonType: 'CODE',
                         groupTitle: e.groupTitle,
@@ -598,7 +594,7 @@ export default new class ChattingInfo{
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
-            buttonContainer.append(anotherEmoji, updateButton, deleteButton)
+            buttonContainer.append(anotherEmoji, deleteButton, updateButton);
             
             descriptionWrap.onmouseenter = (event) => {
                 descriptionWrap.append(hoverButtonWrapper);
@@ -608,7 +604,14 @@ export default new class ChattingInfo{
                 if(document.activeElement == emoticonBoxSearch){
                     return;
                 }
-                //hoverButtonWrapper.remove();
+                hoverButtonWrapper.remove();
+            }
+            descriptionWrap.querySelector('.chatting_hover_on_off_button').onclick = () => {
+                if(hoverButtonWrapper.isConnected){
+                    hoverButtonWrapper.remove();
+                }else{
+                    descriptionWrap.append(hoverButtonWrapper);
+                }
             }
             resolve();
         })
@@ -628,20 +631,8 @@ export default new class ChattingInfo{
                 <span class="chatting_reaction_count">${emoticonData.reactionList.length}</span>
             `,
             onclick: (event) => {
-                console.log({
-                    emoticon: targetEmoticonObject.emoticon,
-                    code: targetEmoticonObject.code.join(','),
-                    description: targetEmoticonObject.description,
-                    emoticonType: 'CODE',
-                    groupTitle: targetEmoticonObject.groupTitle,
-                    subgroupTitle: targetEmoticonObject.subgroupTitle,
-                    chattingId: emoticonData.chattingId,
-                    roomId: roomHandler.roomId,
-                    workspaceId: workspaceHandler.workspaceId
-                })
                 window.myAPI.emoticon.createEmotionReaction({
                     emoticon: targetEmoticonObject.emoticon,
-                    code: targetEmoticonObject.code.join(','),
                     description: targetEmoticonObject.description,
                     emoticonType: 'CODE',
                     groupTitle: targetEmoticonObject.groupTitle,

@@ -162,7 +162,7 @@ class RoomIpcController {
 	updateRoomInAccoutOrder(event, param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.post(`${__serverApi}/api/room/update/room-in-account-order`, JSON.stringify(param), {
+				return axios.post(`${__serverApi}/api/room/update/order`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}

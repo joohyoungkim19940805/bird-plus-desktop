@@ -11,6 +11,7 @@ module.exports = {
 	entry: {
 		openingRenderer: "./view/js/renderer/openingRenderer.js",
 		workspacePageRenderer: "./view/js/renderer/workspacePageRenderer.js",
+		workspacePageRenderer2: "./view/js/renderer/workspacePageRenderer2.js",
 		mainPageRenderer: "./view/js/renderer/mainPageRenderer.js",
 		multipleChattingViewRenderer: "./view/js/renderer/multipleChattingViewRenderer.js",
 		temp3DHandler : "./view/js/handler/Temp3DHandler.ts"

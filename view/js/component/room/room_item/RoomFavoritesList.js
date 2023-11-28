@@ -93,6 +93,8 @@ export default new class RoomFavoritesList{
 	constructor(){
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
+			console.log(changeList);
+			console.log([...new Set(changeList)])
 			window.myAPI.room.updateRoomFavorites(changeList.map(e=>{
 				return {
 					id: e.dataset.id, 

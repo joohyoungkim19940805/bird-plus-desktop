@@ -98,7 +98,7 @@ class FlexLayout extends HTMLElement {
 			${this.#componentName} .${this.#resizePanelClass}:hover > .hover,
 			${this.#componentName} .${this.#resizePanelClass} > .hover[data-is_hover]{
 				background-color: #0066ffb5;
-				z-index: 9999;
+				z-index: 11;
 				position: absolute;
 				display: block;
 				opacity: 1;

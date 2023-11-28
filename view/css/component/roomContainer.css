@@ -19,6 +19,7 @@
 #room_wrapper .room_container .room_content_list > li{
     margin-left: 8px;
     margin-right: 8px;
+    margin-bottom: 0.3vh;
 }
 #room_wrapper .room_container .room_sticky{
     position: sticky;
@@ -67,7 +68,7 @@
     border: none;
     border-bottom: solid 2px #cbcbcbbd;
     border-left: solid 2px #cbcbcbbd;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
 }
 
 #room_wrapper .room_container .room_content_list_scroll .room_scrollbar{

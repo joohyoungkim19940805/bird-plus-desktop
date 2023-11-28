@@ -1,4 +1,4 @@
-import { emoticon, groupKind, subgroupKind, defaultEmoji } from "../module/emoticon";
+import { emoticon, groupKind, subgroupKind, defaultEmoticon } from "../module/emoticon";
 
 export default class EmoticonBox{
 
@@ -68,9 +68,14 @@ export default class EmoticonBox{
                     onchange : (event) => {
                         let isPrevChecked = this.#elementMap.emoticonSubgroupList.querySelector(`[data-subgroup_name]:not([data-subgroup_name="All"]) .emoticon-subgroup-input:checked`)
                         let subgroupTitle = isPrevChecked?.closest('[data-subgroup_name]').dataset.subgroup_name;
-                        let isSubgroup = emoticon[e][subgroupTitle]
                         this.createSubGroupList(isAll ? undefined : e);
-                        this.createEmoticonList(isAll ? undefined : e, isSubgroup ? subgroupTitle : undefined);
+                        if( ! subgroupTitle){
+                            this.createEmoticonList(isAll ? undefined : e, undefined);
+                        }else{
+                            let [groupTitle] = Object.entries(subgroupKind).find(( [k,v] ) => v.some(e=>e==subgroupTitle))
+                            this.createEmoticonList(groupTitle, subgroupTitle);
+                        }
+                        
                     }
                 });
                 let label = Object.assign(document.createElement('label'), {
@@ -176,6 +181,8 @@ export default class EmoticonBox{
         }else{
             document.body.append(this.#emoticonBox);
         }
+        this.#elementMap.emoticonGroupList.replaceChildren();
+        this.#elementMap.emoticonSubgroupList.replaceChildren();
         this.createGroupList();
         this.createSubGroupList();
         this.createEmoticonList();

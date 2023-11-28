@@ -77,9 +77,9 @@
 		"appId": "com.radcns.bird-plus.desktop",
 		"asar": true,
 		"protocols": {
-			"name": "Grease Lightning Chat",
+			"name": "grease-lightning-chat-protocol",
 			"schemes": [
-				"Grease Lightning Chat"
+				"grease-lightning-chat"
 			]
 		},
 		"mac": {

@@ -26,6 +26,8 @@ const fs = require('fs');
 const {autoUpdater} = require('electron-updater');
 autoUpdater.logger = log
 
+var mainWindow 
+
 if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
@@ -44,45 +46,56 @@ if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 if(process.defaultApp && process.argv.length >= 2){
 	log.debug(process.execPath);
 	log.debug([path.resolve(process.argv[1])]);
-	if( ! app.isDefaultProtocolClient('bird-plus-desktop')){
-		app.setAsDefaultProtocolClient('bird-plus-desktop', process.execPath, [path.resolve(process.argv[1])])
+	if( ! app.isDefaultProtocolClient('grease-lightning-chat')){
+		app.setAsDefaultProtocolClient('grease-lightning-chat', process.execPath, [path.resolve(process.argv[1])])
 	}
 }else{
-	if( ! app.isDefaultProtocolClient('bird-plus-desktop')){
-		app.setAsDefaultProtocolClient('bird-plus-desktop')
+	if( ! app.isDefaultProtocolClient('grease-lightning-chat')){
+		app.setAsDefaultProtocolClient('grease-lightning-chat')
 	}
 }
 
+const gotTheLock = app.requestSingleInstanceLock();
+var workspaceId;
+if (!gotTheLock) {
+	//autoUpdater.quitAndInstall();
+	app.quit();
+}else{
+	app.on('second-instance', (event, commandLine, workingDirectory) => {
+		if(mainWindow) {
+			if(mainWindow.isMinimized()){
+				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
+				mainWindow.restore();
+			}
+			mainWindow.focus();
+		}
+		console.log('event',event);
+		console.log('commandLine',commandLine);
+		console.log('workingDirectory',workingDirectory);
+		let params = commandLine.at(-1).split('?').at(-1).split('&').map(e=> {
+			let pair = e.split('=');
+			return {[pair[0]] : pair[1]};
+		});
+		mainWindow.workspaceId = params.workspaceId;
+		console.log(params);
+		dialog.showErrorBox(`Welcome Back`, `You arrived from: ${commandLine.pop().slice(0, -1)}`)
+	})
+}
 
 // mac os인 경우
 app.on('open-url', (event, url) => {
-	dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. url : ${url}`);
+	dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. url : ${url}, event : ${event}`);
 })
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
 	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
-		const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 		//autoUpdater.checkForUpdatesAndNotify();
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
 		// window 및 linux인 경우
-		const gotTheLock = app.requestSingleInstanceLock()
-		if (!gotTheLock) {
-			//autoUpdater.quitAndInstall();
-			app.quit();
-		}else{
-			app.on('second-instance', (event, commandLine, workingDirectory) => {
-				if(mainWindow) {
-					if(mainWindow.isMinimized()){
-						// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
-						mainWindow.restore();
-					}
-					mainWindow.focus();
-				}
-				dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. commandLine : ${commandLine.pop()}`);
-			})
-		}
+
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
 		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))

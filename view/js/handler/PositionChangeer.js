@@ -128,7 +128,7 @@ export default class PositionChanger{
 						res();
 					}).then(()=>{
 						this.#onDropEndChangePositionCallback(
-							[...child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort && e != target), target],
+							[...new Set([...child.filter(e=>e.dataset.order_sort != e.dataset.prev_order_sort && e != target), target])],
 							{item, target, parent}
 						)
 					})

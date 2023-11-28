@@ -68,6 +68,7 @@ export default new class NoticeBoardList{
 		//let prevWrapper;
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
 			//prevWrapper = wrapper;
+			console.log(changeList);
 			let parentRoot = item.__parentRoot;
 			if(parentRoot && target.dataset.parent_group_id != parentRoot.dataset.parent_group_id || 0){
 				target.dataset.parent_group_id = parentRoot.dataset.parent_group_id

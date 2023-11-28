@@ -156,6 +156,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					if(this.isEmpty){
 						this.placeholder = this.#placeholder;
 						//this.firstElementChild.dataset.placeholder = this.#placeholder
+					}else{
+						this.firstElementChild.setAttribute('data-placeholder', '');
 					}
 					//console.log(mutation.target);
 					mutation.addedNodes.forEach(async element=>{
