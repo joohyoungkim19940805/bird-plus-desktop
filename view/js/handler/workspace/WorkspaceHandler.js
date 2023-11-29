@@ -15,6 +15,7 @@ export default new class WorkspaceHandler{
                     workspaceIdResolve(workspaceId);
                 }
                 window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
+                    console.log('workpace h test 1 ::: ' , event);
                     let newWorkspaceId = event.workspaceId
                     if(workspaceId == newWorkspaceId){
                         return;
@@ -29,6 +30,9 @@ export default new class WorkspaceHandler{
                 })
             })
             workspaceIdPromise.then(workspaceId => {
+                workspaceIdPromise = new Promise(resolve=>{
+                    workspaceIdResolve = resolve;
+                })
                 this.#workspaceId = workspaceId;
                 window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
                     this.#workspace = workspace;
