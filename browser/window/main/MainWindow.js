@@ -82,8 +82,10 @@ class MainWindow extends BrowserWindow{
 		super.on('close', event => {
 			console.log(event);
 			console.log(event.sender);
-			this.hide()
-			event.preventDefault(); // prevent quit process
+			if(this.#workspaceId){	
+				this.hide()
+				event.preventDefault(); // prevent quit process
+			}
 		})
 
 		super.on('resize', (event) => {
@@ -177,7 +179,7 @@ class MainWindow extends BrowserWindow{
             return;
         }
 		this.#workspaceId = workspaceId;
-		mainWindow.webContents.send("workspaceChange", {workspaceId: this.#workspaceId});
+		mainWindow.webContents.send("workspaceChange", {workspaceId: this.workspaceId});
 		/*Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
 			if(v.isDestroyed){
 				delete mainWindow.subWindow[k];

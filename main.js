@@ -15,6 +15,7 @@ global.__serverApi = (()=>{
 const log = require('electron-log');
 const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+const axios = require('axios');
 //global.__birdPlusOptions = 
 
 // path 모듈 호출
@@ -56,13 +57,25 @@ if(process.defaultApp && process.argv.length >= 2){
 }
 
 const gotTheLock = app.requestSingleInstanceLock();
+console.log('kjh test11111',process.argv)
+	
 var workspaceId;
 if (!gotTheLock) {
 	//autoUpdater.quitAndInstall();
 	app.quit();
 }else{
 	app.on('second-instance', (event, commandLine, workingDirectory) => {
+		//dialog.showErrorBox('1???',mainWindow.isDestroyed)
+		//dialog.showErrorBox('2???',mainWindow != undefined)
 		if(mainWindow) {
+			dialog.showErrorBox('?????', '11111')
+			let params = commandLine.at(-1).split('?').at(-1).split('&').reduce( (t, e)=> {
+				let [k, v] = e.split('=');
+				t[k] = v;
+				return t;
+			}, {});
+			dialog.showErrorBox('3???', params.workspaceId);
+			mainWindow.workspaceId = params.workspaceId;
 			if(mainWindow.isMinimized()){
 				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
 				mainWindow.restore();
@@ -72,12 +85,7 @@ if (!gotTheLock) {
 		console.log('event',event);
 		console.log('commandLine',commandLine);
 		console.log('workingDirectory',workingDirectory);
-		let params = commandLine.at(-1).split('?').at(-1).split('&').map(e=> {
-			let pair = e.split('=');
-			return {[pair[0]] : pair[1]};
-		});
-		mainWindow.workspaceId = params.workspaceId;
-		console.log(params);
+
 		dialog.showErrorBox(`Welcome Back`, `You arrived from: ${commandLine.pop().slice(0, -1)}`)
 	})
 }
@@ -89,14 +97,30 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
+
 	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
+
+		if(process.argv[2].includes('grease-lightning-chat://')){
+			let params = process.argv[2].split('?').at(-1).split('&').reduce( (t, e)=> {
+				let [k, v] = e.split('=');
+				t[k] = v;
+				return t;
+			}, {});
+			try{
+				mainWindow.workspaceId = params.workspaceId;
+				axios.defaults.headers.common['Authorization'] = params.Authorization
+			}catch(err){
+				dialog.showErrorBox('test4:::', err.message);
+			}
+			
+		}	
+
 		//autoUpdater.checkForUpdatesAndNotify();
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
 		// window 및 linux인 경우
-
-		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
 		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
 		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))

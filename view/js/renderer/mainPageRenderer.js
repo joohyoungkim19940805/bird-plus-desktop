@@ -243,13 +243,18 @@ window.addEventListener("DOMContentLoaded", (event) => {
 			roomContainer.wrap,
 			chattingContainer.wrap
 		)
-
-		window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
-			// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
-			if(result.code == 0){
-				roomHandler.roomId = result.data.id;
-			}
-		})
+		workspaceHandler.addWorkspaceIdChangedListener = {
+			name: 'mainPageRenderer',
+			callBack : () => {
+				window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
+					// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
+					if(result.code == 0){
+						roomHandler.roomId = result.data.id;
+					}
+				})
+			},
+			runTheFirst: true
+		}
 		
 		window.myAPI.stream.initWorkspaceStream({workspaceId});
 	})

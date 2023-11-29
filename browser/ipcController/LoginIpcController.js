@@ -1,5 +1,5 @@
 const path = require('path');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
@@ -34,57 +34,88 @@ class LoginIpcController {
 			v.webContents.send(eventName, data);
 		})
 	}
-	changeLoginPage(event){
+	async changeLoginPage(event){
 		//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
-		let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY);
-		db.serialize( () => {
-			db.all(`
-			SELECT 
-				TOKEN, 
-				ISSUED_AT, 
-				EXPIRES_AT 
-			FROM 
-				ACCOUNT_LOG 
-			WHERE 
-				EXPIRES_AT >= datetime('now','localtime') 
-			ORDER BY 
-				EXPIRES_AT DESC
-			LIMIT 1`,[], (err, rows) => {
-				if(err){
-					log.error(err);
-				}
-				birdPlusOptions.setLastWindowSize(mainWindow);
-				birdPlusOptions.setLastWindowPosition(mainWindow);
-				mainWindow.resizable = true;
-				mainWindow.movable = true;
-				mainWindow.autoHideMenuBar = false;
-				mainWindow.menuBarVisible = true;
-
-				if(rows[0]){
-					//global.__apiToken = rows[0].TOKEN
-					axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
-					windowUtil.isLogin((result) => {
-						if(result.isLogin){
-							mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
-								mainWindow.titleBarStyle = 'visibble'
-								mainWindow.show();
-								mainWindow.isOpening = false;
-							})
-						}else{
-							axios.defaults.headers.common['Authorization'] = '';
-							this.#moveLoginPage(mainWindow);
-						}
-					}).catch(error=>{
-						axios.defaults.headers.common['Authorization'] = '';
-						log.error(' changeLoginPage error ::: ', error.message)
-						log.error(' changeLoginPage error stack :::', error.stack)
-						this.#moveLoginPage(mainWindow);
-					});
+		try{
+			windowUtil.isLogin((result) => {
+				if(result.isLogin){
+					if( ! mainWindow.workspaceId){
+						mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+							mainWindow.titleBarStyle = 'visibble'
+							mainWindow.show();
+							mainWindow.isOpening = false;
+						})
+					}else{
+						birdPlusOptions.setLastWindowSize(mainWindow);
+						birdPlusOptions.setLastWindowPosition(mainWindow);
+						mainWindow.resizable = true;
+						mainWindow.movable = true;
+						mainWindow.autoHideMenuBar = false;
+						mainWindow.menuBarVisible = true;
+					
+						mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+							mainWindow.titleBarStyle = 'visibble'
+							mainWindow.show();
+						}).then(()=>{
+							mainWindow.workspaceId = mainWindow.workspaceId;
+						})
+					}
 				}else{
-					this.#moveLoginPage(mainWindow);
+					let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY);
+					db.serialize( () => {
+						db.all(`
+						SELECT 
+							TOKEN, 
+							ISSUED_AT, 
+							EXPIRES_AT 
+						FROM 
+							ACCOUNT_LOG 
+						WHERE 
+							EXPIRES_AT >= datetime('now','localtime') 
+						ORDER BY 
+							EXPIRES_AT DESC
+						LIMIT 1`,[], (err, rows) => {
+							if(err){
+								log.error(err);
+							}
+							birdPlusOptions.setLastWindowSize(mainWindow);
+							birdPlusOptions.setLastWindowPosition(mainWindow);
+							mainWindow.resizable = true;
+							mainWindow.movable = true;
+							mainWindow.autoHideMenuBar = false;
+							mainWindow.menuBarVisible = true;
+			
+							if(rows[0]){
+								//global.__apiToken = rows[0].TOKEN
+								axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
+								windowUtil.isLogin((result) => {
+									if(result.isLogin){
+										mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+											mainWindow.titleBarStyle = 'visibble'
+											mainWindow.show();
+											mainWindow.isOpening = false;
+										})
+									}else{
+										axios.defaults.headers.common['Authorization'] = '';
+										this.#moveLoginPage(mainWindow);
+									}
+								}).catch(error=>{
+									axios.defaults.headers.common['Authorization'] = '';
+									log.error(' changeLoginPage error ::: ', error.message)
+									log.error(' changeLoginPage error stack :::', error.stack)
+									this.#moveLoginPage(mainWindow);
+								});
+							}else{
+								this.#moveLoginPage(mainWindow);
+							}
+						})
+					});
 				}
 			})
-		});
+		}catch(err){
+			dialog.showErrorBox('test2 ::: ', err.message);
+		}
+		
 	}
 	loginProcessing(event, param){
 		param = Object.entries(param).reduce((total, [k,v]) => {
