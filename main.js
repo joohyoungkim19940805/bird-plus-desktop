@@ -5,6 +5,7 @@
  */
 // 일렉트론 모듈 호출
 const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
+app.setAppUserModelId(app.name);
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){
@@ -65,16 +66,12 @@ if (!gotTheLock) {
 	app.quit();
 }else{
 	app.on('second-instance', (event, commandLine, workingDirectory) => {
-		//dialog.showErrorBox('1???',mainWindow.isDestroyed)
-		//dialog.showErrorBox('2???',mainWindow != undefined)
 		if(mainWindow) {
-			dialog.showErrorBox('?????', '11111')
 			let params = commandLine.at(-1).split('?').at(-1).split('&').reduce( (t, e)=> {
 				let [k, v] = e.split('=');
 				t[k] = v;
 				return t;
 			}, {});
-			dialog.showErrorBox('3???', params.workspaceId);
 			mainWindow.workspaceId = params.workspaceId;
 			if(mainWindow.isMinimized()){
 				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
@@ -103,7 +100,7 @@ app.whenReady().then(()=>{
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 
-		if(process.argv[2].includes('grease-lightning-chat://')){
+		if(process.argv[2]?.includes('grease-lightning-chat://')){
 			let params = process.argv[2].split('?').at(-1).split('&').reduce( (t, e)=> {
 				let [k, v] = e.split('=');
 				t[k] = v;

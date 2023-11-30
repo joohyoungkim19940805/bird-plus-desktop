@@ -12,7 +12,11 @@ class WindowUtil{
             headers:{
                 'Content-Type': 'application/json'
             }
-        }).then(response => {
+        })
+        .catch(err=>{
+            return err.response
+        })
+        .then(response => {
             if( ! this.responseIsOk(response)){
                 return callBack({
                     isLogin: false,
