@@ -119,7 +119,7 @@ export default new class NoticeBoardDetail{
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
             this.createItemElement(data)
             .then(li => {
-                this.#addMemory(li);
+                this.#addMemory(li, data.workspaceId, data.roomId, data.noticeBoardId, data.id);
             }).then( async () => {
 
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
@@ -273,30 +273,7 @@ export default new class NoticeBoardDetail{
                 //isPositionChangeIconOver = false;
                 li.draggable = false;
             }
-            //li.onpointerdown = (event) => {
-                //console.log(isPositionChangeIconOver);
-                //if(isPositionChangeIconOver || ! editor.isConnected){
-                //    return;
-                //}
-                //li.setPointerCapture(event.pointerId);
-            //}
-            //li.onpointerup = (event) => {
-                //li.releasePointerCapture(event.pointerId);
-            //}
-            /*
-            li.__dragendCallback = () => {
-                let selection = window.getSelection()
-                let range = selection.getRangeAt(0);
-                if(this.#prevRange){
-                    range.setEnd(this.#prevContent, this.#prevEndOffset);
-                    range.setStart(this.#prevContent, this.#prevStartOffset);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                }else{
-                    selection.setPosition(editor, editor.childNodes.length);
-                }
-            }
-            */
+
             addButton.onclick = (event) => {
                 console.log(event, editor.isConnected);
                 editor.contentEditable = true;
@@ -495,18 +472,18 @@ export default new class NoticeBoardDetail{
         })
     }
 
-    #addMemory(data){
-		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
-			this.#memory[workspaceHandler.workspaceId] = {};
+    #addMemory(data, workspaceId, roomId, noticeBoardId, id){
+		if( ! this.#memory.hasOwnProperty(workspaceId)){
+			this.#memory[workspaceId] = {};
 		}
-		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
-			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
+		if( ! this.#memory[workspaceId].hasOwnProperty(roomId)){
+			this.#memory[workspaceId][roomId] = {} ;
 		}
-        if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(noticeBoardHandler.noticeBoardId)){
-            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId] = {}
+        if( ! this.#memory[workspaceId][roomId].hasOwnProperty(noticeBoardId)){
+            this.#memory[workspaceId][roomId][noticeBoardId] = {}
         }
         
-        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardHandler.noticeBoardId][data.dataset.id] = data;
+        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardId][id] = data;
 		
     }
     async refresh(){

@@ -1,0 +1,23 @@
+.simple_option{
+    position: fixed;
+    background-color: #343434;
+    width: 20vw;
+    height: 20vh;
+    z-index: 20;
+    color: white;
+}
+.simple_option .simple_option_container > li{
+    position: relative;
+}
+.simple_option .component_option_container{
+    position: absolute;
+    right: 100%;
+    top: 0;
+    background-color: #343434;
+    width: 100%;
+    border-right: solid 1px black;
+}
+
+.simple_option .component_option_container label{
+    color: white
+}

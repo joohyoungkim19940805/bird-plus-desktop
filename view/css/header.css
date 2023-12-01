@@ -1,3 +1,9 @@
+header-default{
+    position:relative;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+}
+
 header-default #header_content{
     height: 100%;
     background: linear-gradient(to bottom, #EAEAEA -274%, #2B2B2B 96%, #7c0000ab 99%);
@@ -5,7 +11,7 @@ header-default #header_content{
     justify-content: space-between;
     align-items: center;
     padding-left: 1vw;
-    padding-right: 1vw;
+    padding-right: 0;
     min-height: 40px;
 }
 
@@ -14,4 +20,18 @@ header-default #left_wrapper img{
     height: 30px;
 }
 
+header-default .header_item{
+    display: flex;
+    height: 100%;
+    align-items: center;
+    -webkit-user-select: none;
+    -webkit-app-region: no-drag;
+}
+
+header-default .default_icon_container button{
+    height:100%;
+}
+header-default .default_icon_container button:hover{
+    background-color: #b3b3b31f;
+}
 

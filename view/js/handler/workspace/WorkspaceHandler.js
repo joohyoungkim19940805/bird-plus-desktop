@@ -3,47 +3,15 @@ export default new class WorkspaceHandler{
     #workspace;
     #workspaceId;
     #addWorkspaceIdChangedListener = {};
+    #workspaceChangeDone;
+    #workspaceChangeAwait;
     constructor(){
-        let isLoadEnd = false;
         //window.addEventListener("DOMContentLoaded", (event) => {
-            let workspaceIdResolve;
-            let workspaceIdPromise = new Promise(resolve=>{
-                workspaceIdResolve = resolve;
-            })
             window.myAPI.workspace.getWorkspaceId().then(workspaceId=>{
-                if(workspaceId != undefined){
-                    workspaceIdResolve(workspaceId);
-                }
-                window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
-                    console.log('workpace h test 1 ::: ' , event);
-                    let newWorkspaceId = event.workspaceId
-                    if(workspaceId == newWorkspaceId){
-                        return;
-                    }
-                    
-                    if( ! isLoadEnd && newWorkspaceId != undefined){
-                        workspaceIdResolve(newWorkspaceId)
-                    }else if(isLoadEnd){
-                        this.workspaceId = newWorkspaceId;
-                    }
-                    //event.workspaceId
-                })
+                this.workspaceId = workspaceId;
             })
-            workspaceIdPromise.then(workspaceId => {
-                workspaceIdPromise = new Promise(resolve=>{
-                    workspaceIdResolve = resolve;
-                })
-                this.#workspaceId = workspaceId;
-                window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
-                    this.#workspace = workspace;
-                });
-                Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
-                    new Promise(res => {
-                        callBack(this);
-                        res();
-                    });
-                });
-                isLoadEnd = true;
+            window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {
+                this.workspaceId = event.workspaceId;
             })
         //});
     }
@@ -59,15 +27,30 @@ export default new class WorkspaceHandler{
     }
 
     set workspaceId(workspaceId){
+        if(!workspaceId)return;
         this.#workspaceId = workspaceId;
         window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
             this.#workspace = workspace;
-            Object.values(this.#addWorkspaceIdChangedListener).forEach(async callBack => {
-                new Promise(res => {
+            let startCallbackPromise = Promise.all(Object.values(this.#addWorkspaceIdChangedListener).map(async callBack => {
+                return new Promise(res => {
                     callBack(this);
                     res();
                 });
-            });
+            }));
+            if( ! this.#workspaceChangeAwait){
+                this.#workspaceChangeAwait = new Promise(resolve=>{
+                    this.#workspaceChangeDone = resolve;
+                    this.#workspaceChangeDone(startCallbackPromise);
+                })
+            }else{
+                this.#workspaceChangeAwait.then(() => {
+                    startCallbackPromise.then(() => {
+                        this.#workspaceChangeAwait = new Promise(resolve => {
+                            this.#workspaceChangeDone = resolve;
+                        })
+                    })
+                })
+            }
         });
     }
     get workspaceId(){

@@ -75,6 +75,7 @@
     display: block;
     width: 100%;
     overflow-x: hidden;
+    padding-bottom: 0.25rem;
 }
 #notice_board_wrapper #notice_board_list_wrapper .notice_board_list_content .notice_board_list_content_item .notice_board_list_content_item_title_wrapper .notice_board_list_content_item_title_name.active{
     font-weight: bold;

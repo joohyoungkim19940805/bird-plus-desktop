@@ -2,6 +2,10 @@ export default new class RoomHandler{
     #roomId
     #room;
     #addRoomIdChangeListener = {};
+
+    #roomChangeDone;
+    #roomChangeAwait;
+
     constructor(){
 
     }
@@ -25,12 +29,29 @@ export default new class RoomHandler{
         this.#roomId = roomId;
         window.myAPI.room.getRoomDetail({roomId}).then(result => {
             this.#room = result.data;
-            Object.values(this.#addRoomIdChangeListener).forEach(async callBack => {
-                new Promise(res => {
-                    callBack(this);
-                    res();
+            let startCallbackPromise = Promise.all(
+                Object.values(this.#addRoomIdChangeListener).map(async callBack => {
+                    return new Promise(res => {
+                        callBack(this);
+                        res();
+                    })
                 })
-            });
+            )
+            if( ! this.#roomChangeAwait){
+                this.#roomChangeAwait = new Promise(resolve=>{
+                    this.#roomChangeDone = resolve;
+                    this.#roomChangeDone(startCallbackPromise);
+                })
+            }else{
+                this.#roomChangeAwait.then(()=>{
+                    startCallbackPromise.then(()=>{
+                        this.#roomChangeAwait = new Promise(resolve=>{
+                            this.#roomChangeDone = resolve;
+                        })
+                    })
+                })
+            }
+           
             //window.myAPI.setTitle({title:this.#room.roomName})
             document.head.querySelector('title').textContent = this.#room.roomName + ' - Grease Lightning Chat';
         });

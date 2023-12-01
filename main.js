@@ -73,6 +73,13 @@ if (!gotTheLock) {
 				return t;
 			}, {});
 			mainWindow.workspaceId = params.workspaceId;
+			mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+				mainWindow.titleBarStyle = 'visibble'
+				mainWindow.show();
+				mainWindow.isOpening = false;
+			})
+			console.log(mainWindow.getRepresentedFilename());
+			console.log(mainWindow.webContents.mainFrame.name)
 			if(mainWindow.isMinimized()){
 				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
 				mainWindow.restore();

@@ -204,7 +204,7 @@ export default new class ChattingInfo{
                     if(memory && memory.length != 0){
                         this.#page = memory.length - 1;
                         this.#liList = memory.flatMap(e=>Object.values(e))
-                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                            .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                         this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                         let isConnectedAwait = setInterval(()=>{
                             if( ! this.#liList[0]){
@@ -218,35 +218,13 @@ export default new class ChattingInfo{
                                 this.#elementMap.chattingContentList.scrollHeight
                             )
                             clearInterval(isConnectedAwait);
+                            this.#processingTimeGrouping(
+                                this.#liList[1], 
+                                this.#liList[0]
+                            ); 
                         },50);
+                        
                     }
-                    /*
-                    this.#elementMap.chattingContentList.prepend(liElement);
-                    this.#processingTimeGrouping(
-                        this.#liList[0],
-                        liElement
-                    ).then(() => {
-                        if(this.elementMap.chattingContentList.querySelectorAll('.time_grouping').length == 0){
-                            let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
-                            let timeText; 
-                            if(date.toDateString() == new Date().toDateString()){
-                                timeText = 'to day'
-                            }else{
-                                timeText = date.toLocaleDateString(undefined, {
-                                    weekday: 'short',
-                                    month: 'short',
-                                    day: '2-digit',
-                                    formatMatcher: 'best fit'
-                                })
-                            }
-                            this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
-                        }
-                    }); 
-                    this.#liList.unshift(liElement);
-                    this.#elementMap.chattingContentList.scrollBy(undefined, 
-                        9999999
-                    )
-                    */
                 });
             }
         }
@@ -255,14 +233,15 @@ export default new class ChattingInfo{
             callBack: () => {
                 this.reset();
                 let promise;
-                /*let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                console.log(memory);
                 if(memory && memory.length != 0){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
                         memory.flatMap(e=>Object.values(e))
                         .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                     );
-                }else{*/
+                }else{
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                     .then(async data=> 
                         this.createPage(data)
@@ -285,7 +264,7 @@ export default new class ChattingInfo{
                             return liList;
                         })
                     )
-                //}
+                }
                 promise.then(liList => {
                     this.#liList.push(...liList);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
@@ -447,7 +426,7 @@ export default new class ChattingInfo{
             common.jsonToSaveElementDataset(data, li);
 
             li.__editor = content;
-            this.#addMemory(li, id);
+            this.#addMemory(li, workspaceId, roomId, id);
             this.#addItemEvent(li, descriptionWrap);
             if( ! prevItemPromise && this.#lastLiItem){
                 this.#processingTimeGrouping(li, this.#lastLiItem);
@@ -649,22 +628,24 @@ export default new class ChattingInfo{
         return li;
     }
 
-    #addMemory(data, id){
+    #addMemory(data, workspaceId, roomId, id){
         /*if(data.dataset.room_id != roomHandler.roomId || data.dataset.workpsace_id != workspaceHandler.workspaceId){
             return;
         }*/
 
-        if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
-            this.#memory[workspaceHandler.workspaceId] = {};
+        if( ! this.#memory.hasOwnProperty(workspaceId)){
+            this.#memory[workspaceId] = {};
         }
-        if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(roomHandler.roomId)){
-            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId] = {} ;
+        if( ! this.#memory[workspaceId].hasOwnProperty(roomId)){
+            this.#memory[workspaceId][roomId] = {} ;
         }
-        if( ! this.#memory[workspaceHandler.workspaceId][roomHandler.roomId].hasOwnProperty(this.#page)){
-            this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page] = {};
+        if( ! this.#memory[workspaceId][roomId].hasOwnProperty(this.#page)){
+            this.#memory[workspaceId][roomId][this.#page] = {};
         }
-
-        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][this.#page][id] = data;
+        if(Object.values(this.#memory[workspaceId][roomId]).some(e=>e[id])){
+            return;
+        }
+        this.#memory[workspaceId][roomId][this.#page][id] = data;
     }
 
     #processingTimeText(createMils){

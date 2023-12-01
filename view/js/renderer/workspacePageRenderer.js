@@ -1,4 +1,9 @@
 import common from "./../common"; 
+
+import HeaderDefault from "../component/header/HeaderDefault"
+
+window.customElements.define('header-default', HeaderDefault);
+
 new class WorkspacePageRenderer{
 	page = 0;
 	size = 10;

@@ -1,7 +1,7 @@
 
 const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'));
-const { screen } = require('electron');
+const { screen, remote } = require('electron');
 const log = require('electron-log');
 class BirdPlusOptions{
 
@@ -18,8 +18,7 @@ class BirdPlusOptions{
 	constructor(){
 		let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY)
 		db.serialize(() => {
-			// 각 쿼리는 비동기로 동작하니 순서 주의 
-			// (DBConfig.js에서는 프로미스 객체로 핸들링 하였었음)
+			// 각 쿼리는 비동기로 동작하니 순서 주의 \
 			let loadSizePromise = new Promise(resolve => {
 				db.all(`
 					SELECT

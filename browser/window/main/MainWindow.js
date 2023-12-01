@@ -6,7 +6,7 @@ const path = require('path');
 /**
  * 메인 윈도우를 만들기 위해 일렉트론 모듈에서 브라우저 윈도우를 가져온다. 
  */
-const {BrowserWindow, ipcMain, shell} = require('electron');
+const {BrowserWindow, ipcMain, shell, screen} = require('electron');
 
 const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
 
@@ -47,6 +47,7 @@ class MainWindow extends BrowserWindow{
 			center : true,
 			autoHideMenuBar : true,
 			titleBarStyle: 'hidden',
+			titleBarOverlay: false,
 			movable : false,
 			resizable : false,
 			trafficLightPosition: {
@@ -55,7 +56,7 @@ class MainWindow extends BrowserWindow{
 			},
 			title: 'Grease Lightning Chat'
 		});
-
+		
 		//super.setTitleBarOverlay
 		
 		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
@@ -79,21 +80,37 @@ class MainWindow extends BrowserWindow{
 			});
 		});
 
+		super.on('maximize', (event) => {
+			//console.log('max >>> ', event);
+			mainWindow.webContents.send('maximize', {});
+		})
+		super.on('unmaximize', (event) => {
+			//console.log('unmax >>> ', event);
+			mainWindow.webContents.send('unmaximize', {});
+		})
+		super.on('minimize', (event) => {
+			//console.log('minimize >>> ', event);
+			mainWindow.webContents.send('minimize', {});
+		})
+		super.on('restore', (event) => {
+			//console.log('restore >>> ' , event);
+			mainWindow.webContents.send('restore', {});
+		})
 		super.on('close', event => {
-			console.log(event);
-			console.log(event.sender);
+			//console.log(event);
+			//console.log(event.sender);
 			if(this.#workspaceId){	
 				this.hide()
 				event.preventDefault(); // prevent quit process
 			}
 		})
-
 		super.on('resize', (event) => {
 			if(this.#isOpening){
 				return;
 			}
+			let [w,h] = super.getSize();
 			mainWindow.webContents.send("resized", super.getSize());
-			birdPlusOptions.size = super.getSize();
+			birdPlusOptions.size = [w,h];
 		});
 
 		super.on('move' , (event) => {
@@ -101,6 +118,24 @@ class MainWindow extends BrowserWindow{
 				return;
 			}
 			birdPlusOptions.position = super.getPosition();
+		})
+		ipcMain.handle('isMaximize', () => {
+			return super.isMaximized()
+		})
+		ipcMain.on('closeRequest', () => {
+			super.close();
+		})
+		ipcMain.on('maximizeRequest', () => {
+			super.maximize();
+		})
+		ipcMain.on('unmaximizeRequest', () => {
+			super.unmaximize();
+		})
+		ipcMain.on('minimizeRequest', () => {
+			super.minimize();
+		})
+		ipcMain.on('restoreRequest', () => {
+			super.restore();
 		})
 
 		/*ipcMain.on('setTitle', async (event, param) => {

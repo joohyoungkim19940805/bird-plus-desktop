@@ -13,7 +13,7 @@ const {autoUpdater} = require('electron-updater')
  * @extends Tray
  */
 class MainTray extends Tray{
-	mainWindow =  require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+	mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 	constructor() {
 		super( path.join(__project_path, 'view/image/icon.ico') );
 		this.setToolTip('This is my application.');
@@ -32,7 +32,29 @@ class MainTray extends Tray{
 			},
 		]);
   		this.setContextMenu(menu);
-		//console.log(menu.getMenuItemById('close_btn') );
+
+		let isDoubleClick = false;
+		super.on('click', (event, rect) =>{
+			if(isDoubleClick){
+				return;
+			}
+			//console.log('click >>> ', event, rect);
+		})
+		super.on('double-click', (event, rect)=>{
+			isDoubleClick = true;
+			
+			//console.log('double click >>> ', event, rect);
+			if(this.mainWindow.isVisible()){
+				this.mainWindow.focus();
+			}else{
+				this.mainWindow.show();
+			}
+			
+			isDoubleClick = false;
+		})
+	}
+	addTrayEvent(){
+		
 	}
 }
 

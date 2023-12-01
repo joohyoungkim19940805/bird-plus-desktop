@@ -13,6 +13,10 @@ import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
 import workspaceHandler from "../handler/workspace/WorkspaceHandler"
 import IndexedDBHandler from "../handler/IndexedDBHandler"
 
+import HeaderDefault from "../component/header/HeaderDefault"
+
+window.customElements.define('header-default', HeaderDefault);
+
 /*
 indexedDBHandler.open().then(()=>{
 	indexedDBHandler.addItem({

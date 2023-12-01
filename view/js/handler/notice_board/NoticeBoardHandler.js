@@ -1,10 +1,10 @@
-import workspaceHandler from "../workspace/WorkspaceHandler";
-import roomHandler from "../room/RoomHandler";
 
 export default new class NoticeBoardHandler{
     #noticeBoardId
     #noticeBoard = [];
     #addNoticeBoardIdChangeListener = {};
+    #noticeBoardChangeDone;
+    #noticeBoardChangeAwait;
     constructor(){
 
     }
@@ -27,16 +27,28 @@ export default new class NoticeBoardHandler{
         }
         this.#noticeBoard = [];
         this.#noticeBoardId = noticeBoardId;
-        new Promise(resolve => {
-            Object.values(this.#addNoticeBoardIdChangeListener).forEach(async callBack => {
-                new Promise(res => {
+        let startCallbackPromise = Promise.all(
+            Object.values(this.#addNoticeBoardIdChangeListener).map(async callBack => {
+                return new Promise(res => {
                     callBack(this);
                     res();
                 })
-            });
-            resolve();
-        })
-        
+            })
+        )
+        if( ! this.#noticeBoardChangeAwait){
+            this.#noticeBoardChangeAwait = new Promise(resolve=>{
+                this.#noticeBoardChangeDone = resolve;
+                this.#noticeBoardChangeDone(startCallbackPromise);
+            })
+        }else{
+            this.#noticeBoardChangeAwait.then(() => {
+                startCallbackPromise.then(() => {
+                    this.#noticeBoardChangeAwait = new Promise(resolve => {
+                        this.#noticeBoardChangeDone = resolve;
+                    })
+                })
+            })
+        }
     }
 
     get noticeBoardId(){

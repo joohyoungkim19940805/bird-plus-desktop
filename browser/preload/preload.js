@@ -92,11 +92,28 @@ contextBridge.exposeInMainWorld('myAPI', {
 	 */
 	//openFile : () => ipcRenderer.invoke('dialog:openFile'),
 	
+	/**
+	 * key-value가 아닌 함수는 일렉트론에서만쓰고 웹버전에서는 쓰지 않도록 합니다.
+	 * event.electronEventTrigger은 일렉트론 + 웹이 함께써야 하는 부분이 있어 예외입니다.
+	 */
+
 	scanningUserDirectory : () => ipcRenderer.send('scanningUserDirectory'),
 	
 	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
 
 	createSubWindow : (param) => ipcRenderer.send('createSubWindow', param), 
+
+	closeRequest : (param) => ipcRenderer.send('closeRequest'),
+	
+	maximizeRequest : () => ipcRenderer.send('maximizeRequest'),
+
+	unmaximizeRequest : () => ipcRenderer.send('unmaximizeRequest'),
+	
+	minimizeRequest : () => ipcRenderer.send('minimizeRequest'),
+	
+	restoreRequest : () => ipcRenderer.send('restoreRequest'),
+	
+	isMaximize : (param) => ipcRenderer.invoke('isMaximize'),
 
 	event : {
 		electronEventTrigger : electronEventTrigger,
