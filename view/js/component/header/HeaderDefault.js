@@ -12,7 +12,7 @@ export default class HeaderDefault extends HTMLElement {
     #unmaximizeIcon = Object.assign(document.createElement('button'), {
         className: 'unmaximize_icon',
         innerHTML: `
-            <svg width="1vmax" height="1vmax" style="zoom:250%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="1rem" height="1rem" style="zoom:150%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path transform="translate(-2.5, 2.5)" d="M6.5 6.5 H17.5 V17.5 H6.5 V6.5 Z" stroke="currentColor" stroke-width="2" />
                 <path transform="translate(2.5,-2.5)" d="M5.5 10 V7 H17 V17.5 H14 " stroke="currentColor" stroke-width="2" />
             </svg>
@@ -21,7 +21,7 @@ export default class HeaderDefault extends HTMLElement {
     #maximizeIcon = Object.assign(document.createElement('button'), {
         className: 'maximize_icon',
         innerHTML: `
-            <svg class="css-gg-border-all" width="1vmax" height="1vmax" style="zoom:250%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="css-gg-border-all" width="1rem" height="1rem" style="zoom:150%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M6.5 6.5H17.5V17.5H6.5V6.5Z" stroke="currentColor" stroke-width="2" />
             </svg>
         `
@@ -33,7 +33,7 @@ export default class HeaderDefault extends HTMLElement {
     #optionIcon = Object.assign(document.createElement('button'), {
         className: 'option_icon',
         innerHTML : `
-        <svg class="css-gg-option" width="1vmax" height="1vmax" style="zoom:250%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="css-gg-option" width="1rem" height="1rem" style="zoom:150%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
             fill-rule="evenodd"
             clip-rule="evenodd"
@@ -52,7 +52,7 @@ export default class HeaderDefault extends HTMLElement {
     #closeIcon = Object.assign(document.createElement('button'), {
         className: 'close_icon',
         innerHTML:`
-        <svg class="css-gg-close-x" width="1vmax" height="1vmax" style="zoom:250%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="css-gg-close-x" width="1rem" height="1rem" style="zoom:150%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
             d="M6.2253 4.81108C5.83477 4.42056 5.20161 4.42056 4.81108 4.81108C4.42056 5.20161 4.42056 5.83477 4.81108 6.2253L10.5858 12L4.81114 17.7747C4.42062 18.1652 4.42062 18.7984 4.81114 19.1889C5.20167 19.5794 5.83483 19.5794 6.22535 19.1889L12 13.4142L17.7747 19.1889C18.1652 19.5794 18.7984 19.5794 19.1889 19.1889C19.5794 18.7984 19.5794 18.1652 19.1889 17.7747L13.4142 12L19.189 6.2253C19.5795 5.83477 19.5795 5.20161 19.189 4.81108C18.7985 4.42056 18.1653 4.42056 17.7748 4.81108L12 10.5858L6.2253 4.81108Z"
             fill="currentColor"
@@ -63,7 +63,7 @@ export default class HeaderDefault extends HTMLElement {
 
 	constructor(){
 		super();
-        Object.assign(this.#minimizeIcon.style,{fontSize:'1.9vmax', fontWeight:'bold'});
+        Object.assign(this.#minimizeIcon.style,{fontSize:'1.1rem', fontWeight:'bold'});
         window.myAPI.event.electronEventTrigger.addElectronEventListener('maximize', () => {
             this.#maximizeIcon.remove();
             this.#minimizeIcon.after(this.#unmaximizeIcon)
