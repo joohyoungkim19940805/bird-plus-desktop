@@ -6,8 +6,14 @@
     z-index: 20;
     color: white;
 }
+.simple_option .simple_option_container{
+    text-align: center;
+}
 .simple_option .simple_option_container > li{
     position: relative;
+}
+.simple_option .simple_option_container > li:hover{
+    background-color: #ffffff26;
 }
 .simple_option .component_option_container{
     position: absolute;
@@ -18,6 +24,16 @@
     border-right: solid 1px black;
 }
 
+.simple_option .component_option_container > div:hover{
+    background-color: #ffffff26;
+}
+
 .simple_option .component_option_container label{
     color: white
+}
+
+.simple_option [name="component_option"]{
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-left: 0;
 }

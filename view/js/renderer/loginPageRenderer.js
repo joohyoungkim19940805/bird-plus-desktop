@@ -1,3 +1,6 @@
+import HeaderDefault from "../component/header/HeaderDefault";
+
+window.customElements.define('header-default', HeaderDefault);
 
 new class LoginPageRenderer{
 	constructor(){

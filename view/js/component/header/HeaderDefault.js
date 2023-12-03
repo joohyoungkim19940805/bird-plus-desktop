@@ -1,5 +1,6 @@
 import common from "../../common";
 import { simpleOption } from "../option/SimpleOption";
+import FreedomInterface from "../../handler/editor/module/FreedomInterface";
 /**
  * 헤더 기본타입 : 상단 타이틀바 커스텀라이징
  */
@@ -89,9 +90,20 @@ export default class HeaderDefault extends HTMLElement {
                 simpleOption.close();
                 return;
             }
-            let wrap = simpleOption.open();
-            common.processingElementPosition(wrap, this.#optionIcon);
+            simpleOption.open();
+            common.processingElementPosition(simpleOption.wrap, this.#optionIcon);
         }
+        window.addEventListener('resize', (event) => {
+			if(simpleOption.wrap.isConnected){
+				common.processingElementPosition(simpleOption.wrap, this.#optionIcon);
+			}
+		})
+        
+        FreedomInterface.outClickElementListener(simpleOption.wrap, ({oldEvent, newEvent, isMouseOut}) =>{
+            if(isMouseOut && simpleOption.wrap.isConnected && ! FreedomInterface.isMouseInnerElement(this.#optionIcon) && ! simpleOption.wrap.matches(':hover')){
+				simpleOption.close();
+			}
+        })
 	}
     
 	connectedCallback(){

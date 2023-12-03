@@ -129,7 +129,6 @@ export default new class NoticeBoardDetail{
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
                             .map((e,j)=> {
                                 return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
-                                    console.log(emptyItem);
                                     emptyItem.dataset.connect_target_id = item.dataset.id;
                                     return emptyItem;
                                 })

@@ -1,4 +1,5 @@
 import common from "../../common";
+import IndexedDBHandler from "../../handler/IndexedDBHandler";
 
 export const simpleOption = new class SimpleOption{
     
@@ -11,17 +12,39 @@ export const simpleOption = new class SimpleOption{
 
     #componentOption;
 
-    constructor(){
-        if(localStorage.hasOwnProperty('componentOption')){
-            this.#componentOption = localStorage.getItem('componentOption');
-        }else{
-            this.#componentOption = 'responsive'
-        }
+    #dbOpenPromise
 
-        window.addEventListener('load', () => {
-            if(this.#componentOption == 'nomal'){
-                document.body.parentElement.style.fontSize = '100%';
-            }
+    #indexedDBHandler
+
+    constructor(){
+
+        this.#indexedDBHandler = new IndexedDBHandler({
+            dbName: 'simpleOptionDB',
+            storeName: 'simpleOption',
+            columnInfo: {
+                optionName: ['optionName', 'optionName', {unique: true}],
+                value: ['value', 'value'],
+                lastModified: ['lastModified','lastModified'],
+            },
+            keyPathNameList: ['optionName'],
+            pkAutoIncrement: false
+        })
+
+        this.#dbOpenPromise = this.#indexedDBHandler.open();
+
+        this.#dbOpenPromise.then(() => {
+            this.#indexedDBHandler.getItem('componentOption').then(dbRequest=>{
+                if( ! dbRequest.result){
+                    this.#componentOption = 'responsive'
+                    return;
+                }
+                this.#componentOption = dbRequest.result.value;
+                if(this.#componentOption == 'nomal'){
+                    document.body.parentElement.style.fontSize = '100%';
+                }else{
+                    document.body.parentElement.style.fontSize = '';
+                }
+            })
         })
     }
 
@@ -38,16 +61,13 @@ export const simpleOption = new class SimpleOption{
             className: 'component_option_container',
             innerHTML: `
                 <div>
-                    <label for="component_option_responsive">
-                        Responsive    
-                        <input type="radio" name="component_option" id="component_option_responsive" value="responsive" ${this.#componentOption == "responsive" ? 'checked' : ''}/>
-                    </label>
+                    <label for="component_option_responsive">Responsive</label>
+                    <input type="radio" name="component_option" id="component_option_responsive" value="responsive" ${this.#componentOption == "responsive" ? 'checked' : ''}/>
+                        
                 </div>
                 <div>
-                    <label for=""component_option_nomal>
-                        Nomal
-                        <input type="radio" name="component_option" id="component_option_nomal" value="nomal" ${this.#componentOption == "nomal" ? 'checked' : ''}/>
-                    </label>
+                    <label for="component_option_nomal">Nomal</label>
+                    <input type="radio" name="component_option" id="component_option_nomal" value="nomal" ${this.#componentOption == "nomal" ? 'checked' : ''}/>
                 </div>
             `
         })
@@ -56,11 +76,18 @@ export const simpleOption = new class SimpleOption{
             if(event.target.type != 'radio'){
                 return;
             }
+            this.#componentOption = event.target.value;
             if(event.target.value == 'nomal'){
                 document.body.parentElement.style.fontSize = '100%';
             }else{
                 document.body.parentElement.style.fontSize = '';
             }
+            
+            this.#indexedDBHandler.addItem({
+                optionName: 'componentOption',
+                value: event.target.value,
+                lastModified: new Date().getTime()
+            })
         }
 
         li.onmouseenter = () => {
@@ -68,7 +95,7 @@ export const simpleOption = new class SimpleOption{
         }
 
         li.onmouseleave = () => {
-            //optionContainer.remove();
+            optionContainer.remove();
         }
 
         li.append(title);
@@ -80,7 +107,6 @@ export const simpleOption = new class SimpleOption{
         document.body.append(this.#wrap);
         this.#wrap.append(this.#container)
         this.#container.replaceChildren(this.#createComponentOption());
-        return this.#wrap;
     }
 
     close(){

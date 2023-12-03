@@ -38,6 +38,7 @@ export default new class NoticeBoardContainer{
 				return;
 			}
 			noticeBoardList.refresh();
+			noticeBoardDetail.refresh();
 			isFirstOpen = true;
 			prevRoomId = roomHandler.roomId
 			/*
@@ -46,6 +47,10 @@ export default new class NoticeBoardContainer{
 				noticeBoardList.refresh();
 			}
 			*/
+		}
+
+		this.#wrap._closeEndCallback = () => {
+			this.#container.closeFlex(noticeBoardDetail.element)
 		}
 	}
 
