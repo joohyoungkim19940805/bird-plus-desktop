@@ -7,7 +7,7 @@ export default new class WorkspaceHandler{
     #workspaceChangeAwait;
     constructor(){
         //window.addEventListener("DOMContentLoaded", (event) => {
-            window.myAPI.workspace.getWorkspaceId().then(workspaceId=>{
+            window.myAPI.getWorkspaceId().then(workspaceId=>{
                 this.workspaceId = workspaceId;
             })
             window.myAPI.event.electronEventTrigger.addElectronEventListener('workspaceChange', event => {

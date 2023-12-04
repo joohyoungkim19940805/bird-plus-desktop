@@ -113,7 +113,11 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	restoreRequest : () => ipcRenderer.send('restoreRequest'),
 	
-	isMaximize : (param) => ipcRenderer.invoke('isMaximize'),
+	isMaximize : () => ipcRenderer.invoke('isMaximize'),
+
+	resetWorkspaceId: () => ipcRenderer.invoke('resetWorkspaceId'),
+
+	getWorkspaceId: () => ipcRenderer.invoke('getWorkspaceId'),
 
 	event : {
 		electronEventTrigger : electronEventTrigger,
@@ -142,9 +146,10 @@ contextBridge.exposeInMainWorld('myAPI', {
 	workspace : {
 		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
 		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
-		getWorkspaceId : () => ipcRenderer.invoke('getWorkspaceId'),
 		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
-		resetWorkspaceId : () => ipcRenderer.invoke('resetWorkspaceId')
+		createPermitWokrspaceInAccount: (param) => ipcRenderer.invoke('createPermitWokrspaceInAccount', param),
+		giveAdmin : (param) => ipcRenderer.invoke('giveAdmin', param),
+		searchPermitRequestList : (param) => ipcRenderer.invoke('searchPermitRequestList', param)
 	},
 
 	room : {

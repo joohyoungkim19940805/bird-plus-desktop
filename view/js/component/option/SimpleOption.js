@@ -1,6 +1,9 @@
 import common from "../../common";
 import IndexedDBHandler from "../../handler/IndexedDBHandler";
 
+import { accountHandler } from "../../handler/account/AccountHandler";
+import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
+
 export const simpleOption = new class SimpleOption{
     
     #wrap = Object.assign(document.createElement('div'), {
@@ -16,7 +19,15 @@ export const simpleOption = new class SimpleOption{
 
     #indexedDBHandler
 
+    #accountInfoPromise = accountHandler.accountInfo;
+
+    #attendRequestObject = this.#createPermitRequest();
+
     constructor(){
+        
+        /*this.#accountInfoPromise.then((accountInfo)=>{
+            console.log(accountInfo); // undefined
+        })*/
 
         this.#indexedDBHandler = new IndexedDBHandler({
             dbName: 'simpleOptionDB',
@@ -46,6 +57,70 @@ export const simpleOption = new class SimpleOption{
                 }
             })
         })
+
+        let simpleMemory = {};
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitRequestAccept', (event)=>{
+            let {content = event} = event;
+            console.log(content);
+            let {attendRequest} = this.#attendRequestObject
+            let item = Object.assign(document.createElement('li'),{
+                className: 'attend_request_item',
+                innerHTML:`
+                    <div class="attend_request_item_container">
+                        <div class="attend_request_item_emain">
+                            <span>${content.email}</span>
+                        </div>
+                        <div class="attend_request_item_name">
+                            <span>${content.fullName}</span>
+                        </div>
+                        <div class="attend_request_item_position">
+                            <span>${content.jobGrade}</span>
+                            <span>${content.department}</span>
+                        </div>
+                    </div>
+                    <div class="attend_request_item_button_wrapper">
+                        <button class="attend_request_item_permit" value="PERMIT">permit</button>
+                        <button class="attend_request_tiem_reject" value="REJECT">reject</button>
+                    </div>
+                `
+            })
+            let [permit, reject] = item.querySelectorAll('.attend_request_item_permit, .attend_request_tiem_reject');
+            [permit, reject].forEach(e=>{
+                e.onclick = () => {
+                    console.log(e.value);
+                    window.myAPI.workspace.createPermitWokrspaceInAccount({
+                        id:content.id,
+                        workspaceId:content.workspaceId,
+                        permitType:e.value
+                    })
+                }
+            })
+            if( ! simpleMemory[content.workspaceId]){
+                simpleMemory[content.workspaceId] = {};
+            }
+
+            simpleMemory[content.workspaceId][content.accountName] = item
+
+            if(workspaceHandler.workspaceId == content.workspaceId){
+                console.log(Object.values(simpleMemory[content.workspaceId]))
+                attendRequest.replaceChildren(
+                    ...Object.values(simpleMemory[content.workspaceId])
+                )    
+            }
+
+        })
+        console.log(workspaceHandler.workspaceId);
+        workspaceHandler.addWorkspaceIdChangedListener = {
+            name: 'simpleOptuon',
+            callBack: () => {
+                if(workspaceHandler.workspaceId){
+                    window.myAPI.workspace.searchPermitRequestList({workspaceId: workspaceHandler.workspaceId}).then(result=>{
+                        console.log('result >>> ', result);
+                    });
+                }
+            },
+            runTheFirst: false
+        }
     }
 
     #createComponentOption(){
@@ -103,10 +178,39 @@ export const simpleOption = new class SimpleOption{
         return li;
     }
 
+    #createPermitRequest(){
+        let li = Object.assign(document.createElement('li'), {
+
+        });
+        let title = Object.assign(document.createElement('span'),{
+            textContent: 'Attend Request'
+        })
+        
+
+
+        let attendRequest = Object.assign(document.createElement('ul'), {
+            className: 'attend_request_container',
+        });
+
+        li.append(title);
+        li.onmouseenter = () => {
+            li.append(attendRequest)
+        }
+
+        li.onmouseleave = () => {
+            //attendRequest.remove();
+        }
+        return {li, title, attendRequest};
+    }
+    
     open(){
         document.body.append(this.#wrap);
         this.#wrap.append(this.#container)
-        this.#container.replaceChildren(this.#createComponentOption());
+        let contentList = [this.#createComponentOption()];
+        if(workspaceHandler.workspaceId){
+            contentList.push(this.#attendRequestObject.li);
+        }
+        this.#container.replaceChildren(...contentList)
     }
 
     close(){

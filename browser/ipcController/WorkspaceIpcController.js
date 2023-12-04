@@ -26,6 +26,19 @@ class WorkspaceIpcController {
 		ipcMain.handle('getWorkspaceDetail', async (event, param = {}) => {
 			return this.getWorkspaceDetail(event, param);
 		})
+
+		ipcMain.handle('createPermitWokrspaceInAccount', async (event, param = {}) =>{
+			return this.createPermitWokrspaceInAccount(event, param);
+		})
+
+		ipcMain.handle('giveAdmin', async (event, param) => {
+			return this.giveAdmin(event, param);
+		})
+
+		ipcMain.handle('searchPermitRequestList', async (event, param) => {
+			return this.searchPermitRequestList(event, param);
+		})
+		
 	}
 
 	#send(eventName, data){
@@ -136,6 +149,125 @@ class WorkspaceIpcController {
 				return {'isLogin': false};
 			}
 		});
+	}
+	createPermitWokrspaceInAccount(event, param = {}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+					if(v != undefined && v != ''){
+						total[k] = v;
+					}
+					return total;
+				},{});
+				return axios.post(`${__serverApi}/api/workspace/create/permit`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC createPermitWokrspaceInAccount error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	giveAdmin(event, param={}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+					if(v != undefined && v != ''){
+						total[k] = v;
+					}
+					return total;
+				},{});
+				return axios.post(`${__serverApi}/api/workspace/create/give-admin`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC createPermitWokrspaceInAccount error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	searchPermitRequestList(event, param = {}){
+		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
+			log.error(`searchPermitRequestList workspaceId is ::: ${param.workspaceId}`);
+			return undefined;
+		}
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
+					headers:{
+						'Content-Type': 'application/json',
+						'Accept': 'text/event-stream',
+					},
+					responseType: 'stream'
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC searchPermitRequestList error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				}).then(stream => {
+					let streamEndResolve;
+					let promise = new Promise(res=>{
+						streamEndResolve = res;
+					})
+					stream.on('data', bufferArr => {
+						try{
+                            let str = String(bufferArr);
+							let obj = JSON.parse(str);
+							this.#send('workspacePermitRequestAccept', obj)
+						}catch(ignore){}
+					})
+					stream.on('end', () => {
+						log.debug('end searchPermitRequestList stream ::: ')
+						streamEndResolve();
+					})
+					return promise.then(()=>'done');
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
 	}
 }
 const workspaceIpcController = new WorkspaceIpcController();

@@ -226,7 +226,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 	let workspaceIdPromise = new Promise(resolve=>{
 		workspaceIdResolve = resolve;
 	})
-	window.myAPI.workspace.getWorkspaceId().then(workspaceId=>{
+	window.myAPI.getWorkspaceId().then(workspaceId=>{
 		if(workspaceId != undefined){
 			workspaceIdResolve(workspaceId);
 		}

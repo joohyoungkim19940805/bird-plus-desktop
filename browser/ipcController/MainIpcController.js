@@ -17,12 +17,6 @@ class MainIpcController {
 			this.changeMainPage(event, param);
 		});
 
-		ipcMain.handle('getWorkspaceId', async () => {
-			return this.getWorkspaceId();
-		})
-		ipcMain.handle('resetWorkspaceId', async () => {
-			return this.resetWorkspaceId();
-		})
 	}
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
@@ -48,14 +42,6 @@ class MainIpcController {
 		}).then(()=>{
 			mainWindow.workspaceId = param.workspaceId;
 		})
-	}
-
-	getWorkspaceId(){
-		return mainWindow.workspaceId;
-	}
-
-	resetWorkspaceId(){
-		mainWindow.resetWorkspace();
 	}
 
 }

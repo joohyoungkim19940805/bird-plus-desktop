@@ -138,6 +138,12 @@ class MainWindow extends BrowserWindow{
 			super.restore();
 		})
 
+		ipcMain.handle('resetWorkspaceId', async () => {
+			return this.resetWorkspace();
+		})
+		ipcMain.handle('getWorkspaceId', async () => {
+			return this.workspaceId;
+		})
 		/*ipcMain.on('setTitle', async (event, param) => {
 			console.log(param);
 			super.setTitle = param.title;
