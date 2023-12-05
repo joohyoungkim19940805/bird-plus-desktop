@@ -6,7 +6,14 @@ export default new class RoomHandler{
     #roomChangeDone;
     #roomChangeAwait;
 
+    #roomFavoritesListMemory;
+    #roomListMemory;
+    #roomMessengerListMemory;
     constructor(){
+
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('roomChange', event => {
+            this.roomId = event.roomId
+        })
 
     }
 
@@ -66,5 +73,28 @@ export default new class RoomHandler{
     }
     removeRoomIdChangeListener(name){
         delete this.#addRoomIdChangeListener(name);
+    }
+
+    set roomFavoritesListMemory(memory){
+        this.#roomFavoritesListMemory = memory;
+    }
+
+    get roomFavoritesListMemory(){
+        return this.#roomFavoritesListMemory;
+    }
+
+    set roomListMemory(memory){
+        this.#roomListMemory = memory;
+    }
+    get roomListMemory(){
+        return this.#roomListMemory;
+    }
+
+    set roomMessengerListMemory(memory){
+        this.#roomMessengerListMemory = memory;
+    }
+
+    get roomMessengerListMemory(){
+        return this.#roomMessengerListMemory
     }
 }

@@ -117,17 +117,19 @@ export default new class NoticeBoardDetail{
             })
         };
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
+            if(data && data.serverSentStreamType){
+                data = data.content;
+            }
             this.createItemElement(data)
             .then(li => {
                 this.#addMemory(li, data.workspaceId, data.roomId, data.noticeBoardId, data.id);
             }).then( async () => {
-
                 let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
                     .map(async (item, i)=> {
                         //let weight = i + 1;
                        
                         let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                            .map((e,j)=> {
+                            .map( async (e,j)=> {
                                 return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
                                     emptyItem.dataset.connect_target_id = item.dataset.id;
                                     return emptyItem;
@@ -202,9 +204,6 @@ export default new class NoticeBoardDetail{
     }
 
     createItemElement(data, emptyIndex){
-        if(data && data.serverSentStreamType){
-            data = data.content;
-        }
         return new Promise(resolve=>{
             let li = Object.assign(document.createElement('li'),{
                 className : 'notice_board_detail_item'
@@ -301,9 +300,13 @@ export default new class NoticeBoardDetail{
             editor.onfocus = (event) => {
                 prevText = editor.innerHTML;
             }
+            let isScriptBlur = false;
             editor.onblur = (event) => {
-                if(editor.matches(':hover') || this.#elementMap.test.matches(':hover') || document.activeElement == editor){
+                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.test.matches(':hover') || document.activeElement == editor)){
                     return;
+                }
+                if(isScriptBlur){
+                    isScriptBlur = ! isScriptBlur;
                 }
                 editor.contentEditable = false;
                 editor.classList.add('pointer');
@@ -324,8 +327,9 @@ export default new class NoticeBoardDetail{
                     return;
                 }
                 prevText = editor.innerHTML;
-
+                
                 let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
+                li.dataset.empty_line_count = emptyLineCount;
                 let param = {
                     id: li.dataset.id,
                     noticeBoardId: noticeBoardHandler.noticeBoardId,
@@ -334,10 +338,27 @@ export default new class NoticeBoardDetail{
                     emptyLineCount,
                     orderSort: li.dataset.order_sort //([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
                 };
-                li.dataset.empty_line_count = emptyLineCount;
-                
                 this.#uploadNoticeBoard(editor, param);
 
+            }
+            editor.onkeydown = (event) => {
+                let {altKey, ctrlKey, shiftKey, key} = event;
+                if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+                    event.preventDefault();
+                    let LineBreakMode;
+                    if(altKey){
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST
+                    }else if(ctrlKey){
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_LAST
+                    }else{
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NO_CHANGE
+                    }
+                    editor.lineBreak(LineBreakMode);
+                }else if(key == 'Enter' && editor.innerText.replaceAll('\n', '') != ''){
+                    event.preventDefault();
+                    isScriptBlur = true;
+                    editor.blur();
+                }
             }
 
             resolve(li);

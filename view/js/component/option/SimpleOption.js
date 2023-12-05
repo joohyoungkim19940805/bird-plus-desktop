@@ -87,11 +87,11 @@ export const simpleOption = new class SimpleOption{
             let [permit, reject] = item.querySelectorAll('.attend_request_item_permit, .attend_request_tiem_reject');
             [permit, reject].forEach(e=>{
                 e.onclick = () => {
-                    console.log(e.value);
                     window.myAPI.workspace.createPermitWokrspaceInAccount({
                         id:content.id,
                         workspaceId:content.workspaceId,
-                        permitType:e.value
+                        permitType:e.value,
+                        accountName: content.accountName
                     })
                 }
             })
@@ -102,14 +102,25 @@ export const simpleOption = new class SimpleOption{
             simpleMemory[content.workspaceId][content.accountName] = item
 
             if(workspaceHandler.workspaceId == content.workspaceId){
-                console.log(Object.values(simpleMemory[content.workspaceId]))
+                //console.log(Object.values(simpleMemory[content.workspaceId]))
                 attendRequest.replaceChildren(
                     ...Object.values(simpleMemory[content.workspaceId])
-                )    
+                )
             }
 
         })
-        console.log(workspaceHandler.workspaceId);
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitResultAccept', (event)=>{
+            let {content = event} = event;
+            console.log(event);
+            if(workspaceHandler.workspaceId == content.workspaceId){
+                let {attendRequest} = this.#attendRequestObject
+                delete simpleMemory[content.workspaceId][content.accountName];
+                attendRequest.replaceChildren(
+                    ...Object.values(simpleMemory[content.workspaceId])
+                )
+            }
+        })
+        //console.log(workspaceHandler.workspaceId);
         workspaceHandler.addWorkspaceIdChangedListener = {
             name: 'simpleOptuon',
             callBack: () => {
@@ -198,7 +209,7 @@ export const simpleOption = new class SimpleOption{
         }
 
         li.onmouseleave = () => {
-            //attendRequest.remove();
+            attendRequest.remove();
         }
         return {li, title, attendRequest};
     }

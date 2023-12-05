@@ -123,6 +123,7 @@ export default class EmoticonBox{
                         }
                         clearInterval(appendAwait);
                         li.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                        this.createEmoticonList(groupTitle, isAll ? undefined : e)
                     },50)
                     
                 }

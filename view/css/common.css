@@ -93,6 +93,10 @@ input, button{
     background: none;
     border: none;
 }
+input{
+    border-bottom: solid 1px #ffe7e7;
+    border-left: solid 1px #ffe7e7;
+}
 button{
     cursor: pointer;
 }

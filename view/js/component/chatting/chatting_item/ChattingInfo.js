@@ -27,6 +27,8 @@ import { emoticon, defaultEmoticon, toneTypeMapper, groupKind, subgroupKind } fr
 
 import EmoticonBox from "../../../handler/editor/component/EmoticonBox"
 
+import NotificationsIcon from "../../NotificationsIcon"
+
 class ChattingInfoLine extends FreeWillEditor{
     static{
         window.customElements.define('chatting-info-line', ChattingInfoLine);
@@ -196,8 +198,28 @@ export default new class ChattingInfo{
             name: 'chattingInfo',
             callBack: (chattingData) => {
                 this.createItemElement(chattingData).then(liElement => {
+
                     this.#addMemory(liElement, chattingData.id)
                     if(roomHandler.roomId != chattingData.roomId){
+                        new Promise(resolve => {
+                            let list = [
+                                ...Object.values(roomHandler.roomFavoritesListMemory[workspaceHandler.workspaceId] || {}),
+                                ...Object.values(roomHandler.roomListMemory[workspaceHandler.workspaceId] || {}),
+                                ...Object.values(roomHandler.roomMessengerListMemory[workspaceHandler.workspaceId] || {})
+                            ]
+                            console.log(list)
+                            window.test = list;
+                            list.flatMap(e=>Object.values(e)).filter(e=>e.dataset.room_id == chattingData.roomId)
+                            resolve();
+                        })
+                        setTimeout(()=>{
+                            window.myAPI.notifications({
+                                fullName: liElement.dataset.full_name, 
+                                content: liElement.__editor.innerText.split('\n'),
+                                workspaceId: liElement.dataset.workspace_id,
+                                roomId: liElement.dataset.room_id
+                            });    
+                        },1000)
                         return;
                     }
                     let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
@@ -228,14 +250,14 @@ export default new class ChattingInfo{
                 });
             }
         }
+        let firstOpenCheckMapper = {};
         roomHandler.addRoomIdChangeListener = {
             name: 'chattingInfo',
             callBack: () => {
                 this.reset();
                 let promise;
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-                console.log(memory);
-                if(memory && memory.length != 0){
+                if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
                         memory.flatMap(e=>Object.values(e))
@@ -281,8 +303,9 @@ export default new class ChattingInfo{
                         )
                         clearInterval(isConnectedAwait);
                     },50);
-
+                    firstOpenCheckMapper[roomHandler.roomId] = '';
                 })
+
             },
             runTheFirst: false
         }

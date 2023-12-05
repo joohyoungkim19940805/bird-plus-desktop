@@ -119,6 +119,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	getWorkspaceId: () => ipcRenderer.invoke('getWorkspaceId'),
 
+	notifications: (param) => ipcRenderer.send('notifications', param),
+
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},

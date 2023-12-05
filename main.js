@@ -57,7 +57,7 @@ if(process.defaultApp && process.argv.length >= 2){
 	}
 }
 
-const gotTheLock = app.requestSingleInstanceLock();
+const gotTheLock = true//app.requestSingleInstanceLock();
 console.log('kjh test11111',process.argv)
 	
 var workspaceId;
@@ -78,17 +78,13 @@ if (!gotTheLock) {
 				mainWindow.show();
 				mainWindow.isOpening = false;
 			})
-			console.log(mainWindow.getRepresentedFilename());
-			console.log(mainWindow.webContents.mainFrame.name)
+
 			if(mainWindow.isMinimized()){
 				// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
 				mainWindow.restore();
 			}
 			mainWindow.focus();
 		}
-		console.log('event',event);
-		console.log('commandLine',commandLine);
-		console.log('workingDirectory',workingDirectory);
 
 		dialog.showErrorBox(`Welcome Back`, `You arrived from: ${commandLine.pop().slice(0, -1)}`)
 	})

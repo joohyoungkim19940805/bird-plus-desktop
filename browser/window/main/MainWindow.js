@@ -82,19 +82,19 @@ class MainWindow extends BrowserWindow{
 
 		super.on('maximize', (event) => {
 			//console.log('max >>> ', event);
-			mainWindow.webContents.send('maximize', {});
+			super.webContents.send('maximize', {});
 		})
 		super.on('unmaximize', (event) => {
 			//console.log('unmax >>> ', event);
-			mainWindow.webContents.send('unmaximize', {});
+			super.webContents.send('unmaximize', {});
 		})
 		super.on('minimize', (event) => {
 			//console.log('minimize >>> ', event);
-			mainWindow.webContents.send('minimize', {});
+			super.webContents.send('minimize', {});
 		})
 		super.on('restore', (event) => {
 			//console.log('restore >>> ' , event);
-			mainWindow.webContents.send('restore', {});
+			super.webContents.send('restore', {});
 		})
 		super.on('close', event => {
 			//console.log(event);

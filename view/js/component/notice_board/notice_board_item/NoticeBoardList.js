@@ -325,11 +325,7 @@ export default new class NoticeBoardList{
 		return li;
 	}
 	createNoticeBoard(data = {isEmpty:true}, parentRoot){
-		let isNoticeBoardActive = ! Boolean(data.isEmpty) && 
-			this.#memory[workspaceHandler.workspaceId][roomHandler.roomId]?.
-				[data.id]?.
-				querySelector('notice_board_list_content_item_title_name')?.
-				classList.contains('active');
+		let isNoticeBoardActive = ! Boolean(data.isEmpty) && data.id == noticeBoardHandler.noticeBoardId
 
 		let li = Object.assign(document.createElement('li'), {
 			className: 'notice_board_list_content_item type_notice_board',

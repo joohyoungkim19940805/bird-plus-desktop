@@ -213,6 +213,9 @@ class NoticeBoardIpccontroller {
         return windowUtil.isLogin( result => {
             if(result.isLogin){
                 let {workspaceId, roomId, noticeBoardId} = param;
+                if(! noticeBoardId){
+                    return;
+                }
 				let queryString = Object.entries(param)
 					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId' && k != 'noticeBoardId')
 					.map(([k,v]) => `${k}=${v}`).join('&')

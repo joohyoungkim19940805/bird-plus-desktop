@@ -2,7 +2,7 @@
 const path = require('path');
 
 
-const { app, Menu, Tray } = require('electron');
+const { app, Menu, Tray, ipcMain, Notification } = require('electron');
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater')
 
@@ -51,6 +51,22 @@ class MainTray extends Tray{
 			}
 			
 			isDoubleClick = false;
+		})
+		
+		ipcMain.on('notifications', async (event, param)=>{
+			let content = param.content.join('\n');
+			let notification = new Notification({
+				title: param.fullName,
+				body: content.substring(0,200) + (content.length > 200 ? '...' : ''),
+				icon: path.join(__project_path, 'view/image/icon.ico')
+			});
+			notification.show();
+			notification.on('click', () => {
+				if(this.mainWindow.workspaceId != param.workspaceId){
+					this.mainWindow.webContents.send('workspaceChange', {workspaceId: param.workspaceId});
+				}
+				this.mainWindow.webContents.send('roomChange', {roomId: param.roomId});
+			})
 		})
 	}
 	addTrayEvent(){

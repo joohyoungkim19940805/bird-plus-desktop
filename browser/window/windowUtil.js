@@ -20,8 +20,8 @@ class WindowUtil{
             if( ! this.responseIsOk(response)){
                 return callBack({
                     isLogin: false,
-                    status: response.status,
-                    statusText: response.statusText
+                    status: response?.status,
+                    statusText: response?.statusText
                 });
             }else{
                 if(response.data.code == 0){
@@ -46,7 +46,10 @@ class WindowUtil{
         })
     }
 
-    responseIsOk({status}){
+    responseIsOk({status = undefined} = {}){
+        if( ! status){
+            return false;
+        }
         return (status == '200' || status == '201') ;
     }
 

@@ -92,7 +92,7 @@ export default new class RoomMessengerList{
 
 	#createMessengerView;
 	constructor(){
-		
+		roomHandler.roomMessengerListMemory = this.#memory;
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
 			window.myAPI.room.updateRoomInAccoutOrder(changeList.map(e=>{

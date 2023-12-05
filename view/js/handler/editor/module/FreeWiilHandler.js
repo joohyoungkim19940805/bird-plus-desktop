@@ -130,9 +130,9 @@ export default class FreeWiilHandler extends HTMLElement{
                 }
                 let range = selection.getRangeAt(0);
                 //selection.removeAllRanges();
-                let endLineChildNodes = startAndEndLineObject.endLine.childNodes;
-                range.setStart(startAndEndLineObject.startLine.childNodes[0], 0);
-                range.setEnd(endLineChildNodes[endLineChildNodes.length - 1], endLineChildNodes[endLineChildNodes.length - 1].textContent.length);
+                let endLineChildNodes = [...startAndEndLineObject.endLine.childNodes].at(-1);
+                range.setStart(startAndEndLineObject.startLine.childNodes[0], 1);
+                range.setEnd(endLineChildNodes, endLineChildNodes.nodeType == Node.TEXT_NODE ? endLineChildNodes.textContent.length : startAndEndLineObject.endLine.childNodes.length);
                 selection.addRange(range);
             }else{
                 let anchorNodeLine = Line.getLine(anchorNode);

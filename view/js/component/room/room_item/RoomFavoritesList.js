@@ -91,6 +91,7 @@ export default new class RoomFavoritesList{
 
 
 	constructor(){
+		roomHandler.roomFavoritesListMemory = this.#memory;
 		this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.roomContentList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList) => {
 			console.log(changeList);
