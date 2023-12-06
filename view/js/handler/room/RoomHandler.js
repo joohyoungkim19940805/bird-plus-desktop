@@ -6,9 +6,6 @@ export default new class RoomHandler{
     #roomChangeDone;
     #roomChangeAwait;
 
-    #roomFavoritesListMemory;
-    #roomListMemory;
-    #roomMessengerListMemory;
     constructor(){
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomChange', event => {
@@ -60,7 +57,7 @@ export default new class RoomHandler{
             }
            
             //window.myAPI.setTitle({title:this.#room.roomName})
-            document.head.querySelector('title').textContent = this.#room.roomName + ' - Grease Lightning Chat';
+            
         });
     }
 
@@ -75,26 +72,4 @@ export default new class RoomHandler{
         delete this.#addRoomIdChangeListener(name);
     }
 
-    set roomFavoritesListMemory(memory){
-        this.#roomFavoritesListMemory = memory;
-    }
-
-    get roomFavoritesListMemory(){
-        return this.#roomFavoritesListMemory;
-    }
-
-    set roomListMemory(memory){
-        this.#roomListMemory = memory;
-    }
-    get roomListMemory(){
-        return this.#roomListMemory;
-    }
-
-    set roomMessengerListMemory(memory){
-        this.#roomMessengerListMemory = memory;
-    }
-
-    get roomMessengerListMemory(){
-        return this.#roomMessengerListMemory
-    }
 }

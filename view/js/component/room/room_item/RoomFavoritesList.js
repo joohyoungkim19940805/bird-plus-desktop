@@ -162,6 +162,7 @@ export default new class RoomFavoritesList{
 					return;
 				}
 				targetRoom.style.fontWeight = 'bold';
+				document.head.querySelector('title').textContent = handler.room.roomName + ' - Grease Lightning Chat';
 			},
 			runTheFirst: false
 		}
@@ -329,4 +330,9 @@ export default new class RoomFavoritesList{
 	get memory(){
 		return this.#memory;
 	}
+		
+	get liList(){
+		return this.#liList;
+	}
+	
 }

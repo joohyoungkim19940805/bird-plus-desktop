@@ -163,6 +163,7 @@ export default class IndexedDBHandler{
 					reject(new Error('VersionError: DB 버전을 수동으로 입력해선 안됩니다.'));
 				}else{
 					//error code
+					console.error(e);
 					reject(new Error(`unknownError ${e}`))
 				}
 			}

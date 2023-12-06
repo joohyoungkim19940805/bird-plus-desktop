@@ -9,10 +9,10 @@ class BirdPlusOptions{
 
 	#position = {x : undefined, y : undefined};
 
-	#upsertSizeDelay = 500;
+	#upsertSizeDelay = 50;
 	#isUpsertSizeDelay = false;
 
-	#upsertPositionDelay = 500;
+	#upsertPositionDelay = 50;
 	#isUpsertPositionDelay = false;
 
 	constructor(){
@@ -149,6 +149,7 @@ class BirdPlusOptions{
 				]
 			*/
 			let matchingMonitor = screen.getDisplayMatching(rect);
+
 			let isWidthFullSize = this.#size.w / matchingMonitor.size.width >= 0.95;
 			let isHeightFuulSize = this.#size.h / matchingMonitor.size.height >= 0.95;
 			//log.log('isWidthFullSize',isWidthFullSize)

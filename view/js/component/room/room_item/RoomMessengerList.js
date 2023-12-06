@@ -182,6 +182,7 @@ export default new class RoomMessengerList{
 					return;
 				}
 				targetRoom.style.fontWeight = 'bold';
+				document.head.querySelector('title').textContent = handler.room.roomName + ' - Grease Lightning Chat';
 			},
 			runTheFirst: false
 		}
@@ -366,5 +367,9 @@ export default new class RoomMessengerList{
 	
 	get elementMap(){
 		return this.#elementMap;
+	}
+	
+	get liList(){
+		return this.#liList;
 	}
 }

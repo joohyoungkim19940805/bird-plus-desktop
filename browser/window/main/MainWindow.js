@@ -8,8 +8,6 @@ const path = require('path');
  */
 const {BrowserWindow, ipcMain, shell, screen} = require('electron');
 
-const EasyObserver = require(path.join(__project_path, 'browser/service/EasyObserver.js'))
-
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
 // 자동 업데이트 모듈 호출
@@ -153,6 +151,15 @@ class MainWindow extends BrowserWindow{
 			this.createSubWindow(param);
 		});
 
+		
+		/*
+		ipcMain.on('ondragstart', (event, param) => {
+			console.log('event', event);
+			console.log('filePath', filePath);
+			event.sender.startDrag()
+		})
+		*/
+
 		//새창 팝업 열릴시 트리거
 		super.webContents.setWindowOpenHandler((event) => {
 			/*
@@ -246,6 +253,25 @@ class MainWindow extends BrowserWindow{
 		if(! param.pageName){
 			throw new Error('pageName is null');
 		}
+		let position = super.getPosition();
+		let size = super.getSize();
+		let rect = {
+			x: position[0],
+			y: position[1],
+			width: size[0],
+			height : size[1]
+		}
+		let matchingDisplay = screen.getDisplayMatching(rect);
+		
+		let mathX = rect.x + param.x
+		let mathY = rect.y + param.y
+
+		console.log('position',position)
+		console.log('size', size)
+		console.log('matchingDisplay', matchingDisplay);
+		console.log('mathX',mathX);
+		console.log('mathY', mathY);
+		
 
 		let duplecateWindow = this.subWindow[param.pageId] || this.subWindow[param.pageName];
 
@@ -255,7 +281,6 @@ class MainWindow extends BrowserWindow{
 		}else if(duplecateWindow){
 			return;
 		}
-		console.log(param);
 		let window = new BrowserWindow(
 			{
 				width : param.width,
@@ -274,9 +299,9 @@ class MainWindow extends BrowserWindow{
 					x: 15,
 					y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
 				},
-				x: parseInt( param.x - (param.width / 2) ),
-				y: parseInt( param.y - 20), //parseInt( param.y - (param.height / 2) )
-				title: param.title
+				x: mathX,
+				y: mathY,
+				title: param.title + ' - Grease Lightning Chat'
 			}
 		)
 		window.loadFile(path.join(__project_path, `view/html/${param.pageName}.html`)).then(e=>{
@@ -284,7 +309,12 @@ class MainWindow extends BrowserWindow{
 				window.webContents.send('roomChange', {
 					roomId:param.roomId
 				});
-				window.webContents.openDevTools();
+				//window.webContents.openDevTools();
+			}
+			if(param.noticeBoardId){
+				window.webContents.send('noticeBoardChange', {
+					noticeBoardId:param.noticeBoardId
+				});
 			}
 		})
 

@@ -41,7 +41,14 @@ export default class NotificationsIcon{
 
         })
         Object.assign(this.#element.style, {
-            position: 'fixed'
+            position: 'fixed',
+            width: 'fit-content',
+            height: 'fit-content',
+            zIndex: '100',
+            backgroundColor: '#ffb2b2',
+            color: 'white',
+            borderRadius: '100%',
+            padding: '0.1rem 0.4rem 0.1rem 0.4rem'
         })
         
         this.#counterSpan = Object.assign(document.createElement('span'), {
@@ -92,7 +99,11 @@ export default class NotificationsIcon{
         document.body.append(this.#element);
         this.#element.fontSize = parseFloat(window.getComputedStyle(this.#target).fontSize);
         let appendAwait = setInterval(()=>{
-            if( ! this.#element.isConnected || ! this.#target.isConnected){
+            console.log(Object.values(this.#keyMapper).length);
+            if(Object.values(this.#keyMapper).length == 0){
+                clearInterval(appendAwait);
+            }
+            if( ! this.#element.isConnected){
                 return;
             }
             clearInterval(appendAwait);
@@ -100,7 +111,7 @@ export default class NotificationsIcon{
             let elementRect = this.#element.getBoundingClientRect();
 
             let positionObj = this.#getPosition(targetRect, elementRect)
-
+            console.log(positionObj);
             Object.assign(this.#element.style, positionObj)
 
         }, Math.floor(Math.random() * (500 - 100) + 100) );
@@ -118,16 +129,14 @@ export default class NotificationsIcon{
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_UP ||
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_BOTTOM
         ){
-            obj.right = targetRect.x + targetRect.width + (elementRect.width / 2);
-            if(obj.right > window.outerWidth){
-                obj.right = 0;
+            obj.left = targetRect.x + targetRect.width - (elementRect.width / 2);
+            if(obj.left > window.outerWidth){
                 obj.left = targetRect.x - (elementRect.width / 2);
             }
         }else{
             obj.left = targetRect.x - (elementRect.width / 2);
             if(obj.left > targetRect.x - (elementRect.width / 2) < 0){
-                obj.left = 0;
-                obj.right = targetRect.x + targetRect.width + (elementRect.width / 2);
+                obj.left = targetRect.x + targetRect.width - (elementRect.width / 2);
             }
         }
 
@@ -135,22 +144,22 @@ export default class NotificationsIcon{
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_CENTER ||
             this.#positionOption == NotificationsIcon.PositionOption.LEFT_CENTER
         ){
-            obj.top = targetRect.y + (targetRect.height / 2) + (elementRect.height / 2);
+            obj.top = targetRect.y
         }else if(
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_UP ||
             this.#positionOption == NotificationsIcon.PositionOption.LEFT_UP
         ){
-            obj.top = targetRect.y - (elementRect.height / 2);
+            obj.top = targetRect.y - targetRect.height;
             if(obj.top < 0){
-                obj.top = targetRect.bottom + (elementRect.height / 2);
+                obj.top = targetRect.y + targetRect.height;
             }
         }else if(
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_BOTTOM ||
             this.#positionOption == NotificationsIcon.PositionOption.LEFT_BOTTOM
         ){
-            obj.top = targetRect.bottom + (elementRect.height / 2); 
+            obj.top = targetRect.y + targetRect.height;
             if(obj.top > window.outerHeight){
-                obj.top = targetRect.y - (elementRect.height / 2);
+                obj.top = targetRect.y - targetRect.height;
             }
         }
 

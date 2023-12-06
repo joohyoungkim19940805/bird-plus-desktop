@@ -1,5 +1,6 @@
-import chattingContainer from "./../component/chatting/ChattingContainer"
-import noticeBoardContainer from "../component/notice_board/NoticeBoardContainer"
+import noticeBoardHandler from "../handler/notice_board/NoticeBoardHandler"
+
+import noticeBoardDetail from "../component/notice_board/notice_board_item/NoticeBoardDetail"
 
 import roomHandler from "../handler/room/RoomHandler"
 import chattingHandler from "../handler/chatting/ChattingHandler"
@@ -226,12 +227,13 @@ window.addEventListener("DOMContentLoaded", (event) => {
 	})
 	workspaceIdPromise.then(workspaceId => {
 		document.querySelector('#main').append(
-			noticeBoardContainer.wrap,
-			chattingContainer.wrap
+            noticeBoardDetail.element
 		)
+        noticeBoardDetail.element.dataset.is_resize = false;
+        noticeBoardDetail.element.grow = 1;
 
-        window.myAPI.event.electronEventTrigger.addElectronEventListener('roomChange', event => {
-            roomHandler.roomId = event.roomId;
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardChange', event => {
+            noticeBoardHandler.noticeBoardId = event.noticeBoardId;
         })
 
 		window.myAPI.stream.initWorkspaceStream({workspaceId});

@@ -29,6 +29,11 @@ import EmoticonBox from "../../../handler/editor/component/EmoticonBox"
 
 import NotificationsIcon from "../../NotificationsIcon"
 
+import roomList from "../../room/room_item/RoomList"
+import roomFavoritesList from "../../room/room_item/RoomFavoritesList"
+import roomMessengerList from "../../room/room_item/RoomMessengerList"
+
+
 class ChattingInfoLine extends FreeWillEditor{
     static{
         window.customElements.define('chatting-info-line', ChattingInfoLine);
@@ -201,24 +206,51 @@ export default new class ChattingInfo{
 
                     this.#addMemory(liElement, chattingData.id)
                     if(roomHandler.roomId != chattingData.roomId){
-                        new Promise(resolve => {
-                            let list = [
-                                ...Object.values(roomHandler.roomFavoritesListMemory[workspaceHandler.workspaceId] || {}),
-                                ...Object.values(roomHandler.roomListMemory[workspaceHandler.workspaceId] || {}),
-                                ...Object.values(roomHandler.roomMessengerListMemory[workspaceHandler.workspaceId] || {})
-                            ]
-                            console.log(list)
-                            window.test = list;
-                            list.flatMap(e=>Object.values(e)).filter(e=>e.dataset.room_id == chattingData.roomId)
-                            resolve();
-                        })
                         setTimeout(()=>{
                             window.myAPI.notifications({
                                 fullName: liElement.dataset.full_name, 
                                 content: liElement.__editor.innerText.split('\n'),
                                 workspaceId: liElement.dataset.workspace_id,
                                 roomId: liElement.dataset.room_id
-                            });    
+                            });
+                            new Promise(resolve => {
+                                let list = [
+                                    ...roomList.liList || [],
+                                    ...roomFavoritesList.liList || [],
+                                    ...roomMessengerList.liList || []
+                                ]
+                                console.log(list);
+                                list.flatMap(e=>e).filter(e=>e.dataset.room_id == chattingData.roomId).forEach(e=>{
+                                    if( ! e.isConnected){
+                                        console.log(roomHandler.roomMessengerListMemory);
+                                        return;
+                                    }
+                                    console.log(e)
+                                    let notificationsIcon
+                                    if( ! e.__notificationsIcon){
+                                        notificationsIcon = new NotificationsIcon({target: e, positionOption : NotificationsIcon.PositionOption.RIGHT_CENTER})
+                                        e.__notificationsIcon = notificationsIcon;
+                                    }else{
+                                        notificationsIcon = e.__notificationsIcon;
+                                    }
+                                    notificationsIcon.addCount(liElement, chattingData.id);
+                                    console.log('liElement',liElement)
+                                    let liElementObserver = new IntersectionObserver((entries, observer) => {
+                                        entries.forEach(entry =>{
+                                            console.log('entry!!',entry)
+                                            if (entry.isIntersecting){
+                                                notificationsIcon.deleteCount(chattingData.id);
+                                                liElementObserver.disconnect();
+                                            }
+                                        })
+                                    }, {
+                                        threshold: 0.01,
+                                        root: this.#element
+                                    });
+                                    liElementObserver.observe(liElement);
+                                });
+                                resolve();
+                            }) 
                         },1000)
                         return;
                     }
@@ -257,6 +289,7 @@ export default new class ChattingInfo{
                 this.reset();
                 let promise;
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                console.log('memory',memory);
                 if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(

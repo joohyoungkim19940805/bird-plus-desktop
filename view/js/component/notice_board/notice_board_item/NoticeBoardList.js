@@ -56,7 +56,6 @@ export default new class NoticeBoardList{
 		//let prevWrapper;
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
 			//prevWrapper = wrapper;
-			console.log(changeList);
 			let parentRoot = item.__parentRoot;
 			if(parentRoot && target.dataset.parent_group_id != parentRoot.dataset.parent_group_id || 0){
 				target.dataset.parent_group_id = parentRoot.dataset.parent_group_id
@@ -92,6 +91,25 @@ export default new class NoticeBoardList{
 			}
 			return false;
 		}
+
+		this.#positionChanger.onDropDocumentOutCallback = ({target, event}) => {
+			if(target.hasAttribute('data-gorup_id') || JSON.parse(target.dataset.group_id) ){
+				return;
+			}
+			window.myAPI.createSubWindow({
+				workspaceId: workspaceHandler.workspaceId,
+				roomId: target.dataset.room_id,
+				noticeBoardId: target.dataset.id,
+				width: parseInt(window.outerWidth * 0.7),
+				height: parseInt(window.outerHeight * 0.7),
+				x: event.x,
+				y: event.y,
+				pageName: 'multipleNoticeBoard',
+				pageId : target.dataset.room_id,
+				title : roomHandler.room.roomName + ' - ' + target.dataset.title
+			})
+		}
+
         this.#elementMap.noticeBoardSearch.onsubmit = (event) => {
 			event.preventDefault();
 			this.refresh()
@@ -406,9 +424,11 @@ export default new class NoticeBoardList{
 					flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(()=>{
 						noticeBoardHandler.noticeBoardId = data.id;
 						this.prevOpenFlexTarget = titleName;
+						document.head.querySelector('title').textContent = roomHandler.room.roomName + ' - ' + titleName.textContent + ' - Grease Lightning Chat';
 					})
 				}else{
 					titleName.classList.remove('active');
+					document.head.querySelector('title').textContent = roomHandler.room.roomName + ' - Grease Lightning Chat';
 				}
 			}
 
@@ -423,6 +443,7 @@ export default new class NoticeBoardList{
 				flexLayout.openFlex(noticeBoardDetail.element, {isPrevSizeOpen: true}).then(() => {
 					this.prevOpenFlexTarget = titleName;
 					noticeBoardHandler.noticeBoardId = data.id;
+					document.head.querySelector('title').textContent = roomHandler.room.roomName + ' - ' + titleName.textContent + ' - Grease Lightning Chat';
 					//titleName.classList.add('active');
 				})
 			}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+		<meta name="viewport"content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+		<link rel="stylesheet" type="text/css" href="./../css/common.css">
+		<link rel="stylesheet" type="text/css" href="./../css/header.css">
+		<link rel="stylesheet" type="text/css" href="./../css/main.css">
+		<link rel="stylesheet" type="text/css" href="./../css/component/layerPopupTemplate.css">
+		<link rel="stylesheet" type="text/css" href="./../css/component/roomContainer.css">
+		<link rel="stylesheet" type="text/css" href="./../css/component/chattingContainer.css">
+		<link rel="stylesheet" type="text/css" href="./../css/component/noticeBoardContainer.css">
+		<link rel="stylesheet" type="text/css" href="./../css/component/simpleOption.css">
+		<!--<link rel="stylesheet" type="text/css" href="./../css/contentBlock.css">-->
+		<!--<script type="text/javascript" src="./../js/component/header/HeaderDefault.js"></script>-->
+		<script type="text/javascript" src="./../js/component/FlexLayout.js"></script>
+		<!--<script type="text/javascript" src="./../js/component/ResizePanel.js"></script>-->
+		<!--<script type="text/javascript" src="./../js/component/MainLayout.js"></script>-->
+		<!--<script type="text/javascript" src="./../js/component/ContentBlockLayout.js"></script>-->
+	</head>
+	<body>
+		<header-default></header-default>
+		<flex-layout data-direction="row" id="main">
+			<!--<div class="content_wrapper thread_wrapper" id="thread" data-is_resize="false" data-grow="0" data-info="스레드 같은 거">
+				<div is="content-block">abcdefghijk</div>
+			</div>-->
+		</flex-layout>
+		<script type="text/javascript" src="./../js/dist/multipleNoticeBoardViewRenderer.js" defer></script>
+	</body>
+</html>
