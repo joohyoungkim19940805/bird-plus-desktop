@@ -116,26 +116,21 @@ export default new class ChattingInfo{
                                     this.#lastItemVisibleObserver.disconnect();
                                     // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                     // 날짜 관련 함수 코드 실행
-                                    this.#processingTimeGrouping(
-                                        liList.at(-2), 
-                                        liList.at(-1)
-                                    ).then(() => {
-                                        if(this.elementMap.chattingContentList.querySelectorAll('.time_grouping').length == 0){
-                                            let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
-                                            let timeText; 
-                                            if(date.toDateString() == new Date().toDateString()){
-                                                timeText = 'to day'
-                                            }else{
-                                                timeText = date.toLocaleDateString(undefined, {
-                                                    weekday: 'short',
-                                                    month: 'short',
-                                                    day: '2-digit',
-                                                    formatMatcher: 'best fit'
-                                                })
-                                            }
-                                            this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
-                                        }
-                                    }); 
+                                    console.log(liList);
+                                    console.log(this.#liList);
+                                    let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
+                                    let timeText; 
+                                    if(date.toDateString() == new Date().toDateString()){
+                                        timeText = 'to day'
+                                    }else{
+                                        timeText = date.toLocaleDateString(undefined, {
+                                            weekday: 'short',
+                                            month: 'short',
+                                            day: '2-digit',
+                                            formatMatcher: 'best fit'
+                                        })
+                                    }
+                                    this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
                                 }
                                 return liList;
                             })
@@ -147,7 +142,7 @@ export default new class ChattingInfo{
                         return;
                     }
                     this.#liList = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
-                        .flatMap(e=>Object.values(e))
+                        //.flatMap(e=>Object.values(e))
                         .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                     let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
@@ -257,7 +252,7 @@ export default new class ChattingInfo{
                     let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                     if(memory && memory.length != 0){
                         this.#page = memory.length - 1;
-                        this.#liList = memory.flatMap(e=>Object.values(e))
+                        this.#liList = memory
                             .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                         this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                         let isConnectedAwait = setInterval(()=>{
@@ -275,7 +270,24 @@ export default new class ChattingInfo{
                             this.#processingTimeGrouping(
                                 this.#liList[1], 
                                 this.#liList[0]
-                            ); 
+                            ).then(result => {
+                                if(result){
+                                    return;
+                                }
+                                let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
+                                let timeText; 
+                                if(date.toDateString() == new Date().toDateString()){
+                                    timeText = 'to day'
+                                }else{
+                                    timeText = date.toLocaleDateString(undefined, {
+                                        weekday: 'short',
+                                        month: 'short',
+                                        day: '2-digit',
+                                        formatMatcher: 'best fit'
+                                    })
+                                }
+                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                            }); 
                         },50);
                         
                     }
@@ -289,11 +301,10 @@ export default new class ChattingInfo{
                 this.reset();
                 let promise;
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-                console.log('memory',memory);
                 if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
-                        memory.flatMap(e=>Object.values(e))
+                        memory
                         .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                     );
                 }else{
@@ -321,7 +332,17 @@ export default new class ChattingInfo{
                     )
                 }
                 promise.then(liList => {
-                    this.#liList.push(...liList);
+                    if( ! firstOpenCheckMapper[roomHandler.roomId]){
+                        this.#liList.push(...liList, ...memory);
+                        this.#liList = Object.values(this.#liList.reduce((total, item)=>{
+                            total[item.dataset.id] = item;
+                            return total;
+                        }, {}))
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                    }else{
+                        this.#liList.push(...liList);
+                    }
+                  
                     this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                     let isConnectedAwait = setInterval(()=>{
                         if( ! this.#liList[0]){
@@ -346,7 +367,7 @@ export default new class ChattingInfo{
             let {content} = event
             
             let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-            let targetLi = memory.find(e=>e[content.chattingId])?.[content.chattingId];
+            let targetLi = memory.find(e=>e.dataset.id == content.chattingId) //memory.find(e=>e[content.chattingId])//?.[content.chattingId];
             if( ! targetLi){
                 return;
             }
@@ -695,13 +716,10 @@ export default new class ChattingInfo{
         if( ! this.#memory[workspaceId].hasOwnProperty(roomId)){
             this.#memory[workspaceId][roomId] = {} ;
         }
-        if( ! this.#memory[workspaceId][roomId].hasOwnProperty(this.#page)){
-            this.#memory[workspaceId][roomId][this.#page] = {};
-        }
-        if(Object.values(this.#memory[workspaceId][roomId]).some(e=>e[id])){
+        /*if(Object.values(this.#memory[workspaceId][roomId]).some(e=>e[id])){
             return;
-        }
-        this.#memory[workspaceId][roomId][this.#page][id] = data;
+        }*/
+        this.#memory[workspaceId][roomId][id] = data;
     }
 
     #processingTimeText(createMils){

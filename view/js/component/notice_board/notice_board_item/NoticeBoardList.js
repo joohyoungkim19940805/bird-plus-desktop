@@ -317,7 +317,7 @@ export default new class NoticeBoardList{
 			marker.click();
 		}
 		titleName.onblur = (event) => {
-			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
+			/*if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
 				titleName.classList.add('pointer');
@@ -337,7 +337,7 @@ export default new class NoticeBoardList{
 				titleName.dataset.prev_titleName = titleName.textContent
 			}else if(titleName.textContent == '' && data.isEmpty){
 				li.remove();
-			}
+			}*/
 		}
 		this.#addItemEvent(li, parentRoot);
 		return li;
