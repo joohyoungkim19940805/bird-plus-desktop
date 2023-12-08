@@ -94,7 +94,10 @@
 				"nsis"
 			],
 			"icon": "./view/image/icon.ico",
-			"publish": ["github", "bitbucket"]
+			"publish": [
+				"github",
+				"bitbucket"
+			]
 		},
 		"nsis": {
 			"oneClick": false,
@@ -107,6 +110,5 @@
 			"output": "./dist/",
 			"app": "."
 		}
-		
 	}
 }

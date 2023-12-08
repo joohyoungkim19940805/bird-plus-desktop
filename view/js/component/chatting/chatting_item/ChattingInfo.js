@@ -806,4 +806,8 @@ export default new class ChattingInfo{
     get elementMap(){
         return this.#elementMap;
     }
+
+    get memory(){
+        return this.#memory;
+    }
 }

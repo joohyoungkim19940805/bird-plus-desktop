@@ -180,11 +180,15 @@ class FlexLayout extends HTMLElement {
 			
 				// 뷰포트 내에서 해당 영역이 보이지 않는 경우
 				target.dataset.flex_visibility = 'h'
+				
 				/*if(target.hasAttribute('data-is_visibility')){
 					target.style.visibility = 'hidden';
 					target.style.opacity = 0;
 				}*/
 				//target.dataset.grow = 0;
+				if(target._visibilityChangeCallback){
+					target._visibilityChangeCallback(target.dataset.flex_visibility)
+				}
 			}else{
 				// 뷰포트 내에서 보이는 경우
 				target.dataset.flex_visibility = 'v';
@@ -192,6 +196,9 @@ class FlexLayout extends HTMLElement {
 					target.style.visibility = '';
 					target.style.opacity = '';
 				}*/
+				if(target._visibilityChangeCallback){
+					target._visibilityChangeCallback(target.dataset.flex_visibility)
+				}
 			}
 		});
 	});
@@ -354,7 +361,7 @@ class FlexLayout extends HTMLElement {
 			let minSizeName = 'min' + this.sizeName.charAt(0).toUpperCase() + this.sizeName.substring(1);
 
 			let targetElement = this.findNotCloseFlexContent(resizePanel.__resizeTarget, 'previousElementSibling');
-			if( ! targetElement || (resizePanel.__resizeTarget.dataset.is_resize == 'true' && 30 < movement)){
+			if( ! targetElement || targetElement.dataset.is_resize == 'false' || (resizePanel.__resizeTarget.dataset.is_resize == 'true' && 30 < movement)){
 				targetElement = resizePanel.__resizeTarget;
 			}
 			let targetMinSize = parseFloat(window.getComputedStyle(targetElement)[minSizeName]) || 0;
@@ -363,7 +370,7 @@ class FlexLayout extends HTMLElement {
 
 			let nextElement = this.findNotCloseFlexContent(resizePanel.nextElementSibling, 'nextElementSibling');
 
-			if( ! nextElement || (resizePanel.nextElementSibling.dataset.is_resize == 'true' && 30 < (movement * -1))){
+			if( ! nextElement ||  targetElement.dataset.is_resize == 'false' || (resizePanel.nextElementSibling.dataset.is_resize == 'true' && 30 < (movement * -1))){
 				nextElement = resizePanel.nextElementSibling
 			}
 			let nextElementMinSize = parseFloat(window.getComputedStyle(nextElement)[minSizeName]) || 0;

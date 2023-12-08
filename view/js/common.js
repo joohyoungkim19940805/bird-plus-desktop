@@ -64,5 +64,17 @@ export default new class Common{
 		}
 		
 	}
-
+    isElement(targetObject, checkClazz){
+        let check = Object.getPrototypeOf(targetObject)
+        let isElement = false;
+        while(check != undefined){
+            if(check == checkClazz){
+                isElement = true;
+                break;
+            }else{
+                check = Object.getPrototypeOf(check);
+            }
+        }
+        return isElement;
+    }
 }

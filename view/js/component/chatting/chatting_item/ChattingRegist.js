@@ -90,7 +90,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 			clone.style.textDecorationColor = '#40404069';
 			return clone;
 		});
-		this.#elementMap.toolbarWrapper.append(...toolList);
+		this.#elementMap.toolbarWrapper.append(...toolCloneList);
 		this.onfocus = (event) => {
 			this.#elementMap.toolbarWrapper.replaceChildren(...toolList);
 		}

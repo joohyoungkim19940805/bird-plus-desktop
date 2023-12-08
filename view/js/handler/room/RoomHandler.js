@@ -4,7 +4,9 @@ export default new class RoomHandler{
     #addRoomIdChangeListener = {};
 
     #roomChangeDone;
-    #roomChangeAwait;
+    #roomChangeAwait = new Promise(resolve=>{
+        this.#roomChangeDone = resolve;
+    });
 
     constructor(){
 
@@ -41,21 +43,14 @@ export default new class RoomHandler{
                     })
                 })
             )
-            if( ! this.#roomChangeAwait){
+            startCallbackPromise.then(()=>{
+                this.#roomChangeDone();
+            })
+            this.#roomChangeAwait.then(()=>{
                 this.#roomChangeAwait = new Promise(resolve=>{
                     this.#roomChangeDone = resolve;
-                    this.#roomChangeDone(startCallbackPromise);
                 })
-            }else{
-                this.#roomChangeAwait.then(()=>{
-                    startCallbackPromise.then(()=>{
-                        this.#roomChangeAwait = new Promise(resolve=>{
-                            this.#roomChangeDone = resolve;
-                        })
-                    })
-                })
-            }
-           
+            })
             //window.myAPI.setTitle({title:this.#room.roomName})
             
         });
@@ -71,5 +66,7 @@ export default new class RoomHandler{
     removeRoomIdChangeListener(name){
         delete this.#addRoomIdChangeListener(name);
     }
-
+    get roomChangeAwait(){
+        return this.#roomChangeAwait;
+    }
 }
