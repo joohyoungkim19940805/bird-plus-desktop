@@ -395,4 +395,19 @@ export default class IndexedDBHandler{
 		})
 	}
 
+	deleteDatabase(dbName){
+		return new Promise( (resolve, reject) => {
+			
+			let deleteReuqest = indexedDB.deleteDatabase(dbName);
+			deleteReuqest.onerror = (event) => {
+				console.error(event);
+				reject(event);
+			}
+			deleteReuqest.onsuccess = (event) => {
+				console.log(event);
+				resolve(event);
+			}
+		})
+	}
+
 }

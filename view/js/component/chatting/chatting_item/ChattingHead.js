@@ -56,12 +56,14 @@ export default new class ChattingHead{
 
     constructor(){
 		
-        this.#accountInviteRoomView = new AccountInviteRoomView(this);
+        this.#accountInviteRoomView = new AccountInviteRoomView(this, roomHandler.roomId);
 		this.#accountInviteRoomView.onOpenCloseCallback = (status) => {
 			this.#accountInviteRoomView.reset();
 			if(status == 'open'){
-				this.#accountInviteRoomView.callData(this.#accountInviteRoomView.page, this.#accountInviteRoomView.size, workspaceHandler.workspaceId, this.#accountInviteRoomView.form.fullName.value)
+                this.#accountInviteRoomView.roomId = roomHandler.roomId;
+				this.#accountInviteRoomView.callData(this.#accountInviteRoomView.page, this.#accountInviteRoomView.size, workspaceHandler.workspaceId, roomHandler.roomId, this.#accountInviteRoomView.form.fullName.value)
 				.then(data => {
+                    console.log(data);
 					this.#accountInviteRoomView.createPage(data).then(liList => {
 						this.#accountInviteRoomView.addListItemVisibleEvent(liList);
 					})

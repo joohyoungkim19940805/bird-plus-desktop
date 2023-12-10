@@ -59,15 +59,17 @@ export default new class ChattingContainer{
     constructor(){
         chattingHead.element.dataset.is_resize = true;
         chattingHead.element.dataset.grow = 0.4;
-        chattingHead.element.dataset.prev_grow = 0.4;
+        //chattingHead.element.dataset.prev_grow = 0.4;
+        chattingHead.element.style.minHeight = '30px';
+
 
         chattingInfo.element.dataset.is_resize = true;
-        chattingInfo.element.dataset.prev_grow = 2
+        //chattingInfo.element.dataset.prev_grow = 2
+        chattingInfo.element.style.minHeight = '30px';
 
         chattingRegist.element.dataset.is_resize = true;
         chattingRegist.element.dataset.grow = 0.9;
-        chattingRegist.element.dataset.prev_grow = 0.9;
-        
+        //chattingRegist.element.dataset.prev_grow = 0.9;        
         chattingRegist.element.style.minHeight = '30px';
 
         this.#contentList = [chattingHead.element, chattingInfo.element, chattingRegist.element];
@@ -75,6 +77,7 @@ export default new class ChattingContainer{
         this.#container.replaceChildren(...this.#contentList);
         this.#wrap.querySelector('.content').append(this.#container);
 
+        /*        
         [chattingHead.element].forEach((e,i)=>{
             let simpleSvgPipMode = new SimpleSvgPipMode({target : e, zoom : 30});
             e._visibilityChangeCallback = (visibilityStatus) => {
@@ -93,6 +96,7 @@ export default new class ChattingContainer{
                 }
             }
         })
+        */
     }
     
     get container(){

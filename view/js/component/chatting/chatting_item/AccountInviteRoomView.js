@@ -109,7 +109,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 			if (entry.isIntersecting){
 				this.page += 1;
 				let roomName = this.form.fullName.value;
-				this.callData(this.page, this.size, this.#workspaceId, roomName).then(data=>{
+				this.callData(this.page, this.size, this.#workspaceId, this.#roomId, roomName).then(data=>{
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 					if(this.page >= data.totalPages){
 						this.#lastItemVisibleObserver.disconnect();
@@ -149,14 +149,14 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 			}
 			let fullName = this.form.account_invite_room_view_search_user.value;
 			this.reset();
-			this.callData(this.page, this.size, this.#workspaceId, fullName).then(data => {
+			this.callData(this.page, this.size, this.#workspaceId, this.#roomId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
 		}
 		this.form.account_invite_room_view_search_user.oninput = (event) => {
 			if(this.form.account_invite_room_view_search_user.value == ''){
 				this.reset();
-				this.callData(this.page, this.size, this.#workspaceId).then(data => {
+				this.callData(this.page, this.size, this.#workspaceId, this.#roomId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				});
 			}
@@ -196,9 +196,10 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		}
 	}
 	
-	callData(page, size, workspaceId, fullName){
+	callData(page, size, workspaceId, roomId, fullName){
+		console.log(roomId);
 		return window.myAPI.workspace.searchWorkspaceInAccount({
-			page, size, workspaceId, fullName
+			page, size, workspaceId, roomId, fullName
 		}).then((data = {}) =>{
 			return data.data;
 		});
@@ -287,6 +288,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		});
 	}
 	reset(){
+		this.#roomId = undefined;
 		this.page = 0;
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();

@@ -47,7 +47,7 @@ window.addEventListener('load', async () => {
 		keyPathNameList: ['fileName'],
 		pkAutoIncrement : false
 	});
-
+	indexedDBHandler.deleteDatabase('fileDB');
 	const dbOpenPromise = indexedDBHandler.open();
 
 	const imageOrVideoCallback = async (targetTools) => {
