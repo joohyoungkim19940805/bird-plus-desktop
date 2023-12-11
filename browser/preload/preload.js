@@ -137,7 +137,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	account : {
 		loginProcessing : (param) => ipcRenderer.invoke('loginProcessing', param),
-		getAccountInfo : () => ipcRenderer.invoke('getAccountInfo')
+		getAccountInfo : () => ipcRenderer.invoke('getAccountInfo'),
+		updateSimpleAccountInfo : (param) => ipcRenderer.invoke('updateSimpleAccountInfo', param)
 	},
 
 	chatting : {
@@ -151,7 +152,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
 		createPermitWokrspaceInAccount: (param) => ipcRenderer.invoke('createPermitWokrspaceInAccount', param),
 		giveAdmin : (param) => ipcRenderer.invoke('giveAdmin', param),
-		searchPermitRequestList : (param) => ipcRenderer.invoke('searchPermitRequestList', param)
+		searchPermitRequestList : (param) => ipcRenderer.invoke('searchPermitRequestList', param),
+		getIsAdmin : (param) => ipcRenderer.invoke('getIsAdmin', param),
 	},
 
 	room : {

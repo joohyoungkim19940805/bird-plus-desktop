@@ -319,8 +319,8 @@ export default class Palette {
 			type: 'button',
 			textContent: 'apply'
 		})
-		applyWrap.append(cancelButton, applyButton);
-		return {applyWrap, cancelButton, applyButton};
+		applyWrap.append(applyButton, cancelButton);
+		return {applyWrap, applyButton, cancelButton};
 	}
 
     #settingCanvas(){

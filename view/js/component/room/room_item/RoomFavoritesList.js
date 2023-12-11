@@ -217,6 +217,7 @@ export default new class RoomFavoritesList{
 			}else if(roomType == 'ROOM_PRIVATE'){
 				roomTypeMark = '#';
 			}else{
+				roomName = roomName.split(',').sort((a,b)=> a.localeCompare(b)).join(', ')
 				roomTypeMark = '$'
 			}
 			let li = Object.assign(document.createElement('li'), {

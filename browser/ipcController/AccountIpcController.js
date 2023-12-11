@@ -7,7 +7,7 @@ const axios = require('axios');
 const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
 
-class LoginIpcController {
+class AccountIpcController {
 	constructor() {
 		this.#initHandler();	
 	}
@@ -23,6 +23,9 @@ class LoginIpcController {
 		ipcMain.handle('getAccountInfo', async (event) => {
 			return this.getAccountInfo(event);
 		})
+		ipcMain.handle('updateSimpleAccountInfo', async (event, param) => {
+			return this.updateSimpleAccountInfo(event, param);
+		})
 	}
 	#send(eventName, data){
 		mainWindow.webContents.send(eventName, data);
@@ -34,6 +37,16 @@ class LoginIpcController {
 			v.webContents.send(eventName, data);
 		})
 	}
+	
+	#moveLoginPage(mainWindow){
+		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+			mainWindow.titleBarStyle = 'visibble'
+			mainWindow.show();
+			mainWindow.isOpening = false;
+			return 'done';
+		})
+	}
+
 	async changeLoginPage(event){
 		//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
 		windowUtil.isLogin((result) => {
@@ -188,14 +201,40 @@ class LoginIpcController {
 			}
 		});
 	}
-	#moveLoginPage(mainWindow){
-		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
-			mainWindow.titleBarStyle = 'visibble'
-			mainWindow.show();
-			mainWindow.isOpening = false;
-			return 'done';
+	updateSimpleAccountInfo(event, param = {}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+					if(v != undefined && v != ''){
+						total[k] = v;
+					}
+					return total;
+				},{});
+				return axios.post(`${__serverApi}/api/account/update/simple-account-info`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC createPermitWokrspaceInAccount error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
 		})
 	}
 }
-const loginIpcController = new LoginIpcController();
-module.exports = loginIpcController
+const accountIpcController = new AccountIpcController();
+module.exports = accountIpcController

@@ -24,7 +24,7 @@ export default class SimpleSvgPipMode{
         target,
         zoom = 15
     }){
-        console.log(target);
+
         if( ! this.#isElement(target)){
             throw new Error('target is not element');
         }

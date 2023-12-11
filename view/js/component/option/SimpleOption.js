@@ -4,6 +4,8 @@ import IndexedDBHandler from "../../handler/IndexedDBHandler";
 import { accountHandler } from "../../handler/account/AccountHandler";
 import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
 
+import GiveAdminView from "../option/GiveAdminView"
+
 export const simpleOption = new class SimpleOption{
     
     #wrap = Object.assign(document.createElement('div'), {
@@ -19,9 +21,13 @@ export const simpleOption = new class SimpleOption{
 
     #indexedDBHandler
 
-    #accountInfoPromise = accountHandler.accountInfo;
-
     #attendRequestObject = this.#createPermitRequest();
+
+    #giveAdminObject = this.#createGiveAdmin();
+
+    #isAdmin;
+
+    #giveAdminView = new GiveAdminView(this);
 
     constructor(){
         
@@ -60,6 +66,9 @@ export const simpleOption = new class SimpleOption{
 
         let simpleMemory = {};
         window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitRequestAccept', (event)=>{
+            
+            if( ! this.#isAdmin) return;
+
             let {content = event} = event;
             console.log(content);
             let {attendRequest} = this.#attendRequestObject
@@ -87,6 +96,7 @@ export const simpleOption = new class SimpleOption{
             let [permit, reject] = item.querySelectorAll('.attend_request_item_permit, .attend_request_tiem_reject');
             [permit, reject].forEach(e=>{
                 e.onclick = () => {
+                    if( ! this.#isAdmin) return;
                     window.myAPI.workspace.createPermitWokrspaceInAccount({
                         id:content.id,
                         workspaceId:content.workspaceId,
@@ -110,8 +120,9 @@ export const simpleOption = new class SimpleOption{
 
         })
         window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitResultAccept', (event)=>{
+            if( ! this.#isAdmin) return;
             let {content = event} = event;
-            console.log(event);
+
             if(workspaceHandler.workspaceId == content.workspaceId){
                 let {attendRequest} = this.#attendRequestObject
                 delete simpleMemory[content.workspaceId][content.accountName];
@@ -124,13 +135,34 @@ export const simpleOption = new class SimpleOption{
         workspaceHandler.addWorkspaceIdChangedListener = {
             name: 'simpleOptuon',
             callBack: () => {
-                if(workspaceHandler.workspaceId){
-                    window.myAPI.workspace.searchPermitRequestList({workspaceId: workspaceHandler.workspaceId}).then(result=>{
-                        console.log('result >>> ', result);
-                    });
-                }
+                window.myAPI.workspace.getIsAdmin({workspaceId : workspaceHandler.workspaceId}).then(result => {
+                    if(result.code == 0){
+                        this.#isAdmin = result.data;
+                    }else{
+                        alert('admin authentication failed, ::: ' + result.message);
+                    }
+                    if(this.#isAdmin){
+                        window.myAPI.workspace.searchPermitRequestList({workspaceId: workspaceHandler.workspaceId}).then(result=>{
+                            console.log('result >>> ', result);
+                        });
+                    }
+                    if(this.#wrap.isConnected) this.open();
+                });
+                
             },
             runTheFirst: false
+        }
+
+        this.#giveAdminView.onOpenCloseCallback = (status) => {
+            this.#giveAdminView.reset();
+			if(status == 'open'){
+				this.#giveAdminView.callData(this.#giveAdminView.page, this.#giveAdminView.size, workspaceHandler.workspaceId, this.#giveAdminView.form.fullName.value)
+				.then(data => {
+					this.#giveAdminView.createPage(data).then(liList => {
+						this.#giveAdminView.addListItemVisibleEvent(liList);
+					})
+				})
+			}
         }
     }
 
@@ -213,13 +245,94 @@ export const simpleOption = new class SimpleOption{
         }
         return {li, title, attendRequest};
     }
+
+    #createGiveAdmin(){
+        
+        let li = Object.assign(document.createElement('li'), {
+            className: 'pointer'
+        });
+        let title = Object.assign(document.createElement('span'),{
+            textContent: 'Give Admin'
+        })
+
+        li.append(title);
+        li.onclick = () => {
+            this.#giveAdminView.open();
+        }
+
+        return {li, title};
+    }
     
-    open(){
+    #createSimpleProfile(){
+
+        console.log(accountHandler.accountInfo);
+
+        let li = Object.assign(document.createElement('li'), {
+
+        });
+        let title = Object.assign(document.createElement('span'), {
+            textContent: 'Edit Profile'
+        });
+        li.append(title);
+        let simpleProfileContainer = Object.assign(document.createElement('form'), {
+            id : 'simple_profile_container',
+            innerHTML : `
+            <div class="simple_profile_input_container">
+                <label for="simple_profile_full_name">Full Name</label>
+                <input type="text" id="simple_profile_full_name" name="fullName" value="${accountHandler.accountInfo.fullName}"/>
+            </div>
+            <div class="simple_profile_input_container">
+                <label for="simple_profile_job_grade">Job Grade</label>
+                <input type="text" id="simple_profile_job_grade" name="jobGrade" value="${accountHandler.accountInfo.jobGrade}"/>
+            </div>
+            <div class="simple_profile_input_container">
+                <label for="simple_profile_department">Department</label>
+                <input type="text" id="simple_profile_department" name="department" value="${accountHandler.accountInfo.department}"/>
+            </div>
+            <br/>
+            <div class="simple_profile_button_container">
+                <button type="submit" id="simple_profile_apply_button">apply</button>
+                <button type="button" id="simple_profile_cancel_button">cancel</button>
+            </div>
+            `,
+        });
+
+        simpleProfileContainer.onsubmit = (event)=>{
+            event.preventDefault();
+
+            let fullName = simpleProfileContainer.simple_profile_full_name.value;
+            let jobGrade = simpleProfileContainer.simple_profile_job_grade.value;
+            let department = simpleProfileContainer.simple_profile_department.value;
+
+            window.myAPI.account.updateSimpleAccountInfo({
+                fullName, jobGrade, department
+            }).then(result => {
+                console.log('result updateSimpleAccountInfo ::: ', result);
+                accountHandler.searchAccountInfo();
+            })
+
+        }
+        simpleProfileContainer.simple_profile_cancel_button.onclick = () => {
+            simpleProfileContainer.remove();
+        }
+        li.append(title);
+        li.onmouseenter = () => {
+            li.append(simpleProfileContainer)
+        }
+
+        li.onmouseleave = () => {
+            simpleProfileContainer.remove();
+        }
+        return li;
+    }
+
+    async open(){
         document.body.append(this.#wrap);
         this.#wrap.append(this.#container)
-        let contentList = [this.#createComponentOption()];
-        if(workspaceHandler.workspaceId){
+        let contentList = [this.#createComponentOption(), this.#createSimpleProfile()];
+        if(workspaceHandler.workspaceId && this.#isAdmin){
             contentList.push(this.#attendRequestObject.li);
+            contentList.push(this.#giveAdminObject.li);
         }
         this.#container.replaceChildren(...contentList)
     }

@@ -372,7 +372,7 @@ export default new class NoticeBoardDetail{
      */
     async #uploadNoticeBoard(editor, param){
         let promiseList = [];
-        let accountInfo = (await accountHandler.accountInfo);
+
         editor.contentEditable = false;
         editor.getLowDoseJSON(editor, {
             afterCallback: (json) => {
@@ -383,7 +383,7 @@ export default new class NoticeBoardDetail{
 
                     let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
                     console.log(json.data, json.data.new_file_name);
-                    let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
+                    let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
                     let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'NOTICE', {newFileName})
                     .then( (result) => {
                         if(! result){
@@ -426,7 +426,7 @@ export default new class NoticeBoardDetail{
                         resolve();
                         return;
                     }
-                    let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
+                    let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
                     
                     s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'NOTICE')
                     .then( (result) => {

@@ -71,14 +71,14 @@ class EventStreamIpcController {
 		this.source.onerror = (error) => {
 			log.debug('on stream err: ', error);
 			log.debug('source ::: ', this.source);
-			this.#isConnectSource = false;
+			/*this.#isConnectSource = false;
 			windowUtil.isLogin( result => {
 				if( ! result.isLogin){
 					axios.defaults.headers.common['Authorization'] = '';
 					this.source.close();
 					this.#send('needLoginRequest', result);
 				}
-			})
+			})*/
 			//연결 실패되면 계속 시도하기에 임시 조치로 close
 			//this.source.close();
 			//stop();

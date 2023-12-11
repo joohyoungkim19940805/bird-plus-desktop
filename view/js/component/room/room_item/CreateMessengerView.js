@@ -160,37 +160,34 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		}
 		
 		this.form.create_messenger_view_button.onclick = (event) => {
-			accountHandler.accountInfo
-			.then(accountInfo => {
-				let createRoomParam = {
-					roomName : Object.values(this.#inviteAccountMapper).map(e=>{
-						return e.full_name
-					}).join(', ') + ', ' +accountInfo.fullName,
-					workspaceId : workspaceHandler.workspaceId,
-					roomType : 'MESSENGER'
+			let createRoomParam = {
+				roomName : Object.values(this.#inviteAccountMapper).map(e=>{
+					return e.full_name
+				}).sort((a,b)=> a.localeCompare(b)).join(','),
+				workspaceId : workspaceHandler.workspaceId,
+				roomType : 'MESSENGER'
+			}
+			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
+				if(createRoomEvent.code == 0){
+					this.roomId = createRoomEvent.data.id;
+					super.close();
+					window.myAPI.room.createRoomInAccount(
+						Object.values(this.#inviteAccountMapper).map(e=>{	
+							return {
+								roomId: createRoomEvent.data.id,
+								accountName: e.account_name,
+								fullName: e.full_name,
+								workspaceId: e.workspace_id,
+								jobGrade: e.job_grade,
+								department: e.department,
+								roomType: 'MESSENGER',
+							};
+						})
+					)
+					return;
 				}
-				window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
-					if(createRoomEvent.code == 0){
-						this.roomId = createRoomEvent.data.id;
-						super.close();
-						window.myAPI.room.createRoomInAccount(
-							Object.values(this.#inviteAccountMapper).map(e=>{	
-								return {
-									roomId: createRoomEvent.data.id,
-									accountName: e.account_name,
-									fullName: e.fullName,
-									workspaceId: e.workspace_id,
-									jobGrade: e.jobGrade,
-									department: e.department,
-									roomType: 'MESSENGER',
-								};
-							})
-						)
-						return;
-					}
-					alert(createRoomEvent.message);
-				});
-			})
+				alert(createRoomEvent.message);
+			});
 		}
 	}
 	

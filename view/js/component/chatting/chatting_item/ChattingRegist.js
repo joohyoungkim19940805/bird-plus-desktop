@@ -81,7 +81,6 @@ export default new class ChattingRegist extends FreeWillEditor{
 
 	}
 	async #addEvent(){
-		let accountInfo = (await accountHandler.accountInfo);
 
 		let toolList = Object.values(ChattingRegist.tools).map(e=>e.toolHandler.toolButton);
 		let toolCloneList = toolList.map(e=>{
@@ -132,7 +131,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 						promiseList.push(new Promise(async resolve => {
 
 							let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
-							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountInfo.accountName}`;
+							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
 							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'CHATTING', {newFileName})
 							.then( (result) => {
 								if(! result){
@@ -175,7 +174,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 								resolve();
 								return;
 							}
-							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountInfo.accountName}`;
+							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
 							
 							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'CHATTING')
 							.then( (result) => {

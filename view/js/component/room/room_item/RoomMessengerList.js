@@ -262,6 +262,7 @@ export default new class RoomMessengerList{
 				roomTypeMark = '#';
 			}
 			*/
+			roomName = roomName.split(',').sort((a,b)=> a.localeCompare(b)).join(', ')
 			let li = Object.assign(document.createElement('li'), {
 				className: 'pointer',
 				innerHTML: `

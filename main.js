@@ -124,7 +124,7 @@ app.whenReady().then(()=>{
 
 		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
 		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
-		const loginIpcController = require(path.join(__project_path, 'browser/ipcController/LoginIpcController.js'));
+		const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
 		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
 		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
 		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));

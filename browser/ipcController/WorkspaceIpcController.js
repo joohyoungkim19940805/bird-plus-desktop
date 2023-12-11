@@ -38,6 +38,10 @@ class WorkspaceIpcController {
 		ipcMain.handle('searchPermitRequestList', async (event, param) => {
 			return this.searchPermitRequestList(event, param);
 		})
+
+		ipcMain.handle('getIsAdmin', async (event, param) => {
+			return this.getIsAdmin(event, param);
+		})
 		
 	}
 
@@ -259,6 +263,38 @@ class WorkspaceIpcController {
 						streamEndResolve();
 					})
 					return promise.then(()=>'done');
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	getIsAdmin(event, param = {}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				let queryString = Object.entries(param)
+					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId')
+					.map(([k,v]) => `${k}=${v}`).join('&')
+				return axios.get(`${__serverApi}/api/workspace/search/is-admin/${param.workspaceId}?${queryString}`, {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => {
+					return response.data
+				}).catch(err=>{
+					log.error('IPC searchWorkspaceInAccount error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
 				})
 			}else{
 				return {'isLogin': false};

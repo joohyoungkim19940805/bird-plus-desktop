@@ -15,7 +15,6 @@ import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
 import IndexedDBHandler from "../handler/IndexedDBHandler"
 
 window.addEventListener('load', async () => {
-	let accountInfo = (await accountHandler.accountInfo);
 
 	const indexedDBHandler = new IndexedDBHandler({
 		dbName: 'fileDB',
@@ -55,7 +54,7 @@ window.addEventListener('load', async () => {
 			return;
 		}
 
-		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountInfo.accountName}`
+		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountHandler.accountInfo.accountName}`
 		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, targetTools.dataset.upload_type)
 		.then( (result) => {
 			if(! result){

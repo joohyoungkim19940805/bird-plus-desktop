@@ -19,7 +19,7 @@ class DBConfig{
 	 * @returns {sqlite3}
 	 */
 	static sqlite3 =  require('sqlite3').verbose();
-	static #dbDir = app.getPath('home') + '\\.bird-plus\\DB\\';
+	static #dbDir = app.getPath('home') + '\\.grease-lightning-chat\\DB\\';
 	static #dbName = 'a-simple-desktop.db'
 	static #type = {
 		NULL : {name : 'NULL'},

@@ -17,7 +17,8 @@
     background-color: #ffffff26;
 }
 .simple_option .component_option_container,
-.simple_option .attend_request_container{
+.simple_option .attend_request_container,
+.simple_option #simple_profile_container{
     position: absolute;
     right: 100%;
     top: 0;
@@ -31,7 +32,8 @@
     background-color: #ffffff26;
 }
 
-.simple_option .component_option_container label{
+.simple_option .component_option_container label,
+.simple_option #simple_profile_container *{
     color: white
 }
 
@@ -76,4 +78,17 @@
     color: #b9b9b9;
     border-color: #464646;
     font-size: 1.1rem;
+}
+.simple_option #simple_profile_container{
+    padding: 5.1%
+}
+.simple_option #simple_profile_container .simple_profile_input_container{
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+.simple_option #simple_profile_container .simple_profile_button_container{
+    display: flex;
+    justify-content: space-around;
+    padding-bottom: 1vh;
 }

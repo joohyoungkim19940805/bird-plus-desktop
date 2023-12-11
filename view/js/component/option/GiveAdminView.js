@@ -1,13 +1,15 @@
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import LayerPopupTemplate from "../../LayerPopupTemplate"
-import roomHandler from "../../../handler/room/RoomHandler"
+import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
+import LayerPopupTemplate from "../LayerPopupTemplate";
+import roomHandler from "../../handler/room/RoomHandler";
 
-export default class AccountInviteRoomView extends LayerPopupTemplate{
+import { accountHandler } from "../../handler/account/AccountHandler";
+
+export default class GiveAdminView extends LayerPopupTemplate{
 
 	#layerContent = Object.assign(document.createElement('div'),{
 		innerHTML: `
 			<style>
-				form#account_invite_room_view{
+				form#give_admin_view{
 					display: flex;
 					flex-direction: column;
 					justify-content: center;
@@ -16,78 +18,75 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 					gap: 2vh;
 					position: relative;
 				}
-				#account_invite_room_view_account_list{
+				#give_admin_view_account_list{
 					width: 30vw;
 					height: 50vh;
 					overflow-y: auto;
 					max-height: 1%;
 				}
 
-				#account_invite_room_view_account_list::-webkit-scrollbar{
+				#give_admin_view_account_list::-webkit-scrollbar{
 					display: none;
 				}
-				#account_invite_room_view_account_list:hover::-webkit-scrollbar{
+				#give_admin_view_account_list:hover::-webkit-scrollbar{
 					display: initial;
 					width: 8px;
 				}
-				#account_invite_room_view_account_list::-webkit-scrollbar-track{
+				#give_admin_view_account_list::-webkit-scrollbar-track{
 					background: #00000000;
 				}
-				#account_invite_room_view_account_list::-webkit-scrollbar-thumb {
+				#give_admin_view_account_list::-webkit-scrollbar-thumb {
 					background: #d8a1b6;
 					border-radius: 100px;
 					box-shadow: inset 0 0 5px #000000;
 				}
-				#account_invite_room_view_account_list::-webkit-scrollbar-thumb:hover {
+				#give_admin_view_account_list::-webkit-scrollbar-thumb:hover {
 					/*background: #44070757;*/
 					background: #893e3e
 				}
 
-				#account_invite_room_view_account_list > li{
+				#give_admin_view_account_list > li{
 					border-top: outset 1px;
 					position: relative;
 					display: flex;
 					align-items: center;
 					justify-content: center;
 				}
-				#account_invite_room_view_account_list > li > input.add_account_check{
+				#give_admin_view_account_list > li > input.add_account_check{
 				}
-				#account_invite_room_view_account_list > li .create_room_view_department, 
-				#account_invite_room_view_account_list > li .create_room_view_job_grade,
-				#account_invite_room_view_account_list > li .create_room_view_account_name{
+				#give_admin_view_account_list > li .create_room_view_department, 
+				#give_admin_view_account_list > li .create_room_view_job_grade,
+				#give_admin_view_account_list > li .create_room_view_account_name{
 					color: #b1b1b1;
 				}
-				#account_invite_room_view_account_list > li .create_room_view_department,
-				#account_invite_room_view_account_list > li .create_room_view_account_name{
+				#give_admin_view_account_list > li .create_room_view_department,
+				#give_admin_view_account_list > li .create_room_view_account_name{
 					font-weight: lighter;
 				}
-				#account_invite_room_view_account_list > li .create_room_view_separator{
+				#give_admin_view_account_list > li .create_room_view_separator{
 					color: #6937a16b;
 				}
-				/*#account_invite_room_view_account_list > li .create_room_view_job_grade,*/
-				#account_invite_room_view_account_list > li .create_room_view_full_name,
-				#account_invite_room_view_account_list > li .create_room_view_separator{
+				/*#give_admin_view_account_list > li .create_room_view_job_grade,*/
+				#give_admin_view_account_list > li .create_room_view_full_name,
+				#give_admin_view_account_list > li .create_room_view_separator{
 					font-weight: bold;
 				}
-				#account_invite_room_view_account_list > li .create_room_view_full_name{
+				#give_admin_view_account_list > li .create_room_view_full_name{
 					color: #789bb9b8;
 				}
-				#account_invite_room_view_account_list > li .create_room_view_account_info{
+				#give_admin_view_account_list > li .create_room_view_account_info{
 					width: 100%
 				}
-				#account_invite_room_view_account_list #account_invite_room_view_button{
-					
-				}
 			</style>
-			<form id="account_invite_room_view">
+			<form id="give_admin_view">
 				<div>
-					<label for="account_invite_room_view_search_user">Please enter the users you want to invite.</label>
-					<input type="search" id="account_invite_room_view_search_user" name="fullName"/>
+					<label for="give_admin_view_search_user">Please enter the users you want to invite.</label>
+					<input type="search" id="give_admin_view_search_user" name="fullName"/>
 				</div>
-				<ul id="account_invite_room_view_account_list">
+				<ul id="give_admin_view_account_list">
 				</ul>
 				<div>
-					<button type="button" id="account_invite_room_view_button">Invite</button>
+					<button type="button" id="give_admin_view_button">Give Admin</button>
 				</div>
 			</from>
 		`
@@ -96,24 +95,23 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 	/**
 	 * full 네임으로 검색 ex) ${fullName}(${accountName}) 형식
 	 */
-	#accountInviteRoomViewAccountList = this.#layerContent.querySelector('#account_invite_room_view_account_list');
+	#accountInviteRoomViewAccountList = this.#layerContent.querySelector('#give_admin_view_account_list');
 	page = 0;
 	size = 10;
 	#liList = [];
-	#workspaceId;
-	form = this.#layerContent.querySelector('#account_invite_room_view');
-	#roomId;
+	form = this.#layerContent.querySelector('#give_admin_view');
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if (entry.isIntersecting){
 				this.page += 1;
-				let roomName = this.form.fullName.value;
-				this.callData(this.page, this.size, this.#workspaceId, this.#roomId, roomName).then(data=>{
-					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
-					if(this.page >= data.totalPages){
-						this.#lastItemVisibleObserver.disconnect();
-					}
+				this.callData(this.page, this.size, workspaceHandler.workspaceId, this.form.fullName.value).then(data=>{
+					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList))
+					.then((liList)=>{
+						if(this.page >= data.totalPages || liList.length == 0){
+							this.#lastItemVisibleObserver.disconnect();
+						}
+					});
 				})
 			}
 		})
@@ -128,7 +126,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		super(owner);
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
-			name: 'accountInviteRoomView',
+			name: 'giveAdminView',
 			callBack: (handler) => {
 				this.workspaceId = handler.workspaceId;
 			},
@@ -143,64 +141,46 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});*/
 		};
-		this.form.account_invite_room_view_search_user.onkeydown = (event) => {
+		this.form.give_admin_view_search_user.onkeydown = (event) => {
 			if(event.key != 'Enter'){
 				return;
 			}
-			let fullName = this.form.account_invite_room_view_search_user.value;
+			let fullName = this.form.give_admin_view_search_user.value;
 			this.reset();
-			this.callData(this.page, this.size, this.#workspaceId, this.#roomId, fullName).then(data => {
+			this.callData(this.page, this.size, workspaceHandler.workspaceId, fullName).then(data => {
 				this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 			});
 		}
-		this.form.account_invite_room_view_search_user.oninput = (event) => {
-			if(this.form.account_invite_room_view_search_user.value == ''){
+		this.form.give_admin_view_search_user.oninput = (event) => {
+			if(this.form.give_admin_view_search_user.value == ''){
 				this.reset();
-				this.callData(this.page, this.size, this.#workspaceId, this.#roomId).then(data => {
+				this.callData(this.page, this.size, workspaceHandler.workspaceId).then(data => {
 					this.createPage(data).then(liList=>this.addListItemVisibleEvent(liList));
 				});
 			}
 		}
 		
-		this.form.account_invite_room_view_button.onclick = (event) => {
-			super.close();
-			if( ! roomHandler.room || ! roomHandler.roomId){
-				console.error('room is undefined', roomHandler);
-				return;
-			}
-
-			if(roomHandler.room.roomType == 'MESSENGER'){
-				let createRoomParam = {
-					id : roomHandler.roomId,
-					roomName : roomHandler.room.roomName + ', ' + Object.values(this.#inviteAccountMapper).map(e=>{
-						return e.full_name
-					}).join(', '),
-					workspaceId : this.#workspaceId,
-					roomType : 'MESSENGER'
-				}
-				window.myAPI.room.createRoom(createRoomParam);
-			}
-			window.myAPI.room.createRoomInAccount(
-				Object.values(this.#inviteAccountMapper).map(e=>{	
-					return {
-						roomId: roomHandler.roomId,
-						accountName: e.account_name,
-						fullName: e.full_name,
-						workspaceId: e.workspace_id,
-						jobGrade: e.job_grade,
-						department: e.department,
-						roomType: roomHandler.room.roomType	
-					};
+		this.form.give_admin_view_button.onclick = (event) => {
+			
+			Object.values(this.#inviteAccountMapper).forEach(e=>{
+				console.log(e);
+				window.myAPI.workspace.giveAdmin({
+					id:e.id,
+					workspaceId: e.workspace_id
+				}).then((result)=>{
+					console.log(result)
 				})
-			)
+			})
+			super.close();
 		}
 	}
 	
-	callData(page, size, workspaceId, roomId, fullName){
-		console.log(roomId);
+	callData(page, size, workspaceId, fullName){
+		console.log({page, size, workspaceId, fullName})
 		return window.myAPI.workspace.searchWorkspaceInAccount({
-			page, size, workspaceId, roomId, fullName
+			page, size, workspaceId, fullName
 		}).then((data = {}) =>{
+			console.log(data);
 			return data.data;
 		});
 	}
@@ -212,8 +192,9 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				resolve(content);
 			}
 
-			let liList = content.map(item => {
+			let liList = content.filter(e=> ! e.isAdmin).map(item => {
 				let {
+					id,
 					accountName,
 					fullName,
 					workspaceId,
@@ -242,6 +223,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 					`
 				});
 				Object.assign(li.dataset,{
+					id,
 					account_name: accountName,
 					full_name: fullName,
 					workspace_id: workspaceId,
@@ -288,32 +270,10 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		});
 	}
 	reset(){
-		this.#roomId = undefined;
 		this.page = 0;
 		this.#liList = [];
 		this.#lastItemVisibleObserver.disconnect();
 		this.#accountInviteRoomViewAccountList.replaceChildren();
-		/*inviteAccountMapper.keys().forEach(k=>{
-			delete inviteAccountMapper[key];
-		})*/
 	}
 
-	set roomId(roomId){
-		if( ! roomId){
-			console.error('roomId is undefined');
-            return;
-        }
-		this.#roomId = roomId;
-	}
-
-	get roomId(){
-		return this.#roomId;
-	}
-
-	set workspaceId(workspaceId){
-		this.#workspaceId = workspaceId;
-	}
-	get workspaceId(){
-		return this.#workspaceId;
-	}
 }

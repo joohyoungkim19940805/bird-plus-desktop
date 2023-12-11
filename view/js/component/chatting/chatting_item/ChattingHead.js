@@ -116,7 +116,8 @@ export default new class ChattingHead{
             let {content = event} = event;
             this.#addMemory(this.createLiElement(content), content.workspaceId, content.roomId, content.accountName);
             if(content.roomId == roomHandler.roomId){
-                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                    .sort((a,b)=> a.dataset.full_name.localeCompare(b.dataset.full_name));
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
