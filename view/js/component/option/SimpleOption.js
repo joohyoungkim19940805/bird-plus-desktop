@@ -299,15 +299,25 @@ export const simpleOption = new class SimpleOption{
 
         simpleProfileContainer.onsubmit = (event)=>{
             event.preventDefault();
-
             let fullName = simpleProfileContainer.simple_profile_full_name.value;
             let jobGrade = simpleProfileContainer.simple_profile_job_grade.value;
             let department = simpleProfileContainer.simple_profile_department.value;
+            
+            if(
+                accountHandler.accountInfo.fullName == fullName &&
+                accountHandler.accountInfo.jobGrade == jobGrade &&
+                accountHandler.accountInfo.fullName == department
+            ){
+                return;
+            }
 
             window.myAPI.account.updateSimpleAccountInfo({
                 fullName, jobGrade, department
             }).then(result => {
                 console.log('result updateSimpleAccountInfo ::: ', result);
+                if(accountHandler.accountInfo.fullName != fullName){
+                    window.myAPI.room.createMySelfRoom({workspaceId : workspaceHandler.workspaceId});
+                }
                 accountHandler.searchAccountInfo();
             })
 

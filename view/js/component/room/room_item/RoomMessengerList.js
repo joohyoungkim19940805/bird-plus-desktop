@@ -3,6 +3,8 @@ import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 import CreateMessengerView from "./CreateMessengerView";
 
+import { accountHandler } from "../../../handler/account/AccountHandler"
+
 export default new class RoomMessengerList{
 
 	#memory = {};
@@ -262,7 +264,14 @@ export default new class RoomMessengerList{
 				roomTypeMark = '#';
 			}
 			*/
-			roomName = roomName.split(',').sort((a,b)=> a.localeCompare(b)).join(', ')
+			if(roomType == 'MESSENGER'){
+				let roomNameList = roomName.split(',');
+				let targetIndex = roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName);
+				if(targetIndex != -1){
+					roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
+				}
+				roomName = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ');
+			}
 			let li = Object.assign(document.createElement('li'), {
 				className: 'pointer',
 				innerHTML: `
@@ -296,6 +305,7 @@ export default new class RoomMessengerList{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
+				if(li.dataset.room_id == roomHandler.roomId) return;
 				roomHandler.roomId = li.dataset.room_id;
 			}
 			resolve(li);

@@ -397,7 +397,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	async #toJSON(node, {beforeCallback, afterCallback}){
 		return new Promise(resolve=>{
 			let obj = {};
-			if(node.nodeType == Node.TEXT_NODE){
+			if(node.nodeType == Node.TEXT_NODE && node.textContent != '' && node.textContent){
 				obj.type = Node.TEXT_NODE;
 				obj.name = node.constructor.name;
 				obj.text = node.textContent
@@ -422,7 +422,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					resolve(obj);
 				})
 			}else{
-				afterCallback(undefined)
+				//afterCallback(undefined)
 				resolve(undefined);
 			}
 			

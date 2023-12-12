@@ -199,7 +199,9 @@ export default class CreateRoomView extends LayerPopupTemplate{
 								roomType: this.form.roomType.checked ? 'ROOM_PRIVATE' : 'ROOM_PUBLIC'	
 							};
 						})
-					)
+					).then(()=>{
+						this.#inviteAccountMapper = {};
+					})
 					return;
 				}
 				alert(createRoomEvent.message);

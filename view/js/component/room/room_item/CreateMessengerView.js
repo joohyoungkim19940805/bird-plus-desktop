@@ -161,9 +161,10 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		
 		this.form.create_messenger_view_button.onclick = (event) => {
 			let createRoomParam = {
-				roomName : Object.values(this.#inviteAccountMapper).map(e=>{
-					return e.full_name
-				}).sort((a,b)=> a.localeCompare(b)).join(','),
+				roomName : [
+					...Object.values(this.#inviteAccountMapper).map(e=>e.full_name),
+					accountHandler.accountInfo.fullName
+				].sort((a,b)=> a.localeCompare(b)).join(','),
 				workspaceId : workspaceHandler.workspaceId,
 				roomType : 'MESSENGER'
 			}
@@ -183,7 +184,9 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 								roomType: 'MESSENGER',
 							};
 						})
-					)
+					).then(()=>{
+						this.#inviteAccountMapper = {};
+					})
 					return;
 				}
 				alert(createRoomEvent.message);

@@ -144,6 +144,7 @@ export default class UndoManager{
                 let textNode = cursorTarget.childNodes[index.value]; 
                 selection.setPosition(textNode, offset.value);
             }else if(type.value == Node.ELEMENT_NODE){
+                console.log(cursorTarget);
                 selection.setPosition(cursorTarget, offset.value);
             }
             this.#editor.scrollTo(Number(x.value), Number(y.value));

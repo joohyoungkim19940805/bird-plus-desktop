@@ -2,6 +2,8 @@ import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import LayerPopupTemplate from "../../LayerPopupTemplate"
 import roomHandler from "../../../handler/room/RoomHandler"
 
+import { accountHandler } from "../../../handler/account/AccountHandler"
+
 export default class AccountInviteRoomView extends LayerPopupTemplate{
 
 	#layerContent = Object.assign(document.createElement('div'),{
@@ -169,30 +171,37 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 				return;
 			}
 
+			let promise = Promise.resolve();
 			if(roomHandler.room.roomType == 'MESSENGER'){
 				let createRoomParam = {
 					id : roomHandler.roomId,
-					roomName : roomHandler.room.roomName + ', ' + Object.values(this.#inviteAccountMapper).map(e=>{
-						return e.full_name
-					}).join(', '),
+					roomName : [
+						...roomHandler.room.roomName.split(',').map(e=>e.trim()),
+						...Object.values(this.#inviteAccountMapper).map(e=>e.full_name),
+					].sort((a,b)=> a.localeCompare(b)).join(','),
 					workspaceId : this.#workspaceId,
 					roomType : 'MESSENGER'
 				}
-				window.myAPI.room.createRoom(createRoomParam);
+				console.log('roomName ::: !!! ', createRoomParam.roomName);
+				promise = window.myAPI.room.createRoom(createRoomParam);
 			}
-			window.myAPI.room.createRoomInAccount(
-				Object.values(this.#inviteAccountMapper).map(e=>{	
-					return {
-						roomId: roomHandler.roomId,
-						accountName: e.account_name,
-						fullName: e.full_name,
-						workspaceId: e.workspace_id,
-						jobGrade: e.job_grade,
-						department: e.department,
-						roomType: roomHandler.room.roomType	
-					};
+			promise.then(() => {
+				window.myAPI.room.createRoomInAccount(
+					Object.values(this.#inviteAccountMapper).map(e=>{	
+						return {
+							roomId: roomHandler.roomId,
+							accountName: e.account_name,
+							fullName: e.full_name,
+							workspaceId: e.workspace_id,
+							jobGrade: e.job_grade,
+							department: e.department,
+							roomType: roomHandler.room.roomType	
+						};
+					})
+				).then(()=>{
+					this.#inviteAccountMapper = {};
 				})
-			)
+			})
 		}
 	}
 	

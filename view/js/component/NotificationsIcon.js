@@ -45,10 +45,11 @@ export default class NotificationsIcon{
             width: 'fit-content',
             height: 'fit-content',
             zIndex: '100',
-            backgroundColor: '#ffb2b2',
+            backgroundColor: 'rgb(247 141 141)',
             color: 'white',
             borderRadius: '100%',
-            padding: '0.1rem 0.4rem 0.1rem 0.4rem'
+            padding: '0.1rem 0.4rem 0.1rem 0.4rem',
+            fontSize: '0.8rem'
         })
         
         this.#counterSpan = Object.assign(document.createElement('span'), {

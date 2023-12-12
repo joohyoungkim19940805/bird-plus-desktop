@@ -769,7 +769,9 @@ export default new class ChattingInfo{
     }
 
     #createTimeGroupingElement(target, timeText){
-
+        if(target.querySelector('.time_grouping')){
+            return;
+        }
         let timeGroupingElement = Object.assign(document.createElement('div'), {
             className: 'time_grouping',
             innerHTML: `

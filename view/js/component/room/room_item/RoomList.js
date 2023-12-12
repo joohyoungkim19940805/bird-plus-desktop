@@ -287,6 +287,7 @@ export default new class RoomList{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
+				if(li.dataset.room_id == roomHandler.roomId) return;
 				roomHandler.roomId = li.dataset.room_id;
 			}
 			resolve(li);

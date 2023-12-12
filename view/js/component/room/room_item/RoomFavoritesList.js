@@ -2,6 +2,8 @@ import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
 import roomHandler from "../../../handler/room/RoomHandler";
 import PositionChanger from "./../../../handler/PositionChangeer";
 
+import { accountHandler } from "../../../handler/account/AccountHandler"
+
 export default new class RoomFavoritesList{
 
 	#memory = {};
@@ -216,9 +218,16 @@ export default new class RoomFavoritesList{
 				roomTypeMark = '@';
 			}else if(roomType == 'ROOM_PRIVATE'){
 				roomTypeMark = '#';
-			}else{
-				roomName = roomName.split(',').sort((a,b)=> a.localeCompare(b)).join(', ')
+			}else if(roomType == 'MESSENGER'){
+				let roomNameList = roomName.split(',');
+				let targetIndex = roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName);
+				if(targetIndex != -1){
+					roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
+				}
+				roomName = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ')
 				roomTypeMark = '$'
+			}else{ // ROOM_TYPE == SELF
+				roomTypeMark = '$';
 			}
 			let li = Object.assign(document.createElement('li'), {
 				className: 'pointer',
@@ -252,6 +261,7 @@ export default new class RoomFavoritesList{
 	#addItemEvent(li){
 		return new Promise(resolve => {
 			li.onclick = () => {
+				if(li.dataset.room_id == roomHandler.roomId) return;
 				roomHandler.roomId = li.dataset.room_id;
 			}
 			resolve(li);

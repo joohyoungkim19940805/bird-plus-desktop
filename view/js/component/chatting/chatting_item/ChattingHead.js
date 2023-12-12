@@ -6,6 +6,9 @@ import AccountInviteRoomView from "./AccountInviteRoomView";
 import roomContainer from "../../room/RoomContainer";
 import noticeBoardContainer from "../../notice_board/NoticeBoardContainer";
 import common from "./../../../common"
+
+import { accountHandler } from "../../../handler/account/AccountHandler"
+
 export default new class ChattingHead{
     #chattingHeadMemory = {};
     //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
@@ -114,10 +117,13 @@ export default new class ChattingHead{
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
             let {content = event} = event;
+            console.log('head roomInAccountAccept ::: !!! ',content)
             this.#addMemory(this.createLiElement(content), content.workspaceId, content.roomId, content.accountName);
             if(content.roomId == roomHandler.roomId){
+                console.log('this.#chattingHeadMemory ::: ', this.#chattingHeadMemory);
                 let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
                     .sort((a,b)=> a.dataset.full_name.localeCompare(b.dataset.full_name));
+                console.log('memberList ::: !!! ', memberList)
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -130,6 +136,9 @@ export default new class ChattingHead{
                     this.#elementMap.searchMemberList.replaceChildren(...optionList);
                     res();
                 })
+
+                this.#elementMap.chattingHeadTitle.textContent = memberList.map(e=>e.dataset.full_name).join(', ')
+
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
                 
                 this.#elementMap.chattingHeadJounedCount.textContent = 
@@ -142,7 +151,16 @@ export default new class ChattingHead{
 			name: 'chattingHead',
 			callBack: (handler) => {
                 this.#roomId = handler.roomId;
-                this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
+                if(handler.room.roomType == 'MESSENGER'){
+                    let roomNameList = handler.room.roomName.split(',');
+                    let targetIndex = roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName);
+                    if(targetIndex != -1){
+                        roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
+                    }
+                    this.#elementMap.chattingHeadTitle.textContent = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ');
+                }else{
+                    this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
+                }
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
                 window.myAPI.room.searchRoomJoinedAccountList({roomId: handler.roomId}).then(result=>{
                     console.log(result);
