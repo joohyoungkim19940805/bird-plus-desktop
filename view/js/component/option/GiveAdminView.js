@@ -171,6 +171,7 @@ export default class GiveAdminView extends LayerPopupTemplate{
 					console.log(result)
 				})
 			})
+			this.#inviteAccountMapper = {};
 			super.close();
 		}
 	}

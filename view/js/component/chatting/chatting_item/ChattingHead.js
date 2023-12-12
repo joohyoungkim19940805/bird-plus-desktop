@@ -117,13 +117,13 @@ export default new class ChattingHead{
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
             let {content = event} = event;
-            console.log('head roomInAccountAccept ::: !!! ',content)
+
             this.#addMemory(this.createLiElement(content), content.workspaceId, content.roomId, content.accountName);
             if(content.roomId == roomHandler.roomId){
-                console.log('this.#chattingHeadMemory ::: ', this.#chattingHeadMemory);
+
                 let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
                     .sort((a,b)=> a.dataset.full_name.localeCompare(b.dataset.full_name));
-                console.log('memberList ::: !!! ', memberList)
+
                 new Promise(res => {
                     let optionList = memberList.map(li => {
                         let option = Object.assign(document.createElement('option'), {
@@ -138,7 +138,7 @@ export default new class ChattingHead{
                 })
 
                 this.#elementMap.chattingHeadTitle.textContent = memberList.map(e=>e.dataset.full_name).join(', ')
-
+                
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
                 
                 this.#elementMap.chattingHeadJounedCount.textContent = 
@@ -158,6 +158,7 @@ export default new class ChattingHead{
                         roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
                     }
                     this.#elementMap.chattingHeadTitle.textContent = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ');
+                    console.log(222222, this.#elementMap.chattingHeadTitle.textContent)
                 }else{
                     this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
                 }

@@ -87,68 +87,88 @@ export default new class ChattingInfo{
     })
     
     likeAndScrapWrapper;
+    
+    #totalPages
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
-			if (entry.isIntersecting){
-				this.#page += 1;
-                let promise;
-                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
-                if(memory && memory.length != 0){
-                    promise = new Promise(res => {
-                        setTimeout(()=>{ 
-                            res(
-                               memory
-                               .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                           )
-                       },50);
-                    })
-                }else{
-                    promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
-                        .then(async data=> 
-                            this.createPage(data).then(liList => {        
-                                let lastVisibleTarget = liList.at(-1);
-                                if(lastVisibleTarget){
-                                    this.#lastItemVisibleObserver.disconnect();
-                                    this.#lastItemVisibleObserver.observe(lastVisibleTarget);
-                                }
-                                if(this.#page >= data.totalPages){
-                                    this.#lastItemVisibleObserver.disconnect();
-                                    // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
-                                    // 날짜 관련 함수 코드 실행
-                                    console.log(liList);
-                                    console.log(this.#liList);
-                                    let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
-                                    let timeText; 
-                                    if(date.toDateString() == new Date().toDateString()){
-                                        timeText = 'to day'
-                                    }else{
-                                        timeText = date.toLocaleDateString(undefined, {
-                                            weekday: 'short',
-                                            month: 'short',
-                                            day: '2-digit',
-                                            formatMatcher: 'best fit'
-                                        })
-                                    }
-                                    this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
-                                }
-                                return liList;
-                            })
+			if ( ! entry.isIntersecting){
+                return;
+            }
+            this.#lastItemVisibleObserver.disconnect();
+            this.#page += 1;
+            let promise;
+            let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
+            
+            if(memory && memory.length != 0){
+                promise = new Promise(res => {
+                    setTimeout(()=>{ 
+                        res(
+                            memory
+                            .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                         )
+                    },50);
+                })
+            }else{
+                promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
+                    .then(async data=> 
+                        this.createPage(data).then(liList => {
+                            this.#totalPages = data.totalPages;        
+                            if(this.#page >= data.totalPages){
+                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
+                                // 날짜 관련 함수 코드 실행
+                                let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
+                                let timeText; 
+                                if(date.toDateString() == new Date().toDateString()){
+                                    timeText = 'to day'
+                                }else{
+                                    timeText = date.toLocaleDateString(undefined, {
+                                        weekday: 'short',
+                                        month: 'short',
+                                        day: '2-digit',
+                                        formatMatcher: 'best fit'
+                                    })
+                                }
+                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                            }
+                            return liList;
+                        })
+                    )
+            }
+            
+            promise.then(liList => {
+                if(liList.length == 0){
+                    return;
                 }
                 
-                promise.then(liList => {
-                    if(liList.length == 0){
+                this.#liList = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                    //.flatMap(e=>Object.values(e))
+                    .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
+                
+                let isConnectedAwait = setInterval(()=>{
+                    if( ! this.#liList[0]){
+                        clearInterval(isConnectedAwait);
                         return;
                     }
-                    this.#liList = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
-                        //.flatMap(e=>Object.values(e))
-                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                    let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
-                    this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    visibilityLastItem?.previousElementSibling?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
-                });
-			}
+                    if( ! this.#liList[0].isConnected){
+                        return;
+                    }
+
+                    let lastVisibleTarget = this.#liList.at(-1);
+                    if(lastVisibleTarget){
+                        this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                    }
+
+                    entry.target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                    clearInterval(isConnectedAwait);
+                },50);
+
+                //let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
+                //visibilityLastItem?.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                
+            });
+
 		})
 	}, {
 		threshold: 0.1,
@@ -311,13 +331,7 @@ export default new class ChattingInfo{
                     promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                     .then(async data=> 
                         this.createPage(data)
-                        .then(liList => {       
-                            let lastVisibleTarget = liList.at(-1);
-                            if(lastVisibleTarget){
-                                this.#lastItemVisibleObserver.disconnect();
-                                this.#lastItemVisibleObserver.observe(lastVisibleTarget)
-                            } 
-
+                        .then(liList => {
                             if(this.#page >= data.totalPages){
                                 this.#lastItemVisibleObserver.disconnect();
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
@@ -332,6 +346,12 @@ export default new class ChattingInfo{
                     )
                 }
                 promise.then(liList => {
+
+                    if(liList.length == 0){
+                        this.#lastItemVisibleObserver.disconnect();
+                        return;
+                    }
+
                     if( ! firstOpenCheckMapper[roomHandler.roomId]){
                         this.#liList.push(...liList, ...memory);
                         this.#liList = Object.values(this.#liList.reduce((total, item)=>{
@@ -355,6 +375,13 @@ export default new class ChattingInfo{
                         this.#elementMap.chattingContentList.scrollBy(undefined, 
                             this.#elementMap.chattingContentList.scrollHeight
                         )
+
+                        let lastVisibleTarget = this.#liList.at(-1);
+                        if(lastVisibleTarget){
+                            this.#lastItemVisibleObserver.disconnect();
+                            this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                        }
+
                         clearInterval(isConnectedAwait);
                     },50);
                     firstOpenCheckMapper[roomHandler.roomId] = '';
