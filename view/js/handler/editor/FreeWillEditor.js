@@ -16,6 +16,7 @@ import FontSize from "./tools/FontSize"
 import Italic from "./tools/Italic"
 import Image from "./tools/Image"
 import Video from "./tools/Video"
+import Resources from './tools/Resources'
 import Code from "./tools/Code"
 import Hyperlink from "./tools/Hyperlink"
 
@@ -83,6 +84,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			Italic,
 			Image,
 			Video,
+			Resources,
 			Code,
 			Hyperlink,
 		],
@@ -381,26 +383,29 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		})
 	}
 
-	async getLowDoseJSON(targetElement = this, {beforeCallback = (node) => {}, afterCallback = (json)=> {}} = {}){
+	async getLowDoseJSON(targetElement = this, {afterCallback = (json)=> {}} = {}){
 		return Promise.all([...targetElement.childNodes]
 			.map(async (node, index)=>{
 				return new Promise(resolve =>{
 					if(targetElement == this && node.nodeType == Node.TEXT_NODE){
 						resolve(undefined);
 					}
-					beforeCallback(node);
-					resolve( this.#toJSON(node, {beforeCallback, afterCallback}) )
+					resolve( this.#toJSON(node, {afterCallback}) )
 				})
-			})).then(jsonList=>jsonList.filter(e=>e != undefined))
+			})).then(jsonList=>jsonList.filter(e=>e != undefined).map(e=> {
+				delete e.node;
+				return e;
+			}))
 	}
 
-	async #toJSON(node, {beforeCallback, afterCallback}){
+	async #toJSON(node, {afterCallback}){
 		return new Promise(resolve=>{
 			let obj = {};
 			if(node.nodeType == Node.TEXT_NODE && node.textContent != '' && node.textContent){
 				obj.type = Node.TEXT_NODE;
 				obj.name = node.constructor.name;
 				obj.text = node.textContent
+				obj.node = node;
 				afterCallback(obj);
 				resolve(obj);
 			}else if(node.nodeType == Node.ELEMENT_NODE){
@@ -408,6 +413,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				obj.name = node.constructor.name;
 				obj.tagName = node.localName;
 				obj.data = Object.assign({}, node.dataset);
+				obj.node = node;
 				if(node.hasAttribute('is_cursor')){
 					obj.cursor_offset = node.getAttribute('cursor_offset');
 					obj.cursor_type = node.getAttribute('cursor_type');
@@ -415,7 +421,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					obj.cursor_scroll_x = node.getAttribute('cursor__scroll_x');
 					obj.cursor_scroll_y = node.getAttribute('cursor_scroll_y');
 				}
-				this.getLowDoseJSON(node, {beforeCallback, afterCallback})
+				this.getLowDoseJSON(node, {afterCallback})
 				.then(jsonList => {
 					obj.childs = jsonList.filter(e=> e != undefined)
 					afterCallback(obj);

@@ -7,6 +7,7 @@ import chattingHandler from "../handler/chatting/ChattingHandler"
 
 import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/Video"
+import Resources from "../handler/editor/tools/Resources"
 
 import { accountHandler } from "../handler/account/AccountHandler"
 import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
@@ -27,6 +28,7 @@ indexedDBHandler.open().then(()=>{
 	});
 })
 */
+
 window.addEventListener('load', async () => {
 	const indexedDBHandler = new IndexedDBHandler({
 		dbName: 'fileDB',
@@ -36,7 +38,6 @@ window.addEventListener('load', async () => {
 			originFileName: ['originFileName', 'originFileName'],
 			fileData : ['fileData', 'fileData'],
 			lastModified: ['lastModified', 'lastModified'],
-			targetId: ['targetId', 'targetId'],
 			uploadType: ['uploadType', 'uploadType'],
 			roomId: ['roomId', 'roomId'],
 			workspaceId: ['workspaceId', 'workspaceId']
@@ -44,30 +45,42 @@ window.addEventListener('load', async () => {
 		keyPathNameList: ['fileName'],
 		pkAutoIncrement : false
 	});
-	indexedDBHandler.deleteDatabase('fileDB');
 	const dbOpenPromise = indexedDBHandler.open();
 
 	const imageOrVideoCallback = async (targetTools) => {
+		let fileType;
+		if(targetTools.constructor == Image){
+			fileType = 'IMAGE';
+		}else if(targetTools.constructor == Video){
+			fileType = 'VIDEO';
+		}else{
+			fileType = 'FILE';
+		}
 		const isHasRememberFile = await new Promise(resolve => {
+			if(targetTools.constructor == Resources){
+				resolve({result: undefined});
+			}
 			dbOpenPromise.then(() => {
 				indexedDBHandler.getItem(targetTools.dataset.new_file_name).then(result=>{
 					resolve(result);
 				});
 			})
 		})
+
 		if(isHasRememberFile.result){
 			let url = URL.createObjectURL(isHasRememberFile.result.fileData, targetTools.dataset.content_type)
 			targetTools.dataset.url = url;
 			if(targetTools.image){
 				targetTools.image.src = url;
-			}else{
+			}else if(targetTools.video){
 				targetTools.video.src = url;
+			}else{
+				targetTools.resources.data = url;
 			}
 			return;
 		}
-
 		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountHandler.accountInfo.accountName}`
-		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, targetTools.dataset.upload_type)
+		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, {uploadType : targetTools.dataset.upload_type, fileType})
 		.then( (result) => {
 			if(! result){
 				return;
@@ -133,7 +146,6 @@ window.addEventListener('load', async () => {
 							originFileName: targetTools.dataset.name,
 							fileData: newBlob,
 							lastModified: targetTools.dataset.last_modified,
-							targetId: targetTools.dataset.target_id,
 							uploadType: targetTools.dataset.upload_type,
 							roomId: roomHandler.roomId,
 							workspaceId: workspaceHandler.workspaceId
@@ -141,14 +153,15 @@ window.addEventListener('load', async () => {
 							return URL.createObjectURL(newBlob)
 						})
 					})
-					
 				})
 				.then(url => {
 					targetTools.dataset.url = url;
 					if(targetTools.image){
 						targetTools.image.src = url;
-					}else{
+					}else if(targetTools.video){
 						targetTools.video.src = url;
+					}else{
+						targetTools.resources.data = url;
 					}
 				})
 				.catch(err=>{
@@ -161,6 +174,7 @@ window.addEventListener('load', async () => {
 
 	Image.customImageCallback = (imageEditor) => imageOrVideoCallback(imageEditor)
 	Video.customVideoCallback = (videoEditor) => imageOrVideoCallback(videoEditor)
+	Resources.customResourcesCallback = (resourcesEditor) => imageOrVideoCallback(resourcesEditor)
 });	
 
 const visibleObserver = new IntersectionObserver((entries, observer) => {
@@ -247,10 +261,8 @@ window.addEventListener("DOMContentLoaded", (event) => {
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'mainPageRenderer',
 			callBack : () => {
-				console.log('????')
 				window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
 					// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
-					console.log('create self room >>> ', result)
 					if(result.code == 0){
 						roomHandler.roomId = result.data.id;
 					}

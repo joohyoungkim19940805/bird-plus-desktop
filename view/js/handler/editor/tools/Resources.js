@@ -1,61 +1,48 @@
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
-import ImageBox from "../component/ImageBox"
-export default class Image extends FreedomInterface {
+
+export default class Resources extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);
 
-    static imageBox = new ImageBox();
-
-    static customImageCallback; 
+    static customResourcesCallback; 
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
-		id: 'free-will-editor-image-style'
+		id: 'free-will-editor-resources-style'
 	});
 
-    static slotName = 'free-will-editor-image-description-slot';
+    static slotName = 'free-will-editor-resources-description-slot';
 
     static #selectedFile = Object.assign(document.createElement('input'), {
-        type: 'file',
-        accept: 'image/*',
-        capture: 'camera',
+        type: 'file'
     });
 
     static get selectedFile(){
         return this.#selectedFile;
     }
 
+    static #uploadCallback;
+
 	static{
 		this.toolHandler.extendsElement = '';
-		this.toolHandler.defaultClass = 'free-will-editor-image';
+		this.toolHandler.defaultClass = 'free-will-editor-resources';
         //this.toolHandler.isInline = false;
 
 		this.toolHandler.toolButton = Object.assign(document.createElement('button'), {
             textContent: '',
             className: `${this.#defaultStyle.id}-button`,
             innerHTML: `
-            <svg class="${this.#defaultStyle.id} css-gg-image-icon"
-                width="0.9rem"
-                height="0.9rem"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                >
+            <svg class="${this.#defaultStyle.id} css-gg-file-add-icon" width="0.9rem" height="0.9rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 18V16H8V14H10V12H12V14H14V16H12V18H10Z" fill="currentColor" />
                 <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
-                    d="M7 7C5.34315 7 4 8.34315 4 10C4 11.6569 5.34315 13 7 13C8.65685 13 10 11.6569 10 10C10 8.34315 8.65685 7 7 7ZM6 10C6 9.44772 6.44772 9 7 9C7.55228 9 8 9.44772 8 10C8 10.5523 7.55228 11 7 11C6.44772 11 6 10.5523 6 10Z"
-                    fill="currentColor"
-                />
-                <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M3 3C1.34315 3 0 4.34315 0 6V18C0 19.6569 1.34315 21 3 21H21C22.6569 21 24 19.6569 24 18V6C24 4.34315 22.6569 3 21 3H3ZM21 5H3C2.44772 5 2 5.44772 2 6V18C2 18.5523 2.44772 19 3 19H7.31374L14.1924 12.1214C15.364 10.9498 17.2635 10.9498 18.435 12.1214L22 15.6863V6C22 5.44772 21.5523 5 21 5ZM21 19H10.1422L15.6066 13.5356C15.9971 13.145 16.6303 13.145 17.0208 13.5356L21.907 18.4217C21.7479 18.7633 21.4016 19 21 19Z"
+                    d="M6 2C4.34315 2 3 3.34315 3 5V19C3 20.6569 4.34315 22 6 22H18C19.6569 22 21 20.6569 21 19V9C21 5.13401 17.866 2 14 2H6ZM6 4H13V9H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V5C5 4.44772 5.44772 4 6 4ZM15 4.10002C16.6113 4.4271 17.9413 5.52906 18.584 7H15V4.10002Z"
                     fill="currentColor"
                 />
             </svg>
             `,
-            title: 'Image'
+            title: 'Resources'
         });
 
 		this.toolHandler.toolButton.onclick = ()=>{
@@ -65,6 +52,7 @@ export default class Image extends FreedomInterface {
                 this.#selectedFile.click();
                 this.#selectedFile.onchange = ()=> {
                     //let url = URL.createObjectURL(this.#selectedFile.files[0])
+
                     this.toolHandler.toolButton.dataset.tool_status = 'active';
                 }
 			}
@@ -73,35 +61,44 @@ export default class Image extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
-            .${this.#defaultStyle.id}.css-gg-image-icon {
+            .${this.#defaultStyle.id}.css-gg-file-add-icon {
                 zoom:120%;
             }
-            .${this.#defaultStyle.id}.image-description{            
+            .${this.#defaultStyle.id}.resources-description{            
                 cursor: pointer;
                 display: inline-flex;
                 align-items: center;
             }
 
-            .${this.#defaultStyle.id}.image-description::after{
+            .${this.#defaultStyle.id}.resources-description::after{
                 margin-left: 0.5em;
                 content: ' ['attr(data-file_name)'] 'attr(data-open_status);
                 font-size: small;
                 color: #bdbdbd;
             }
-
-            .${this.#defaultStyle.id}.image-contanier{
-                width: fit-content;
+            .${this.#defaultStyle.id}.resources-download-button{
+                margin-left: 1vw;
+                border: solid 2px #e5e5e5;
+                cursor: pointer;
+                background: none;
+            }
+            .${this.#defaultStyle.id}.resources-contanier{
+                width: auto;
                 transition: height 0.5s ease-in-out;
                 overflow: hidden;
                 position: relative;
+                margin-top: 0.7vh;
             }
-            .${this.#defaultStyle.id}.image-contanier img{
-                max-width: 100%;
+            .${this.#defaultStyle.id}.resources-contanier object{
+                width: 99%;
                 height: auto;
                 aspect-ratio: attr(width) / attr(height);
-                image-rendering: crisp-edges;
-                image-rendering: -webkit-optimize-contrast;
+                border: solid 2px #efefef;
             }
+            .${this.#defaultStyle.id}.resources-contanier object.unload{
+                width: auto;
+            }
+
         ` 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
         if(! defaultStyle){
@@ -126,19 +123,28 @@ export default class Image extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-    #file;
+    static set uploadCallback(callback){
+        this.#uploadCallback = callback;
+    }
+    static get uploadCallback(){
+        return this.#uploadCallback;
+    }
 
+    #file;
+    
     imgLoadEndCallback = (event) => {};
 
-    image = document.createElement('img');
+    resources = Object.assign(document.createElement('object'), {
+
+    });
 
 	constructor(dataset){
-		super(Image, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
+		super(Resources, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
         
         if( ! dataset && Object.keys(this.dataset).length == 0){
-            this.#file = Image.selectedFile.cloneNode(true);
-            Image.selectedFile.files = new DataTransfer().files;
-            
+            this.#file = Resources.selectedFile.cloneNode(true);
+            Resources.selectedFile.files = new DataTransfer().files;
+
             this.dataset.url = URL.createObjectURL(this.#file.files[0]);
             this.dataset.name = this.#file.files[0].name;
             this.dataset.last_modified = this.#file.files[0].lastModified;
@@ -147,8 +153,8 @@ export default class Image extends FreedomInterface {
 
             let url = URL.createObjectURL(this.#file.files[0], this.dataset.content_type);
             this.dataset.url = url;
-            this.image.type = this.dataset.content_type;
-            this.image.src = this.dataset.url;
+            this.resources.type = this.dataset.content_type;
+            this.resources.data = this.dataset.url;
             /*fetch(this.dataset.url).then(res=>res.blob()).then(blob => {
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
@@ -156,29 +162,35 @@ export default class Image extends FreedomInterface {
                     this.dataset.base64 = reader.result;
                 }
             })*/
-            
+           
         }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
+            this.resources.type = this.dataset.content_type;
+            this.resources.data = this.dataset.url;
+            /*
             fetch(this.dataset.base64)
             .then(async res=>{
                 return res.blob().then(blob=>{
                     let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
                     this.dataset.url = imgUrl;
-                    this.image.src = this.dataset.url;
+                    this.resources.data = this.dataset.url;
                 })
-            })
-        }else if(Image.customImageCallback && typeof Image.customImageCallback == 'function'){
-            Image.customImageCallback(this);
+            })*/
+        }else if(Resources.customResourcesCallback && typeof Resources.customResourcesCallback == 'function'){
+            Resources.customResourcesCallback(this);
         }else if(this.dataset.url){
-            this.image.src = this.dataset.url;
+            this.resources.type = this.dataset.content_type;
+            this.resources.data = this.dataset.url;
         }
-
+        this.resources.type = this.dataset.content_type;
+        this.resources.data = this.dataset.url;
+        console.log(this.#file);
         if(! this.dataset.name){
             this.remove();
             throw new Error(`this file is undefined ${this.dataset.name}`);
         }
         
         this.attachShadow({ mode : 'open' });
-        this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
+        this.shadowRoot.append(Resources.defaultStyle.cloneNode(true));
         this.createDefaultContent();
         
         this.disconnectedAfterCallback = () => {
@@ -198,25 +210,29 @@ export default class Image extends FreedomInterface {
 
         this.shadowRoot.append(wrap);
 
-        let imageContanier = Object.assign(document.createElement('div'),{
-            className: `${Image.defaultStyle.id} image-contanier`
+        let resourcesContanier = Object.assign(document.createElement('div'),{
+            className: `${Resources.defaultStyle.id} resources-contanier`
         });
 
-        /*let image = Object.assign(document.createElement('img'), {
+        /*let resources = Object.assign(document.createElement('img'), {
             //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
             //src: this.dataset.url
             //src: imgUrl
         });*/
 
-        //if(this.#selectedFile.files.length != 0){
-        this.image.dataset.image_name = this.dataset.name
+        //if(this.file.files.length != 0){
+        this.resources.dataset.resources_name = this.dataset.name
         //}
 
-        imageContanier.append(this.image);
+        resourcesContanier.append(this.resources);
 
-        this.image.onload = () => {
+        this.resources.onload = (event) => {
             if(this.dataset.width){
-                this.image.width = this.dataset.width;
+                this.resources.width = this.dataset.width;
+            }
+            console.log(this.resources.contentWindow);
+            if( ! this.resources.contentWindow){
+                this.resources.classList.add('unload')
             }
             /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;
@@ -228,40 +244,62 @@ export default class Image extends FreedomInterface {
 			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
             */
            //this.imgLoadEndCallback();
-			//imageContanier.style.height = window.getComputedStyle(image).height;
+			//resourcesContanier.style.height = window.getComputedStyle(resources).height;
         }
-        this.image.onerror = () => {
-            //imageContanier.style.height = window.getComputedStyle(image).height;
-            this.image.dataset.error = '';
+        this.resources.onerror = (event) => {
+            console.log(event);
+            //resourcesContanier.style.height = window.getComputedStyle(resources).height;
+            this.resources.dataset.error = '';
+            if( ! this.resources.contentWindow){
+                this.resources.classList.add('unload')
+            }
         }
 
         this.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(this.image, imageContanier);
-            wrap.replaceChildren(...[description,imageContanier].filter(e=>e != undefined));
+            let description = this.createDescription(this.resources, resourcesContanier);
+            let downloadButton = Object.assign(document.createElement('button'), {
+                className: `${Resources.defaultStyle.id} resources-download-button`,
+                innerHTML : `<b>Download</b>`,
+                onclick : () => {
+                    fetch(this.dataset.url).then(res=>res.blob()).then(blob => {
+                        let url = URL.createObjectURL(blob, this.dataset.content_type);
+                        let a = document.createElement('a');
+                        a.href = url;
+                        a.download = this.dataset.name;
+                        a.click();
+                        a.remove();
+                        setTimeout(() => {
+                            URL.revokeObjectURL(url);
+                        }, 1000 * 60 * 5)
+                    })
+                }
+            });
+            wrap.replaceChildren(...[description,downloadButton,resourcesContanier].filter(e=>e != undefined));
             
-            Image.imageBox.addImageHoverEvent(this.image, this);
             if(this.nextSibling?.tagName == 'BR'){
                 this.nextSibling.remove()
             }
         }
 
-        return this.image;
+        return this.resources;
     }
 
     /**
      * 
-     * @param {HTMLImageElement} image 
-     * @param {HTMLDivElement} imageContanier 
-     * @returns {HTMLDivElement}
+     * @param {HTMLObjectElement} resources 
+     * @param {HTMLDivElement} resourcesContanier 
+     * @returns 
      */
-    createDescription(image, imageContanier){
+    createDescription(resources, resourcesContanier){
         let description = Object.assign(document.createElement('div'),{
-            className: `${Image.defaultStyle.id} image-description`
+            className: `${Resources.defaultStyle.id} resources-description`
         });
 
         description.dataset.file_name = this.dataset.name
-        description.dataset.open_status = this.dataset.open_status || '▼'; // '▼';
-        imageContanier.style.height = this.dataset.height || 'auto'
+        description.dataset.open_status = this.dataset.open_status || '▼'
+        resourcesContanier.style.height = this.dataset.height || 'auto'
+        
+        description.dataset.open_status = '▼';
         
         let slot = this.createSlot();
         if(slot){
@@ -269,33 +307,37 @@ export default class Image extends FreedomInterface {
         }
 
         description.onclick = (event) => {
+            /*if(event.composedPath().some(e=> e== downloadButton)){
+                return;
+            }*/
             if(description.dataset.open_status == '▼'){
                 description.dataset.open_status = '▶'
-                imageContanier.style.height = window.getComputedStyle(image).height;
+                resourcesContanier.style.height = window.getComputedStyle(resources).height;
                 setTimeout(()=>{
-                    imageContanier.style.height = '0px';
+                    resourcesContanier.style.height = '0px';
                     this.dataset.height = '0px';
                 },100)
 
             }else{
                 description.dataset.open_status = '▼';
                 setTimeout(()=>{
-                    imageContanier.style.height = window.getComputedStyle(image).height;
-                    this.dataset.height = 'auto'
+                    resourcesContanier.style.height = window.getComputedStyle(resources).height;
+                    this.dataset.height = 'auto';
                 },100)
                 
-                image.style.opacity = '';
-                image.style.visibility = '';
+                resources.style.opacity = '';
+                resources.style.visibility = '';
+
             }
             this.dataset.open_status = description.dataset.open_status;
         }
 
-        imageContanier.ontransitionend = () => {
+        resourcesContanier.ontransitionend = () => {
             if(description.dataset.open_status == '▼'){
-                imageContanier.style.height = 'auto';
+                resourcesContanier.style.height = 'auto';
             }else{
-                image.style.opacity = 0;
-                image.style.visibility = 'hidden';
+                resources.style.opacity = 0;
+                resources.style.visibility = 'hidden';
             }
         }
 
@@ -319,11 +361,11 @@ export default class Image extends FreedomInterface {
             ).join('');
             //aticle.append(...[...this.childNodes].map(e=>e.cloneNode(true)));
             aticle.append(...this.childNodes);
-            aticle.slot = Image.slotName + '-' + randomId
+            aticle.slot = Resources.slotName + '-' + randomId
             this.append(aticle);
             
             let slot = Object.assign(document.createElement('slot'),{
-                name: Image.slotName + '-' + randomId
+                name: Resources.slotName + '-' + randomId
             });
             return slot;
         }else{

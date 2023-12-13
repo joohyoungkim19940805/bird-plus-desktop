@@ -264,7 +264,7 @@ export const simpleOption = new class SimpleOption{
     }
     
     #createSimpleProfile(){
-
+        if( ! accountHandler.accountInfo) return '';
         console.log(accountHandler.accountInfo);
 
         let li = Object.assign(document.createElement('li'), {
@@ -279,15 +279,15 @@ export const simpleOption = new class SimpleOption{
             innerHTML : `
             <div class="simple_profile_input_container">
                 <label for="simple_profile_full_name">Full Name</label>
-                <input type="text" id="simple_profile_full_name" name="fullName" value="${accountHandler.accountInfo.fullName}"/>
+                <input type="text" id="simple_profile_full_name" name="fullName" value="${accountHandler.accountInfo?.fullName || ''}"/>
             </div>
             <div class="simple_profile_input_container">
                 <label for="simple_profile_job_grade">Job Grade</label>
-                <input type="text" id="simple_profile_job_grade" name="jobGrade" value="${accountHandler.accountInfo.jobGrade}"/>
+                <input type="text" id="simple_profile_job_grade" name="jobGrade" value="${accountHandler.accountInfo?.jobGrade || ''}"/>
             </div>
             <div class="simple_profile_input_container">
                 <label for="simple_profile_department">Department</label>
-                <input type="text" id="simple_profile_department" name="department" value="${accountHandler.accountInfo.department}"/>
+                <input type="text" id="simple_profile_department" name="department" value="${accountHandler.accountInfo?.department || ''}"/>
             </div>
             <br/>
             <div class="simple_profile_button_container">

@@ -17,6 +17,7 @@ import FontSize from "./../../../handler/editor/tools/FontSize"
 import Italic from "./../../../handler/editor/tools/Italic"
 import Image from "./../../../handler/editor/tools/Image"
 import Video from "./../../../handler/editor/tools/Video"
+import Resources from "../../../handler/editor/tools/Resources"
 import Code from "./../../../handler/editor/tools/Code"
 import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 
@@ -53,6 +54,7 @@ class ChattingInfoLine extends FreeWillEditor{
         Italic,
         Image,
         Video,
+        Resources,
         Code,
         Hyperlink,
     ]
@@ -332,7 +334,7 @@ export default new class ChattingInfo{
                     .then(async data=> 
                         this.createPage(data)
                         .then(liList => {
-                            if(this.#page >= data.totalPages){
+                            if(this.#page >= data?.totalPages){
                                 this.#lastItemVisibleObserver.disconnect();
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                 // 날짜 관련 함수 코드 실행
@@ -602,6 +604,18 @@ export default new class ChattingInfo{
                         //this.#emoticonBox.emoticonBox.style.position = 'absolute';
                         //this.#emoticonBox.emoticonBox.style.bottom = '100%';
                         common.processingElementPosition(this.#emoticonBox.emoticonBox, anotherEmoji)
+                        //this.#emoticonBox.emoticonBox.style.top = parseFloat(this.#emoticonBox.emoticonBox.style.top) - 2 + 'px';
+                        if( ! this.#emoticonBox.emoticonBox.querySelector('.empty_padding')){
+                            let emptyPadding = Object.assign(document.createElement('div'), {
+                                className : 'empty_padding'
+                            })
+                            Object.assign(emptyPadding.style, {
+                                height: '1.4vh',
+                                width: '100%',
+                                background: '#ffffff00'
+                            })
+                            this.#emoticonBox.emoticonBox.append(emptyPadding)
+                        }
                         this.#emoticonBox.applyCallback = (emoticonObject) => {
                             this.#emoticonBox.close();
                             anotherEmoji.removeAttribute('open');
@@ -657,6 +671,17 @@ export default new class ChattingInfo{
                 </svg>
                 `
             })
+            let replyButton = Object.assign(document.createElement('button'),{
+                className : `css-gg-trash`,
+                innerHTML: `
+                <svg style="zoom:125%" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M17.1495 13.4005C18.2541 13.4005 19.1495 12.5051 19.1495 11.4005V3.40051H21.1495V11.4005C21.1495 13.6097 19.3587 15.4005 17.1495 15.4005H6.84398L10.6286 19.1852L9.21443 20.5994L2.85046 14.2354L9.21443 7.87146L10.6286 9.28567L6.5138 13.4005H17.1495Z"
+                        fill="currentColor"
+                    />
+                </svg>
+                `
+            })
             recommendEmojiContainer.append(...defaultEmoticon.map(e=>{
                 let button = document.createElement('button');
                 button.textContent = e.emoticon;
@@ -677,7 +702,7 @@ export default new class ChattingInfo{
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
-            buttonContainer.append(anotherEmoji, deleteButton, updateButton);
+            buttonContainer.append(anotherEmoji, deleteButton, updateButton, replyButton);
             
             descriptionWrap.onmouseenter = (event) => {
                 descriptionWrap.append(hoverButtonWrapper);

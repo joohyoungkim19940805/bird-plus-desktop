@@ -170,6 +170,10 @@
     display: flex;
     gap: 1vw; 
 }
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_option_container{
+
+}
+
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_content_description_name_wrapper .chatting_content_description_name{
     font-weight: bold;
 }

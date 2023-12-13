@@ -13,6 +13,7 @@ import FontSize from "./../../../handler/editor/tools/FontSize"
 import Italic from "./../../../handler/editor/tools/Italic"
 import Image from "./../../../handler/editor/tools/Image"
 import Video from "./../../../handler/editor/tools/Video"
+import Resources from "../../../handler/editor/tools/Resources";
 import Code from "./../../../handler/editor/tools/Code"
 import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 
@@ -43,6 +44,7 @@ export default new class ChattingRegist extends FreeWillEditor{
         Italic,
         Image,
         Video,
+		Resources,
         Code,
         Hyperlink,
     ]
@@ -125,14 +127,29 @@ export default new class ChattingRegist extends FreeWillEditor{
 				let promiseList = [];
 				this.getLowDoseJSON(this, {
 					afterCallback : (json) => {
-						if(json.tagName != Image.toolHandler.defaultClass && json.tagName != Video.toolHandler.defaultClass){
+						if(json.tagName != Image.toolHandler.defaultClass && 
+							json.tagName != Video.toolHandler.defaultClass &&
+							json.tagName != Resources.toolHandler.defaultClass
+						){
+							console.log('???', json.node)
 							return;
+						}
+						let node = json.node;
+						let file = node.selectedFile;
+						console.log(node, file);
+						let fileType;
+						if(json.tagName == Image.toolHandler.defaultClass){
+							fileType = 'IMAGE';
+						}else if(json.tagName == Video.toolHandler.defaultClass){
+							fileType = 'VIDEO';
+						}else {
+							fileType = 'FILE';
 						}
 						promiseList.push(new Promise(async resolve => {
 
 							let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
 							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
-							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'CHATTING', {newFileName})
+							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
 								if(! result){
 									return;
@@ -151,7 +168,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 											.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									})
 								]).then( async ([k,m]) => {
-									let base64 = json.data.base64;
+									/*let base64 = json.data.base64;
 									if(! base64){
 										let blob = await fetch(json.data.url).then(res=>res.blob())
 										base64 = await new Promise(resolve => {
@@ -161,22 +178,22 @@ export default new class ChattingRegist extends FreeWillEditor{
 												resolve(reader.result);
 											}
 										});
-									}
-									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, base64);
+									}*/
+									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, file.files[0]);
 									if( ! (res.status == 200 || res.status == 201) ){
 										return;
 									}
 									return true;
 								})
 							})
-
+							console.log(isUpload);
 							if( ! isUpload){
 								resolve();
 								return;
 							}
 							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
 							
-							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'CHATTING')
+							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
 								if(! result){
 									return;
@@ -201,6 +218,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 						this.innerText = '';
 						isEnter = false;
 						Promise.all(promiseList).then((fileTargetList) => {
+							console.log(fileTargetList);
 							if(fileTargetList.length == 0){
 								window.getSelection().setPosition(this, 1)
 								return;

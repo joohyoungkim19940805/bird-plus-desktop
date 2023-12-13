@@ -59,7 +59,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 			return new Promise( resolve => resolve(window.btoa(exportKeyString)) );
 		});
 	}
-	async callS3PresignedUrl(callFunction, signData, uploadType, callFunctionParam = {} ){//,fileName, accountName){
+	async callS3PresignedUrl(callFunction, signData, callFunctionParam = {} ){//,fileName, accountName){
 		console.log('callFunctionParam !!! ',callFunctionParam);
 		return Promise.all( [this.generateKeyPair(this.signAlgorithm, ["sign", "verify"]), this.generateKeyPair(this.secretAlgorithm, ["encrypt", "decrypt"])] )
 		.then( ([signKeyPair, encDncKeyPair]) => {
@@ -80,9 +80,8 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 				data: window.btoa(String.fromCodePoint(...sign.message)), 
 				dataKey: exportSignKey, 
 				sign: window.btoa( String.fromCodePoint(...new Uint8Array(sign.signature)) ), 
-				uploadType
 			}))
-			console.log(result);
+
 			let {code, data} = result;
 			
 			if(code != 0){
@@ -93,7 +92,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 		})
 	}
 
-	async fetchPutObject(putUrl, key, md5, fildBase64){
+	async fetchPutObject(putUrl, key, md5, fileData){
 		return fetch(putUrl, {
 			method:"PUT",
 			headers: {
@@ -103,7 +102,7 @@ export const s3EncryptionUtil = new class S3EncryptionUtil{
 				'x-amz-server-side-encryption-customer-key': key,
 				'x-amz-server-side-encryption-customer-key-md5': md5,
 			},
-			body: await fetch(fildBase64).then(async res=>res.blob())
+			body: fileData
 		})
 	}
 }

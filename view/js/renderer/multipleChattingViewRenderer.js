@@ -7,7 +7,7 @@ import workspaceHandler from "../handler/workspace/WorkspaceHandler"
 
 import Image from "../handler/editor/tools/Image"
 import Video from "../handler/editor/tools/Video"
-
+import Resources from "../handler/editor/tools/Resources"
 
 import { accountHandler } from "../handler/account/AccountHandler"
 import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
@@ -23,7 +23,6 @@ window.addEventListener('load', async () => {
 			originFileName: ['originFileName', 'originFileName'],
 			fileData : ['fileData', 'fileData'],
 			lastModified: ['lastModified', 'lastModified'],
-			targetId: ['targetId', 'targetId'],
 			uploadType: ['uploadType', 'uploadType'],
 			roomId: ['roomId', 'roomId'],
 			workspaceId: ['workspaceId', 'workspaceId']
@@ -35,7 +34,11 @@ window.addEventListener('load', async () => {
 	const dbOpenPromise = indexedDBHandler.open();
 
 	const imageOrVideoCallback = async (targetTools) => {
+		
 		const isHasRememberFile = await new Promise(resolve => {
+			if(targetTools.constructor == Resources){
+				resolve({result: undefined});
+			}
 			dbOpenPromise.then(() => {
 				indexedDBHandler.getItem(targetTools.dataset.new_file_name).then(result=>{
 					resolve(result);
@@ -47,14 +50,16 @@ window.addEventListener('load', async () => {
 			targetTools.dataset.url = url;
 			if(targetTools.image){
 				targetTools.image.src = url;
-			}else{
+			}else if(targetTools.video){
 				targetTools.video.src = url;
+			}else{
+				targetTools.resources.data = url;
 			}
 			return;
 		}
 
 		let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountHandler.accountInfo.accountName}`
-		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, targetTools.dataset.upload_type)
+		s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, {uploadType : targetTools.dataset.upload_type, fileType})
 		.then( (result) => {
 			if(! result){
 				return;
@@ -120,7 +125,6 @@ window.addEventListener('load', async () => {
 							originFileName: targetTools.dataset.name,
 							fileData: newBlob,
 							lastModified: targetTools.dataset.last_modified,
-							targetId: targetTools.dataset.target_id,
 							uploadType: targetTools.dataset.upload_type,
 							roomId: roomHandler.roomId,
 							workspaceId: workspaceHandler.workspaceId
@@ -134,8 +138,10 @@ window.addEventListener('load', async () => {
 					targetTools.dataset.url = url;
 					if(targetTools.image){
 						targetTools.image.src = url;
-					}else{
+					}else if(targetTools.video){
 						targetTools.video.src = url;
+					}else{
+						targetTools.resources.data = url;
 					}
 				})
 				.catch(err=>{
@@ -148,6 +154,7 @@ window.addEventListener('load', async () => {
 
 	Image.customImageCallback = (imageEditor) => imageOrVideoCallback(imageEditor)
 	Video.customVideoCallback = (videoEditor) => imageOrVideoCallback(videoEditor)
+	Resources.customResourcesCallback = (resourcesEditor) => imageOrVideoCallback(resourcesEditor)
 });	
 
 const visibleObserver = new IntersectionObserver((entries, observer) => {

@@ -209,14 +209,11 @@ export default class EmoticonBox{
     createStyle(){
         this.#style.textContent = `
             .emoticon-box-wrap{
-                background: #343434;
                 position: fixed;
-                padding: 0.9%;
                 width: 47vw;
                 height: 39vh;
                 color: white;
                 min-width: 100px;
-                overflow: hidden;
                 -webkit-user-select: none;
                 -moz-user-select: none;
                 -ms-user-select: none;
@@ -228,6 +225,21 @@ export default class EmoticonBox{
                 justify-items: center;
                 z-index: 9999;
                 flex-direction: column;
+            }
+            .emoticon-box-wrap .emoticon-box-search-container{
+                padding : 0.9% 0.9% 0 0.9%;
+            }
+            .emoticon-box-wrap .emoticon-box-content-wrapper{
+                padding : 0 0.9% 0 0.9%;
+            }
+            .emoticon-box-wrap .emoticon-box-emoticon-container{
+                padding : 0 0.9% 0.9% 0.9%;
+            }
+            .emoticon-box-wrap .emoticon-box-search-container,
+            .emoticon-box-wrap .emoticon-box-content-wrapper,
+            .emoticon-box-wrap .emoticon-box-emoticon-container
+            {
+                background: #343434
             }
             .emoticon-box-wrap label{
                 color: white;

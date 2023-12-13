@@ -136,9 +136,9 @@ export default new class ChattingHead{
                     this.#elementMap.searchMemberList.replaceChildren(...optionList);
                     res();
                 })
-
-                this.#elementMap.chattingHeadTitle.textContent = memberList.map(e=>e.dataset.full_name).join(', ')
-                
+                if(roomHandler.room.roomType == 'MESSENGER'){
+                    this.#elementMap.chattingHeadTitle.textContent = memberList.map(e=>e.dataset.full_name).join(', ')
+                }
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
                 
                 this.#elementMap.chattingHeadJounedCount.textContent = 
@@ -158,7 +158,6 @@ export default new class ChattingHead{
                         roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
                     }
                     this.#elementMap.chattingHeadTitle.textContent = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ');
-                    console.log(222222, this.#elementMap.chattingHeadTitle.textContent)
                 }else{
                     this.#elementMap.chattingHeadTitle.textContent = handler.room.roomName;
                 }

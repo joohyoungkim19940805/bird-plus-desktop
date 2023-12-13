@@ -116,10 +116,8 @@ export default class Video extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
     
-    /**
-     * @returns{FileList}
-     */
-    file = new DataTransfer().files;
+
+    #file;
 
     videoLoadEndCallback = (event) => {};
 
@@ -132,25 +130,27 @@ export default class Video extends FreedomInterface {
 		super(Video, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 
 		if( ! dataset && Object.entries(this.dataset).length == 0){
-            this.dataset.url = URL.createObjectURL(Video.selectedFile.files[0]);
-            this.dataset.name = Video.selectedFile.files[0].name;
-            this.dataset.lastModified = Video.selectedFile.files[0].lastModified;
-            this.dataset.size = Video.selectedFile.files[0].size;
-            this.dataset.content_type = Video.selectedFile.files[0].type;
-            this.file.files = Video.selectedFile.files;
-            const reader = new FileReader();  
-            reader.readAsDataURL(Video.selectedFile.files[0]);
-            reader.onloadend = () => {
-                this.dataset.base64 = reader.result;
-                fetch(this.dataset.base64)
-                .then(async res=>{
-                    return res.blob().then(blob=>{
-                        let videoUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                        this.dataset.url = videoUrl;
-                        this.video.src = this.dataset.url;
-                    })
-                })
-            }
+            this.#file = Video.selectedFile.cloneNode(true);
+            Video.selectedFile.files = new DataTransfer().files;
+            
+            this.dataset.url = URL.createObjectURL(this.#file.files[0]);
+            this.dataset.name = this.#file.files[0].name;
+            this.dataset.lastModified = this.#file.files[0].lastModified;
+            this.dataset.size = this.#file.files[0].size;
+            this.dataset.content_type = this.#file.files[0].type;
+
+            let url = URL.createObjectURL(this.#file.files[0], this.dataset.content_type);
+            this.dataset.url = url;
+            this.video.type = this.dataset.content_type;
+            this.video.src = this.dataset.url;
+            /*fetch(this.dataset.url).then(res=>res.blob()).then(blob => {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => {
+                    this.dataset.base64 = reader.result;
+                }
+            })*/
+            
         }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
             fetch(this.dataset.base64)
             .then(async res=>{
@@ -166,12 +166,11 @@ export default class Video extends FreedomInterface {
             this.video.src = this.dataset.url;
         }
 
-        if( ! this.file.files && ! this.dataset.name){
+        if(! this.dataset.name){
             this.remove();
-            throw new Error(`this file is undefined ${this.file.files}`);
+            throw new Error(`this file is undefined ${this.dataset.name}`);
         }
 
-        Video.selectedFile.files = new DataTransfer().files
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
         this.createDefaultContent();
@@ -244,13 +243,20 @@ export default class Video extends FreedomInterface {
 
     }
 
+    /**
+     * 
+     * @param {HTMLVideoElement} image 
+     * @param {HTMLDivElement} imageContanier 
+     * @returns {HTMLDivElement}
+     */
     createDescription(video, videoContanier){
-        let description = document.createElement('div');
+        let description = Object.assign(document.createElement('div'), {
+            className : `${Video.defaultStyle.id} video-description`
+        });
 
         description.dataset.file_name = this.dataset.name
-        description.className = `${Video.defaultStyle.id} video-description`;
-        description.dataset.open_status = '▼';
-
+        description.dataset.open_status = this.dataset.open_status || '▼'
+        videoContanier.style.height = this.dataset.height || 'auto'
         let slot = this.createSlot()
         
         if(slot){
@@ -264,17 +270,21 @@ export default class Video extends FreedomInterface {
                 videoContanier.style.height = window.getComputedStyle(video).height;
                 setTimeout(()=>{
                     videoContanier.style.height = '0px';
+                    this.dataset.height = '0px';
                 },100)
 
             }else{
                 description.dataset.open_status = '▼';
                 setTimeout(()=>{
                     videoContanier.style.height = window.getComputedStyle(video).height;
+                    this.dataset.height = 'auto';
                 },100)
                 
                 video.style.opacity = '';
                 video.style.visibility = '';
             }
+
+            this.dataset.open_status = description.dataset.open_status;
         }
 
         videoContanier.ontransitionend = () => {
@@ -318,5 +328,12 @@ export default class Video extends FreedomInterface {
     videoIsNotWorking(){
         alert(`${this.dataset.name}은 호환되지 않는 영상입니다.`);
         this.remove();
+    }
+
+    /**
+     * @returns {HTMLInputElement}
+     */
+    get selectedFile(){
+        return this.#file
     }
 }

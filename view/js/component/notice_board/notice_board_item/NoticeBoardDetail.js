@@ -13,6 +13,7 @@ import FontSize from "./../../../handler/editor/tools/FontSize"
 import Italic from "./../../../handler/editor/tools/Italic"
 import Image from "./../../../handler/editor/tools/Image"
 import Video from "./../../../handler/editor/tools/Video"
+import Resources from "../../../handler/editor/tools/Resources";
 import Code from "./../../../handler/editor/tools/Code"
 import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
 
@@ -45,6 +46,7 @@ class NoticeBoardLine extends FreeWillEditor{
         Italic,
         Image,
         Video,
+        Resources,
         Code,
         Hyperlink,
     ]
@@ -91,8 +93,6 @@ export default new class NoticeBoardDetail{
 	})();
 
     #positionChanger;
-    
-    #defaultEmptyLine = 20;
 
     #prevRange;
     #prevContent;
@@ -103,13 +103,12 @@ export default new class NoticeBoardDetail{
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardDetailList});
 		this.#positionChanger.onDropEndChangePositionCallback = (changeList, {item, target, wrapper}) => {
             window.myAPI.noticeBoard.updateNoticeBoardDetailOrder(
-                changeList.filter(e=> ! e.hasAttribute('data-is_empty')).map(e=>{
+                changeList.map(e=>{
                     return {
                         id: e.dataset.id,
                         workspaceId: e.dataset.workspace_id,
                         roomId: e.dataset.room_id,
                         orderSort: e.dataset.order_sort,
-                        emptyLineCount: this.#mathEmptyLineCount(e, 'notice-board-line')
                     }
                 })
             ).then(result => {
@@ -124,40 +123,12 @@ export default new class NoticeBoardDetail{
             .then(li => {
                 this.#addMemory(li, data.workspaceId, data.roomId, data.noticeBoardId, data.id);
             }).then( async () => {
-                let list = (await Promise.all(Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-                    .map(async (item, i)=> {
-                        //let weight = i + 1;
-                       
-                        let result = await Promise.all([...new Array(Number(item.dataset.empty_line_count || 0))]
-                            .map( async (e,j)=> {
-                                return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
-                                    emptyItem.dataset.connect_target_id = item.dataset.id;
-                                    return emptyItem;
-                                })
-                            })
-                        )
-                        result.push(item);
-                        return result;
-                    })
-                ))
-                .flatMap(e=>e)
+                let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
                 .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-                let firstEmptyLineLength = ( 
-                    window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
-                ) - list.length - this.#elementMap.noticeBoardDetailList.childElementCount
                 
-                if(firstEmptyLineLength < 1){
-                    firstEmptyLineLength = this.#defaultEmptyLine;
-                }
+                this.#positionChanger.addPositionChangeEvent(list);
+                this.#elementMap.noticeBoardDetailList.replaceChildren(...list);   
 
-                Promise.all([...new Array(parseInt(firstEmptyLineLength))]
-                    .map((e, i) => this.createItemElement(e, Number(list[list.length - 1]?.dataset.order_sort || 0) - i - 2)) 
-                )
-                .then(emptyList =>{
-                    let totalList = [...list, ...emptyList];
-                    this.#positionChanger.addPositionChangeEvent(totalList);
-                    this.#elementMap.noticeBoardDetailList.replaceChildren(...totalList);    
-                });
             })
         })
         
@@ -203,13 +174,12 @@ export default new class NoticeBoardDetail{
 
     }
 
-    createItemElement(data, emptyIndex){
+    createItemElement(data){
         return new Promise(resolve=>{
             let li = Object.assign(document.createElement('li'),{
                 className : 'notice_board_detail_item'
             });
             li.dataset.is_not_visible_target = '';
-            if(! data) li.dataset.order_sort = emptyIndex + 1; 
             li.style.minHeight = (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 + 'px';
             this.#addItemEvent(li, data);
             
@@ -231,12 +201,7 @@ export default new class NoticeBoardDetail{
                 className: 'notice_board_detail_item_position_change_icon pointer',
                 textContent: '〓'
             })
-            
-            if(! data){
-                li.append(addButton);
-                li.dataset.is_empty = '';
-                editor.startFirstLine();
-            }else{
+            if(data.content){
                 let {content} = data;
                 delete data.content;
                 common.jsonToSaveElementDataset(data, li).then(() => {
@@ -245,7 +210,6 @@ export default new class NoticeBoardDetail{
                     editor.parseLowDoseJSON(content)
                 })
             }
-
             li.onmouseenter = () => {
                 if(addButton.isConnected){
                     addButton.classList.add('active');
@@ -281,7 +245,6 @@ export default new class NoticeBoardDetail{
                     return;
                 }
                 li.append(editor);
-                console.log('append end');
                 li.append(positionChangeIcon);
                 addButton.remove();
                 window.getSelection().setPosition(editor, editor.childNodes.length);
@@ -328,14 +291,11 @@ export default new class NoticeBoardDetail{
                 }
                 prevText = editor.innerHTML;
                 
-                let emptyLineCount = this.#mathEmptyLineCount(li, 'notice-board-line')
-                li.dataset.empty_line_count = emptyLineCount;
                 let param = {
                     id: li.dataset.id,
                     noticeBoardId: noticeBoardHandler.noticeBoardId,
                     roomId: roomHandler.roomId,
                     workspaceId: workspaceHandler.workspaceId,
-                    emptyLineCount,
                     orderSort: li.dataset.order_sort //([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
                 };
                 this.#uploadNoticeBoard(editor, param);
@@ -376,15 +336,26 @@ export default new class NoticeBoardDetail{
         editor.contentEditable = false;
         editor.getLowDoseJSON(editor, {
             afterCallback: (json) => {
-                if(json.tagName != Image.toolHandler.defaultClass && json.tagName != Video.toolHandler.defaultClass){
+                if(json.tagName != Image.toolHandler.defaultClass && 
+                    json.tagName != Video.toolHandler.defaultClass &&
+                    json.tagName != Resources.toolHandler.defaultClass)
+                {
                     return;
+                }
+                let fileType;
+                if(json.tagName == Image.toolHandler.defaultClass){
+                    fileType = 'IMAGE';
+                }else if(json.tagName == Video.toolHandler.defaultClass){
+                    fileType = 'VIDEO';
+                }else {
+                    fileType = 'FILE';
                 }
                 promiseList.push(new Promise(async resolve => {
 
                     let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
                     console.log(json.data, json.data.new_file_name);
                     let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
-                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, 'NOTICE', {newFileName})
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'NOTICE'})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -428,7 +399,7 @@ export default new class NoticeBoardDetail{
                     }
                     let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
                     
-                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, 'NOTICE')
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'NOTICE'})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -445,9 +416,6 @@ export default new class NoticeBoardDetail{
         }).then(jsonList => {
             param.content = JSON.stringify(jsonList);
 
-            Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {}).forEach(e=>{
-                e.dataset.empty_line_count = this.#mathEmptyLineCount(e, 'notice-board-line');
-            })
             window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
                 let {data} = res
                 this.innerText = '';
@@ -466,22 +434,6 @@ export default new class NoticeBoardDetail{
                 })
             });
         })
-    }
-
-    #mathEmptyLineCount(target, standardQuerySelectorName){
-        let emptyLineCount = 0;
-        let prevItem = target.previousElementSibling;
-        
-        while(prevItem){
-            let prevContent = prevItem.querySelector(standardQuerySelectorName);
-            if(! prevContent){
-                emptyLineCount += 1;
-                prevItem = prevItem.previousElementSibling;
-            }else {
-                break;    
-            }
-        }
-        return emptyLineCount
     }
 
     #callData(){
@@ -507,46 +459,14 @@ export default new class NoticeBoardDetail{
 		
     }
     async refresh(){
-        let list = (
-            await Promise.all(
-                Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
-                .map(async (item, i)=> {
-                    //let weight = i + 1;
-                    let result = await Promise.all(
-                        [...new Array(Number(item.dataset.empty_line_count || 0))].map((e,j)=> {
-                            return this.createItemElement(e, Number(item.dataset.order_sort) + j).then(emptyItem=>{
-                                emptyItem.dataset.connect_target_id = item.dataset.id;
-                                return emptyItem;
-                            })
-                        })
-                    )
-                    result.push(item);
-                    return result;
-                })
-            )
-        ).flatMap(e=>e)
+        let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
         .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
         if(list.length == 0){
             this.#callData();
         }
-        let dataCount = list.length;
-        
-        let firstEmptyLineLength = ( 
-            window.outerHeight / ( (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 ) 
-        ) - dataCount - this.#elementMap.noticeBoardDetailList.childElementCount
-        
-        if(firstEmptyLineLength < 1){
-            firstEmptyLineLength = this.#defaultEmptyLine;
-        }
+        this.#positionChanger.addPositionChangeEvent(list);
+        this.#elementMap.noticeBoardDetailList.replaceChildren(...list);  
 
-        Promise.all([...new Array(parseInt(firstEmptyLineLength))]
-            .map((e, i) => this.createItemElement(e, Number(list[list.length - 1]?.dataset.order_sort || 0) - i - 2)) 
-        )
-        .then(emptyList =>{
-            let totalList = [...list, ...emptyList];
-            this.#positionChanger.addPositionChangeEvent(totalList);
-            this.#elementMap.noticeBoardDetailList.replaceChildren(...totalList);    
-        });
 	}
 
 	get element(){
