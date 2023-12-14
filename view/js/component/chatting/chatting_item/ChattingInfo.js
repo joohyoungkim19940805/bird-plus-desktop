@@ -221,7 +221,7 @@ export default new class ChattingInfo{
             callBack: (chattingData) => {
                 this.createItemElement(chattingData).then(liElement => {
 
-                    this.#addMemory(liElement, chattingData.id)
+                    this.#addMemory(liElement, chattingData.workspaceId, chattingData.roomId, chattingData.id)
                     if(roomHandler.roomId != chattingData.roomId){
                         setTimeout(()=>{
                             window.myAPI.notifications({
@@ -397,8 +397,15 @@ export default new class ChattingInfo{
             
             let memory = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {});
             let targetLi = memory.find(e=>e.dataset.id == content.chattingId) //memory.find(e=>e[content.chattingId])//?.[content.chattingId];
-            if( ! targetLi){
-                return;
+            console.log(memory);
+            console.log(targetLi);
+            if( ! targetLi || ! targetLi.isConnected){
+                console.log(targetLi);
+                targetLi = this.#liList.find(e=>e.dataset.id == content.chattingId);
+                if(! targetLi){
+                    console.log(targetLi);
+                    return
+                }
             }
 
             if(content.emoticonType == 'CODE'){
