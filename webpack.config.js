@@ -33,7 +33,19 @@ module.exports = {
 				test: /\.css$/i,
 				use: ["style-loader", "css-loader"],
 				exclude: /node_modules/,
+			},
+			{
+				test: /\.{png|jpg}$/,
+				use: ['file-loader'],
+				exclude: path.resolve(__dirname, './view/image/')
 			}
 		],
+	},
+	resolve: {
+		alias: {
+			'@component' : path.resolve(__dirname, './view/js/component/'),
+			'@handler' : path.resolve(__dirname, './view/js/handler/'),
+			'@root' : path.resolve(__dirname, './view')
+		}
 	}
 }

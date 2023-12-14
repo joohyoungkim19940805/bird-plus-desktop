@@ -500,4 +500,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	get isEmpty(){
 		return Line.isElementTextEmpty(this) && ! [...this.querySelectorAll('*')].some(e=>this.tools.hasOwnProperty(e.localName));
 	}
+
+	get isLoaded(){
+		return this.#isLoaded;
+	}
 }

@@ -1,9 +1,9 @@
 import chattingHead from './chatting_item/ChattingHead'
 import chattingInfo from './chatting_item/ChattingInfo';
 import chattingRegist from './chatting_item/ChattingRegist';
-import roomHandler from '../../handler/room/RoomHandler';
+import roomHandler from "@handler/room/RoomHandler";
 
-import SimpleSvgPipMode from '../SimpleSvgPipMode';
+import SimpleSvgPipMode from '@component/SimpleSvgPipMode';
 
 export default new class ChattingContainer{
     

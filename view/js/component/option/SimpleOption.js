@@ -1,11 +1,15 @@
-import common from "../../common";
-import IndexedDBHandler from "../../handler/IndexedDBHandler";
+import common from "@root/js/common";
+import IndexedDBHandler from "@handler/IndexedDBHandler";
 
-import { accountHandler } from "../../handler/account/AccountHandler";
-import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
+import { accountHandler } from "@handler/account/AccountHandler";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
 
-import GiveAdminView from "../option/GiveAdminView"
+import GiveAdminView from "@component/option/GiveAdminView"
 
+/**
+ * @author kimjoohyoung
+ * @description 간단한 옵션 내용 정의
+ */
 export const simpleOption = new class SimpleOption{
     
     #wrap = Object.assign(document.createElement('div'), {
@@ -35,6 +39,15 @@ export const simpleOption = new class SimpleOption{
             console.log(accountInfo); // undefined
         })*/
 
+        window.myAPI.getOption('componentOption').then((optionValue) => {
+            this.componentOption = optionValue;
+        });
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('optionChange', ({name, value}) => {
+            if(name == 'componentOption'){
+                this.componentOption = value;
+            }
+        })
+        /* 멀티 윈도우에서 동시에 동일한 데이터베이스를 바라볼 수 없어서 주석 처리 20231214
         this.#indexedDBHandler = new IndexedDBHandler({
             dbName: 'simpleOptionDB',
             storeName: 'simpleOption',
@@ -63,8 +76,10 @@ export const simpleOption = new class SimpleOption{
                 }
             })
         })
+        */
 
         let simpleMemory = {};
+        
         window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitRequestAccept', (event)=>{
             
             if( ! this.#isAdmin) return;
@@ -194,18 +209,17 @@ export const simpleOption = new class SimpleOption{
             if(event.target.type != 'radio'){
                 return;
             }
-            this.#componentOption = event.target.value;
-            if(event.target.value == 'nomal'){
-                document.body.parentElement.style.fontSize = '100%';
-            }else{
-                document.body.parentElement.style.fontSize = '';
-            }
-            
+            this.componentOption = event.target.value;
+
+            window.myAPI.setOption({name : 'componentOption', value : this.#componentOption});
+
+            /* 멀티 윈도우에서 동시에 동일한 데이터베이스를 바라볼 수 없어서 주석 처리 20231214
             this.#indexedDBHandler.addItem({
                 optionName: 'componentOption',
                 value: event.target.value,
                 lastModified: new Date().getTime()
             })
+            */
         }
 
         li.onmouseenter = () => {
@@ -335,7 +349,15 @@ export const simpleOption = new class SimpleOption{
         }
         return li;
     }
-
+    set componentOption(option){
+        this.#componentOption = option;
+        if(this.#componentOption == 'nomal'){
+            document.body.parentElement.style.fontSize = '100%';
+        }else{
+            document.body.parentElement.style.fontSize = '';
+        }
+    }
+    get componentOption(){return this.#componentOption;}
     async open(){
         document.body.append(this.#wrap);
         this.#wrap.append(this.#container)

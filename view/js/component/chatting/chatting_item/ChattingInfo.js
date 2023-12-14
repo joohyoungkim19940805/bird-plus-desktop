@@ -1,38 +1,38 @@
-import chattingHandler from "../../../handler/chatting/ChattingHandler"
-import roomHandler from "../../../handler/room/RoomHandler"
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler"
+import chattingHandler from "@handler/chatting/ChattingHandler"
+import roomHandler from "@handler/room/RoomHandler"
+import workspaceHandler from "@handler/workspace/WorkspaceHandler"
 
-import FreeWillEditor from "../../../handler/editor/FreeWillEditor"
-import Strong from "./../../../handler/editor/tools/Strong"
-import Color from "./../../../handler/editor/tools/Color"
-import Background from "./../../../handler/editor/tools/Background"
-import Strikethrough from "./../../../handler/editor/tools/Strikethrough"
-import Underline from "./../../../handler/editor/tools/Underline"
-import FontFamily from "./../../../handler/editor/tools/FontFamily"
-import Quote from "./../../../handler/editor/tools/Quote"
-import NumericPoint from "./../../../handler/editor/tools/NumericPoint"
-import BulletPoint from "./../../../handler/editor/tools/BulletPoint"
-import Sort from "./../../../handler/editor/tools/Sort"
-import FontSize from "./../../../handler/editor/tools/FontSize"
-import Italic from "./../../../handler/editor/tools/Italic"
-import Image from "./../../../handler/editor/tools/Image"
-import Video from "./../../../handler/editor/tools/Video"
-import Resources from "../../../handler/editor/tools/Resources"
-import Code from "./../../../handler/editor/tools/Code"
-import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
+import FreeWillEditor from "@handler/editor/FreeWillEditor"
+import Strong from "@handler/editor/tools/Strong"
+import Color from "@handler/editor/tools/Color"
+import Background from "@handler/editor/tools/Background"
+import Strikethrough from "@handler/editor/tools/Strikethrough"
+import Underline from "@handler/editor/tools/Underline"
+import FontFamily from "@handler/editor/tools/FontFamily"
+import Quote from "@handler/editor/tools/Quote"
+import NumericPoint from "@handler/editor/tools/NumericPoint"
+import BulletPoint from "@handler/editor/tools/BulletPoint"
+import Sort from "@handler/editor/tools/Sort"
+import FontSize from "@handler/editor/tools/FontSize"
+import Italic from "@handler/editor/tools/Italic"
+import Image from "@handler/editor/tools/Image"
+import Video from "@handler/editor/tools/Video"
+import Resources from "@handler/editor/tools/Resources"
+import Code from "@handler/editor/tools/Code"
+import Hyperlink from "@handler/editor/tools/Hyperlink"
 
-import common from "../../../common";
+import common from "@root/js/common";
 
-import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
-import { emoticon, defaultEmoticon, toneTypeMapper, groupKind, subgroupKind } from "../../../handler/editor/module/emoticon"
+import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
+import { emoticon, defaultEmoticon, toneTypeMapper, groupKind, subgroupKind } from "@handler/editor/module/emoticon"
 
-import EmoticonBox from "../../../handler/editor/component/EmoticonBox"
+import EmoticonBox from "@handler/editor/component/EmoticonBox"
 
-import NotificationsIcon from "../../NotificationsIcon"
+import NotificationsIcon from "@component/NotificationsIcon"
 
-import roomList from "../../room/room_item/RoomList"
-import roomFavoritesList from "../../room/room_item/RoomFavoritesList"
-import roomMessengerList from "../../room/room_item/RoomMessengerList"
+import roomList from "@component/room/room_item/RoomList"
+import roomFavoritesList from "@component/room/room_item/RoomFavoritesList"
+import roomMessengerList from "@component/room/room_item/RoomMessengerList"
 
 
 class ChattingInfoLine extends FreeWillEditor{
@@ -395,7 +395,7 @@ export default new class ChattingInfo{
         window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingReactionAccept', event => {
             let {content} = event
             
-            let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+            let memory = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {});
             let targetLi = memory.find(e=>e.dataset.id == content.chattingId) //memory.find(e=>e[content.chattingId])//?.[content.chattingId];
             if( ! targetLi){
                 return;

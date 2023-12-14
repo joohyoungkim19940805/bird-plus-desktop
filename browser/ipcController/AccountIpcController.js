@@ -4,7 +4,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
-const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
 
 class AccountIpcController {
@@ -43,6 +43,10 @@ class AccountIpcController {
 			mainWindow.titleBarStyle = 'visibble'
 			mainWindow.show();
 			mainWindow.isOpening = false;
+			birdPlusOptions.optionLoadEnd.then(() => {
+				birdPlusOptions.setLastWindowSize(mainWindow);
+				birdPlusOptions.setLastWindowPosition(mainWindow);	
+			})
 			return 'done';
 		})
 	}
@@ -56,10 +60,12 @@ class AccountIpcController {
 						mainWindow.titleBarStyle = 'visibble'
 						mainWindow.show();
 						mainWindow.isOpening = false;
+						birdPlusOptions.optionLoadEnd.then(() => {
+							birdPlusOptions.setLastWindowSize(mainWindow);
+							birdPlusOptions.setLastWindowPosition(mainWindow);	
+						})
 					})
 				}else{
-					birdPlusOptions.setLastWindowSize(mainWindow);
-					birdPlusOptions.setLastWindowPosition(mainWindow);
 					mainWindow.resizable = true;
 					mainWindow.movable = true;
 					mainWindow.autoHideMenuBar = false;
@@ -68,6 +74,10 @@ class AccountIpcController {
 					mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
 						mainWindow.titleBarStyle = 'visibble'
 						mainWindow.show();
+						birdPlusOptions.optionLoadEnd.then(() => {
+							birdPlusOptions.setLastWindowSize(mainWindow);
+							birdPlusOptions.setLastWindowPosition(mainWindow);	
+						})
 					}).then(()=>{
 						mainWindow.workspaceId = mainWindow.workspaceId;
 					})
@@ -90,8 +100,6 @@ class AccountIpcController {
 						if(err){
 							log.error(err);
 						}
-						birdPlusOptions.setLastWindowSize(mainWindow);
-						birdPlusOptions.setLastWindowPosition(mainWindow);
 						mainWindow.resizable = true;
 						mainWindow.movable = true;
 						mainWindow.autoHideMenuBar = false;
@@ -106,6 +114,10 @@ class AccountIpcController {
 										mainWindow.titleBarStyle = 'visibble'
 										mainWindow.show();
 										mainWindow.isOpening = false;
+										birdPlusOptions.optionLoadEnd.then(() => {
+											birdPlusOptions.setLastWindowSize(mainWindow);
+											birdPlusOptions.setLastWindowPosition(mainWindow);	
+										})
 									})
 								}else{
 									axios.defaults.headers.common['Authorization'] = '';

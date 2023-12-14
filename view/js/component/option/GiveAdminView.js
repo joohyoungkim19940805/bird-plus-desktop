@@ -1,8 +1,8 @@
-import workspaceHandler from "../../handler/workspace/WorkspaceHandler";
-import LayerPopupTemplate from "../LayerPopupTemplate";
-import roomHandler from "../../handler/room/RoomHandler";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import LayerPopupTemplate from "@component/LayerPopupTemplate";
+import roomHandler from "@handler/room/RoomHandler";
 
-import { accountHandler } from "../../handler/account/AccountHandler";
+import { accountHandler } from "@handler/account/AccountHandler";
 
 export default class GiveAdminView extends LayerPopupTemplate{
 

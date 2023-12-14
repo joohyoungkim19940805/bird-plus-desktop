@@ -117,6 +117,9 @@
     width: 100%;
     background: none;
 }
+#notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item notice-board-line.free-will-editor[contenteditable="false"]{
+    cursor: pointer;
+}
 #notice_board_detail_wrapper .notice_board_detail_container .notice_board_detail_content > .notice_board_detail_item .notice_board_detail_item_add_content.active{
     opacity: 1;
     visibility: visible

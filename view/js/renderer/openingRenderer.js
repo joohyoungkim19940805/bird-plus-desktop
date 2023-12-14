@@ -6,7 +6,7 @@ document.getElementById('openFileBtn').onclick = async () => {
 	document.getElementById('showFilePath').textContent = filePath;
 }
 */
-import UserDirtoryListDBHandler from "../handler/UserDirtoryListDBHandler"
+import UserDirtoryListDBHandler from "@handler/UserDirtoryListDBHandler"
 new class OpeningRenderer{
 	#container = document.getElementById('container');
 	#lodingBarWrapper = this.#container.querySelector('.loding_bar_wrapper');

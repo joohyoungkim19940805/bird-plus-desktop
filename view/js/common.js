@@ -48,8 +48,14 @@ export default new class Common{
 	}
 
 	processingElementPosition(element, target){
-		let {x, y, height, width} = target.getBoundingClientRect();
-		
+		let rect;
+		if(this.isElement(target, HTMLElement)){
+			rect = target.getBoundingClientRect();
+		}else{
+			rect = target;
+		}
+
+		let {x, y, height, width} = rect;
 		let elementTop = (y - element.clientHeight)
 		let elementLeft = (x - element.clientWidth)
 		if(elementTop > 0){
@@ -68,7 +74,8 @@ export default new class Common{
         let check = Object.getPrototypeOf(targetObject)
         let isElement = false;
         while(check != undefined){
-            if(check == checkClazz){
+
+            if(check?.constructor  == checkClazz){
                 isElement = true;
                 break;
             }else{
@@ -77,4 +84,11 @@ export default new class Common{
         }
         return isElement;
     }
+
+	shortenBytes(byte) {
+		const rank = byte > 0 ? Math.floor((Math.log2(byte)/10)) : 0;
+		const rankText = ( (rank > 0 ? 'KMGTPEZY'[rank - 1] : '') || (rank >= 9 ? 'Y' : '') ) + 'B';
+		const size = Math.floor(byte / Math.pow(1024, (rank >= 9 ? 8 : rank) ));
+		return {size, rank, rankText};
+	}
 }

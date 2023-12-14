@@ -1,6 +1,11 @@
 //const { contextBridge, ipcRenderer } = require('electron')
 const { contextBridge, ipcRenderer } = require('electron')
 
+/**
+ * @author kimjoohyoung
+ * @description 기본적으로 사용 할 preload 정의
+ */
+
 const electronEventTrigger = {
 	objectEventListener : {},
 	onEvent : {},
@@ -51,6 +56,7 @@ const electronEventTrigger = {
 						}catch(err){
 							console.error(`${eventName} error message ::: `,err.message);
 							console.error(`${eventName} error stack ::: `,err.stack);
+							throw new Error('');
 						}
 						res();
 					})
@@ -120,6 +126,9 @@ contextBridge.exposeInMainWorld('myAPI', {
 	getWorkspaceId: () => ipcRenderer.invoke('getWorkspaceId'),
 
 	notifications: (param) => ipcRenderer.send('notifications', param),
+
+	getOption: (optionName) => ipcRenderer.invoke('getOption', optionName),
+	setOption: (param) => ipcRenderer.send('setOption', param),
 
 	event : {
 		electronEventTrigger : electronEventTrigger,

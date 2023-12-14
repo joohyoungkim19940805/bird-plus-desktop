@@ -18,6 +18,7 @@ export default class PositionChanger{
 		if(child.length == 0){
 			throw new Error('child is empty');
 		}else if(child.some(e=>Number(e.dataset.order_sort) == undefined || isNaN(Number(e.dataset.order_sort)))){
+			console.error(child);
 			throw new Error('data-order_sort is not defined or is not number')
 		}
 		let parent = wrapper || this.#wrapper;

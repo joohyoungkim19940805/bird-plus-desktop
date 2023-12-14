@@ -1,6 +1,6 @@
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "../../../handler/room/RoomHandler";
-import LayerPopupTemplate from "./../../LayerPopupTemplate"
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import LayerPopupTemplate from "@component/LayerPopupTemplate"
 
 export default class CreateRoomView extends LayerPopupTemplate{
 

@@ -1,31 +1,30 @@
-import FreeWillEditor from "./../../../handler/editor/FreeWillEditor";
-import Strong from "./../../../handler/editor/tools/Strong"
-import Color from "./../../../handler/editor/tools/Color"
-import Background from "./../../../handler/editor/tools/Background"
-import Strikethrough from "./../../../handler/editor/tools/Strikethrough"
-import Underline from "./../../../handler/editor/tools/Underline"
-import FontFamily from "./../../../handler/editor/tools/FontFamily"
-import Quote from "./../../../handler/editor/tools/Quote"
-import NumericPoint from "./../../../handler/editor/tools/NumericPoint"
-import BulletPoint from "./../../../handler/editor/tools/BulletPoint"
-import Sort from "./../../../handler/editor/tools/Sort"
-import FontSize from "./../../../handler/editor/tools/FontSize"
-import Italic from "./../../../handler/editor/tools/Italic"
-import Image from "./../../../handler/editor/tools/Image"
-import Video from "./../../../handler/editor/tools/Video"
-import Resources from "../../../handler/editor/tools/Resources";
-import Code from "./../../../handler/editor/tools/Code"
-import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
+import FreeWillEditor from "@handler/editor/FreeWillEditor";
+import Strong from "@handler/editor/tools/Strong"
+import Color from "@handler/editor/tools/Color"
+import Background from "@handler/editor/tools/Background"
+import Strikethrough from "@handler/editor/tools/Strikethrough"
+import Underline from "@handler/editor/tools/Underline"
+import FontFamily from "@handler/editor/tools/FontFamily"
+import Quote from "@handler/editor/tools/Quote"
+import NumericPoint from "@handler/editor/tools/NumericPoint"
+import BulletPoint from "@handler/editor/tools/BulletPoint"
+import Sort from "@handler/editor/tools/Sort"
+import FontSize from "@handler/editor/tools/FontSize"
+import Italic from "@handler/editor/tools/Italic"
+import Image from "@handler/editor/tools/Image"
+import Video from "@handler/editor/tools/Video"
+import Resources from "@handler/editor/tools/Resources";
+import Code from "@handler/editor/tools/Code"
+import Hyperlink from "@handler/editor/tools/Hyperlink"
 
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "../../../handler/room/RoomHandler";
-import common from "./../../../common"
-import PositionChanger from "../../../handler/PositionChangeer";
-import noticeBoardHandler from "../../../handler/notice_board/NoticeBoardHandler";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import common from "@root/js/common"
+import PositionChanger from "@handler/PositionChangeer";
+import noticeBoardHandler from "@handler/notice_board/NoticeBoardHandler";
 
-import { accountHandler } from "../../../handler/account/AccountHandler";
-import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
-import { rsqrt } from "@tensorflow/tfjs";
+import { accountHandler } from "@handler/account/AccountHandler";
+import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
 
 class NoticeBoardLine extends FreeWillEditor{
     static{
@@ -80,7 +79,7 @@ export default new class NoticeBoardDetail{
                 <ul class="notice_board_detail_content" data-bind_name="noticeBoardDetailList">
  
                 </ul>
-            <div class="toolbar" style="position: fixed;" data-bind_name="test"></div>
+            <div class="toolbar" style="position: fixed;" data-bind_name="toolbar"></div>
             </div>
         `
     })
@@ -94,10 +93,10 @@ export default new class NoticeBoardDetail{
 
     #positionChanger;
 
-    #prevRange;
+    /*#prevRange;
     #prevContent;
     #prevStartOffset;
-    #prevEndOffset;
+    #prevEndOffset;*/
 
     constructor(){
         this.#positionChanger = new PositionChanger({wrapper: this.#elementMap.noticeBoardDetailList});
@@ -115,23 +114,66 @@ export default new class NoticeBoardDetail{
                 console.log(result);
             })
         };
+
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
+
             if(data && data.serverSentStreamType){
                 data = data.content;
             }
+            
+            let lastTarget = document.activeElement;
             this.createItemElement(data)
             .then(li => {
                 this.#addMemory(li, data.workspaceId, data.roomId, data.noticeBoardId, data.id);
-            }).then( async () => {
-                let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId] || {})
+                let list = Object.values(this.#memory[data.workspaceId]?.[data.roomId]?.[data.noticeBoardId] || {})
                 .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
                 
                 this.#positionChanger.addPositionChangeEvent(list);
-                this.#elementMap.noticeBoardDetailList.replaceChildren(...list);   
 
+                let listObserver = new MutationObserver( (mutationList, observer) => {
+                    mutationList.forEach((mutation) => {
+                        let {addedNodes, removedNodes} = mutation;
+                        let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.parentLi)
+                        if(isAddedActiveTarget){
+                            //setTimeout(()=>{
+                                lastTarget.contentEditable = true;
+                                let cursorTarget = lastTarget.hasAttribute('is_cursor') ? lastTarget : lastTarget.querySelector('[is_cursor]');
+                                let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes;
+                                let selection = window.getSelection();
+                                console.log(cursorTarget);
+                                if(type.value == Node.ELEMENT_NODE){
+                                    console.log(11111111111)
+                                    let node = cursorTarget.childNodes[index.value]; 
+                                    selection.setPosition(node, offset.value);
+                                }else if(type.value == Node.TEXT_NODE){
+                                    console.log(22222222222222)
+                                    selection.setPosition(cursorTarget, offset.value);
+                                }
+                                console.log('lastTarget.isConnected',lastTarget.isConnected)
+                                console.log('lastTarget.parentLi',lastTarget.parentLi.isConnected);
+                                console.log('lastTarget.isConnected',lastTarget.isLoaded);
+                            //},5000)
+                        }
+                    })
+                });
+                if(lastTarget && lastTarget.tagName == 'NOTICE-BOARD-LINE'){ //|| ! checkTarget){    
+                    listObserver.observe(this.#elementMap.noticeBoardDetailList, {childList:true});
+                }
+
+                this.#elementMap.noticeBoardDetailList.replaceChildren(...list);
+
+                //this.#elementMap.noticeBoardDetailList.append();
+                let appendAwait = setInterval(()=>{
+                    if( ! li.isConnected){
+                        return;
+                    }
+                    clearInterval(appendAwait);
+                    listObserver.disconnect();
+                }, 50)
             })
         })
-        
+
+        this.#elementMap.noticeBoardDetailList
         noticeBoardHandler.addNoticeBoardIdChangeListener = {
             name: 'noticeBoardDetailIdChange',
             callBack: (handler, data)=>{
@@ -153,25 +195,31 @@ export default new class NoticeBoardDetail{
             if (selection.rangeCount == 0){
                 return;
             }
-            let range = selection.getRangeAt(0);
-            if(range.commonAncestorContainer.nodeType != Node.TEXT_NODE){
-                return;
-            }
             
+            /*let range = selection.getRangeAt(0);
+
             this.#prevRange = range.cloneRange();
             this.#prevStartOffset = range.startOffset;
             this.#prevEndOffset = range.endOffset;
-            this.#prevContent = range.commonAncestorContainer;
+            this.#prevContent = range.commonAncestorContainer;*/
 
             if( ! selection.isCollapsed){
-                this.#elementMap.noticeBoardDetailContainer.append(this.#elementMap.test);
-                this.#elementMap.test.replaceChildren(...toolList);
-                common.processingElementPosition(this.#elementMap.test ,document.activeElement)
+                this.#elementMap.noticeBoardDetailContainer.append(this.#elementMap.toolbar);
+                this.#elementMap.toolbar.replaceChildren(...toolList);
+                console.log(document.activeElement);
+                common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect())
             }else{
-                this.#elementMap.test.remove();
+                this.#elementMap.toolbar.remove();
             }
         })
-
+        this.#elementMap.noticeBoardDetailContainer.addEventListener("scroll", () => {
+			if(this.#elementMap.toolbar.childElementCount == 0)return;
+			common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
+		});
+        window.addEventListener('resize', (event) => {
+			if(this.#elementMap.toolbar.childElementCount == 0)return;
+            common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
+		})
     }
 
     createItemElement(data){
@@ -181,14 +229,12 @@ export default new class NoticeBoardDetail{
             });
             li.dataset.is_not_visible_target = '';
             li.style.minHeight = (parseInt(window.getComputedStyle(document.body).fontSize) || 16) * 2 + 'px';
-            this.#addItemEvent(li, data);
             
-            resolve(li);
+            resolve(this.#addItemEvent(li, data));
         })
     }
 
     #addItemEvent(li, data){
-
         return new Promise(resolve=> {
             let addButton = Object.assign(document.createElement('button'), {
                 className: 'notice_board_detail_item_add_content',
@@ -196,19 +242,25 @@ export default new class NoticeBoardDetail{
             });
             let editor = new NoticeBoardLine(li, this);
             editor.contentEditable = false;
-            editor.classList.add('pointer');
             let positionChangeIcon = Object.assign(document.createElement('span'),{
                 className: 'notice_board_detail_item_position_change_icon pointer',
                 textContent: '〓'
             })
+
+            let datasetPromise = common.jsonToSaveElementDataset(data, li);
+
             if(data.content){
                 let {content} = data;
                 delete data.content;
-                common.jsonToSaveElementDataset(data, li).then(() => {
+                datasetPromise.then(() => {
+                    li.removeAttribute('data-content');
                     li.append(editor);
                     li.append(positionChangeIcon)
                     editor.parseLowDoseJSON(content)
                 })
+            }else{
+                li.append(addButton);
+                editor.startFirstLine();
             }
             li.onmouseenter = () => {
                 if(addButton.isConnected){
@@ -237,9 +289,8 @@ export default new class NoticeBoardDetail{
             }
 
             addButton.onclick = (event) => {
-                console.log(event, editor.isConnected);
+                //console.log(event, editor.isConnected);
                 editor.contentEditable = true;
-                editor.classList.remove('pointer');
                 editor.firstLine.innerText = '\n'
                 if(editor.isConnected){
                     return;
@@ -252,7 +303,6 @@ export default new class NoticeBoardDetail{
             let prevText;
             editor.onclick = () => {
                 if(editor.contentEditable == 'false'){
-                    editor.classList.remove('pointer')
                     editor.contentEditable = true;
                     if(editor.isEmpty){
                         editor.firstLine.innerText = '\n'
@@ -265,16 +315,15 @@ export default new class NoticeBoardDetail{
             }
             let isScriptBlur = false;
             editor.onblur = (event) => {
-                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.test.matches(':hover') || document.activeElement == editor)){
+                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.toolbar.matches(':hover') || document.activeElement == editor)){
                     return;
                 }
                 if(isScriptBlur){
                     isScriptBlur = ! isScriptBlur;
                 }
                 editor.contentEditable = false;
-                editor.classList.add('pointer');
                 if( ! event.relatedTarget?.hasAttribute('data-tool_status')){
-                    this.#elementMap.test.remove();
+                    this.#elementMap.toolbar.remove();
                 }
                 if(editor.isEmpty){
                     editor.remove();
@@ -455,7 +504,7 @@ export default new class NoticeBoardDetail{
             this.#memory[workspaceId][roomId][noticeBoardId] = {}
         }
         
-        this.#memory[workspaceHandler.workspaceId][roomHandler.roomId][noticeBoardId][id] = data;
+        this.#memory[workspaceId][roomId][noticeBoardId][id] = data;
 		
     }
     async refresh(){
@@ -463,6 +512,7 @@ export default new class NoticeBoardDetail{
         .sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
         if(list.length == 0){
             this.#callData();
+            return;
         }
         this.#positionChanger.addPositionChangeEvent(list);
         this.#elementMap.noticeBoardDetailList.replaceChildren(...list);  

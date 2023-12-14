@@ -1,9 +1,9 @@
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "../../../handler/room/RoomHandler";
-import PositionChanger from "./../../../handler/PositionChangeer";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import PositionChanger from "@handler/PositionChangeer";
 import CreateMessengerView from "./CreateMessengerView";
 
-import { accountHandler } from "../../../handler/account/AccountHandler"
+import { accountHandler } from "@handler/account/AccountHandler"
 
 export default new class RoomMessengerList{
 
@@ -199,14 +199,14 @@ export default new class RoomMessengerList{
 				return;
 			}
 			//this.refresh();
-			this.createItemElement(event.content)
+			this.createItemElement(content)
 			.then(li => {
 				//this.#liList.push(li);
-				Object.entries(this.#memory[workspaceHandler.workspaceId] || {}).forEach(([page, obj]) => {
+				Object.entries(this.#memory[content.workspaceId] || {}).forEach(([page, obj]) => {
 					if( ! obj.hasOwnProperty(event.roomId)){
 						return;
 					}
-					this.#memory[workspaceHandler.workspaceId][page][event.roomId] = li;
+					this.#memory[content.workspaceId][page][content.roomId] = li;
 				})
 				this.refresh()
 			})
@@ -296,7 +296,7 @@ export default new class RoomMessengerList{
 				room_type: roomType
 			});
 			li.draggable = true;
-			this.#addMemory(li, roomId);
+			this.#addMemory(li, workspaceId, roomId);
 			this.#addItemEvent(li);
 			resolve(li);
 		});
@@ -312,17 +312,17 @@ export default new class RoomMessengerList{
 		});
 	}
 
-	#addMemory(data, roomId){
-		if( ! this.#memory.hasOwnProperty(workspaceHandler.workspaceId)){
-			this.#memory[workspaceHandler.workspaceId] = {};
+	#addMemory(data, workspaceId, roomId){
+		if( ! this.#memory.hasOwnProperty(workspaceId)){
+			this.#memory[workspaceId] = {};
 		}
-		if( ! this.#memory[workspaceHandler.workspaceId].hasOwnProperty(this.#page)){
-			this.#memory[workspaceHandler.workspaceId][this.#page] = {};
+		if( ! this.#memory[workspaceId].hasOwnProperty(this.#page)){
+			this.#memory[workspaceId][this.#page] = {};
 		}
 		if( ! data || ! roomId){
 			return ;
 		}
-		this.#memory[workspaceHandler.workspaceId][this.#page][roomId] = data;
+		this.#memory[workspaceId][this.#page][roomId] = data;
     }
 
 	refresh(){

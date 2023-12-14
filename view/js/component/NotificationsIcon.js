@@ -122,7 +122,6 @@ export default class NotificationsIcon{
      * 
      * @param {DOMRect} targetRect 
      * @param {DOMRect} elementRect 
-     * @param {Number} targetFontSize 
      */
     #getPosition(targetRect, elementRect){
         let obj = {left: 0, right: 0, top: 0, bottom: 0};

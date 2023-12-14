@@ -29,8 +29,7 @@ export default new class RoomHandler{
 
     set roomId(roomId){
         if( ! roomId){
-            console.error('roomId is undefined');
-            return;
+            throw new Error('roomId is undefined')
         }
         this.#roomId = roomId;
         window.myAPI.room.getRoomDetail({roomId}).then(result => {

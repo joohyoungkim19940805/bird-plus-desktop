@@ -1,9 +1,9 @@
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "../../../handler/room/RoomHandler";
-import PositionChanger from "../../../handler/PositionChangeer";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import PositionChanger from "@handler/PositionChangeer";
 import noticeBoardDetail from "./NoticeBoardDetail";
-import common from "./../../../common";
-import noticeBoardHandler from "./../../../handler/notice_board/NoticeBoardHandler";
+import common from "@root/js/common";
+import noticeBoardHandler from "@handler/notice_board/NoticeBoardHandler";
 
 export default new class NoticeBoardList{
 	#memory = {}
@@ -143,7 +143,7 @@ export default new class NoticeBoardList{
 					}
 					e.remove();
 				});
-				let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
+				let list = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
 					.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
 				if(list.length != 0){
 					this.#positionChanger.addPositionChangeEvent(list, parentRoot)
@@ -157,11 +157,11 @@ export default new class NoticeBoardList{
 			let id = content.groupId || content.id;
 			if(! id) return;
 
-			delete this.#memory[workspaceHandler.workspaceId][roomHandler.roomId]?.[id]
+			delete this.#memory[content.workspaceId][content.roomId]?.[id]
 			
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
 			
-			let list = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
+			let list = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
 				.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
 			this.#positionChanger.addPositionChangeEvent(list, parentRoot)
 			parentRoot.replaceChildren(...list);
@@ -317,7 +317,7 @@ export default new class NoticeBoardList{
 			marker.click();
 		}
 		titleName.onblur = (event) => {
-			/*if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
+			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
 				titleName.classList.add('pointer');
@@ -337,7 +337,7 @@ export default new class NoticeBoardList{
 				titleName.dataset.prev_titleName = titleName.textContent
 			}else if(titleName.textContent == '' && data.isEmpty){
 				li.remove();
-			}*/
+			}
 		}
 		this.#addItemEvent(li, parentRoot);
 		return li;

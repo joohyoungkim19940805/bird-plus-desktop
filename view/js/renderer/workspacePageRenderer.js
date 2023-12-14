@@ -1,6 +1,6 @@
-import common from "./../common"; 
+import common from "@root/js/common"; 
 
-import HeaderDefault from "../component/header/HeaderDefault"
+import HeaderDefault from "@component/header/HeaderDefault"
 
 window.customElements.define('header-default', HeaderDefault);
 

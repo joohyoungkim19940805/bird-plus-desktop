@@ -1,13 +1,13 @@
-import roomHandler from "./../../../handler/room/RoomHandler"
-import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler"
-import roomFavoritesList from "../../room/room_item/RoomFavoritesList";
+import roomHandler from "@handler/room/RoomHandler"
+import workspaceHandler from "@handler/workspace/WorkspaceHandler"
+import roomFavoritesList from "@component/room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
-import roomContainer from "../../room/RoomContainer";
-import noticeBoardContainer from "../../notice_board/NoticeBoardContainer";
-import common from "./../../../common"
+import roomContainer from "@component/room/RoomContainer";
+import noticeBoardContainer from "@component/notice_board/NoticeBoardContainer";
+import common from "@root/js/common"
 
-import { accountHandler } from "../../../handler/account/AccountHandler"
+import { accountHandler } from "@handler/account/AccountHandler"
 
 export default new class ChattingHead{
     #chattingHeadMemory = {};
@@ -121,7 +121,7 @@ export default new class ChattingHead{
             this.#addMemory(this.createLiElement(content), content.workspaceId, content.roomId, content.accountName);
             if(content.roomId == roomHandler.roomId){
 
-                let memberList = Object.values(this.#chattingHeadMemory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                let memberList = Object.values(this.#chattingHeadMemory[content.workspaceId]?.[content.roomId] || {})
                     .sort((a,b)=> a.dataset.full_name.localeCompare(b.dataset.full_name));
 
                 new Promise(res => {

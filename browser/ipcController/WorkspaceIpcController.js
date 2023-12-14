@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
-const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
 class WorkspaceIpcController {
 	constructor() {
@@ -57,8 +57,7 @@ class WorkspaceIpcController {
 	}
 
 	changeWokrspacePage(event){
-		birdPlusOptions.setLastWindowSize(mainWindow);
-		birdPlusOptions.setLastWindowPosition(mainWindow);
+
 		mainWindow.resizable = true;
 		mainWindow.movable = true;
 		mainWindow.autoHideMenuBar = false;
@@ -68,6 +67,10 @@ class WorkspaceIpcController {
 			mainWindow.titleBarStyle = 'visibble'
 			mainWindow.show();
 			mainWindow.isOpening = false;
+			birdPlusOptions.optionLoadEnd.then(() => {
+				birdPlusOptions.setLastWindowSize(mainWindow);
+				birdPlusOptions.setLastWindowPosition(mainWindow);	
+			})
 		})
 	}
 	searchWorkspaceMyJoined(event, param = {}){

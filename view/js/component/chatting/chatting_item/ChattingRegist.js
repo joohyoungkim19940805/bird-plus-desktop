@@ -1,29 +1,29 @@
-import FreeWillEditor from "./../../../handler/editor/FreeWillEditor";
-import Strong from "./../../../handler/editor/tools/Strong"
-import Color from "./../../../handler/editor/tools/Color"
-import Background from "./../../../handler/editor/tools/Background"
-import Strikethrough from "./../../../handler/editor/tools/Strikethrough"
-import Underline from "./../../../handler/editor/tools/Underline"
-import FontFamily from "./../../../handler/editor/tools/FontFamily"
-import Quote from "./../../../handler/editor/tools/Quote"
-import NumericPoint from "./../../../handler/editor/tools/NumericPoint"
-import BulletPoint from "./../../../handler/editor/tools/BulletPoint"
-import Sort from "./../../../handler/editor/tools/Sort"
-import FontSize from "./../../../handler/editor/tools/FontSize"
-import Italic from "./../../../handler/editor/tools/Italic"
-import Image from "./../../../handler/editor/tools/Image"
-import Video from "./../../../handler/editor/tools/Video"
-import Resources from "../../../handler/editor/tools/Resources";
-import Code from "./../../../handler/editor/tools/Code"
-import Hyperlink from "./../../../handler/editor/tools/Hyperlink"
+import FreeWillEditor from "@handler/editor/FreeWillEditor";
+import Strong from "@handler/editor/tools/Strong"
+import Color from "@handler/editor/tools/Color"
+import Background from "@handler/editor/tools/Background"
+import Strikethrough from "@handler/editor/tools/Strikethrough"
+import Underline from "@handler/editor/tools/Underline"
+import FontFamily from "@handler/editor/tools/FontFamily"
+import Quote from "@handler/editor/tools/Quote"
+import NumericPoint from "@handler/editor/tools/NumericPoint"
+import BulletPoint from "@handler/editor/tools/BulletPoint"
+import Sort from "@handler/editor/tools/Sort"
+import FontSize from "@handler/editor/tools/FontSize"
+import Italic from "@handler/editor/tools/Italic"
+import Image from "@handler/editor/tools/Image"
+import Video from "@handler/editor/tools/Video"
+import Resources from "@handler/editor/tools/Resources";
+import Code from "@handler/editor/tools/Code"
+import Hyperlink from "@handler/editor/tools/Hyperlink"
 
-import workspaceHandler from "./../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "./../../../handler/room/RoomHandler";
-import common from "../../../common";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import common from "@root/js/common";
 
-import { s3EncryptionUtil } from "../../../handler/S3EncryptionUtil";
+import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
 
-import { accountHandler } from "../../../handler/account/AccountHandler"
+import { accountHandler } from "@handler/account/AccountHandler"
 
 export default new class ChattingRegist extends FreeWillEditor{
     static{
@@ -131,11 +131,11 @@ export default new class ChattingRegist extends FreeWillEditor{
 							json.tagName != Video.toolHandler.defaultClass &&
 							json.tagName != Resources.toolHandler.defaultClass
 						){
-							console.log('???', json.node)
 							return;
 						}
 						let node = json.node;
 						let file = node.selectedFile;
+						json.data.is_loading = '';
 						console.log(node, file);
 						let fileType;
 						if(json.tagName == Image.toolHandler.defaultClass){
@@ -223,7 +223,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 								window.getSelection().setPosition(this, 1)
 								return;
 							}
-							fileTargetList.forEach(e=>e.data.target_id = data.id);
+							fileTargetList.forEach(e=>delete e.data.is_loading);
 							window.myAPI.chatting.sendChatting({
 								id: data.id,
 								workspaceId: workspaceHandler.workspaceId,

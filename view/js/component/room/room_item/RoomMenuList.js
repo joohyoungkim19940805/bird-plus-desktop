@@ -1,4 +1,4 @@
-import PositionChanger from "../../../handler/PositionChangeer";
+import PositionChanger from "@handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
 export default new class RoomMenuList{

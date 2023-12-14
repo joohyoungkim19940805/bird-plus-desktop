@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const EventSource = require('eventsource');
-const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 
 class MainIpcController {
@@ -29,8 +29,10 @@ class MainIpcController {
 		})
 	}
 	changeMainPage(event, param){
-		birdPlusOptions.setLastWindowSize(mainWindow);
-		birdPlusOptions.setLastWindowPosition(mainWindow);
+		birdPlusOptions.optionLoadEnd.then(() => {
+			birdPlusOptions.setLastWindowSize(mainWindow);
+			birdPlusOptions.setLastWindowPosition(mainWindow);	
+		})
 		mainWindow.resizable = true;
 		mainWindow.movable = true;
 		mainWindow.autoHideMenuBar = false;

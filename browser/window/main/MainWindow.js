@@ -8,7 +8,7 @@ const path = require('path');
  */
 const {BrowserWindow, ipcMain, shell, screen} = require('electron');
 
-const birdPlusOptions = require(path.join(__project_path, 'BirdPlusOptions.js'))
+const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
@@ -108,14 +108,15 @@ class MainWindow extends BrowserWindow{
 			}
 			let [w,h] = super.getSize();
 			mainWindow.webContents.send("resized", super.getSize());
-			birdPlusOptions.size = [w,h];
+			birdPlusOptions.size = {w,h};
 		});
 
 		super.on('move' , (event) => {
 			if(this.#isOpening){
 				return;
 			}
-			birdPlusOptions.position = super.getPosition();
+			let [x,y] =  super.getPosition();
+			birdPlusOptions.position = {x,y};
 		})
 		ipcMain.handle('isMaximize', () => {
 			return super.isMaximized()
@@ -151,7 +152,23 @@ class MainWindow extends BrowserWindow{
 			this.createSubWindow(param);
 		});
 
-		
+		ipcMain.handle('getOption', async (event, optionName) => {
+			return birdPlusOptions.optionLoadEnd.then(()=> birdPlusOptions[optionName]);
+		})
+		ipcMain.on('setOption', async (event, param) => {
+			birdPlusOptions.optionLoadEnd.then(()=> {
+				let {name, value} = param;
+				birdPlusOptions[name] = value;
+				mainWindow.webContents.send('optionChange', {name, value});
+				Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+					if(v.isDestroyed()){
+						delete mainWindow.subWindow[k];
+						return;
+					}
+					v.webContents.send('optionChange', {name, value});
+				})
+			})
+		})
 		/*
 		ipcMain.on('ondragstart', (event, param) => {
 			console.log('event', event);

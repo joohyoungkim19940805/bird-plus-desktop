@@ -1,8 +1,8 @@
-import workspaceHandler from "../../../handler/workspace/WorkspaceHandler";
-import roomHandler from "../../../handler/room/RoomHandler";
-import PositionChanger from "./../../../handler/PositionChangeer";
+import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import roomHandler from "@handler/room/RoomHandler";
+import PositionChanger from "@handler/PositionChangeer";
 
-import { accountHandler } from "../../../handler/account/AccountHandler"
+import { accountHandler } from "@handler/account/AccountHandler"
 
 export default new class RoomFavoritesList{
 
@@ -143,21 +143,19 @@ export default new class RoomFavoritesList{
 		roomHandler.addRoomIdChangeListener = {
 			name: 'roomFavoritesList',
 			callBack: (handler) => {
+				console.log(handler.roomId);
 				new Promise(resolve => {
 					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);
 						if(isNaN(itemRoomId)){
-							resolve();
-							return;
-						}else if(handler.roomId == itemRoomId){
-							resolve();
+							//resolve();
 							return;
 						}
 						item.style.fontWeight = '';
-					})
+					});
 					resolve();
 				})
-				let targetRoom = this.#elementMap.roomContentList.querySelector(`[data-room_id="${handler.roomId}"]`);
+				let targetRoom = this.#liList.find(e=> e.dataset.room_id == handler.roomId);
 				if(! targetRoom){
 					this.#elementMap.searchName.value = '';
 					this.refresh();
@@ -239,7 +237,13 @@ export default new class RoomFavoritesList{
 				`
 			});
 			if(roomHandler.roomId && roomId == roomHandler.roomId){
-				li.style.fontWeight = 'bold';
+				let appendAwait = setInterval(()=>{
+					if( ! li.isConnected) return;
+					clearInterval(appendAwait);
+					if(roomHandler.roomId == roomId){
+						li.style.fontWeight = 'bold';
+					}
+				},50)
 			}
 			Object.assign(li.dataset, {
 				id,

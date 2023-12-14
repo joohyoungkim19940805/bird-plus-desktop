@@ -1,18 +1,18 @@
-import noticeBoardHandler from "../handler/notice_board/NoticeBoardHandler"
+import noticeBoardHandler from "@handler/notice_board/NoticeBoardHandler"
 
-import noticeBoardDetail from "../component/notice_board/notice_board_item/NoticeBoardDetail"
+import noticeBoardDetail from "@component/notice_board/notice_board_item/NoticeBoardDetail"
 
-import roomHandler from "../handler/room/RoomHandler"
-import chattingHandler from "../handler/chatting/ChattingHandler"
-import workspaceHandler from "../handler/workspace/WorkspaceHandler"
+import roomHandler from "@handler/room/RoomHandler"
+import chattingHandler from "@handler/chatting/ChattingHandler"
+import workspaceHandler from "@handler/workspace/WorkspaceHandler"
 
-import Image from "../handler/editor/tools/Image"
-import Video from "../handler/editor/tools/Video"
-import Resources from "../handler/editor/tools/Resources"
+import Image from "@handler/editor/tools/Image"
+import Video from "@handler/editor/tools/Video"
+import Resources from "@handler/editor/tools/Resources"
 
-import { accountHandler } from "../handler/account/AccountHandler"
-import { s3EncryptionUtil } from "../handler/S3EncryptionUtil"
-import IndexedDBHandler from "../handler/IndexedDBHandler"
+import { accountHandler } from "@handler/account/AccountHandler"
+import { s3EncryptionUtil } from "@handler/S3EncryptionUtil"
+import IndexedDBHandler from "@handler/IndexedDBHandler"
 
 window.addEventListener('load', async () => {
 

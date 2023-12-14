@@ -91,7 +91,12 @@ export default class UndoManager{
         if(target == undefined){
             return;
         }else{
-            let prevCursorTarget = this.#editor.querySelector('[is_cursor]');
+            let prevCursorTarget;
+            if(this.#editor.hasAttribute('is_cursor')){
+                prevCursorTarget = this.#editor;
+            }else{
+                prevCursorTarget = this.#editor.querySelector('[is_cursor]');
+            }
             if(prevCursorTarget && prevCursorTarget != target){
                 prevCursorTarget.removeAttribute('is_cursor');
                 prevCursorTarget.removeAttribute('cursor_offset');
@@ -110,7 +115,7 @@ export default class UndoManager{
         */
         target.setAttribute('is_cursor', '');
         target.setAttribute('cursor_offset', focusOffset);
-        target.setAttribute('cursor_type', focusNode.nodeType);
+        target.setAttribute('cursor_type', target.nodeType);
         target.setAttribute('cursor_index', index);
         target.setAttribute('cursor_scroll_x', this.#editor.scrollLeft);
         target.setAttribute('cursor_scroll_y', this.#editor.scrollTop);
@@ -140,11 +145,17 @@ export default class UndoManager{
 
             let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes
             let selection = window.getSelection();
-            if(type.value == Node.TEXT_NODE){
+            /*if(type.value == Node.TEXT_NODE){
                 let textNode = cursorTarget.childNodes[index.value]; 
                 selection.setPosition(textNode, offset.value);
             }else if(type.value == Node.ELEMENT_NODE){
                 console.log(cursorTarget);
+                selection.setPosition(cursorTarget, offset.value);
+            }*/
+            if(type.value == Node.ELEMENT_NODE){
+                let node = cursorTarget.childNodes[index.value]; 
+                selection.setPosition(node, offset.value);
+            }else if(type.value == Node.TEXT_NODE){
                 selection.setPosition(cursorTarget, offset.value);
             }
             this.#editor.scrollTo(Number(x.value), Number(y.value));

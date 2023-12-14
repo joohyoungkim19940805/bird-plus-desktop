@@ -1,6 +1,6 @@
-import common from "../../common";
-import { simpleOption } from "../option/SimpleOption";
-import FreedomInterface from "../../handler/editor/module/FreedomInterface";
+import common from "@root/js/common";
+import { simpleOption } from "@component/option/SimpleOption";
+import FreedomInterface from "@handler/editor/module/FreedomInterface";
 /**
  * 헤더 기본타입 : 상단 타이틀바 커스텀라이징
  */
