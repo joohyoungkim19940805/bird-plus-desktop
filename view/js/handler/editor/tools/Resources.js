@@ -153,8 +153,6 @@ export default class Resources extends FreedomInterface {
 
             let url = URL.createObjectURL(this.#file.files[0], this.dataset.content_type);
             this.dataset.url = url;
-            this.resources.type = this.dataset.content_type;
-            this.resources.data = this.dataset.url;
             /*fetch(this.dataset.url).then(res=>res.blob()).then(blob => {
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
@@ -164,8 +162,6 @@ export default class Resources extends FreedomInterface {
             })*/
            
         }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
-            this.resources.type = this.dataset.content_type;
-            this.resources.data = this.dataset.url;
             /*
             fetch(this.dataset.base64)
             .then(async res=>{
@@ -178,11 +174,10 @@ export default class Resources extends FreedomInterface {
         }else if(Resources.customResourcesCallback && typeof Resources.customResourcesCallback == 'function'){
             Resources.customResourcesCallback(this);
         }else if(this.dataset.url){
-            this.resources.type = this.dataset.content_type;
-            this.resources.data = this.dataset.url;
         }
         this.resources.type = this.dataset.content_type;
         this.resources.data = this.dataset.url;
+        this.resources.dataset.resources_name = this.dataset.name
         console.log(this.#file);
         if(! this.dataset.name){
             this.remove();
@@ -191,7 +186,13 @@ export default class Resources extends FreedomInterface {
         
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Resources.defaultStyle.cloneNode(true));
-        this.createDefaultContent();
+        
+        this.createDefaultContent().then(({wrap, description, slot, aticle})=>{
+            this.connectedChildAfterCallback = (addedList) => {
+                console.log('test >> ' ,addedList)
+                aticle.append(...addedList);
+            }
+        });
         
         this.disconnectedAfterCallback = () => {
             if(this.dataset.url.startsWith('blob:file')){
@@ -200,63 +201,64 @@ export default class Resources extends FreedomInterface {
                 }, 1000 * 60 * 2)
             }
         }
+
 	}
 
     createDefaultContent(){
-        let wrap = Object.assign(document.createElement('div'),{
+        return new Promise(resolve => {
+            let wrap = Object.assign(document.createElement('div'),{
 
-        });
-        wrap.draggable = false
+            });
+            wrap.draggable = false
 
-        this.shadowRoot.append(wrap);
+            this.shadowRoot.append(wrap);
 
-        let resourcesContanier = Object.assign(document.createElement('div'),{
-            className: `${Resources.defaultStyle.id} resources-contanier`
-        });
+            let resourcesContanier = Object.assign(document.createElement('div'),{
+                className: `${Resources.defaultStyle.id} resources-contanier`
+            });
 
-        /*let resources = Object.assign(document.createElement('img'), {
-            //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            //src: this.dataset.url
-            //src: imgUrl
-        });*/
+            /*let resources = Object.assign(document.createElement('img'), {
+                //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
+                //src: this.dataset.url
+                //src: imgUrl
+            });*/
 
-        //if(this.file.files.length != 0){
-        this.resources.dataset.resources_name = this.dataset.name
-        //}
+            //if(this.file.files.length != 0){
 
-        resourcesContanier.append(this.resources);
+            //}
 
-        this.resources.onload = (event) => {
-            if(this.dataset.width){
-                this.resources.width = this.dataset.width;
+            resourcesContanier.append(this.resources);
+
+            this.resources.onload = (event) => {
+                if(this.dataset.width){
+                    this.resources.width = this.dataset.width;
+                }
+                console.log(this.resources.contentWindow);
+                if( ! this.resources.contentWindow){
+                    this.resources.classList.add('unload')
+                }
+                /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+                let scrollTarget;
+                if(range.endContainer.nodeType == Node.TEXT_NODE){
+                    scrollTarget = range.endContainer.parentElement
+                }else{
+                    scrollTarget = range.endContainer;
+                }
+                scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+                */
+            //this.imgLoadEndCallback();
+                //resourcesContanier.style.height = window.getComputedStyle(resources).height;
             }
-            console.log(this.resources.contentWindow);
-            if( ! this.resources.contentWindow){
-                this.resources.classList.add('unload')
+            this.resources.onerror = (event) => {
+                console.log(event);
+                //resourcesContanier.style.height = window.getComputedStyle(resources).height;
+                this.resources.dataset.error = '';
+                if( ! this.resources.contentWindow){
+                    this.resources.classList.add('unload')
+                }
             }
-            /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
-			let scrollTarget;
-			if(range.endContainer.nodeType == Node.TEXT_NODE){
-				scrollTarget = range.endContainer.parentElement
-			}else{
-				scrollTarget = range.endContainer;
-			}
-			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
-            */
-           //this.imgLoadEndCallback();
-			//resourcesContanier.style.height = window.getComputedStyle(resources).height;
-        }
-        this.resources.onerror = (event) => {
-            console.log(event);
-            //resourcesContanier.style.height = window.getComputedStyle(resources).height;
-            this.resources.dataset.error = '';
-            if( ! this.resources.contentWindow){
-                this.resources.classList.add('unload')
-            }
-        }
 
-        this.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(this.resources, resourcesContanier);
+            let {description, slot, aticle} = this.createDescription(this.resources, resourcesContanier);
             let downloadButton = Object.assign(document.createElement('button'), {
                 className: `${Resources.defaultStyle.id} resources-download-button`,
                 innerHTML : `<b>Download</b>`,
@@ -274,14 +276,20 @@ export default class Resources extends FreedomInterface {
                     })
                 }
             });
-            wrap.replaceChildren(...[description,downloadButton,resourcesContanier].filter(e=>e != undefined));
-            
-            if(this.nextSibling?.tagName == 'BR'){
-                this.nextSibling.remove()
-            }
-        }
 
-        return this.resources;
+            this.connectedAfterOnlyOneCallback = () => {
+                if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+                    aticle.append(...[...this.childNodes].filter(e=>e!=aticle));
+                }
+                wrap.replaceChildren(...[description,downloadButton,resourcesContanier].filter(e=>e != undefined));
+                
+                if(this.nextSibling?.tagName == 'BR'){
+                    this.nextSibling.remove()
+                }
+
+                resolve({wrap, description, slot, aticle})
+            }
+        })
     }
 
     /**
@@ -301,10 +309,9 @@ export default class Resources extends FreedomInterface {
         
         description.dataset.open_status = '▼';
         
-        let slot = this.createSlot();
-        if(slot){
-            description.append(slot)
-        }
+        let {slot, aticle} = this.createSlot();
+        
+        description.append(slot)
 
         description.onclick = (event) => {
             /*if(event.composedPath().some(e=> e== downloadButton)){
@@ -341,7 +348,7 @@ export default class Resources extends FreedomInterface {
             }
         }
 
-        return description;
+        return {description, slot, aticle};
     }
 
     /**
@@ -354,7 +361,7 @@ export default class Resources extends FreedomInterface {
         aticle.contentEditable = 'false';
         aticle.draggable = 'false'; 
 
-        if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+        //if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
             let randomId = Array.from(
                 window.crypto.getRandomValues(new Uint32Array(16)),
                 (e)=>e.toString(32).padStart(2, '0')
@@ -367,10 +374,10 @@ export default class Resources extends FreedomInterface {
             let slot = Object.assign(document.createElement('slot'),{
                 name: Resources.slotName + '-' + randomId
             });
-            return slot;
-        }else{
-            return undefined
-        }
+            return {slot, aticle};
+        //}else{
+        //   return undefined
+        //}
 
     }
     /**
@@ -379,4 +386,11 @@ export default class Resources extends FreedomInterface {
     get selectedFile(){
         return this.#file
     }
+    
+    /*(set resourcesChange(url){
+        let newResources
+        this.resources.dataset.resources_name = this.dataset.name
+        this.resources.type = this.dataset.content_type
+        this.resources.data = url
+    }*/
 }

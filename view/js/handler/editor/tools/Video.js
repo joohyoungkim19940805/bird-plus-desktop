@@ -173,8 +173,12 @@ export default class Video extends FreedomInterface {
 
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Video.defaultStyle.cloneNode(true));
-        this.createDefaultContent();
 
+        this.createDefaultContent().then(({wrap, description, slot, aticle})=>{
+            this.connectedChildAfterCallback = (addedList) => {
+                aticle.append(...addedList);
+            }
+        });
 
         this.disconnectedAfterCallback = () => {
             if(this.dataset.url.startsWith('blob:file')){
@@ -186,61 +190,67 @@ export default class Video extends FreedomInterface {
 	}
 
     createDefaultContent(){
-        let wrap = Object.assign(document.createElement('div'),{
+        return new Promise(resolve=>{
+            let wrap = Object.assign(document.createElement('div'),{
 
-        });
-        wrap.draggable = false
+            });
+            wrap.draggable = false
 
-        this.shadowRoot.append(wrap);
+            this.shadowRoot.append(wrap);
 
-        let videoContanier = Object.assign(document.createElement('div'),{
-            className: `${Video.defaultStyle.id} video-contanier`
-        });
+            let videoContanier = Object.assign(document.createElement('div'),{
+                className: `${Video.defaultStyle.id} video-contanier`
+            });
 
-        this.video.dataset.video_name = this.dataset.name
+            this.video.dataset.video_name = this.dataset.name
 
-        videoContanier.append(this.video);
-        this.video.onload = () => {
-            if(
-                (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
-                (
-                    this.dataset.name && 
-                    this.video.canPlayType(
-                        `video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`
-                    ) == ''
-                )
-            ){
-                this.videoIsNotWorking();
+            videoContanier.append(this.video);
+            this.video.onload = () => {
+                if(
+                    (this.file.length != 0 && video.canPlayType(this.file.files[0].type) == '') ||
+                    (
+                        this.dataset.name && 
+                        this.video.canPlayType(
+                            `video/${this.dataset.name.substring(this.dataset.name.lastIndexOf('.') + 1)}`
+                        ) == ''
+                    )
+                ){
+                    this.videoIsNotWorking();
+                }
             }
-        }
-        this.video.onloadeddata = () => {
-            //videoContanier.style.height = window.getComputedStyle(video).height;
-            /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
-			let scrollTarget;
-			if(range.endContainer.nodeType == Node.TEXT_NODE){
-				scrollTarget = range.endContainer.parentElement
-			}else{
-				scrollTarget = range.endContainer;
-			}
-			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
-			*/
-            this.video.play();
-        }
-        this.video.onerror = () => {
-            //videoContanier.style.height = window.getComputedStyle(video).height;
-        }
-        
-        this.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(this.video, videoContanier);
-
-            wrap.replaceChildren(...[description,videoContanier].filter(e=>e != undefined));
-            
-            Video.videoBox.addVideoHoverEvent(this.video, this);
-            if(this.nextSibling?.tagName == 'BR'){
-                this.nextSibling.remove()
+            this.video.onloadeddata = () => {
+                //videoContanier.style.height = window.getComputedStyle(video).height;
+                /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+                let scrollTarget;
+                if(range.endContainer.nodeType == Node.TEXT_NODE){
+                    scrollTarget = range.endContainer.parentElement
+                }else{
+                    scrollTarget = range.endContainer;
+                }
+                scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+                */
+                this.video.play();
             }
-        }
+            this.video.onerror = () => {
+                //videoContanier.style.height = window.getComputedStyle(video).height;
+            }
 
+            let {description, slot, aticle} = this.createDescription(this.video, videoContanier);
+
+            this.connectedAfterOnlyOneCallback = () => {
+                if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+                    aticle.append(...[...this.childNodes].filter(e=>e!=aticle));
+                }
+                wrap.replaceChildren(...[description,videoContanier].filter(e=>e != undefined));
+                
+                Video.videoBox.addVideoHoverEvent(this.video, this);
+                if(this.nextSibling?.tagName == 'BR'){
+                    this.nextSibling.remove()
+                }
+
+                resolve({wrap, description, slot, aticle})
+            }
+        })
     }
 
     /**
@@ -257,7 +267,8 @@ export default class Video extends FreedomInterface {
         description.dataset.file_name = this.dataset.name
         description.dataset.open_status = this.dataset.open_status || '▼'
         videoContanier.style.height = this.dataset.height || 'auto'
-        let slot = this.createSlot()
+
+        let {slot, aticle} = this.createSlot()
         
         if(slot){
             description.append(slot);
@@ -296,7 +307,7 @@ export default class Video extends FreedomInterface {
             }
         }
 
-        return description
+        return {description, slot, aticle};
     }
 
     createSlot(){
@@ -305,7 +316,7 @@ export default class Video extends FreedomInterface {
         aticle.contentEditable = 'false';
         aticle.draggable = 'false';
 
-        if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+        //if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
             let randomId = Array.from(
                 window.crypto.getRandomValues(new Uint32Array(16)),
                 (e)=>e.toString(32).padStart(2, '0')
@@ -319,10 +330,10 @@ export default class Video extends FreedomInterface {
                 name: Video.descriptionName + '-' + randomId
             });
 
-            return slot;
-        }else{
-            return undefined;
-        }
+            return {slot, aticle};
+        //}else{
+        //    return undefined;
+        //}
     }
 
     videoIsNotWorking(){

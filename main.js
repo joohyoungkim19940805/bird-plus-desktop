@@ -3,30 +3,40 @@
  * global에 네임스페이스를 추가하는 경우는 반드시 필요한 경우에만 사용 할 것
  * global에 네임스페이스를 추가하는 것은 한 파일에서 전부 모아놓고 사용 할 것
  */
+
+const log = require('electron-log');
+const path = require('path');
+const axios = require('axios');
+
 // 일렉트론 모듈 호출
 const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
 app.setAppUserModelId(app.name);
+// 자동 업데이트 모듈 호출
+const {autoUpdater} = require('electron-updater');
+autoUpdater.logger = log
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){
+		//autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+		/*Object.defineProperty(app, 'isPackaged', {
+			get() {
+				return true;
+			}
+		});*/
 		return 'https://localhost:8443';
+	}else{
+		return ''
 	}
 })();
-const log = require('electron-log');
-const path = require('path');
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
-const axios = require('axios');
+
 //global.__birdPlusOptions = 
 
 // path 모듈 호출
 
 // 파일 모듈 호출
 const fs = require('fs');
-
-// 자동 업데이트 모듈 호출
-const {autoUpdater} = require('electron-updater');
-autoUpdater.logger = log
 
 var mainWindow 
 
@@ -57,9 +67,9 @@ if(process.defaultApp && process.argv.length >= 2){
 	}
 }
 
-const gotTheLock = true//app.requestSingleInstanceLock();
-console.log('kjh test11111',process.argv)
-	
+const gotTheLock = app.requestSingleInstanceLock();
+//const gotTheLock = true
+
 var workspaceId;
 if (!gotTheLock) {
 	//autoUpdater.quitAndInstall();
@@ -100,8 +110,30 @@ app.whenReady().then(()=>{
 
 	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
-		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+		log.info('DBConfig loadEndPromise');
+
+		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'));
+		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'));
+		const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
+		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
+		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
+		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
+		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
+		const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpccontroller.js'));
+		const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
+		const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
+		log.info('create IPC END')
+
+		ipcMain.handle('getProjectPath', (event) => {
+			return global.__project_path;
+		})
+		
+		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
+		log.info('create mainWindow');
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
+		log.info('create mainTray');
+
+
 
 		if(process.argv[2]?.includes('grease-lightning-chat://')){
 			let params = process.argv[2].split('?').at(-1).split('&').reduce( (t, e)=> {
@@ -122,19 +154,6 @@ app.whenReady().then(()=>{
 		// 앱이 이미 켜져있는데 중복실행하여 접근할 경우
 		// window 및 linux인 경우
 
-		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'))
-		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'))
-		const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
-		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
-		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
-		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
-		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
-		const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpccontroller.js'));
-		const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
-		const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
-		ipcMain.handle('getProjectPath', (event) => {
-			return global.__project_path;
-		})
 	/*
 		let icons = new BrowserWindow({
 			show: false, webPreferences: {offscreen: true}});

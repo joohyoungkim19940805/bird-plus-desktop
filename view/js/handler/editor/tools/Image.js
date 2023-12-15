@@ -179,7 +179,12 @@ export default class Image extends FreedomInterface {
         
         this.attachShadow({ mode : 'open' });
         this.shadowRoot.append(Image.defaultStyle.cloneNode(true));
-        this.createDefaultContent();
+        
+        this.createDefaultContent().then(({wrap, description, slot, aticle})=>{
+            this.connectedChildAfterCallback = (addedList) => {
+                aticle.append(...addedList);
+            }
+        });
         
         this.disconnectedAfterCallback = () => {
             if(this.dataset.url.startsWith('blob:file')){
@@ -191,61 +196,67 @@ export default class Image extends FreedomInterface {
 	}
 
     createDefaultContent(){
-        let wrap = Object.assign(document.createElement('div'),{
+        return new Promise(resolve=>{
+            let wrap = Object.assign(document.createElement('div'),{
 
-        });
-        wrap.draggable = false
+            });
+            wrap.draggable = false
 
-        this.shadowRoot.append(wrap);
+            this.shadowRoot.append(wrap);
 
-        let imageContanier = Object.assign(document.createElement('div'),{
-            className: `${Image.defaultStyle.id} image-contanier`
-        });
+            let imageContanier = Object.assign(document.createElement('div'),{
+                className: `${Image.defaultStyle.id} image-contanier`
+            });
 
-        /*let image = Object.assign(document.createElement('img'), {
-            //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
-            //src: this.dataset.url
-            //src: imgUrl
-        });*/
+            /*let image = Object.assign(document.createElement('img'), {
+                //src :`https://developer.mozilla.org/pimg/aHR0cHM6Ly9zLnprY2RuLm5ldC9BZHZlcnRpc2Vycy9iMGQ2NDQyZTkyYWM0ZDlhYjkwODFlMDRiYjZiY2YwOS5wbmc%3D.PJLnFds93tY9Ie%2BJ%2BaukmmFGR%2FvKdGU54UJJ27KTYSw%3D`
+                //src: this.dataset.url
+                //src: imgUrl
+            });*/
 
-        //if(this.#selectedFile.files.length != 0){
-        this.image.dataset.image_name = this.dataset.name
-        //}
+            //if(this.#selectedFile.files.length != 0){
+            this.image.dataset.image_name = this.dataset.name
+            //}
 
-        imageContanier.append(this.image);
+            imageContanier.append(this.image);
 
-        this.image.onload = () => {
-            if(this.dataset.width){
-                this.image.width = this.dataset.width;
+            this.image.onload = () => {
+                if(this.dataset.width){
+                    this.image.width = this.dataset.width;
+                }
+                /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
+                let scrollTarget;
+                if(range.endContainer.nodeType == Node.TEXT_NODE){
+                    scrollTarget = range.endContainer.parentElement
+                }else{
+                    scrollTarget = range.endContainer;
+                }
+                scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+                */
+            //this.imgLoadEndCallback();
+                //imageContanier.style.height = window.getComputedStyle(image).height;
             }
-            /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
-			let scrollTarget;
-			if(range.endContainer.nodeType == Node.TEXT_NODE){
-				scrollTarget = range.endContainer.parentElement
-			}else{
-				scrollTarget = range.endContainer;
-			}
-			scrollTarget.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
-            */
-           //this.imgLoadEndCallback();
-			//imageContanier.style.height = window.getComputedStyle(image).height;
-        }
-        this.image.onerror = () => {
-            //imageContanier.style.height = window.getComputedStyle(image).height;
-            this.image.dataset.error = '';
-        }
-
-        this.connectedAfterOnlyOneCallback = () => {
-            let description = this.createDescription(this.image, imageContanier);
-            wrap.replaceChildren(...[description,imageContanier].filter(e=>e != undefined));
-            
-            Image.imageBox.addImageHoverEvent(this.image, this);
-            if(this.nextSibling?.tagName == 'BR'){
-                this.nextSibling.remove()
+            this.image.onerror = () => {
+                //imageContanier.style.height = window.getComputedStyle(image).height;
+                this.image.dataset.error = '';
             }
-        }
 
-        return this.image;
+            let {description, slot, aticle} = this.createDescription(this.image, imageContanier);
+
+            this.connectedAfterOnlyOneCallback = () => {
+                if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+                    aticle.append(...[...this.childNodes].filter(e=>e!=aticle));
+                }
+                wrap.replaceChildren(...[description,imageContanier].filter(e=>e != undefined));
+                
+                Image.imageBox.addImageHoverEvent(this.image, this);
+                if(this.nextSibling?.tagName == 'BR'){
+                    this.nextSibling.remove()
+                }
+
+                resolve({wrap, description, slot, aticle})
+            }
+        })
     }
 
     /**
@@ -263,10 +274,9 @@ export default class Image extends FreedomInterface {
         description.dataset.open_status = this.dataset.open_status || '▼'; // '▼';
         imageContanier.style.height = this.dataset.height || 'auto'
         
-        let slot = this.createSlot();
-        if(slot){
-            description.append(slot)
-        }
+        let {slot, aticle} = this.createSlot();
+        
+        description.append(slot)
 
         description.onclick = (event) => {
             if(description.dataset.open_status == '▼'){
@@ -299,7 +309,7 @@ export default class Image extends FreedomInterface {
             }
         }
 
-        return description;
+        return {description, slot, aticle};
     }
 
     /**
@@ -312,7 +322,7 @@ export default class Image extends FreedomInterface {
         aticle.contentEditable = 'false';
         aticle.draggable = 'false'; 
 
-        if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
+        //if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
             let randomId = Array.from(
                 window.crypto.getRandomValues(new Uint32Array(16)),
                 (e)=>e.toString(32).padStart(2, '0')
@@ -325,10 +335,10 @@ export default class Image extends FreedomInterface {
             let slot = Object.assign(document.createElement('slot'),{
                 name: Image.slotName + '-' + randomId
             });
-            return slot;
-        }else{
-            return undefined
-        }
+            return {slot, aticle};
+        //}else{
+        //    return undefined
+        //}
 
     }
     /**

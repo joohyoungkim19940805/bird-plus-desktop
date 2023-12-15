@@ -1,6 +1,6 @@
 {
-	"name": "Grease Lightning Chat",
-	"version": "1.0.7",
+	"name": "Grease_Lightning_Chat",
+	"version": "0.1.0",
 	"description": "Grease Lightning Chat",
 	"main": "main.js",
 	"scripts": {
@@ -33,7 +33,7 @@
 		"@electron-forge/maker-zip": "^7.1.0",
 		"css-loader": "^6.8.1",
 		"electron": "^27.1.2",
-		"electron-builder": "^24.6.3",
+		"electron-builder": "^24.6.4",
 		"electron-reload": "^2.0.0-alpha.1",
 		"electron-reloader": "^1.2.3",
 		"nodemon": "^3.0.1",
@@ -61,43 +61,29 @@
 		"sqlite3": "^5.1.6"
 	},
 	"keywords": [
-		"bird",
-		"plus",
-		"bird plus",
-		"RADCNS",
-		"RAD",
-		"버드",
-		"플러스",
-		"버드 플러스",
-		"라드씨엔에스",
-		"라드"
+
 	],
 	"build": {
-		"productName": "greased lightning messenger",
-		"appId": "com.radcns.bird-plus.desktop",
+		"productName": "greased-lightning-chat",
+		"appId": "com.radcns.grease-lightning-chat.desktop",
 		"asar": true,
 		"protocols": {
 			"name": "grease-lightning-chat-protocol",
 			"schemes": [
-				"grease-lightning-chat"
+			"grease-lightning-chat"
 			]
 		},
 		"mac": {
 			"target": [
-				"default"
+			"default"
 			],
 			"icon": "./view/image/icon.ico"
 		},
 		"win": {
 			"target": [
-				"zip",
-				"nsis"
+			"nsis"
 			],
-			"icon": "./view/image/icon.ico",
-			"publish": [
-				"github",
-				"bitbucket"
-			]
+			"icon": "./view/image/icon.ico"
 		},
 		"nsis": {
 			"oneClick": false,
@@ -109,6 +95,17 @@
 			"buildResources": "./resources/installer/",
 			"output": "./dist/",
 			"app": "."
+		},
+		"publish" : {
+			"provider": "s3",
+			"path": "/update",
+			"region": "ap-northeast-2",
+			"bucket": "bird-plus-s3-public",
+			"channel": "latest",
+			"acl": "private",
+			"encryption": "AES256",
+			"accelerate": false,
+			"storageClass": "STANDARD"
 		}
 	}
 }

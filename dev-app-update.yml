@@ -1,0 +1,10 @@
+publish:
+  provider: s3,
+  path: /update,
+  region: ap-northeast-2,
+  bucket: bird-plus-s3-public,
+  channel: latest,
+  acl: public-read,
+  encryption: AES256,
+  accelerate: false,
+  storageClass: STANDARD

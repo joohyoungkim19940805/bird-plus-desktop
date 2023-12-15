@@ -145,14 +145,14 @@ p {
 }
 
 .loading_rotate{
-	border: 12px solid #f3f3f3;
-	border-radius: 50%;
-	border-top: 12px solid #3498db;
-	width: 20vmax;
-	height: 20vmax;
-	margin: 0 auto;
-	-webkit-animation: spin 2s linear infinite; /* Safari */
-	animation: spin 2s linear infinite;
+    border: 0.8vmax solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 0.8vmax solid #3498db;
+    width: 4vmax;
+    height: 4vmax;
+    margin: 0 auto;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
 }
 /* Safari */
 @-webkit-keyframes spin {
@@ -329,4 +329,31 @@ kbd {
     border-right: 2px solid;
     border-bottom: 2px solid;
     bottom: 0
+}
+.status_text_elipsis{
+    min-width: 5rem;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.status_text_elipsis::after{
+    content: "";
+    animation-name: status_text_ellipsis;
+    animation-direction: normal;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    animation-duration: 4s;
+}
+
+@keyframes status_text_ellipsis {
+	20%{
+		content: " 。";
+	}
+	50%{
+		content: " 。。";
+	}
+	80%{
+		content: " 。。。";
+	}
 }

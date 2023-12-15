@@ -383,14 +383,18 @@ export default new class NoticeBoardDetail{
         let promiseList = [];
 
         editor.contentEditable = false;
-        editor.getLowDoseJSON(editor, {
-            afterCallback: (json) => {
+        editor.getLowDoseJSON(this, {
+            afterCallback : (json) => {
                 if(json.tagName != Image.toolHandler.defaultClass && 
                     json.tagName != Video.toolHandler.defaultClass &&
-                    json.tagName != Resources.toolHandler.defaultClass)
-                {
+                    json.tagName != Resources.toolHandler.defaultClass
+                ){
                     return;
                 }
+                let node = json.node;
+                let file = node.selectedFile;
+                json.data.is_loading = '';
+                console.log(node, file);
                 let fileType;
                 if(json.tagName == Image.toolHandler.defaultClass){
                     fileType = 'IMAGE';
@@ -402,7 +406,6 @@ export default new class NoticeBoardDetail{
                 promiseList.push(new Promise(async resolve => {
 
                     let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
-                    console.log(json.data, json.data.new_file_name);
                     let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
                     let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'NOTICE'})
                     .then( (result) => {
@@ -423,7 +426,7 @@ export default new class NoticeBoardDetail{
                                     .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
                             })
                         ]).then( async ([k,m]) => {
-                            let base64 = json.data.base64;
+                            /*let base64 = json.data.base64;
                             if(! base64){
                                 let blob = await fetch(json.data.url).then(res=>res.blob())
                                 base64 = await new Promise(resolve => {
@@ -433,15 +436,15 @@ export default new class NoticeBoardDetail{
                                         resolve(reader.result);
                                     }
                                 });
-                            }
-                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, base64);
+                            }*/
+                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, file.files[0]);
                             if( ! (res.status == 200 || res.status == 201) ){
                                 return;
                             }
                             return true;
                         })
                     })
-
+                    console.log(isUpload);
                     if( ! isUpload){
                         resolve();
                         return;
@@ -456,32 +459,34 @@ export default new class NoticeBoardDetail{
                         let {data, encDncKeyPair} = result;
 
                         json.data.url = data.presignedUrl;
-                        delete json.data.base64;
+                        delete json.data.base64
                         json.data.upload_type = 'NOTICE';
                         resolve(json);
                     })
                 }))
             }
         }).then(jsonList => {
+
             param.content = JSON.stringify(jsonList);
 
             window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
                 let {data} = res
                 this.innerText = '';
+                isEnter = false;
                 Promise.all(promiseList).then((fileTargetList) => {
+                    console.log(fileTargetList);
                     if(fileTargetList.length == 0){
-                        //editor.contentEditable = true;
+                        //window.getSelection().setPosition(this, 1)
                         return;
                     }
-                    fileTargetList.forEach(e=>e.data.target_id = data.id);
-                    param.id = data.id;
+                    fileTargetList.forEach(e=>delete e.data.is_loading);
                     param.content = JSON.stringify(jsonList);
                     window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(response=>{
-                        //editor.contentEditable = true;
-                        console.log('response', response)
+                        //window.getSelection().setPosition(this, 1)
                     });
                 })
             });
+            
         })
     }
 

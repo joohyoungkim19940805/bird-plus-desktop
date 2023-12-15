@@ -62,6 +62,7 @@ class MainWindow extends BrowserWindow{
 			this.#isOpening = true;
 			
 			autoUpdater.checkForUpdates().then(result=>{
+			//autoUpdater.checkForUpdatesAndNotify().then(result => {
 				log.debug('checkForUpdates ::: ',result);
 				super.webContents.send('checkForUpdates', result)
 			});

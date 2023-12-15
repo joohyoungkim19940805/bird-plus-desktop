@@ -33,8 +33,8 @@ indexedDBHandler.open().then(()=>{
 
 window.addEventListener('load', async () => {
 	const indexedDBHandler = new IndexedDBHandler({
-		dbName: 'fileDB',
-		storeName: `s3Memory`,
+		dbName: 'fileDB-main-page',
+		storeName: `s3Memory-main-page`,
 		columnInfo: {
 			fileName: ['fileName', 'fileName', {unique : true}],
 			originFileName: ['originFileName', 'originFileName'],
@@ -62,7 +62,6 @@ window.addEventListener('load', async () => {
 			}))
 			return;
 		}
-		console.log('start <<< !!!');
 
 
 		let fileType;
@@ -96,13 +95,13 @@ window.addEventListener('load', async () => {
 			}
 			return;
 		}
-		console.log(isHasRememberFile.result);
+
 		let startPromise = new Promise(resolve => {
-			console.log('??????')
+
 			let {size, rank, rankText} = common.shortenBytes(targetTools.dataset.size);
-			console.log(size, rank);
+
 			if(size >= 10 && rank >= 2){
-				console.log('start<<<<<<')
+
 				let filePreview = Object.assign(document.createElement('div'), {
 					className: 'file_preview',
 					innerHTML: `
@@ -115,22 +114,23 @@ window.addEventListener('load', async () => {
 					`
 				});
 				filePreview.dataset.visibility_not = '';
-				console.log(filePreview);
-				console.log(targetTools.isConnected)
+
 				targetTools.append(filePreview)
 
 				let filePreviewButton = filePreview.querySelector('.file_preview_button');
 				//document.body.onclick = (event) =>{ event}
 				filePreviewButton.onclick = (event) => {
-					console.log(event);
+
 					event.stopPropagation();
+					filePreviewButton.textContent = '';
+					filePreviewButton.className = 'loading_rotate';
 					resolve(filePreview);
 				}
 			}else{
 				resolve();
 			}
 		});
-		console.log('end <<< !!!');
+
 		startPromise.then((filePreview) => {
 
 			let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${accountHandler.accountInfo.accountName}`
@@ -209,13 +209,19 @@ window.addEventListener('load', async () => {
 						})
 					})
 					.then(url => {
-						targetTools.dataset.url = url;
+						//targetTools.dataset.url = url;
 						if(targetTools.image){
 							targetTools.image.src = url;
 						}else if(targetTools.video){
 							targetTools.video.src = url;
 						}else{
 							targetTools.resources.data = url;
+						}
+
+						if(filePreview){
+							filePreview.replaceChildren();
+							filePreview.parentElement.removeChild(filePreview);
+							filePreview.remove();
 						}
 					})
 					.catch(err=>{

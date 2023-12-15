@@ -75,7 +75,7 @@ const birdPlusOptions = new class BirdPlusOptions{
 					log.error(err);
 					return;
 				}
-				console.log('rows>>>',rows);
+				//console.log('rows>>>',rows);
 				rows.forEach(e=>{
 					if(e.OPTION_NAME == 'size' || e.OPTION_NAME == 'position'){
 						this[e.OPTION_NAME] = JSON.parse(e.OPTION_VALUE)

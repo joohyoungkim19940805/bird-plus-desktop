@@ -91,26 +91,11 @@ div[is="content-block"]{
 .upload_loading .upload_loading_container{
     position: relative;
 }
-.upload_loading .upload_loading_container .status_text_elipsis::after{
-    content: "";
-    animation-name: status_text_ellipsis;
-    animation-direction: normal;
-    animation-iteration-count: infinite;
-    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
-    animation-duration: 4s;
-    position: absolute;
+.upload_loading .upload_loading_container .status_text_elipsis{
+    display: inline;
 }
-
-@keyframes status_text_ellipsis {
-	20%{
-		content: " 。";
-	}
-	50%{
-		content: " 。。";
-	}
-	80%{
-		content: " 。。。";
-	}
+.upload_loading .upload_loading_container .status_text_elipsis::after{
+    position: absolute;
 }
 
 .file_preview{
