@@ -108,10 +108,10 @@
 
 /* chatting info(body) [S]*/
 #chatting_info_wrapper{
-    -webkit-user-select: text;
+    /*-webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
-    user-select: text;
+    user-select: text;*/
 }
 #chatting_info_wrapper .chatting_info_container{
     justify-content: flex-end;

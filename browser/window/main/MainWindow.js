@@ -27,6 +27,11 @@ class MainWindow extends BrowserWindow{
 
 	subWindow = {};
 
+	#webContentsResolve;
+	webContentsAwait = new Promise(resolve=>{
+		this.#webContentsResolve = resolve;
+	})
+
 	/**
 	 * 메인 윈도우의 생성자
 	 * @author mozu123
@@ -54,30 +59,9 @@ class MainWindow extends BrowserWindow{
 			},
 			title: 'Grease Lightning Chat'
 		});
-		
+		log.info('create MainWindow constructor')
+		this.#webContentsResolve();
 		//super.setTitleBarOverlay
-		
-		super.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
-			super.webContents.openDevTools();
-			this.#isOpening = true;
-			
-			autoUpdater.checkForUpdates().then(result=>{
-			//autoUpdater.checkForUpdatesAndNotify().then(result => {
-				log.debug('checkForUpdates ::: ',result);
-				super.webContents.send('checkForUpdates', result)
-			});
-	
-			autoUpdater.on('update-available', (event) => {
-				log.debug('update-available',event);
-				super.webContents.send('updateAvailable');
-			});
-	
-	
-			autoUpdater.on('update-downloaded', (event) => {
-				log.debug('update-downloaded', event);
-				super.webContents.send('updateDownloaded');
-			});
-		});
 
 		super.on('maximize', (event) => {
 			//console.log('max >>> ', event);

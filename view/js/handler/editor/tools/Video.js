@@ -66,6 +66,9 @@ export default class Video extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+            .${this.toolHandler.defaultClass} {
+                position: relative;
+            }
             .${this.#defaultStyle.id}.css-gg-video-icon {
                 zoom:120%;
             }

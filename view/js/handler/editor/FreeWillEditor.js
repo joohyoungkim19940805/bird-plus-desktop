@@ -293,6 +293,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		
 		super.getLineRange(selection)
 		.then(({startLine, endLine}) => { 
+			if( ! startLine){
+				startLine = endLine
+			}
 			if( ! startLine.line){
 				new Line(startLine);
 			}
@@ -335,6 +338,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return;
 		}*/
 		super.getLineRange(selection).then(({startLine, endLine})=> {
+			console.log(endLine);
+			if( ! startLine){
+				startLine = endLine
+			}
 			if( ! startLine.line){
 				new Line(startLine);
 			}
@@ -384,6 +391,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	}
 
 	async getLowDoseJSON(targetElement = this, {afterCallback = (json)=> {}} = {}){
+		console.log(targetElement)
 		return Promise.all([...targetElement.childNodes]
 			.map(async (node, index)=>{
 				return new Promise(resolve =>{

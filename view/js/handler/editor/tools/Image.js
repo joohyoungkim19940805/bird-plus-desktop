@@ -73,6 +73,9 @@ export default class Image extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+            .${this.toolHandler.defaultClass} {
+                position: relative;
+            }
             .${this.#defaultStyle.id}.css-gg-image-icon {
                 zoom:120%;
             }

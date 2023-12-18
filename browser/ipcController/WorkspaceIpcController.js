@@ -6,6 +6,7 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
+const EventSource = require('eventsource');
 class WorkspaceIpcController {
 	constructor() {
         this.#initHandler();
@@ -232,40 +233,25 @@ class WorkspaceIpcController {
 		}
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
-					headers:{
-						'Content-Type': 'application/json',
-						'Accept': 'text/event-stream',
-					},
-					responseType: 'stream'
-				})
-				.then(windowUtil.responseCheck)
-				.then(response => response.data)
-				.catch(err=>{
-					log.error('IPC searchPermitRequestList error : ', JSON.stringify(err));
-					//axios.defaults.headers.common['Authorization'] = '';
-					if(err.response){
-						return err.response.data;
-					}else{
-						return err.message
+				//return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
+				return new Promise(resolve=>{
+					let source = new EventSource(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
+						headers: {
+							'Authorization' : axios.defaults.headers.common['Authorization'],
+						},
+						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+					});
+					source.onmessage = (event) => {
+						//console.log('test message :::: ',event);
+						let {data, lastEventId, origin, type} = event;
+						data = JSON.parse(data);
+						this.#send('workspacePermitRequestAccept', data);
 					}
-				}).then(stream => {
-					let streamEndResolve;
-					let promise = new Promise(res=>{
-						streamEndResolve = res;
-					})
-					stream.on('data', bufferArr => {
-						try{
-                            let str = String(bufferArr);
-							let obj = JSON.parse(str);
-							this.#send('workspacePermitRequestAccept', obj)
-						}catch(ignore){}
-					})
-					stream.on('end', () => {
-						log.debug('end searchPermitRequestList stream ::: ')
-						streamEndResolve();
-					})
-					return promise.then(()=>'done');
+					source.onerror = (event) => {
+						//console.log('searchPermitRequestList error :::: ',event);
+						source.close();
+						resolve('done');
+					}
 				})
 			}else{
 				return {'isLogin': false};

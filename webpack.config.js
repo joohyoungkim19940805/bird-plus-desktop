@@ -1,6 +1,8 @@
 const path = require('path');
 
 /**
+ * development
+ * cheap-module-source-map
  * 프로덕션 배포시 = 
  * mdoe : production
  * devtool 제거

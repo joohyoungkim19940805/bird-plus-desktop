@@ -14,6 +14,8 @@ app.setAppUserModelId(app.name);
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 autoUpdater.logger = log
+//log.transports.file.level = 'info'
+//app.disableHardwareAcceleration();
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){
@@ -26,7 +28,7 @@ global.__serverApi = (()=>{
 		});*/
 		return 'https://localhost:8443';
 	}else{
-		return ''
+		return 'https://mozu.co.kr'
 	}
 })();
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
@@ -40,7 +42,7 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
+if(process.env.MY_SERVER_PROFILES == 'local' || ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
@@ -112,23 +114,75 @@ app.whenReady().then(()=>{
 	DBConfig.loadEndPromise.then(() => {
 		log.info('DBConfig loadEndPromise');
 
-		const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'));
-		const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'));
-		const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
-		const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
-		const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
-		const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
-		const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
-		const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpccontroller.js'));
-		const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
-		const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
-		log.info('create IPC END')
+
 
 		ipcMain.handle('getProjectPath', (event) => {
 			return global.__project_path;
 		})
 		
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
+		mainWindow.webContentsAwait.then( () => {
+			log.info('webContentsAwait start!!!!');
+			try{
+				const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'));
+				log.info('openingIpcController');
+				const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'));
+				log.info('mainIpcController');
+				const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
+				log.info('accountIpcController');
+				const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
+				log.info('workspaceIpcController');
+				const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
+				log.info('chattingController');
+				const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
+				log.info('roomController');
+				const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
+				log.info('eventStreamIpcController');
+				const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpcController.js'));
+				log.info('noticeBoardIpccontroller');
+				const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
+				log.info('apiS3IpcController');
+				const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
+				log.info('emoticonIpcController');
+			}catch(err){
+				log.error(JSON.stringify(err));
+				log.error(err.message);
+			}
+			log.info('create IPC END')
+		})
+
+		mainWindow.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
+			mainWindow.webContents.openDevTools();
+			mainWindow.isOpening = true;
+			
+		});
+		let isCheckUpdate = false;
+		
+		mainWindow.webContents.on('did-finish-load', () => {
+			if(isCheckUpdate) return;
+			autoUpdater.checkForUpdates().then(result=>{
+			//autoUpdater.checkForUpdatesAndNotify().then(result => {
+				log.debug('checkForUpdates ::: ',result);
+				mainWindow.webContents.send('checkForUpdates', result)
+			});
+	
+			autoUpdater.on('update-available', (event) => {
+				log.debug('update-available',event);
+				mainWindow.webContents.send('updateAvailable');
+				dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료 후 업데이트를 진행합니다.')
+					
+				setTimeout(()=>{
+					autoUpdater.quitAndInstall();
+				},10000);
+			});
+	
+	
+			autoUpdater.on('update-downloaded', (event) => {
+				log.debug('update-downloaded', event);
+				mainWindow.webContents.send('updateDownloaded');
+			});
+			isCheckUpdate = true;
+		})
 		log.info('create mainWindow');
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 		log.info('create mainTray');

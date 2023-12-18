@@ -6,6 +6,7 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
+const EventSource = require('eventsource');
 class NoticeBoardIpccontroller {
 	constructor() {
 		this.#initHanlder();
@@ -164,40 +165,25 @@ class NoticeBoardIpccontroller {
 					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
                     //console.log('queryString ::: ', queryString);
-                return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
-					headers:{
-						'Content-Type': 'application/json',
-						'Accept': 'text/event-stream',
-					},
-					responseType: 'stream'
-                })
-                .then(windowUtil.responseCheck)
-                .then(response => response.data)
-                .catch(err=>{
-                    log.error('IPC searchNoticeBoardList error : ', JSON.stringify(err));
-                    //axios.defaults.headers.common['Authorization'] = '';
-                    if(err.response){
-                        return err.response.data;
-                    }else{
-                        return err.message
-                    }
-                }).then(stream => {
-					let streamEndResolve;
-					let promise = new Promise(res=>{
-						streamEndResolve = res;
-					})
-                    stream.on('data', bufferArr => {
-						try{
-                            let str = String(bufferArr);
-							let obj = JSON.parse(str.replace('data:'));
-							this.#send('noticeBoardAccept', obj)
-						}catch(ignore){}
-					})
-					stream.on('end', () => {
-						log.debug('end noticeBoardSearch stream ::: ')
-						streamEndResolve();
-					})
-					return promise.then(()=>'done');
+                //return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
+				return new Promise(resolve=>{
+					let source = new EventSource(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
+						headers: {
+							'Authorization' : axios.defaults.headers.common['Authorization'],
+						},
+						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+					});
+					source.onmessage = (event) => {
+						//console.log('test message :::: ',event);
+						let {data, lastEventId, origin, type} = event;
+						data = JSON.parse(data);
+						this.#send('noticeBoardAccept', data);
+					}
+					source.onerror = (event) => {
+						//console.log('searchNoticeBoardList error :::: ',event);
+						source.close();
+						resolve('done');
+					}
 				})
             }else{
 				return {'isLogin': false};
@@ -220,41 +206,26 @@ class NoticeBoardIpccontroller {
 					.filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId' && k != 'noticeBoardId')
 					.map(([k,v]) => `${k}=${v}`).join('&')
                     //console.log('queryString ::: ', queryString);
-                return axios.get(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
-					headers:{
-						'Content-Type': 'application/json',
-						'Accept': 'text/event-stream',
-					},
-					responseType: 'stream'
-                })
-                .then(windowUtil.responseCheck)
-                .then(response => response.data)
-                .catch(err=>{
-                    log.error('IPC searchNoticeBoardDetailList error : ', JSON.stringify(err));
-                    //axios.defaults.headers.common['Authorization'] = '';
-                    if(err.response){
-                        return err.response.data;
-                    }else{
-                        return err.message
+                //return axios.get(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
+                return new Promise(resolve=>{
+                    let source = new EventSource(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
+                        headers: {
+                            'Authorization' : axios.defaults.headers.common['Authorization'],
+                        },
+                        withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+                    });
+                    source.onmessage = (event) => {
+                        //console.log('test message :::: ',event);
+                        let {data, lastEventId, origin, type} = event;
+                        data = JSON.parse(data);
+                        this.#send('noticeBoardDetailAccept', data);
                     }
-                }).then(stream => {
-					let streamEndResolve;
-					let promise = new Promise(res=>{
-						streamEndResolve = res;
-					})
-					stream.on('data', bufferArr => {
-						try{
-                            let str = String(bufferArr);
-                            let obj = JSON.parse(str);
-                            this.#send('noticeBoardDetailAccept', obj)
-						}catch(ignore){}
-					})
-					stream.on('end', () => {
-						log.debug('end noticeBoardDetailAccept stream ::: ')
-						streamEndResolve();
-					})
-					return promise.then(()=>'done');
-				})
+                    source.onerror = (event) => {
+                        console.log('searchNoticeBoardDetailList error :::: ',event);
+                        source.close();
+                        resolve('done');
+                    }
+                })
             }else{
 				return {'isLogin': false};
 			}

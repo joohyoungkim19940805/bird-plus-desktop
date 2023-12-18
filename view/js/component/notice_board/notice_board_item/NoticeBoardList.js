@@ -123,12 +123,13 @@ export default new class NoticeBoardList{
 			if(this.#elementMap.searchContent.value == ''){
 				this.refresh()
 			}
-		}
+		}//
 		this.#elementMap.rootFolderAdd.onclick = () => {
 			this.createNoticeBoardGroup(undefined, this.#elementMap.noticeBoardList);
 		}
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
+
 			let {content = data} = data;
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
 			this.createItemElement(
@@ -343,8 +344,9 @@ export default new class NoticeBoardList{
 		return li;
 	}
 	createNoticeBoard(data = {isEmpty:true}, parentRoot){
-		let isNoticeBoardActive = ! Boolean(data.isEmpty) && data.id == noticeBoardHandler.noticeBoardId
-
+		let flexLayout = this.#element.closest('flex-layout');
+		let isNoticeBoardActive = ! Boolean(data.isEmpty) && data.id == noticeBoardHandler.noticeBoardId && flexLayout.isVisible(noticeBoardDetail.element)
+		
 		let li = Object.assign(document.createElement('li'), {
 			className: 'notice_board_list_content_item type_notice_board',
 			innerHTML: `
@@ -405,8 +407,8 @@ export default new class NoticeBoardList{
 		};
 		common.jsonToSaveElementDataset(data, li);
 
-		let flexLayout = this.#element.closest('flex-layout');
 		titleName.onclick = (event) => {
+			
 			if(document.activeElement == titleName){
 				return;
 			}else if(titleName.classList.contains('active')){

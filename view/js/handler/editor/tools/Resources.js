@@ -61,6 +61,9 @@ export default class Resources extends FreedomInterface {
 
 	static createDefaultStyle(){
 		this.#defaultStyle.textContent = `
+            .${this.toolHandler.defaultClass} {
+                position: relative;
+            }
             .${this.#defaultStyle.id}.css-gg-file-add-icon {
                 zoom:120%;
             }

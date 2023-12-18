@@ -79,7 +79,7 @@ export default new class NoticeBoardDetail{
                 <ul class="notice_board_detail_content" data-bind_name="noticeBoardDetailList">
  
                 </ul>
-            <div class="toolbar" style="position: fixed;" data-bind_name="toolbar"></div>
+                <div class="toolbar" style="position: fixed;" data-bind_name="toolbar"></div>
             </div>
         `
     })
@@ -116,7 +116,7 @@ export default new class NoticeBoardDetail{
         };
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
-
+            console.log(data);
             if(data && data.serverSentStreamType){
                 data = data.content;
             }
@@ -206,7 +206,6 @@ export default new class NoticeBoardDetail{
             if( ! selection.isCollapsed){
                 this.#elementMap.noticeBoardDetailContainer.append(this.#elementMap.toolbar);
                 this.#elementMap.toolbar.replaceChildren(...toolList);
-                console.log(document.activeElement);
                 common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect())
             }else{
                 this.#elementMap.toolbar.remove();
@@ -383,7 +382,7 @@ export default new class NoticeBoardDetail{
         let promiseList = [];
 
         editor.contentEditable = false;
-        editor.getLowDoseJSON(this, {
+        editor.getLowDoseJSON(editor, {
             afterCallback : (json) => {
                 if(json.tagName != Image.toolHandler.defaultClass && 
                     json.tagName != Video.toolHandler.defaultClass &&
@@ -472,7 +471,6 @@ export default new class NoticeBoardDetail{
             window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
                 let {data} = res
                 this.innerText = '';
-                isEnter = false;
                 Promise.all(promiseList).then((fileTargetList) => {
                     console.log(fileTargetList);
                     if(fileTargetList.length == 0){

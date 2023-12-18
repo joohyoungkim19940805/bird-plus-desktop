@@ -41,7 +41,10 @@ class EventStreamIpcController {
 		
 		this.prevWorkspaceId = workspaceId;
 
-		this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}/bearer-${axios.defaults.headers.common['Authorization']}`, {
+		this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}`, {
+			headers: {
+				'Authorization' : axios.defaults.headers.common['Authorization'],
+			},
 			withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
 		});
 		this.#isConnectSource = true;
@@ -69,8 +72,8 @@ class EventStreamIpcController {
 		};
 
 		this.source.onerror = (error) => {
-			log.debug('on stream err: ', error);
-			log.debug('source ::: ', this.source);
+			log.error('on stream err: ', error);
+			//log.debug('source ::: ', this.source);
 			/*this.#isConnectSource = false;
 			windowUtil.isLogin( result => {
 				if( ! result.isLogin){

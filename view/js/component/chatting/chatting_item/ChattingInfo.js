@@ -84,6 +84,7 @@ export default new class ChattingInfo{
                 <ul class="chatting_content_list list_scroll list_scroll-y" data-bind_name="chattingContentList">
 
                 </ul>
+                <div class="toolbar" style="position: fixed;" data-bind_name="toolbar"></div>
             </div>
         `
     })
@@ -289,13 +290,17 @@ export default new class ChattingInfo{
                                 this.#elementMap.chattingContentList.scrollHeight
                             )
                             clearInterval(isConnectedAwait);
-                            this.#processingTimeGrouping(
-                                this.#liList[1], 
-                                this.#liList[0]
-                            ).then(result => {
-                                if(result){
-                                    return;
-                                }
+
+                            Promise.all(this.#liList.map(async (e,i)=>{
+                                if(i == 0 || i == this.#liList.length - 1)return;
+                                return this.#processingTimeGrouping(e, this.#liList[i - 1])    
+                            }))
+                            //this.#processingTimeGrouping(this.#liList[1], this.#liList[0])
+                            //.then(()=>this.#processingTimeGrouping(this.#liList[0], this.#liList[1]))
+                            .then(result => {
+                                //if(result){
+                                //    return;
+                                //}
                                 let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
                                 let timeText; 
                                 if(date.toDateString() == new Date().toDateString()){
@@ -309,7 +314,7 @@ export default new class ChattingInfo{
                                     })
                                 }
                                 this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
-                            }); 
+                            });
                         },50);
                         
                     }
@@ -423,6 +428,34 @@ export default new class ChattingInfo{
                 }
             }
         })
+
+        let toolList = Object.values(ChattingInfoLine.tools).map(e=>e.toolHandler.toolButton);
+
+        document.addEventListener('selectionchange', event => {
+            if(document.activeElement.constructor != ChattingInfoLine){
+                return;
+            }
+            let selection = window.getSelection();
+            if (selection.rangeCount == 0){
+                return;
+            }
+            
+            if( ! selection.isCollapsed){
+                this.#elementMap.chattingInfoContainer.append(this.#elementMap.toolbar);
+                this.#elementMap.toolbar.replaceChildren(...toolList);
+                common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect())
+            }else{
+                this.#elementMap.toolbar.remove();
+            }
+        })
+        this.#elementMap.chattingInfoContainer.addEventListener("scroll", () => {
+			if(this.#elementMap.toolbar.childElementCount == 0)return;
+			common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
+		});
+        window.addEventListener('resize', (event) => {
+			if(this.#elementMap.toolbar.childElementCount == 0)return;
+            common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
+		})
     }
 
     callData(page, size, workspaceId, roomId, chatting){
@@ -477,7 +510,8 @@ export default new class ChattingInfo{
             createMils,
             updateMils,
             fullName,
-            accountName
+            accountName,
+            isMyChatting
         } = data;
         return new Promise(async resolve => {
             let li = Object.assign(document.createElement('li'), {
@@ -491,7 +525,7 @@ export default new class ChattingInfo{
                     <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">
                             <div class="chatting_content_description_name_container">
-                                <div class="chatting_content_description_name">${fullName}</div>
+                                <div class="chatting_content_description_name">${isMyChatting ? '나' : fullName}</div>
                                 <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                             </div>
                             <div class="chatting_content_description_option_container">
@@ -536,22 +570,26 @@ export default new class ChattingInfo{
             }
             delete data.reaction;
 
-            common.jsonToSaveElementDataset(data, li);
-
             li.__editor = content;
             this.#addMemory(li, workspaceId, roomId, id);
-            this.#addItemEvent(li, descriptionWrap);
-            if( ! prevItemPromise && this.#lastLiItem){
-                this.#processingTimeGrouping(li, this.#lastLiItem);
-            }else{
-               prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
-            }
             this.#lastLiItem = li;
+            
+            common.jsonToSaveElementDataset(data, li).then(() => {
+                this.#createDescription(li, descriptionWrap);
+                if( ! prevItemPromise && this.#lastLiItem){
+                    this.#processingTimeGrouping(li, this.#lastLiItem);
+                }else{
+                   prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
+                }
+            });
+
+
             //resolve(li);
         })
     }
 
-    #addItemEvent(li, descriptionWrap){
+    #createDescription(li, descriptionWrap){
+        let editor = li.__editor;
         new Promise(resolve=> {
             let hoverButtonWrapper = Object.assign(document.createElement('div'),{
                 className: 'chatting_hover_wrapper',
@@ -566,38 +604,14 @@ export default new class ChattingInfo{
                 className: 'chatting_hover_another_emoticon',
                 innerHTML: `
                 <svg class="css-gg-smile" style="zoom:125%;" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M16 13H14C14 14.1046 13.1046 15 12 15C10.8954 15 10 14.1046 10 13H8C8 15.2091 9.79086 17 12 17C14.2091 17 16 15.2091 16 13Z"
-                        fill="currentColor"
-                    />
-                    <path
-                        d="M10 10C10 10.5523 9.55228 11 9 11C8.44772 11 8 10.5523 8 10C8 9.44771 8.44772 9 9 9C9.55228 9 10 9.44771 10 10Z"
-                        fill="currentColor"
-                    />
-                    <path
-                        d="M15 11C15.5523 11 16 10.5523 16 10C16 9.44771 15.5523 9 15 9C14.4477 9 14 9.44771 14 10C14 10.5523 14.4477 11 15 11Z"
-                        fill="currentColor"
-                    />
-                    <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                        fill="currentColor"
-                    />
+                    <path d="M16 13H14C14 14.1046 13.1046 15 12 15C10.8954 15 10 14.1046 10 13H8C8 15.2091 9.79086 17 12 17C14.2091 17 16 15.2091 16 13Z" fill="currentColor"/>
+                    <path d="M10 10C10 10.5523 9.55228 11 9 11C8.44772 11 8 10.5523 8 10C8 9.44771 8.44772 9 9 9C9.55228 9 10 9.44771 10 10Z" fill="currentColor"/>
+                    <path d="M15 11C15.5523 11 16 10.5523 16 10C16 9.44771 15.5523 9 15 9C14.4477 9 14 9.44771 14 10C14 10.5523 14.4477 11 15 11Z" fill="currentColor"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z" fill="currentColor"/>
                 </svg>
                 <svg class="css-gg-add" style="zoom:125%;" width="0.5rem" height="0.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z"
-                    fill="currentColor"
-                />
-                <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7V11H7C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11V17C11 17.5523 11.4477 18 12 18C12.5523 18 13 17.5523 13 17V13H17C17.5523 13 18 12.5523 18 12C18 11.4477 17.5523 11 17 11H13V7Z"
-                    fill="currentColor"
-                />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" fill="currentColor"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7V11H7C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11V17C11 17.5523 11.4477 18 12 18C12.5523 18 13 17.5523 13 17V13H17C17.5523 13 18 12.5523 18 12C18 11.4477 17.5523 11 17 11H13V7Z" fill="currentColor"/>
                 </svg>
                 `,
                 onclick : (event) => {
@@ -608,10 +622,7 @@ export default new class ChattingInfo{
                             this.#lastEmoticonBoxTarget = anotherEmoji;
                         }
                         this.#emoticonBox.open(hoverButtonWrapper);
-                        //this.#emoticonBox.emoticonBox.style.position = 'absolute';
-                        //this.#emoticonBox.emoticonBox.style.bottom = '100%';
                         common.processingElementPosition(this.#emoticonBox.emoticonBox, anotherEmoji)
-                        //this.#emoticonBox.emoticonBox.style.top = parseFloat(this.#emoticonBox.emoticonBox.style.top) - 2 + 'px';
                         if( ! this.#emoticonBox.emoticonBox.querySelector('.empty_padding')){
                             let emptyPadding = Object.assign(document.createElement('div'), {
                                 className : 'empty_padding'
@@ -628,14 +639,10 @@ export default new class ChattingInfo{
                             anotherEmoji.removeAttribute('open');
                             this.#lastEmoticonBoxTarget?.removeAttribute('open');
                             window.myAPI.emoticon.createEmotionReaction({
-                                emoticon: emoticonObject.emoticon,
-                                description: emoticonObject.description,
-                                emoticonType: 'CODE',
-                                groupTitle: emoticonObject.groupTitle,
-                                subgroupTitle: emoticonObject.subgroupTitle,
-                                chattingId: li.dataset.id,
-                                roomId: roomHandler.roomId,
-                                workspaceId: workspaceHandler.workspaceId
+                                emoticon: emoticonObject.emoticon, description: emoticonObject.description,
+                                emoticonType: 'CODE', groupTitle: emoticonObject.groupTitle,
+                                subgroupTitle: emoticonObject.subgroupTitle, chattingId: li.dataset.id,
+                                roomId: roomHandler.roomId, workspaceId: workspaceHandler.workspaceId
                             }).then(result => {
                                 console.log(result);
                             })
@@ -646,6 +653,8 @@ export default new class ChattingInfo{
                     }
                 }
             })
+            let prevText;
+            let isScriptBlur = false;
             let updateButton = Object.assign(document.createElement('button'), {
                 className: 'css-gg-pen',
                 innerHTML: `
@@ -661,8 +670,54 @@ export default new class ChattingInfo{
 					fill="currentColor"
 					/>
 				</svg>
-                `
+                `,
+                onclick : (event) => {
+                    editor.contentEditable = true;
+                    this.#emoticonBox.close();
+                    anotherEmoji.removeAttribute('open');
+                    hoverButtonWrapper.remove();
+                    window.getSelection().setPosition(editor, editor.childElementCount)
+                }
             })
+            editor.onfocus = (event) => {
+                prevText = editor.innerHTML;
+            }
+            editor.onblur = (event) => {
+                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.toolbar.matches(':hover') || document.activeElement == editor)){
+                    return;
+                }
+                if(isScriptBlur){
+                    isScriptBlur = ! isScriptBlur;
+                }
+                editor.contentEditable = false;
+                if( ! event.relatedTarget?.hasAttribute('data-tool_status')){
+                    this.#elementMap.toolbar.remove();
+                }
+                if(prevText == editor.innerHTML){
+                    return;
+                }
+                prevText = editor.innerHTML;
+                this.#sendChatting(li);
+            }
+            editor.onkeydown = (event) => {
+                let {altKey, ctrlKey, shiftKey, key} = event;
+                if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+                    event.preventDefault();
+                    let LineBreakMode;
+                    if(altKey){
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST
+                    }else if(ctrlKey){
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_LAST
+                    }else{
+                        LineBreakMode = FreeWillEditor.LineBreakMode.NO_CHANGE
+                    }
+                    editor.lineBreak(LineBreakMode);
+                }else if(key == 'Enter' && editor.innerText.replaceAll('\n', '') != ''){
+                    event.preventDefault();
+                    isScriptBlur = true;
+                    editor.blur();
+                }
+            }
             let deleteButton = Object.assign(document.createElement('button'),{
                 className : `css-gg-trash`,
                 innerHTML: `
@@ -709,16 +764,25 @@ export default new class ChattingInfo{
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
-            buttonContainer.append(anotherEmoji, deleteButton, updateButton, replyButton);
-            
+            if(li.dataset.is_my_chatting == 'true'){
+                buttonContainer.append(anotherEmoji, deleteButton, updateButton, replyButton);
+            }else{
+                buttonContainer.append(anotherEmoji, replyButton);
+            }
             descriptionWrap.onmouseenter = (event) => {
+                console.log(editor.contentEditable);
+                if(editor.contentEditable == 'true'){
+                    return;
+                }
                 descriptionWrap.append(hoverButtonWrapper);
             }
             let emoticonBoxSearch = this.#emoticonBox.emoticonBox.querySelector('#emoticon-box-search');
             descriptionWrap.onmouseleave = (event) => {
-                if(document.activeElement == emoticonBoxSearch){
+                if(document.activeElement == emoticonBoxSearch || editor.contentEditable == 'true'){
                     return;
                 }
+                this.#emoticonBox.close();
+                anotherEmoji.removeAttribute('open');
                 hoverButtonWrapper.remove();
             }
             descriptionWrap.querySelector('.chatting_hover_on_off_button').onclick = () => {
@@ -729,6 +793,127 @@ export default new class ChattingInfo{
                 }
             }
             resolve();
+        })
+    }
+    /**
+     * 
+     * @param {ChattingInfoLine} editor 
+     * @param {Object} param
+     */
+    async #sendChatting(li){
+        let editor = li.__editor;
+        let promiseList = [];
+        editor.getLowDoseJSON(editor, {
+            afterCallback : (json) => {
+                if(json.tagName != Image.toolHandler.defaultClass && 
+                    json.tagName != Video.toolHandler.defaultClass &&
+                    json.tagName != Resources.toolHandler.defaultClass
+                ){
+                    return;
+                }
+                let node = json.node;
+                let file = node.selectedFile;
+                json.data.is_loading = '';
+                console.log(node, file);
+                let fileType;
+                if(json.tagName == Image.toolHandler.defaultClass){
+                    fileType = 'IMAGE';
+                }else if(json.tagName == Video.toolHandler.defaultClass){
+                    fileType = 'VIDEO';
+                }else {
+                    fileType = 'FILE';
+                }
+                promiseList.push(new Promise(async resolve => {
+
+                    let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
+                    let putSignData = `${li.dataset.roomId}:${li.dataset.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
+                    .then( (result) => {
+                        if(! result){
+                            return;
+                        }
+                        let {data, encDncKeyPair} = result;
+
+                        json.data.new_file_name = data.newFileName;
+
+                        return Promise.all([
+                            s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then( async (buffer) => {
+                                return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                    .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                            }),
+                            s3EncryptionUtil.convertBase64ToBuffer(data.encryptionMd).then( async (buffer) => {
+                                return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
+                                    .then(buf=>String.fromCharCode(...new Uint8Array(buf)))
+                            })
+                        ]).then( async ([k,m]) => {
+                            /*let base64 = json.data.base64;
+                            if(! base64){
+                                let blob = await fetch(json.data.url).then(res=>res.blob())
+                                base64 = await new Promise(resolve => {
+                                    const reader = new FileReader();
+                                    reader.readAsDataURL(blob);
+                                    reader.onloadend = () => {
+                                        resolve(reader.result);
+                                    }
+                                });
+                            }*/
+                            let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, file.files[0]);
+                            if( ! (res.status == 200 || res.status == 201) ){
+                                return;
+                            }
+                            return true;
+                        })
+                    })
+                    console.log(isUpload);
+                    if( ! isUpload){
+                        resolve();
+                        return;
+                    }
+                    let getSignData = `${li.dataset.roomId}:${li.dataset.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
+                    
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
+                    .then( (result) => {
+                        if(! result){
+                            return;
+                        }
+                        let {data, encDncKeyPair} = result;
+
+                        json.data.url = data.presignedUrl;
+                        delete json.data.base64
+                        json.data.upload_type = 'CHATTING';
+                        resolve(json);
+                    })
+                }))
+            }
+        }).then(jsonList => {
+
+            window.myAPI.chatting.sendChatting({
+                id: li.dataset.id,
+                workspaceId: li.dataset.workspace_id,
+                roomId: li.dataset.room_id,
+                chatting: JSON.stringify(jsonList)
+            }).then(res=>{
+                console.log(res);
+                let {data} = res
+                this.innerText = '';
+                Promise.all(promiseList).then((fileTargetList) => {
+                    console.log(fileTargetList);
+                    if(fileTargetList.length == 0){
+                        //window.getSelection().setPosition(this, 1)
+                        return;
+                    }
+                    fileTargetList.forEach(e=>delete e.data.is_loading);
+                    window.myAPI.chatting.sendChatting({
+                        id: data.id,
+                        workspaceId: li.dataset.workspace_id,
+                        roomId: li.dataset.room_id,
+                        chatting: JSON.stringify(jsonList)
+                    }).then(res=>{
+                        //window.getSelection().setPosition(this, 1)
+                    });
+                })
+            });
+            
         })
     }
 
