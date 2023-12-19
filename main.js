@@ -73,7 +73,6 @@ if(process.defaultApp && process.argv.length >= 2){
 const gotTheLock = app.requestSingleInstanceLock();
 //const gotTheLock = true
 
-var workspaceId;
 if (!gotTheLock) {
 	//autoUpdater.quitAndInstall();
 	app.quit();
@@ -175,6 +174,7 @@ app.whenReady().then(()=>{
 					
 				setTimeout(()=>{
 					try{
+						//해당 코드가 autoUpdater.autoDownload = true; 인 경우 오류 발생
 						//autoUpdater.downloadUpdate();
 						autoUpdater.on('update-downloaded', () => {
 							autoUpdater.quitAndInstall();
