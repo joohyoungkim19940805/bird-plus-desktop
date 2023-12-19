@@ -14,6 +14,7 @@ app.setAppUserModelId(app.name);
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 autoUpdater.logger = log
+//autoUpdater.autoDownload = false;
 //log.transports.file.level = 'info'
 //app.disableHardwareAcceleration();
 global.__project_path = app.getAppPath() + '/';
@@ -42,7 +43,7 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(process.env.MY_SERVER_PROFILES == 'local' || ! app.isPackaged){
+if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
@@ -168,11 +169,20 @@ app.whenReady().then(()=>{
 	
 			autoUpdater.on('update-available', (event) => {
 				log.debug('update-available',event);
+				//
 				mainWindow.webContents.send('updateAvailable');
-				dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료 후 업데이트를 진행합니다.')
+				dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료되며, 업데이트를 진행합니다.')
 					
 				setTimeout(()=>{
-					autoUpdater.quitAndInstall();
+					try{
+						//autoUpdater.downloadUpdate();
+						autoUpdater.on('update-downloaded', () => {
+							autoUpdater.quitAndInstall();
+						})
+					}catch(err){
+						log.error(JSON.stringify(err));
+						log.error(err.message);
+					}
 				},10000);
 			});
 	
