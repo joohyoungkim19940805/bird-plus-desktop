@@ -323,13 +323,13 @@ export default class IndexedDBHandler{
 	 * @author mozu123
 	 * @param {Object} param0 : 페이지 정보를 가지고 있는 객체
 	 */
-	getList({pageNum=1, pageSize=5}, callback){
+	getList({pageNum=1, pageSize=5, callback, readOption = 'readonly'} = {}){
 		return new Promise((resolve, reject) => {
 
 			let start = (pageSize * (pageNum - 1));
 			let isEnableAdvanced = start != 0; 
 			let count = 0;
-			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readwrite')
+			let transaction = this.#db.transaction(this.DB_STORE_NAME, readOption)
 			let store = transaction.objectStore(this.DB_STORE_NAME);
 			let result = {
 				data:[],

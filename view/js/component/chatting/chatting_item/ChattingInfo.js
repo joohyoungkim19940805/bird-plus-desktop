@@ -762,7 +762,13 @@ export default new class ChattingInfo{
                 </svg>
                 `,
                 onclick : (event) => {
+                    window.myAPI.chatting.deleteChatting({
+                        id: li.dataset.id,
+                        workspaceId : li.dataset.workspace_id,
+                        roomId: li.dataset.room_id
+                    }).then((result)=>{
                     
+                    })
                 }
             })
             let replyButton = Object.assign(document.createElement('button'),{
