@@ -110,7 +110,8 @@ div[is="content-block"]{
     z-index: 11;
     color: #f5f5f57a;
     font-weight: bold;
-    pointer-events: none;
+    top: 0;
+    cursor: initial;
 }
 
 .file_preview .file_preview_container{

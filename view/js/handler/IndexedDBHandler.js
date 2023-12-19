@@ -323,13 +323,13 @@ export default class IndexedDBHandler{
 	 * @author mozu123
 	 * @param {Object} param0 : 페이지 정보를 가지고 있는 객체
 	 */
-	getList({pageNum=1, pageSize=5}){
+	getList({pageNum=1, pageSize=5}, callback){
 		return new Promise((resolve, reject) => {
 
 			let start = (pageSize * (pageNum - 1));
 			let isEnableAdvanced = start != 0; 
 			let count = 0;
-			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readonly')
+			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readwrite')
 			let store = transaction.objectStore(this.DB_STORE_NAME);
 			let result = {
 				data:[],
@@ -344,6 +344,9 @@ export default class IndexedDBHandler{
 					isEnableAdvanced = ! isEnableAdvanced
 					cursor.advance(start);
 					return;
+				}
+				if(callback instanceof Function){
+					callback(cursor);
 				}
 				let value = cursor.value;
 				result.data.push(value);
@@ -371,12 +374,15 @@ export default class IndexedDBHandler{
 	 * @returns {Promise} result : 삭제 몇건 했는지 count 한 정보를 담은 Object
 	 */
 	deleteList(...idList){
+		if(idList.length == 0){
+			return Promise.resolve()
+		}
 		return new Promise((resolve, reject) => {
 			let transaction = this.#db.transaction(this.DB_STORE_NAME, 'readwrite')
 			let store = transaction.objectStore(this.DB_STORE_NAME);
 			let result = {successCount:0, failedCount:0};
 			idList.forEach(id=>{
-				let request = store.delete(Number(id));
+				let request = store.delete([id]);
 				request.onsuccess = (e)=>{
 					result.successCount += 1;
 					transaction = e.target.transaction;

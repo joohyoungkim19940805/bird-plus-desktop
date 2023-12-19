@@ -133,7 +133,6 @@ export default class FreedomInterface extends HTMLElement {
 	parentEditor;
 	#childListObserver = new MutationObserver( (mutationList, observer) => {
 		mutationList.forEach((mutation) => {
-			console.log(mutation);
 			let {addedNodes, removedNodes} = mutation;
 			let connectedChildPromise = new Promise(resolve => {
 				if(addedNodes.length != 0){

@@ -389,6 +389,8 @@ export default new class NoticeBoardDetail{
                     json.tagName != Resources.toolHandler.defaultClass
                 ){
                     return;
+                }else if(json.data.hasOwnProperty('is_upload_end')){
+                    return;
                 }
                 let node = json.node;
                 let file = node.selectedFile;
@@ -477,7 +479,10 @@ export default new class NoticeBoardDetail{
                         //window.getSelection().setPosition(this, 1)
                         return;
                     }
-                    fileTargetList.forEach(e=>delete e.data.is_loading);
+                    fileTargetList.forEach(e=>{
+                        delete e.data.is_loading
+                        e.data.is_upload_end = '';
+                    });
                     param.content = JSON.stringify(jsonList);
                     window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(response=>{
                         //window.getSelection().setPosition(this, 1)

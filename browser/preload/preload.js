@@ -152,6 +152,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	chatting : {
 		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
+		deleteChatting : (param) => ipcRenderer.invoke('deleteChatting', param),
 		searchChattingList : (param) => ipcRenderer.invoke('searchChattingList', param),
 	},
 	

@@ -132,6 +132,8 @@ export default new class ChattingRegist extends FreeWillEditor{
 							json.tagName != Resources.toolHandler.defaultClass
 						){
 							return;
+						}else if(json.data.hasOwnProperty('is_upload_end')){
+							return;
 						}
 						let node = json.node;
 						let file = node.selectedFile;
@@ -223,7 +225,10 @@ export default new class ChattingRegist extends FreeWillEditor{
 								window.getSelection().setPosition(this, 1)
 								return;
 							}
-							fileTargetList.forEach(e=>delete e.data.is_loading);
+							fileTargetList.forEach(e=>{
+								delete e.data.is_loading
+								e.data.is_upload_end = '';
+							});
 							window.myAPI.chatting.sendChatting({
 								id: data.id,
 								workspaceId: workspaceHandler.workspaceId,

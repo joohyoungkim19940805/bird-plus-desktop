@@ -160,20 +160,23 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		}
 		
 		this.form.create_messenger_view_button.onclick = (event) => {
+			let inviteAccountList = Object.values(this.#inviteAccountMapper);
 			let createRoomParam = {
 				roomName : [
-					...Object.values(this.#inviteAccountMapper).map(e=>e.full_name),
+					...inviteAccountList.map(e=>e.full_name),
 					accountHandler.accountInfo.fullName
 				].sort((a,b)=> a.localeCompare(b)).join(','),
 				workspaceId : workspaceHandler.workspaceId,
-				roomType : 'MESSENGER'
+				roomType : 'MESSENGER',
+				inviteAccountList: inviteAccountList.map(e=>e.account_name)
 			}
 			window.myAPI.room.createRoom(createRoomParam).then((createRoomEvent)=>{
+				console.log(createRoomEvent);
 				if(createRoomEvent.code == 0){
-					this.roomId = createRoomEvent.data.id;
+					roomHandler.roomId = createRoomEvent.data.id;
 					super.close();
 					window.myAPI.room.createRoomInAccount(
-						Object.values(this.#inviteAccountMapper).map(e=>{	
+						inviteAccountList.map(e=>{	
 							return {
 								roomId: createRoomEvent.data.id,
 								accountName: e.account_name,

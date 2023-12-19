@@ -192,7 +192,6 @@ export default class Resources extends FreedomInterface {
         
         this.createDefaultContent().then(({wrap, description, slot, aticle})=>{
             this.connectedChildAfterCallback = (addedList) => {
-                console.log('test >> ' ,addedList)
                 aticle.append(...addedList);
             }
         });
@@ -236,7 +235,7 @@ export default class Resources extends FreedomInterface {
                 if(this.dataset.width){
                     this.resources.width = this.dataset.width;
                 }
-                console.log(this.resources.contentWindow);
+                //console.log(this.resources.contentWindow);
                 if( ! this.resources.contentWindow){
                     this.resources.classList.add('unload')
                 }
@@ -253,7 +252,7 @@ export default class Resources extends FreedomInterface {
                 //resourcesContanier.style.height = window.getComputedStyle(resources).height;
             }
             this.resources.onerror = (event) => {
-                console.log(event);
+                //console.log(event);
                 //resourcesContanier.style.height = window.getComputedStyle(resources).height;
                 this.resources.dataset.error = '';
                 if( ! this.resources.contentWindow){

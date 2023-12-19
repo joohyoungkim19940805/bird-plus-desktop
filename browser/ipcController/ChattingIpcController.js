@@ -13,6 +13,9 @@ class ChattingIpcController {
 		ipcMain.handle('sendChatting', async (event, param) => {
 			return this.sendChatting(event, param);
 		})
+		ipcMain.handle('deleteChatting', async (event, param) => {
+			return this.deleteChatting(event, param);
+		})
 		ipcMain.handle('searchChattingList', async(event, param) => {
 			return this.searchChattingList(event, param);
 		})
@@ -30,7 +33,43 @@ class ChattingIpcController {
 	sendChatting(event, param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+                    if(v != undefined && v != ''){
+                        total[k] = v;
+                    }
+                    return total;
+                },{});
 				return axios.post(`${__serverApi}/api/chatting/create/send-chatting`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => {
+					return response.data;
+				}).catch(err=>{
+					log.error('IPC sendChatting error', err);
+					return err.response.data;
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('sendChatting login error ::: ', error.message);
+			log.error('sendChatting login error stack ::: ', error.stack);
+			return undefined;
+		});
+	}	
+	deleteChatting(event, param){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+                    if(v != undefined && v != ''){
+                        total[k] = v;
+                    }
+                    return total;
+                },{});
+				return axios.post(`${__serverApi}/api/chatting/delete/`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
 					}

@@ -211,11 +211,24 @@ export default new class RoomFavoritesList{
 			roomType
 		} = item;
 		return new Promise(resolve=>{
-			let roomTypeMark = '$';
+			let roomTypeMark = `
+			<svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7ZM14 7C14 8.10457 13.1046 9 12 9C10.8954 9 10 8.10457 10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7Z" fill="currentColor"/>
+				<path d="M16 15C16 14.4477 15.5523 14 15 14H9C8.44772 14 8 14.4477 8 15V21H6V15C6 13.3431 7.34315 12 9 12H15C16.6569 12 18 13.3431 18 15V21H16V15Z" fill="currentColor"/>
+			</svg>
+			`;
 			if(roomType == 'ROOM_PUBLIC'){
-				roomTypeMark = '@';
+				roomTypeMark = `
+				<svg class="room_public" style="transform: rotate(-3deg);" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" clip-rule="evenodd" d="M8 4V8H4V10H8V14H4V16H8V20H10V16H14V20H16V16H20V14H16V10H20V8H16V4H14V8H10V4H8ZM14 14V10H10V14H14Z" fill="currentColor"/>
+				</svg>
+				`;
 			}else if(roomType == 'ROOM_PRIVATE'){
-				roomTypeMark = '#';
+				roomTypeMark = `
+				<svg class="room_private" width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" clip-rule="evenodd" d="M18 10.5C19.6569 10.5 21 11.8431 21 13.5V19.5C21 21.1569 19.6569 22.5 18 22.5H6C4.34315 22.5 3 21.1569 3 19.5V13.5C3 11.8431 4.34315 10.5 6 10.5V7.5C6 4.18629 8.68629 1.5 12 1.5C15.3137 1.5 18 4.18629 18 7.5V10.5ZM12 3.5C14.2091 3.5 16 5.29086 16 7.5V10.5H8V7.5C8 5.29086 9.79086 3.5 12 3.5ZM18 12.5H6C5.44772 12.5 5 12.9477 5 13.5V19.5C5 20.0523 5.44772 20.5 6 20.5H18C18.5523 20.5 19 20.0523 19 19.5V13.5C19 12.9477 18.5523 12.5 18 12.5Z" fill="currentColor"/>
+				</svg>
+				`;
 			}else if(roomType == 'MESSENGER'){
 				let roomNameList = roomName.split(',');
 				let targetIndex = roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName);
@@ -223,14 +236,13 @@ export default new class RoomFavoritesList{
 					roomNameList.splice(roomNameList.findIndex(e=> e == accountHandler.accountInfo.fullName), 1);
 				}
 				roomName = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ')
-				roomTypeMark = '$'
 			}else{ // ROOM_TYPE == SELF
-				roomTypeMark = '$';
+				roomName = '나';
 			}
 			let li = Object.assign(document.createElement('li'), {
-				className: 'pointer',
+				className: 'room_container_item pointer',
 				innerHTML: `
-					<div>
+					<div class="room_container_item_container">
 						<span>${roomTypeMark}</span>
 						<span>${roomName}</span>
 					</div>

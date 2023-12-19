@@ -38,15 +38,23 @@ window.addEventListener('load', async () => {
 
 	const imageOrVideoCallback = async (targetTools) => {
 		if(targetTools.hasAttribute('data-is_loading')){
-			targetTools.append(Object.assign(document.createElement('div'), {
-				className: 'upload_loading',
-				innerHTML: `
-				<div class="upload_loading_container">
-					<span>컨텐츠를 업로드 중입니다</span>
-					<span class="status_text_elipsis"></span>
-				</div>
-				`
-			}))
+			let uploadLoading = targetTools.querySelector('[data-upload_loading]');
+			if( ! uploadLoading){
+				uploadLoading = Object.assign(document.createElement('div'), {
+					className: 'upload_loading',
+					innerHTML: `
+					<div class="upload_loading_container">
+						<span>컨텐츠를 업로드 중입니다</span>
+						<span class="status_text_elipsis" data-status_text_elipsis></span>
+					</div>
+					`
+				})
+				uploadLoading.dataset.upload_loading = '';
+			}else{
+				uploadLoading.className = 'upload_loading'
+				uploadLoading.querySelector('[data-status_text_elipsis]').className = 'upload_loading'; 
+			}
+			targetTools.append(uploadLoading);
 			return;
 		}
 
@@ -88,18 +96,29 @@ window.addEventListener('load', async () => {
 			let {size, rank, rankText} = common.shortenBytes(targetTools.dataset.size);
 
 			if(size >= 10 && rank >= 2){
+				let filePreview = targetTools.querySelector('[data-file_preview]');
+				if( ! filePreview){
+					filePreview = Object.assign(document.createElement('div'), {
+						className: 'file_preview',
+						innerHTML: `
+						<div class="file_preview_container" data-file_preview_container>
+							<div>10MB 이상의 파일은 당신의 데이터를 위해 미리보기를 제공하지 않습니다.</div>
+							<div>미리보기를 클릭시 기능 제공을 위해 임시 저장소에 저장을 시작하며, 이는 추후 자동 삭제의 대상이 됩니다.</div>
+							<div>이 파일의 용량 : ${size}${rankText}</div>
+							<button class="file_preview_button" data-file_preview_button type="button">미리보기</button>
+						</div>
+						`
+					});
+					filePreview.dataset.file_preview = '';
+				}else{
+					filePreview.querySelector('[data-file_preview_container]').className = 'file_preview_container'
+					filePreview.querySelector('[data-file_preview_button]').className = 'file_preview_button'; 
+					filePreview.className = 'file_preview';
+				}
 
-				let filePreview = Object.assign(document.createElement('div'), {
-					className: 'file_preview',
-					innerHTML: `
-					<div class="file_preview_container">
-						<div>10MB 이상의 파일은 당신의 데이터를 위해 미리보기를 제공하지 않습니다.</div>
-						<div>미리보기를 클릭시 기능 제공을 위해 임시 저장소에 저장을 시작하며, 이는 추후 자동 삭제의 대상이 됩니다.</div>
-						<div>이 파일의 용량 : ${size}${rankText}</div>
-						<button class="file_preview_button" type="button">미리보기</button>
-					</div>
-					`
-				});
+				filePreview.onclick = (event) => {
+					event.stopPropagation();
+				}
 				filePreview.dataset.visibility_not = '';
 
 				targetTools.append(filePreview)

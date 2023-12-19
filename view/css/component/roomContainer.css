@@ -16,10 +16,15 @@
     min-width: 10vw;
 	white-space: nowrap;
 }
-#room_wrapper .room_container .room_content_list > li{
+#room_wrapper .room_container .room_content_list > .room_container_item{
     margin-left: 8px;
     margin-right: 8px;
     margin-bottom: 0.3vh;
+}
+#room_wrapper .room_container .room_content_list > .room_container_item > .room_container_item_container{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 #room_wrapper .room_container .room_sticky{
     position: sticky;

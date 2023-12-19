@@ -177,6 +177,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		}
 		
 		this.form.create_room_view_button.onclick = (event) => {
+			let inviteAccountList = Object.values(this.#inviteAccountMapper);
 			let createRoomParam = {
 				roomName : this.form.roomName.value,
 				workspaceId : workspaceHandler.workspaceId,
@@ -188,7 +189,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 					roomHandler.roomId = createRoomEvent.data.id;
 					super.close();
 					window.myAPI.room.createRoomInAccount(
-						Object.values(this.#inviteAccountMapper).map(e=>{	
+						inviteAccountList.map(e=>{	
 							return {
 								roomId: createRoomEvent.data.id,
 								accountName: e.account_name,

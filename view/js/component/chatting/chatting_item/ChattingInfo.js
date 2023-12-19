@@ -93,13 +93,29 @@ export default new class ChattingInfo{
     
     #totalPages
 
+    #lastVisibleTarget;
+    #firstVisibleTarget;
+
+    #lastPageNumber;
+    #firstPageNumber;
+
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if ( ! entry.isIntersecting){
                 return;
             }
-            this.#lastItemVisibleObserver.disconnect();
-            this.#page += 1;
+            //console.log(entry.target);
+            console.log(this.#lastVisibleTarget);
+            //console.log(this.#firstVisibleTarget);
+            //this.#lastItemVisibleObserver.disconnect();
+            //return ;
+            if(entry.target == this.#lastVisibleTarget){
+                this.#page = this.#lastPageNumber;
+                if(this.#lastVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
+            }else{ //if(entry.target == this.#firstVisibleTarget){
+                this.#page = this.#firstPageNumber;
+                if(this.#firstVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
+            }
             let promise;
             let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
             
@@ -116,6 +132,7 @@ export default new class ChattingInfo{
                 promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
                     .then(async data=> 
                         this.createPage(data).then(liList => {
+                            console.log(this.#page,liList);
                             this.#totalPages = data.totalPages;        
                             if(this.#page >= data.totalPages){
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
@@ -158,9 +175,15 @@ export default new class ChattingInfo{
                         return;
                     }
 
-                    let lastVisibleTarget = this.#liList.at(-1);
-                    if(lastVisibleTarget){
-                        this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                    this.#lastVisibleTarget = this.#liList.at(-1);
+                    this.#firstVisibleTarget = this.#liList[0];
+                    if(this.#lastVisibleTarget){
+                        this.#lastItemVisibleObserver.observe(this.#lastVisibleTarget);
+                        this.#lastPageNumber += 1 //this.#page <= 0 ? 1 : this.#page + 1
+                    }  
+                    if(this.#firstVisibleTarget){
+                        this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
+                        this.#firstPageNumber = this.#firstPageNumber <= 0 ? -1 : this.#firstPageNumber - 1 // this.#page <= 0 ? -1: this.#page - 1
                     }
 
                     entry.target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
@@ -237,13 +260,12 @@ export default new class ChattingInfo{
                                     ...roomFavoritesList.liList || [],
                                     ...roomMessengerList.liList || []
                                 ]
-                                console.log(list);
                                 list.flatMap(e=>e).filter(e=>e.dataset.room_id == chattingData.roomId).forEach(e=>{
                                     if( ! e.isConnected){
                                         console.log(roomHandler.roomMessengerListMemory);
                                         return;
                                     }
-                                    console.log(e)
+                                    
                                     let notificationsIcon
                                     if( ! e.__notificationsIcon){
                                         notificationsIcon = new NotificationsIcon({target: e, positionOption : NotificationsIcon.PositionOption.RIGHT_CENTER})
@@ -252,10 +274,8 @@ export default new class ChattingInfo{
                                         notificationsIcon = e.__notificationsIcon;
                                     }
                                     notificationsIcon.addCount(liElement, chattingData.id);
-                                    console.log('liElement',liElement)
                                     let liElementObserver = new IntersectionObserver((entries, observer) => {
                                         entries.forEach(entry =>{
-                                            console.log('entry!!',entry)
                                             if (entry.isIntersecting){
                                                 notificationsIcon.deleteCount(chattingData.id);
                                                 liElementObserver.disconnect();
@@ -340,22 +360,36 @@ export default new class ChattingInfo{
                         this.createPage(data)
                         .then(liList => {
                             if(this.#page >= data?.totalPages){
-                                this.#lastItemVisibleObserver.disconnect();
+                                //this.#lastItemVisibleObserver.disconnect();
+                                if(this.#lastVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                 // 날짜 관련 함수 코드 실행
                                 this.#processingTimeGrouping(
                                     this.#liList.at(-2), 
                                     this.#liList.at(-1)
                                 ); 
+                            }else if(this.#page <= 0){
+                                //this.#lastItemVisibleObserver.disconnect();
+                                if(this.#firstVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget);
+                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
+                                // 날짜 관련 함수 코드 실행
+                                this.#processingTimeGrouping(
+                                    this.#liList[1], 
+                                    this.#liList[0]
+                                );
                             }
                             return liList;
                         })
                     )
                 }
+
                 promise.then(liList => {
 
+                    if(this.#lastVisibleTarget?.dataset.visibility == 'v') this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget)
+                    if(this.#firstVisibleTarget?.dataset.visibility == 'v') this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget)    
+
                     if(liList.length == 0){
-                        this.#lastItemVisibleObserver.disconnect();
+                        //this.#lastItemVisibleObserver.disconnect();
                         return;
                     }
 
@@ -383,10 +417,15 @@ export default new class ChattingInfo{
                             this.#elementMap.chattingContentList.scrollHeight
                         )
 
-                        let lastVisibleTarget = this.#liList.at(-1);
-                        if(lastVisibleTarget){
-                            this.#lastItemVisibleObserver.disconnect();
-                            this.#lastItemVisibleObserver.observe(lastVisibleTarget);
+                        this.#lastVisibleTarget = this.#liList.at(-1);
+                        this.#firstVisibleTarget = this.#liList[0];
+                        if(this.#lastVisibleTarget){
+                            this.#lastItemVisibleObserver.observe(this.#lastVisibleTarget);
+                            this.#lastPageNumber = this.#page <= 0 ? 1 : this.#page + 1
+                        }  
+                        if(this.#firstVisibleTarget){
+                            this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
+                            this.#firstPageNumber = this.#page <= 0 ? -1 : this.#page - 1
                         }
 
                         clearInterval(isConnectedAwait);
@@ -402,13 +441,9 @@ export default new class ChattingInfo{
             
             let memory = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {});
             let targetLi = memory.find(e=>e.dataset.id == content.chattingId) //memory.find(e=>e[content.chattingId])//?.[content.chattingId];
-            console.log(memory);
-            console.log(targetLi);
             if( ! targetLi || ! targetLi.isConnected){
-                console.log(targetLi);
                 targetLi = this.#liList.find(e=>e.dataset.id == content.chattingId);
                 if(! targetLi){
-                    console.log(targetLi);
                     return
                 }
             }
@@ -459,7 +494,10 @@ export default new class ChattingInfo{
     }
 
     callData(page, size, workspaceId, roomId, chatting){
-		let searchPromise;
+		if(page < 0){
+           return Promise.resolve({});
+        }
+        let searchPromise;
 
 		if(chatting && chatting != ''){
 			searchPromise = window.myAPI.chatting.searchChattingList({
@@ -472,7 +510,7 @@ export default new class ChattingInfo{
 		}
 		return searchPromise.then((result = {}) =>{
 			console.log(result)
-			return result.data;
+			return result.data || {};
 		});
 	}
 
@@ -531,18 +569,9 @@ export default new class ChattingInfo{
                             <div class="chatting_content_description_option_container">
                                 <button class="chatting_hover_on_off_button">
                                     <svg width="1rem" height="1rem" style="zoom:125%;color: #bfbfbf;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M14 6C14 7.10457 13.1046 8 12 8C10.8954 8 10 7.10457 10 6C10 4.89543 10.8954 4 12 4C13.1046 4 14 4.89543 14 6Z"
-                                            fill="currentColor"
-                                        />
-                                        <path
-                                            d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z"
-                                            fill="currentColor"
-                                        />
-                                        <path
-                                            d="M14 18C14 19.1046 13.1046 20 12 20C10.8954 20 10 19.1046 10 18C10 16.8954 10.8954 16 12 16C13.1046 16 14 16.8954 14 18Z"
-                                            fill="currentColor"
-                                        />
+                                        <path d="M14 6C14 7.10457 13.1046 8 12 8C10.8954 8 10 7.10457 10 6C10 4.89543 10.8954 4 12 4C13.1046 4 14 4.89543 14 6Z" fill="currentColor"/>
+                                        <path d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" fill="currentColor"/>
+                                        <path d="M14 18C14 19.1046 13.1046 20 12 20C10.8954 20 10 19.1046 10 18C10 16.8954 10.8954 16 12 16C13.1046 16 14 16.8954 14 18Z" fill="currentColor"/>
                                     </svg>
                                 </button>
                             </div>
@@ -731,7 +760,10 @@ export default new class ChattingInfo{
                     <path d="M9 9H11V17H9V9Z" fill="currentColor" />
                     <path d="M13 9H15V17H13V9Z" fill="currentColor" />
                 </svg>
-                `
+                `,
+                onclick : (event) => {
+                    
+                }
             })
             let replyButton = Object.assign(document.createElement('button'),{
                 className : `css-gg-trash`,
@@ -770,7 +802,6 @@ export default new class ChattingInfo{
                 buttonContainer.append(anotherEmoji, replyButton);
             }
             descriptionWrap.onmouseenter = (event) => {
-                console.log(editor.contentEditable);
                 if(editor.contentEditable == 'true'){
                     return;
                 }
@@ -810,11 +841,12 @@ export default new class ChattingInfo{
                     json.tagName != Resources.toolHandler.defaultClass
                 ){
                     return;
+                }else if(json.data.hasOwnProperty('is_upload_end')){
+                    return;
                 }
                 let node = json.node;
                 let file = node.selectedFile;
                 json.data.is_loading = '';
-                console.log(node, file);
                 let fileType;
                 if(json.tagName == Image.toolHandler.defaultClass){
                     fileType = 'IMAGE';
@@ -864,7 +896,6 @@ export default new class ChattingInfo{
                             return true;
                         })
                     })
-                    console.log(isUpload);
                     if( ! isUpload){
                         resolve();
                         return;
@@ -897,12 +928,14 @@ export default new class ChattingInfo{
                 let {data} = res
                 this.innerText = '';
                 Promise.all(promiseList).then((fileTargetList) => {
-                    console.log(fileTargetList);
                     if(fileTargetList.length == 0){
                         //window.getSelection().setPosition(this, 1)
                         return;
                     }
-                    fileTargetList.forEach(e=>delete e.data.is_loading);
+                    fileTargetList.forEach(e=>{
+                        delete e.data.is_loading
+                        e.data.is_upload_end = '';
+                    });
                     window.myAPI.chatting.sendChatting({
                         id: data.id,
                         workspaceId: li.dataset.workspace_id,
