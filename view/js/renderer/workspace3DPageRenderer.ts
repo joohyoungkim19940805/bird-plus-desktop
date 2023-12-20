@@ -24,7 +24,9 @@ import {
 	AdvancedDynamicTexture,
 	Rectangle,
 	TextBlock,
-	Control
+	Control,
+	InputText,
+	StackPanel
 } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF"
 //import { any } from '@tensorflow/tfjs';
@@ -62,8 +64,8 @@ new class Workspace3DPageRenderer{
 		this.engine = new Engine(this.canvas, true);
 		//공간 선언/
 		this.scene = new Scene(this.engine);
-		this.light = new HemisphericLight("light", new Vector3(1, 1, 0), this.scene);
-		//this.light.intensity = 0.2;
+		this.light = new HemisphericLight("light", new Vector3(- 5, 1, 6), this.scene);
+		this.light.intensity = 0.5;
 		this.loader = new AssetsManager(this.scene);
 		this.loader.useDefaultLoadingScreen = false;
 		//카메라의 3차원 위치 설정
@@ -73,12 +75,14 @@ new class Workspace3DPageRenderer{
 		this.camera.upperBetaLimit = 2;
 		this.camera.lowerBetaLimit = 0.5;
 		this.camera.upperRadiusLimit = this.radius;
-		this.camera.lowerRadiusLimit = this.radius - 1;
-		this.camera.panningDistanceLimit = 0.1;
+		this.camera.lowerRadiusLimit = this.radius - 3;
+		this.camera.panningDistanceLimit = 5
         this.camera.attachControl(this.canvas, true);
 		this.camera.onViewMatrixChangedObservable.add(()=>{
-			//console.log('alpha',this.camera.alpha);
-			//console.log('beta',this.camera.beta);
+			console.log('alpha',this.camera.alpha);
+			console.log('beta',this.camera.beta);
+			console.log('radius', this.camera.radius);
+			console.log('position', this.camera.position)
 		})
 
 		this.camera.speed = 0.25;
@@ -95,12 +99,12 @@ new class Workspace3DPageRenderer{
         //this.scene.autoClear = false
 		//공간 배경 색상 설정
 		this.scene.clearColor = new Color4(0, 0, 0, 0);
-        this.setCamera(this.camera, undefined);
 
         this.loadChair().then((result)=>{
             console.log('loadChair',result)
         })
         this.loadDeskLamp().then((result)=>{
+			console.log('loadDeskLamp',result)
 			let meshObejects = result.meshes.reduce<Record<string, Mesh>>((t,e)=>{
 				t[e.id] = e as Mesh;
 				return t;
@@ -140,11 +144,44 @@ new class Workspace3DPageRenderer{
 					lampButton.rotation = new Vector3(0,0.5,0)
 				}
 			}))
-            console.log('loadDeskLamp',result)
+
         })
-        this.loadComputerTable().then((result)=>{
+        this.loadComputerTable().then( async (result)=>{
             console.log('loadComputerTable',result)
-			result.meshes[0]
+			let meshObejects = result.meshes.reduce<Record<string, Mesh>>((t,e)=>{
+				t[e.id] = e as Mesh;
+				return t;
+			}, {});
+			console.log(meshObejects);
+			let monitorPanel = meshObejects['monitor_panel'];
+			monitorPanel.setVerticesData("uv",
+				(monitorPanel.getVerticesData("uv") || []).map((v, idx) => idx % 2 ? 1 - v : v)
+			);
+			//monitorPanel.dispose();
+			let monitor = meshObejects['monitor'];
+			let isMonitorLocked = false;
+			monitor.actionManager = new ActionManager(this.scene);
+			monitor.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, (ev)=>{
+				isMonitorLocked = ! isMonitorLocked;
+				if(isMonitorLocked){
+					//this.camera.lockedTarget = monitor;
+					//this.camera.position.x = -0.28481291122588187, this.camera.position.y = 3.0224763293062993, this.camera.position.z = 0.9005508063391839;
+
+					this.camera.target = new Vector3(-0.28481291122588187, 3.0224763293062993, 0.9005508063391839);
+					this.camera.radius = 0.024515189826188433, this.camera.alpha =  1.582462451421408, this.camera.beta = 1.5011847180477238;
+					
+				}else{
+					this.camera.target = new Vector3(this.x, this.y, this.z);
+					this.camera.radius = this.radius, this.camera.alpha = this.alpha, this.camera.beta = this.beta
+				}
+			}));
+			//monitorPanel.rotation = new Vector3();
+			//monitor.position = new Vector3();
+			
+			let {isLogin} = await (window as any).myAPI.isLogin();
+			if( ! isLogin){
+				this.createLoginPage(monitorPanel);
+			}
         })
         this.loadLowPolyFan().then((result)=>{
             console.log('loadLowPolyFan',result)
@@ -154,10 +191,9 @@ new class Workspace3DPageRenderer{
 			}, {});
 			//let fanButton = meshObejects['motor area.003'];
 
-			let rotaionSpeed = 20
-			let motor = meshObejects['motor_area_and_fan_primitive1'];
-			motor.animations = [];
-			const moveFanFunction = (fan : Mesh) =>{
+			let rotaionSpeed = 100
+			//let motor = meshObejects['motor_area_and_fan_primitive0'];
+			const moveFanFunction = (fan : Mesh | AbstractMesh) =>{
 				//fan.animations = [];
 
 				let keys : IAnimationKey[] = []; 
@@ -182,33 +218,29 @@ new class Workspace3DPageRenderer{
 				// Start animation
 				return this.scene.beginAnimation(fan, 0, 60, true);
 			}
-			let motorAnimation = moveFanFunction(motor);
-			motorAnimation.stop();
+			let motorList = result.meshes.filter(e=>e.id.includes('motor_area_and_fan'));//[meshObejects['motor_area_and_fan_primitive0'], meshObejects['motor_area_and_fan_primitive1']];
+			let animationList = motorList.map(e=>{
+				let anima = moveFanFunction(e);
+				anima.stop();
+				return anima;
+			}) 
 			let net =  meshObejects['leg'];
 			let isMotorStart = false;
 			net.actionManager = new ActionManager(this.scene);
 			net.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, (ev)=>{
 				isMotorStart = ! isMotorStart;
-				if(isMotorStart){
-					//motorAnimation.restart();
-					motorAnimation = moveFanFunction(motor);
-				}else{
-					motorAnimation.stop();
-				}
+				motorList.forEach((motor,i)=>{
+					if(isMotorStart){
+						animationList[i] = moveFanFunction(motor);
+					}else{//animatables
+						animationList[i].stop();
+						motor.animations = [];
+					}
+				})
 			}));
-			/*let fanList = [meshObejects['Plane.002'], meshObejects['Plane.004'], meshObejects['Plane.005']];
 			
-			fanList.forEach((fan, i) => {
-				console.log(fan);
-				fan.rotation = new Vector3(-3, 2, -1);
-				moveFanFunction(fan);
-			})*/
         })
-		//let projectPath = await this.projectPath
-		//SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "chair2.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
-        //.then((result)=>{
-		//	console.log('test>>>', result);
-		//})
+
 		const xrPromise = this.scene.createDefaultXRExperienceAsync({});
         return xrPromise.then((xrExperience) => {
 			console.log("Done, WebXR is enabled.");
@@ -231,8 +263,57 @@ new class Workspace3DPageRenderer{
     async loadLowPolyFan(){
         let projectPath = await this.projectPath
         return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "low_poly_fan.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
-
     }
+
+	createLoginPage(monitorPanel : Mesh | AbstractMesh){
+
+		//monitorPanel.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+		let texture = AdvancedDynamicTexture.CreateForMesh(monitorPanel, 1000, 1000, true, true);
+		//texture.invertZ = true;
+		//texture.background = 'red'
+		//let texture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+		//let panel = new StackPanel();
+		// /texture.addControl(panel);
+		//let texture = AdvancedDynamicTexture.CreateForMeshTexture(monitor, 2048, 2048, true, false)
+		//monitorPanel.position.y = 15
+		console.log(monitorPanel);
+		let idInput = new InputText();
+		let pwInput = new InputText();
+		let top = 300;
+		[idInput, pwInput].forEach((input, i)=>{
+			let placeholder = `Please Enter Your ${i == 0 ? 'ID' : 'PW'}`
+			//input.horizontalAlignment = Control.VERTICAL_ALIGNMENT_CENTER
+			input.zIndex = 9999
+			input.autoStretchWidth = true;
+			input.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+			input.top = i == 0 ? '30px' : '100px'
+			input.width = 0.2, input.maxWidth = 0.2
+			input.height = '40px', input.text = placeholder, input.fontSize = 16;
+			input.color = '#d5d2cab0';
+			//input.color = "white", input.background = 'green';
+			input.onFocusObservable.add(() => {
+				console.log('???')
+				if(input.text == placeholder){
+					input.text = "";
+					input.color = 'white';
+				}
+			});
+			input.onBlurObservable.add(function() {
+				if(input.text == ''){
+					input.text = placeholder;
+					input.color = '#d5d2cab0';
+				}
+			});
+			//texture.addControl
+			texture.addControl(input);
+		})
+
+		//texture.addControl(idInput);
+		//texture.addControl(pwInput);
+		//isVisible
+		
+		
+	}
 
     setCamera(camera : any, option : {
         x : number, y : number, z : number, 

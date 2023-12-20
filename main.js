@@ -166,9 +166,14 @@ app.whenReady().then(()=>{
 				log.debug('update-available',event);
 				//
 				mainWindow.webContents.send('updateAvailable');
-				dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료되며, 업데이트를 진행합니다.')
-					
-				setTimeout(()=>{
+				dialog.showMessageBox({
+					type:'info',
+					buttons: ['Ok'],
+					defaultId:1,
+					title:'UpdateMessage',
+					message: 'Find Update Latest',
+					detail: '업데이트 내역이 있습니다. 백그라운드에서 업데이트를 진행하며, 필요한 경우 재시작 할 수 있습니다.',
+				}).then(() => {
 					try{
 						//해당 코드가 autoUpdater.autoDownload = true; 인 경우 오류 발생
 						//autoUpdater.downloadUpdate();
@@ -179,10 +184,10 @@ app.whenReady().then(()=>{
 						log.error(JSON.stringify(err));
 						log.error(err.message);
 					}
-				},10000);
+				})
+				//dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료되며, 업데이트를 진행합니다.')
 			});
-	
-	
+
 			autoUpdater.on('update-downloaded', (event) => {
 				log.debug('update-downloaded', event);
 				mainWindow.webContents.send('updateDownloaded');
