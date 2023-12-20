@@ -18,10 +18,9 @@ import { simpleOption } from "@component/option/SimpleOption"
 import common from "@root/js/common";
 
 window.addEventListener('load', async () => {
-
 	const indexedDBHandler = new IndexedDBHandler({
-		dbName: 'fileDB-multiple-chatting-page',
-		storeName: `s3Memory-multiple-chatting-page`,
+		dbName: 'fileDB-main-page',
+		storeName: `s3Memory-main-page`,
 		columnInfo: {
 			fileName: ['fileName', 'fileName', {unique : true}],
 			originFileName: ['originFileName', 'originFileName'],
@@ -72,9 +71,34 @@ window.addEventListener('load', async () => {
 				resolve({result: undefined});
 			}*/
 			dbOpenPromise.then(() => {
-				indexedDBHandler.getItem(targetTools.dataset.new_file_name).then(result=>{
-					resolve(result);
-				});
+				new Promise(res=>{
+					indexedDBHandler.getList({
+						pageNum : 1, 
+						pageSize : 99999, 
+						readOption: 'readwrite', 
+						callBack: (cursor)=>{
+							if(cursor.value.lastModified < new Date().getTime() - oneDay){
+								cursor.delete();
+							}
+						}
+					}).then(result=>{
+						res();
+						/*let deleteTargetList = result.data.filter(e=>{
+							let lastModified = parseInt(e.lastModified);
+							return lastModified - oneDay <= new Date().getTime() - oneDay;
+						}).map(e=>e.fileName);
+						indexedDBHandler.deleteList(deleteTargetList).then((deleteResult) => {
+							res();
+						});*/
+					}).catch((err)=>{
+						console.error(err)
+						res();
+					})	
+				}).then(() => {
+					indexedDBHandler.getItem(targetTools.dataset.new_file_name).then(result=>{
+						resolve(result);
+					});
+				})
 			})
 		})
 
@@ -146,6 +170,16 @@ window.addEventListener('load', async () => {
 					return;
 				}
 				let {data, encDncKeyPair} = result;
+				let totalLen = 0;
+				let size = parseInt(targetTools.dataset.size);
+				let progress = Object.assign(document.createElement('progress'), {
+					max: 100,
+					value : 0
+				});
+				if(filePreview){
+					let container = filePreview.querySelector('.file_preview_container');
+					container.append(progress)
+				}
 				return Promise.all([
 					s3EncryptionUtil.convertBase64ToBuffer(data.encryptionKey).then( async (buffer) => {
 						return s3EncryptionUtil.decryptMessage(encDncKeyPair.privateKey, buffer, s3EncryptionUtil.secretAlgorithm)
@@ -178,6 +212,8 @@ window.addEventListener('load', async () => {
 									return pump();
 									function pump() {
 										return reader.read().then(({ done, value }) => {
+											totalLen += value?.length || 0;
+											progress.value = (totalLen / size) * 100 
 											// When no more data needs to be consumed, close the stream
 											if (done) {
 												controller.close();
@@ -199,13 +235,14 @@ window.addEventListener('load', async () => {
 					.then(stream => new Response(stream))
 					.then(res => res.blob())
 					.then(async blob => {
+						console.log(totalLen);
 						let newBlob = new Blob([blob], { type: targetTools.dataset.content_type });
 						return dbOpenPromise.then( async () => {
 							return indexedDBHandler.addItem({
 								fileName: targetTools.dataset.new_file_name,
 								originFileName: targetTools.dataset.name,
 								fileData: newBlob,
-								lastModified: targetTools.dataset.last_modified,
+								lastModified: new Date().getTime(),
 								uploadType: targetTools.dataset.upload_type,
 								roomId: roomHandler.roomId,
 								workspaceId: workspaceHandler.workspaceId
@@ -232,6 +269,7 @@ window.addEventListener('load', async () => {
 					})
 					.catch(err=>{
 						console.error(err);
+						console.error(err.message)
 					})
 				
 				})

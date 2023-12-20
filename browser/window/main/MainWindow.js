@@ -13,9 +13,12 @@ const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'Bir
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 const log = require('electron-log');
+
+const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+
 /**
  * 메인 윈도우를 정의한다.
- * @author mozu123
+ * @author kimjoohyoung
  * @constructor
  * @extends BrowserWindow
  */
@@ -103,6 +106,9 @@ class MainWindow extends BrowserWindow{
 			let [x,y] =  super.getPosition();
 			birdPlusOptions.position = {x,y};
 		})
+		ipcMain.handle('getProjectPath', (event) => {
+			return global.__project_path;
+		})
 		ipcMain.handle('isMaximize', () => {
 			return super.isMaximized()
 		})
@@ -154,6 +160,9 @@ class MainWindow extends BrowserWindow{
 				})
 			})
 		})
+		ipcMain.handle('isLogin', async (event, param) => {
+			return windowUtil.isLogin();
+		})
 		/*
 		ipcMain.on('ondragstart', (event, param) => {
 			console.log('event', event);
@@ -197,26 +206,6 @@ class MainWindow extends BrowserWindow{
 					}
 				}
 			}else{
-				/*
-				return {
-					action: 'allow',
-					outlivesOpener: false,
-					overrideBrowserWindowOptions: {
-						frame: true,
-						fullscreenable: true,
-						backgroundColor: 'black',
-						//autoHideMenuBar : true,
-						//autoHideMenuBar : false,
-						movable : true,
-						resizable : true,
-						//titleBarStyle: 'visible',
-						titleBarOverlay: true,
-						//webPreferences: {
-						//	preload : path.join(__project_path, 'browser/preload/imageAndVideoDetailPreload.js')
-						//}
-					}
-				}
-				*/
 				shell.openExternal(url);
 			}
 

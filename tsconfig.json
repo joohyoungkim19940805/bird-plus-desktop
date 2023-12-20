@@ -24,7 +24,10 @@
     	"outDir": "view/js/ts",
 		"baseUrl": ".",
     	"paths": {
-    		"*": ["node_modules/*"]
+    		"*": ["node_modules/*"],
+			"@component/*": ["./view/js/component/*"],
+			"@handler/*" : ["./view/js/handler/*"],
+			"@root/*": ["./view/*"]
     	},
 		"skipLibCheck": true,
 		"typeRoots": ["./node_modules/@types", "./types"]

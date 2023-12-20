@@ -130,6 +130,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	getOption: (optionName) => ipcRenderer.invoke('getOption', optionName),
 	setOption: (param) => ipcRenderer.send('setOption', param),
 
+	isLogin: () => ipcRenderer.invoke('isLogin'),
+
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},

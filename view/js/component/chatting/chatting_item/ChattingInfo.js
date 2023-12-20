@@ -230,16 +230,7 @@ export default new class ChattingInfo{
     this.timerElement.querySelector('.millisecond').textContent = `${ ms % this.second }`.padStart(2,'0').slice(0, 2);
     */
     constructor(){
-        this.#elementMap.chattingContentList.addEventListener("scroll", () => {
-			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
-				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
-			}
-		});
-        window.addEventListener('resize', (event) => {
-			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
-				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
-			}
-		})
+
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
@@ -348,7 +339,8 @@ export default new class ChattingInfo{
                 this.reset();
                 let promise;
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-                if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
+                let isMemory = memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId];
+                if( isMemory ){
                     this.#page = memory.length - 1;
                     promise = Promise.resolve(
                         memory
@@ -413,6 +405,12 @@ export default new class ChattingInfo{
                         if( ! this.#liList[0].isConnected){
                             return;
                         }
+                        if(isMemory){
+                            Promise.all(this.#liList.map(async (e,i)=>{
+                                if(i == 0 || i == this.#liList.length - 1)return;
+                                return this.#processingTimeGrouping(e, this.#liList[i - 1])    
+                            }))
+                        }
                         this.#elementMap.chattingContentList.scrollBy(undefined, 
                             this.#elementMap.chattingContentList.scrollHeight
                         )
@@ -463,7 +461,27 @@ export default new class ChattingInfo{
                 }
             }
         })
-
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('chattingDeleteAccept', event => {
+            let {content} = event
+            console.log('delete accept content', content);
+            this.reset();
+            console.log(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId])
+            delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId][content.chattingId];
+            if(roomHandler.roomId == content.roomId){
+                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+                //if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
+                Promise.all(this.#liList.map(async (e,i)=>{
+                    if(i == 0 || i == this.#liList.length - 1)return;
+                    return this.#processingTimeGrouping(e, this.#liList[i - 1])    
+                }))
+                this.#page = memory.length - 1;
+                this.#liList = memory.sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils));
+                this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
+                //}
+            }
+            
+        })
+        
         let toolList = Object.values(ChattingInfoLine.tools).map(e=>e.toolHandler.toolButton);
 
         document.addEventListener('selectionchange', event => {
@@ -490,6 +508,17 @@ export default new class ChattingInfo{
         window.addEventListener('resize', (event) => {
 			if(this.#elementMap.toolbar.childElementCount == 0)return;
             common.processingElementPosition(this.#elementMap.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
+		})
+
+        this.#elementMap.chattingContentList.addEventListener("scroll", () => {
+			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
+				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
+			}
+		});
+        window.addEventListener('resize', (event) => {
+			if(this.#emoticonBox.emoticonBox.isConnected && this.#lastEmoticonBoxTarget){
+				common.processingElementPosition(this.#emoticonBox.emoticonBox, this.#lastEmoticonBoxTarget);
+			}
 		})
     }
 
@@ -767,7 +796,7 @@ export default new class ChattingInfo{
                         workspaceId : li.dataset.workspace_id,
                         roomId: li.dataset.room_id
                     }).then((result)=>{
-                    
+                        console.log('deleteChatting', result);
                     })
                 }
             })

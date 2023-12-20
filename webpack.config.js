@@ -18,7 +18,8 @@ module.exports = {
 		multipleChattingViewRenderer: "./view/js/renderer/multipleChattingViewRenderer.js",
 		multipleNoticeBoardViewRenderer: "./view/js/renderer/multipleNoticeBoardViewRenderer.js",
 		loginPageRenderer: "./view/js/renderer/loginPageRenderer.js",
-		temp3DHandler : "./view/js/handler/Temp3DHandler.ts"
+		temp3DHandler : "./view/js/handler/Temp3DHandler.ts",
+		workspace3DPageRenderer : "./view/js/renderer/workspace3DPageRenderer.ts"
 	},
 	output: {
 		filename: "[name].js",

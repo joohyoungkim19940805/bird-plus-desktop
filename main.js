@@ -85,6 +85,8 @@ if (!gotTheLock) {
 				return t;
 			}, {});
 			mainWindow.workspaceId = params.workspaceId;
+			axios.defaults.headers.common['Authorization'] = params.Authorization
+			
 			mainWindow.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
 				mainWindow.titleBarStyle = 'visibble'
 				mainWindow.show();
@@ -114,12 +116,6 @@ app.whenReady().then(()=>{
 	DBConfig.loadEndPromise.then(() => {
 		log.info('DBConfig loadEndPromise');
 
-
-
-		ipcMain.handle('getProjectPath', (event) => {
-			return global.__project_path;
-		})
-		
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
 		mainWindow.webContentsAwait.then( () => {
 			log.info('webContentsAwait start!!!!');

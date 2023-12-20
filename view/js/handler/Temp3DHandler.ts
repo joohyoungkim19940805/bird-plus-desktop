@@ -51,9 +51,12 @@ class Temp3DHandler {
 			document.body.style.backgroundRepeat = 'round';
 			this.run3Dview();
 		})
+		window.addEventListener("resize", () => {
+			this.engine.resize();
+		});
 	}
 
-	view3DCreate() {
+	async view3DCreate() {
 		this.scene.autoClear = false
 		//공간 배경 색상 설정
 		this.scene.clearColor = new Color4(0, 0, 0, 0);

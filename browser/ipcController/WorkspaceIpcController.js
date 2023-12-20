@@ -64,7 +64,8 @@ class WorkspaceIpcController {
 		mainWindow.autoHideMenuBar = false;
 		mainWindow.menuBarVisible = true;
 
-		mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+		//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+		mainWindow.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
 			mainWindow.titleBarStyle = 'visibble'
 			mainWindow.show();
 			mainWindow.isOpening = false;

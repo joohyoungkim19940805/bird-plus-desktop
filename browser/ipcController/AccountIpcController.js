@@ -39,7 +39,8 @@ class AccountIpcController {
 	}
 	
 	#moveLoginPage(mainWindow){
-		mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+		//mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+		mainWindow.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
 			mainWindow.titleBarStyle = 'visibble'
 			mainWindow.show();
 			mainWindow.isOpening = false;
@@ -56,7 +57,8 @@ class AccountIpcController {
 		windowUtil.isLogin((result) => {
 			if(result.isLogin){
 				if( ! mainWindow.workspaceId){
-					mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+					//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+					mainWindow.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
 						mainWindow.titleBarStyle = 'visibble'
 						mainWindow.show();
 						mainWindow.isOpening = false;
@@ -110,7 +112,8 @@ class AccountIpcController {
 							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
 							windowUtil.isLogin((result) => {
 								if(result.isLogin){
-									mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+									//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+									mainWindow.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
 										mainWindow.titleBarStyle = 'visibble'
 										mainWindow.show();
 										mainWindow.isOpening = false;
@@ -170,7 +173,6 @@ class AccountIpcController {
 						if(err){
 							log.error('login account log insert error', err);
 						}
-						global.__apiToken = token
 					});
 					axios.defaults.headers.common['Authorization'] = token;
 					windowUtil.isLogin();

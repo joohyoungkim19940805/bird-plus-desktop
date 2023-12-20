@@ -154,7 +154,7 @@ export const simpleOption = new class SimpleOption{
                     if(result.code == 0){
                         this.#isAdmin = result.data;
                     }else{
-                        alert('admin authentication failed, ::: ' + result.message);
+                        //alert('admin authentication failed, ::: ' + result.message);
                     }
                     if(this.#isAdmin){
                         window.myAPI.workspace.searchPermitRequestList({workspaceId: workspaceHandler.workspaceId}).then(result=>{

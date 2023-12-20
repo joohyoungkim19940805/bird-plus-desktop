@@ -247,18 +247,29 @@ export default new class NoticeBoardDetail{
             })
 
             let datasetPromise = common.jsonToSaveElementDataset(data, li);
-
+            console.log(data.content);
             if(data.content){
                 let {content} = data;
                 delete data.content;
                 datasetPromise.then(() => {
                     li.removeAttribute('data-content');
-                    li.append(editor);
-                    li.append(positionChangeIcon)
-                    editor.parseLowDoseJSON(content)
+                    
+                    editor.parseLowDoseJSON(content).then(() => {
+                        li.append(editor);
+                        let appendAwait = setInterval(()=>{
+                            if( ! editor.isConnected) return;
+                            clearInterval(appendAwait);
+                            if( ! editor.isEmpty){
+                                li.append(positionChangeIcon)
+                            }else {
+                                editor.remove();
+                                li.prepend(addButton);
+                            }
+                        },50)
+                    })
                 })
             }else{
-                li.append(addButton);
+                li.prepend(addButton);
                 editor.startFirstLine();
             }
             li.onmouseenter = () => {
@@ -327,13 +338,13 @@ export default new class NoticeBoardDetail{
                 if(editor.isEmpty){
                     editor.remove();
                     positionChangeIcon.remove();
-                    li.append(addButton);
+                    li.prepend(addButton);
                     if(li.matches(':hover')){
                         addButton.classList.add('active');
                     }else{
                         addButton.classList.remove('active');
                     }
-                    return ;
+                    //return ;
                 }else if(prevText == editor.innerHTML){
                     return;
                 }
@@ -362,7 +373,7 @@ export default new class NoticeBoardDetail{
                         LineBreakMode = FreeWillEditor.LineBreakMode.NO_CHANGE
                     }
                     editor.lineBreak(LineBreakMode);
-                }else if(key == 'Enter' && editor.innerText.replaceAll('\n', '') != ''){
+                }else if(key == 'Enter'){// && editor.innerText.replaceAll('\n', '') != ''){
                     event.preventDefault();
                     isScriptBlur = true;
                     editor.blur();
