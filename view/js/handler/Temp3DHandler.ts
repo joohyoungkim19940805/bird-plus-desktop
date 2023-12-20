@@ -81,7 +81,7 @@ class Temp3DHandler {
 		this.camera.maxCameraSpeed = 5
 		//camera.detachControl();
 		//광원 생성
-		const light = new HemisphericLight("light", new Vector3(1, 1, 0), this.scene);
+		//const light = new HemisphericLight("light", new Vector3(1, 1, 0), this.scene);
 		const loader = new AssetsManager(this.scene);
 		//let cannon = true;
 		//let forceFactor = cannon ? 1 : 1500;
