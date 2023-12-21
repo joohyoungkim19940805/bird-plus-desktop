@@ -162,8 +162,11 @@ class MainWindow extends BrowserWindow{
 		})
 		ipcMain.handle('isLogin', async (event, param) => {
 			return windowUtil.isLogin((result => {
-				return result;
+				return {isLogin:result.isLogin};
 			}));
+		})
+		ipcMain.handle('getServerUrl', async (event, param)=> {
+			return global.__serverApi;
 		})
 		/*
 		ipcMain.on('ondragstart', (event, param) => {

@@ -26,7 +26,10 @@ import {
 	TextBlock,
 	Control,
 	InputText,
-	StackPanel
+	StackPanel,
+	Button,
+	StackPanel3D,
+	InputPassword
 } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF"
 //import { any } from '@tensorflow/tfjs';
@@ -79,10 +82,10 @@ new class Workspace3DPageRenderer{
 		this.camera.panningDistanceLimit = 5
         this.camera.attachControl(this.canvas, true);
 		this.camera.onViewMatrixChangedObservable.add(()=>{
-			console.log('alpha',this.camera.alpha);
+			/*console.log('alpha',this.camera.alpha);
 			console.log('beta',this.camera.beta);
 			console.log('radius', this.camera.radius);
-			console.log('position', this.camera.position)
+			console.log('position', this.camera.position)*/
 		})
 
 		this.camera.speed = 0.25;
@@ -159,14 +162,15 @@ new class Workspace3DPageRenderer{
 			);
 			//monitorPanel.dispose();
 			let monitor = meshObejects['monitor'];
+			let monitorLeg = meshObejects['monitor_leg']
 			let isMonitorLocked = false;
 			monitor.actionManager = new ActionManager(this.scene);
+			monitorLeg.actionManager = monitor.actionManager;
 			monitor.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, (ev)=>{
 				isMonitorLocked = ! isMonitorLocked;
 				if(isMonitorLocked){
 					//this.camera.lockedTarget = monitor;
 					//this.camera.position.x = -0.28481291122588187, this.camera.position.y = 3.0224763293062993, this.camera.position.z = 0.9005508063391839;
-
 					this.camera.target = new Vector3(-0.28481291122588187, 3.0224763293062993, 0.9005508063391839);
 					this.camera.radius = 0.024515189826188433, this.camera.alpha =  1.582462451421408, this.camera.beta = 1.5011847180477238;
 					
@@ -265,7 +269,7 @@ new class Workspace3DPageRenderer{
         return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "low_poly_fan.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
 
-	createLoginPage(monitorPanel : Mesh | AbstractMesh){
+	createLoginPage(monitorPanel : Mesh | AbstractMesh, loginSuccessCallback : Function = ()=>{}){
 
 		//monitorPanel.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
 		let texture = AdvancedDynamicTexture.CreateForMesh(monitorPanel, 1000, 1000, true, true);
@@ -278,35 +282,134 @@ new class Workspace3DPageRenderer{
 		//monitorPanel.position.y = 15
 		console.log(monitorPanel);
 		let idInput = new InputText();
-		let pwInput = new InputText();
-		let top = 300;
+		let pwInput = new InputPassword();
+		let loginButton = Button.CreateSimpleButton('signIn', 'Login');
+		let signUpButton = Button.CreateSimpleButton('signUp', 'Sign Up')
+		
+		idInput.placeholderText = 'Please Enter Your ID';
+		idInput.placeholderColor = '#d5d2cab0';
+		pwInput.placeholderText = 'Please Enter Your PW';
+		pwInput.placeholderColor = '#d5d2cab0';
+		let isIdInputFocus = false;
+		let isPwInputFocus = false;
+			
 		[idInput, pwInput].forEach((input, i)=>{
-			let placeholder = `Please Enter Your ${i == 0 ? 'ID' : 'PW'}`
-			//input.horizontalAlignment = Control.VERTICAL_ALIGNMENT_CENTER
 			input.zIndex = 9999
 			input.autoStretchWidth = true;
 			input.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-			input.top = i == 0 ? '30px' : '100px'
-			input.width = 0.2, input.maxWidth = 0.2
-			input.height = '40px', input.text = placeholder, input.fontSize = 16;
-			input.color = '#d5d2cab0';
+			input.top = i == 0 ? '40px' : '110px', input.left = -30
+			input.width = 0.18, input.maxWidth = 0.18
+			input.height = '40px', input.fontSize = 16, input.color = 'white';;
 			//input.color = "white", input.background = 'green';
-			input.onFocusObservable.add(() => {
-				console.log('???')
-				if(input.text == placeholder){
-					input.text = "";
-					input.color = 'white';
-				}
+			input.onFocusObservable.add((ev) => {
+				//if(input == pwInput) input.text = '';
+				this.camera.detachControl();
+				isIdInputFocus = input == idInput;
+				isPwInputFocus = input == pwInput;
 			});
-			input.onBlurObservable.add(function() {
-				if(input.text == ''){
-					input.text = placeholder;
-					input.color = '#d5d2cab0';
+			let isTab = false;
+			input.onBlurObservable.add(() => {
+				isIdInputFocus = input == idInput ? false : isIdInputFocus;
+				isPwInputFocus = input == pwInput ? false : isPwInputFocus;
+				if(! isIdInputFocus && ! isPwInputFocus){
+					this.camera.attachControl(this.canvas, true);
+				};
+				if(! isTab){
+					return;
 				}
+				if(input == idInput) pwInput.focus();
+				else idInput.focus()
+				isTab = false;
 			});
+	
+			input.onKeyboardEventProcessedObservable.add((ev) => {
+				console.log(ev);
+				if(ev.key == 'Tab'){
+					isTab = true;
+					//if(input == idInput) pwInput.focus();
+					//else idInput.focus()
+					return;
+				}else if(ev.key == 'Enter'){
+					loginButton.onPointerClickObservable.observers.forEach(e=>{
+						(e as any).callback();
+					})
+				}
+				isTab = false;
+			})
+			input.onBeforeKeyAddObservable.add(ev=>{
+				console.log(222)
+
+			})
 			//texture.addControl
 			texture.addControl(input);
 		})
+		
+		loginButton.width = 0.05, loginButton.color = 'white', loginButton.thickness = 0;
+		loginButton.height = '80px', loginButton.hoverCursor = 'pointer', loginButton.fontWeight = '10px';
+		loginButton.cornerRadius = 6, loginButton.paddingTop = 3, loginButton.paddingBottom = 3, loginButton.background = '#5f5f5fd1';
+		loginButton.fontSize = 14, loginButton.top = '75px', loginButton.left = 95;
+		texture.addControl(loginButton);
+		loginButton.onPointerClickObservable.add(() => {
+			let id = idInput.text;
+			let password = pwInput.text;
+			let statusTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+			let statusPanel = new StackPanel();
+			statusPanel.background = '#5f5f5fd1'; //statusPanel.color = '#5f5f5fd1';
+			statusPanel.width = '300px', statusPanel.hoverCursor = 'pointer'
+			statusPanel.onPointerClickObservable.add(()=>statusPanel.dispose());
+			let statusText = new TextBlock();
+			statusText.width = '300px', statusText.height = '40px', statusText.color = 'white';
+			//statusText.hoverCursor = 'pointer', statusText.zIndex = 9;
+			console.log(id, password);
+			(window as any).myAPI.account.loginProcessing({accountName: id, password}).then(response=>{
+				console.log('response',response);
+				let {code} = response;
+				if(code == 0){
+					//(window as any).myAPI.pageChange.changeWokrspacePage();
+					if(loginSuccessCallback) loginSuccessCallback();
+				}else if(code == 101){
+					statusText.text = '해당 기능에 권한이 없습니다.'
+				}else if(code == 102){
+					statusText.text = '계정 정보가 잘못되었습니다.'
+				}else if(code == 103){
+					statusText.text = '계정 정보가 잘못되었습니다.'
+				}else if(code == 104){
+					statusText.text = '비활성화 된 계정입니다.'
+				}else if(code == 999){
+					statusText.text = '알 수 없는 오류입니다. 관리자에게 문의하십시오.';
+				}else{
+					statusText.text = '서버로부터 응답이 없습니다.';
+				}
+				statusPanel.addControl(statusText)
+				statusTexture.addControl(statusPanel);
+				setTimeout(()=>{
+					statusPanel.removeControl(statusText);
+					statusTexture.removeControl(statusPanel);
+					statusText.dispose();
+					statusPanel.dispose();
+					statusTexture.dispose();
+				}, 1500)
+			});
+		})
+		
+		signUpButton.width = 0.1, signUpButton.color = 'white', signUpButton.thickness = 0;
+		signUpButton.height = '50px', signUpButton.hoverCursor = 'pointer', signUpButton.fontWeight = '10px';
+		signUpButton.cornerRadius = 6, signUpButton.paddingTop = 3, signUpButton.paddingBottom = 3, signUpButton.background = '#5f5f5fd1'; 
+		signUpButton.fontSize = 14, signUpButton.top = '200px', signUpButton.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+		signUpButton.onPointerClickObservable.add(() => {
+			(window as any).myAPI.getServerUrl().then((url : string)=>{
+				console.log(url)
+				let a = Object.assign(document.createElement('a'), {
+					target: '_blank',
+					href: url
+				});
+				a.click();
+			});
+		})
+		texture.addControl(signUpButton);
+		
+		
+		
 
 		//texture.addControl(idInput);
 		//texture.addControl(pwInput);

@@ -132,6 +132,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	isLogin: () => ipcRenderer.invoke('isLogin'),
 
+	getServerUrl : () => ipcRenderer.invoke('getServerUrl'),
+
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},
