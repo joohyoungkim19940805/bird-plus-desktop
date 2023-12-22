@@ -120,25 +120,25 @@ app.whenReady().then(()=>{
 		mainWindow.webContentsAwait.then( () => {
 			log.info('webContentsAwait start!!!!');
 			try{
-				const openingIpcController = require(path.join(__project_path, 'browser/ipcController/OpeningIpcController.js'));
+				const openingIpc = require(path.join(__project_path, 'browser/ipc/OpeningIpc.js'));
 				log.info('openingIpcController');
-				const mainIpcController = require(path.join(__project_path, 'browser/ipcController/MainIpcController.js'));
-				log.info('mainIpcController');
-				const accountIpcController = require(path.join(__project_path, 'browser/ipcController/AccountIpcController.js'));
+				//const mainIpcController = require(path.join(__project_path, 'browser/ipc/MainIpc.js'));
+				//log.info('mainIpcController');
+				const accountIpc = require(path.join(__project_path, 'browser/ipc/AccountIpc.js'));
 				log.info('accountIpcController');
-				const workspaceIpcController = require(path.join(__project_path, 'browser/ipcController/WorkspaceIpcController.js'));
+				const workspaceIpc = require(path.join(__project_path, 'browser/ipc/WorkspaceIpc.js'));
 				log.info('workspaceIpcController');
-				const chattingController = require(path.join(__project_path, 'browser/ipcController/ChattingIpcController.js'));
+				const chattingIpc = require(path.join(__project_path, 'browser/ipcController/ChattingIpc.js'));
 				log.info('chattingController');
-				const roomController = require(path.join(__project_path, 'browser/ipcController/RoomIpcController.js'));
+				const roomIpc = require(path.join(__project_path, 'browser/ipcController/RoomIpc.js'));
 				log.info('roomController');
-				const eventStreamIpcController = require(path.join(__project_path, 'browser/ipcController/EventStreamIpcController.js'));
+				const eventStreamIpc = require(path.join(__project_path, 'browser/ipcController/EventStreamIpc.js'));
 				log.info('eventStreamIpcController');
-				const noticeBoardIpccontroller = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpcController.js'));
+				const noticeBoardIpc = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpc.js'));
 				log.info('noticeBoardIpccontroller');
-				const apiS3IpcController = require(path.join(__project_path, 'browser/ipcController/ApiS3IpcController.js'));
+				const apiS3Ipc = require(path.join(__project_path, 'browser/ipcController/ApiS3Ipc.js'));
 				log.info('apiS3IpcController');
-				const emoticonIpcController = require(path.join(__project_path, 'browser/ipcController/EmoticonIpcController.js'));
+				const emoticonIpc = require(path.join(__project_path, 'browser/ipcController/EmoticonIpc.js'));
 				log.info('emoticonIpcController');
 			}catch(err){
 				log.error(JSON.stringify(err));

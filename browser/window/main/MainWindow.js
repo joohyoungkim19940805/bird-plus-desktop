@@ -168,6 +168,15 @@ class MainWindow extends BrowserWindow{
 		ipcMain.handle('getServerUrl', async (event, param)=> {
 			return global.__serverApi;
 		})
+		ipcMain.on('changeLoginPage', async (event) => {
+			this.changeLoginPage(event);
+		});
+		ipcMain.on('changeMainPage', async (event, param) => {
+			this.changeMainPage(param);
+		});
+		ipcMain.on('changeWokrspacePage', async (event) => {
+			this.changeWokrspacePage(event);
+        })
 		/*
 		ipcMain.on('ondragstart', (event, param) => {
 			console.log('event', event);
@@ -262,13 +271,6 @@ class MainWindow extends BrowserWindow{
 		let mathX = rect.x + param.x
 		let mathY = rect.y + param.y
 
-		console.log('position',position)
-		console.log('size', size)
-		console.log('matchingDisplay', matchingDisplay);
-		console.log('mathX',mathX);
-		console.log('mathY', mathY);
-		
-
 		let duplecateWindow = this.subWindow[param.pageId] || this.subWindow[param.pageName];
 
 		if(duplecateWindow && duplecateWindow.isDestroyed()){
@@ -319,7 +321,157 @@ class MainWindow extends BrowserWindow{
 		}else{
 			this.subWindow[param.pageName] = window;
 		}
+	}
+	
+	changeLoginPage(){
+		//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
+		windowUtil.isLogin((result) => {
+			if(result.isLogin){
+				if( ! this.workspaceId){
+					//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+					this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
+						this.titleBarStyle = 'visibble'
+						this.show();
+						this.isOpening = false;
+						birdPlusOptions.optionLoadEnd.then(() => {
+							birdPlusOptions.setLastWindowSize(this);
+							birdPlusOptions.setLastWindowPosition(this);	
+						})
+					})
+				}else{
+					this.resizable = true;
+					this.movable = true;
+					this.autoHideMenuBar = false;
+					this.menuBarVisible = true;
+				
+					this.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+						this.titleBarStyle = 'visibble'
+						this.show();
+						birdPlusOptions.optionLoadEnd.then(() => {
+							birdPlusOptions.setLastWindowSize(this);
+							birdPlusOptions.setLastWindowPosition(this);	
+						})
+					}).then(()=>{
+						this.workspaceId = this.workspaceId;
+					})
+				}
+			}else{
+				let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY);
+				db.serialize( () => {
+					db.all(`
+					SELECT 
+						TOKEN, 
+						ISSUED_AT, 
+						EXPIRES_AT 
+					FROM 
+						ACCOUNT_LOG 
+					WHERE 
+						EXPIRES_AT >= datetime('now','localtime') 
+					ORDER BY 
+						EXPIRES_AT DESC
+					LIMIT 1`,[], (err, rows) => {
+						if(err){
+							log.error(err);
+						}
+						this.resizable = true;
+						this.movable = true;
+						this.autoHideMenuBar = false;
+						this.menuBarVisible = true;
+		
+						if(rows[0]){
+							//global.__apiToken = rows[0].TOKEN
+							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
+							windowUtil.isLogin((result) => {
+								if(result.isLogin){
+									//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+									this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
+										this.titleBarStyle = 'visibble'
+										this.show();
+										this.isOpening = false;
+										birdPlusOptions.optionLoadEnd.then(() => {
+											birdPlusOptions.setLastWindowSize(this);
+											birdPlusOptions.setLastWindowPosition(this);	
+										})
+									})
+								}else{
+									axios.defaults.headers.common['Authorization'] = '';
+									this.moveLoginPage();
+								}
+							}).catch(error=>{
+								axios.defaults.headers.common['Authorization'] = '';
+								log.error(' changeLoginPage error ::: ', error.message)
+								log.error(' changeLoginPage error stack :::', error.stack)
+								this.moveLoginPage();
+							});
+						}else{
+							this.moveLoginPage();
+						}
+					})
+				});
+			}
+		}).catch(err=>{
+			this.moveLoginPage();
+		})
+	}
+		
+	moveLoginPage(){
+		//mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
+		this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
+			this.titleBarStyle = 'visibble'
+			this.show();
+			this.isOpening = false;
+			birdPlusOptions.optionLoadEnd.then(() => {
+				birdPlusOptions.setLastWindowSize(this);
+				birdPlusOptions.setLastWindowPosition(this);	
+			})
+			return 'done';
+		})
+	}
+	changeMainPage(param){
+		birdPlusOptions.optionLoadEnd.then(() => {
+			birdPlusOptions.setLastWindowSize(this);
+			birdPlusOptions.setLastWindowPosition(this);	
+		})
+		this.resizable = true;
+		this.movable = true;
+		this.autoHideMenuBar = false;
+		this.menuBarVisible = true;
+	   
+		this.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
+			this.titleBarStyle = 'visibble'
+			this.show();
+		}).then(()=>{
+			this.workspaceId = param.workspaceId;
+		})
+	}
+	
+	changeWokrspacePage(){
+		this.resizable = true;
+		this.movable = true;
+		this.autoHideMenuBar = false;
+		this.menuBarVisible = true;
 
+		//this.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
+		this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
+			this.titleBarStyle = 'visibble'
+			this.show();
+			this.isOpening = false;
+			birdPlusOptions.optionLoadEnd.then(() => {
+				birdPlusOptions.setLastWindowSize(this);
+				birdPlusOptions.setLastWindowPosition(this);	
+			})
+		})
+	}
+	
+	send(eventName, data){
+		this.webContents.send(eventName, data);
+		Object.entries(this.subWindow).forEach( async ([k,v]) =>{
+			if(v.isDestroyed()){
+				delete this.subWindow[k];
+				return;
+			}
+			v.webContents.send(eventName, data);
+		})
 	}
 }
 

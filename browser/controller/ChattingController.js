@@ -1,36 +1,14 @@
 const path = require('path');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
+
 const axios = require('axios');
-const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
-class ChattingIpcController {
+class ChattingController {
 	constructor() {
-		this.#initHandler();
+
 	}
-	#initHandler(){
-		ipcMain.handle('sendChatting', async (event, param) => {
-			return this.sendChatting(event, param);
-		})
-		ipcMain.handle('deleteChatting', async (event, param) => {
-			return this.deleteChatting(event, param);
-		})
-		ipcMain.handle('searchChattingList', async(event, param) => {
-			return this.searchChattingList(event, param);
-		})
-	}
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
-		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
-			if(v.isDestroyed()){
-				delete mainWindow.subWindow
-				return;
-			}
-			e.webContents.send(eventName, data);
-		})
-	}
-	sendChatting(event, param){
+
+	sendChatting(param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -60,7 +38,7 @@ class ChattingIpcController {
 			return undefined;
 		});
 	}	
-	deleteChatting(event, param){
+	deleteChatting(param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -90,7 +68,7 @@ class ChattingIpcController {
 			return undefined;
 		});
 	}
-	searchChattingList(event, param){
+	searchChattingList(param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let {workspaceId, roomId} = param;
@@ -119,5 +97,5 @@ class ChattingIpcController {
 		})
 	}
 }
-const chattingIpcController = new ChattingIpcController();
-module.exports = chattingIpcController
+const chattingController = new ChattingController();
+module.exports = chattingController;

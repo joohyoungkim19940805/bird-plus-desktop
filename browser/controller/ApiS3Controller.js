@@ -1,26 +1,11 @@
 const path = require('path');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
-const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
-class ApiS3IpcController {
+class ApiS3Controller {
 	constructor() {
-		this.#initHandler();
 	}
-	#initHandler(){
-		ipcMain.handle('generatePutObjectPresignedUrl', async (event, param) => {
-			return this.generatePutObjectPresignedUrl(event, param);
-		})
-		ipcMain.handle('generateGetObjectPresignedUrl', async (event, param) => {
-			return this.generateGetObjectPresignedUrl(event, param);
-		})
-	}
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
-	}
-	generatePutObjectPresignedUrl(event, param){
+	generatePutObjectPresignedUrl(param){
 		return windowUtil.isLogin( result => {
 			param = Object.entries(param).reduce((total, [k,v]) => {
 				if(v != undefined && v != ''){
@@ -50,7 +35,7 @@ class ApiS3IpcController {
 			return undefined;
 		});
 	}
-	generateGetObjectPresignedUrl(event, param){
+	generateGetObjectPresignedUrl(param){
 		return windowUtil.isLogin( result => {
 			param = Object.entries(param).reduce((total, [k,v]) => {
 				if(v != undefined && v != ''){
@@ -81,5 +66,5 @@ class ApiS3IpcController {
 		});
 	}
 }
-const apiS3IpcController = new ApiS3IpcController();
-module.exports = apiS3IpcController
+const apiS3Controller = new ApiS3Controller();
+module.exports = apiS3Controller

@@ -1,81 +1,12 @@
 const path = require('path');
-const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
-const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
-const EventSource = require('eventsource');
-class WorkspaceIpcController {
+class WorkspaceController {
 	constructor() {
-        this.#initHandler();
-    }
-
-	#initHandler(){
-        ipcMain.on('changeWokrspacePage', async (event) => {
-			this.changeWokrspacePage(event);
-        })
-
-        ipcMain.handle('searchWorkspaceMyJoined', async (event, param = {}) => {
-			return this.searchWorkspaceMyJoined(event, param);
-        })
-		ipcMain.handle('searchWorkspaceInAccount', async (event, param = {}) => {
-			return this.searchWorkspaceInAccount(event, param)
-		})
-		
-		ipcMain.handle('getWorkspaceDetail', async (event, param = {}) => {
-			return this.getWorkspaceDetail(event, param);
-		})
-
-		ipcMain.handle('createPermitWokrspaceInAccount', async (event, param = {}) =>{
-			return this.createPermitWokrspaceInAccount(event, param);
-		})
-
-		ipcMain.handle('giveAdmin', async (event, param) => {
-			return this.giveAdmin(event, param);
-		})
-
-		ipcMain.handle('searchPermitRequestList', async (event, param) => {
-			return this.searchPermitRequestList(event, param);
-		})
-
-		ipcMain.handle('getIsAdmin', async (event, param) => {
-			return this.getIsAdmin(event, param);
-		})
-		
 	}
 
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
-		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
-			if(v.isDestroyed()){
-				delete mainWindow.subWindow[k];
-				return;
-			}
-			v.webContents.send(eventName, data);
-		})
-	}
-
-	changeWokrspacePage(event){
-
-		mainWindow.resizable = true;
-		mainWindow.movable = true;
-		mainWindow.autoHideMenuBar = false;
-		mainWindow.menuBarVisible = true;
-
-		//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
-		mainWindow.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
-			mainWindow.titleBarStyle = 'visibble'
-			mainWindow.show();
-			mainWindow.isOpening = false;
-			birdPlusOptions.optionLoadEnd.then(() => {
-				birdPlusOptions.setLastWindowSize(mainWindow);
-				birdPlusOptions.setLastWindowPosition(mainWindow);	
-			})
-		})
-	}
-	searchWorkspaceMyJoined(event, param = {}){
+	searchWorkspaceMyJoined(param = {}){
 		return windowUtil.isLogin((result) => {
 			if(result.isLogin){
 				return axios.get(`${__serverApi}/api/workspace/search/my-joined-list?page=${param.page}&size=${param.size}`, {
@@ -106,7 +37,7 @@ class WorkspaceIpcController {
 			return undefined;
 		})
 	}
-	searchWorkspaceInAccount(event, param = {}){
+	searchWorkspaceInAccount(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let queryString = Object.entries(param)
@@ -138,7 +69,7 @@ class WorkspaceIpcController {
 			return undefined;
 		})
 	}
-	getWorkspaceDetail(event, param = {}){
+	getWorkspaceDetail(param = {}){
 		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
 			log.error(`workspaceId is ::: ${param.workspaceId}`);
 			return undefined;
@@ -159,7 +90,7 @@ class WorkspaceIpcController {
 			}
 		});
 	}
-	createPermitWokrspaceInAccount(event, param = {}){
+	createPermitWokrspaceInAccount(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -193,7 +124,7 @@ class WorkspaceIpcController {
 			return undefined;
 		})
 	}
-	giveAdmin(event, param={}){
+	giveAdmin(param={}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -227,43 +158,10 @@ class WorkspaceIpcController {
 			return undefined;
 		})
 	}
-	searchPermitRequestList(event, param = {}){
-		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
-			log.error(`searchPermitRequestList workspaceId is ::: ${param.workspaceId}`);
-			return undefined;
-		}
-		return windowUtil.isLogin( result => {
-			if(result.isLogin){
-				//return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
-				return new Promise(resolve=>{
-					let source = new EventSource(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
-						headers: {
-							'Authorization' : axios.defaults.headers.common['Authorization'],
-						},
-						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
-					});
-					source.onmessage = (event) => {
-						//console.log('test message :::: ',event);
-						let {data, lastEventId, origin, type} = event;
-						data = JSON.parse(data);
-						this.#send('workspacePermitRequestAccept', data);
-					}
-					source.onerror = (event) => {
-						//console.log('searchPermitRequestList error :::: ',event);
-						source.close();
-						resolve('done');
-					}
-				})
-			}else{
-				return {'isLogin': false};
-			}
-		}).catch(error=>{
-			log.error('error ::: ', error.message)
-			log.error('error stack :::', error.stack)
-			return undefined;
-		})
+	searchPermitRequestList(param = {}){
+		
 	}
-	getIsAdmin(event, param = {}){
+	getIsAdmin(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let queryString = Object.entries(param)
@@ -296,5 +194,5 @@ class WorkspaceIpcController {
 		})
 	}
 }
-const workspaceIpcController = new WorkspaceIpcController();
-module.exports = workspaceIpcController
+const workspaceController = new WorkspaceController();
+module.exports = workspaceController

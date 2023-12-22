@@ -1,41 +1,12 @@
 const path = require('path');
-const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
-const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
-class EmoticonIpcController {
+class EmoticonController {
 	constructor() {
-		this.#initHanlder();
     }
 
-	#initHanlder(){
-		ipcMain.handle('createEmotionReaction', async (event, param = {}) => {
-			return this.createEmotionReaction(event, param);
-		});
-        ipcMain.handle('deleteEmoticon', async (event, param = {}) => {
-			return this.deleteEmoticon(event, param);
-		});
-		ipcMain.handle('getIsReaction', async (event, param = {}) => {
-			return this.getIsReaction(event, param);
-		});
-
-	}
-
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
-		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
-			if(v.isDestroyed()){
-				delete mainWindow.subWindow[k];
-				return;
-			}
-			v.webContents.send(eventName, data);
-		})
-	}
-
-	createEmotionReaction(event, param = {}){
+	createEmotionReaction(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -69,7 +40,7 @@ class EmoticonIpcController {
 			return undefined;
 		})
 	}
-    deleteEmotion(event, param = {}){
+    deleteEmotion(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -103,7 +74,7 @@ class EmoticonIpcController {
 			return undefined;
 		})
 	}
-	getIsReaction(event, param = {}){
+	getIsReaction(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let {workspaceId} = param;
@@ -143,5 +114,5 @@ class EmoticonIpcController {
 	}
 	
 }
-const roomIpcController = new EmoticonIpcController();
-module.exports = roomIpcController
+const emoticonController = new EmoticonController();
+module.exports = emoticonController

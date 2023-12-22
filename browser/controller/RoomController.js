@@ -1,68 +1,12 @@
 const path = require('path');
-const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
-const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'BirdPlusOptions.js'))
 const log = require('electron-log');
-const EventSource = require('eventsource');
-class RoomIpcController {
+class RoomController {
 	constructor() {
-		this.#initHanlder();
     }
 
-	#initHanlder(){
-		ipcMain.handle('createRoom', async (event, param = {}) => {
-			return this.createRoom(event, param);
-		});
-		ipcMain.handle('createMySelfRoom', async (event, param = {})=> {
-			return this.createMySelfRoom(event, param);
-		});
-		ipcMain.handle('createRoomInAccount', async (event, param = []) => {
-			return this.createRoomInAccount(event, param);
-		});
-		ipcMain.handle('createRoomFavorites', async (event, param = {}) => {
-			return this.createRoomFavorites(event, param);
-		});
-		ipcMain.handle('updateRoomInAccoutOrder', async (event, param = []) => {
-			return this.updateRoomInAccoutOrder(event, param);
-		});
-		ipcMain.handle('updateRoomFavorites', async (event, param = []) => {
-			return this.updateRoomFavorites(event, param);
-		});
-        ipcMain.handle('searchRoom', async (event, param = {}) => {
-			return this.searchRoom(event, param);
-		});
-		ipcMain.handle('searchMyJoinedRoomList', async (event, param = {}) => {
-			return this.searchMyJoinedRoomList(event, param);
-		});
-		ipcMain.handle('searchRoomFavoritesList', async (event, param = {}) => {
-			return this.searchRoomFavoritesList(event, param);
-		});
-		ipcMain.handle('searchRoomJoinedAccountList', async (event, param = {}) => {
-			return this.searchRoomJoinedAccountList(event, param);
-		});
-		ipcMain.handle('getRoomDetail', async (event, param = {}) => {
-			return this.getRoomDetail(event, param);
-		});
-		ipcMain.handle('isRoomFavorites', async (event, param = {}) => {
-			return this.isRoomFavorites(event, param);
-		});
-	}
-
-	#send(eventName, data){
-		mainWindow.webContents.send(eventName, data);
-		Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
-			if(v.isDestroyed()){
-				delete mainWindow.subWindow[k];
-				return;
-			}
-			v.webContents.send(eventName, data);
-		})
-	}
-
-	createRoom(event, param = {}){
+	createRoom(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -96,7 +40,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	createMySelfRoom(event, param = {}){
+	createMySelfRoom(param = {}){
 		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
 			log.error(`createMySelfRoom workspaceId is ::: ${param.workspaceId}`);
 			return undefined;
@@ -128,7 +72,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	createRoomInAccount(event, param = []){
+	createRoomInAccount(param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/room/create/in-account`, JSON.stringify(param), {
@@ -160,7 +104,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	updateRoomInAccoutOrder(event, param = []){
+	updateRoomInAccoutOrder(param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/room/update/order`, JSON.stringify(param), {
@@ -188,7 +132,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	createRoomFavorites(event, param){
+	createRoomFavorites(param){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -222,7 +166,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	updateRoomFavorites(event, param = []){
+	updateRoomFavorites(param = []){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				return axios.post(`${__serverApi}/api/room/update/favorites-order`, JSON.stringify(param), {
@@ -250,7 +194,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomList(event, param = {}){
+	searchRoomList(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let {roomId} = param;
@@ -282,7 +226,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchMyJoinedRoomList(event, param = {}){
+	searchMyJoinedRoomList(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let {workspaceId} = param;
@@ -320,7 +264,7 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomFavoritesList(event, param = {}){
+	searchRoomFavoritesList(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				let {workspaceId} = param;
@@ -358,43 +302,11 @@ class RoomIpcController {
 			return undefined;
 		})
 	}
-	searchRoomJoinedAccountList(event, param = {}){
-		if( ! param.roomId || isNaN(parseInt(param.roomId))){
-			log.error(`searchRoomJoinedAccountList roomId is ::: ${param.roomId}`);
-			return undefined;
-		}
-		return windowUtil.isLogin( result => {
-			if(result.isLogin){
-				return new Promise(resolve=>{
-					let source = new EventSource(`${__serverApi}/api/room/search/in-account-list/${param.roomId}`, {
-						headers: {
-							'Authorization' : axios.defaults.headers.common['Authorization'],
-						},
-						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
-					});
-					source.onmessage = (event) => {
-						//console.log('test message :::: ',event);
-						let {data, lastEventId, origin, type} = event;
-						data = JSON.parse(data);
-						this.#send('roomInAccountAccept', data);
-					}
-					source.onerror = (event) => {
-						//console.log('searchRoomJoinedAccountList error :::: ',event);
-						source.close();
-						resolve('done');
-					}
-				})
-			}else{
-				return {'isLogin': false};
-			}
-		}).catch(error=>{
-			log.error('error ::: ', error.message)
-			log.error('error stack :::', error.stack)
-			return undefined;
-		})
+	searchRoomJoinedAccountList(param = {}){
+		
 	}
 	/*
-	searchRoomJoinedAccountList(event, param = {}){
+	searchRoomJoinedAccountList(param = {}){
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
 			log.error(`searchRoomJoinedAccountList roomId is ::: ${param.roomId}`);
 			return undefined;
@@ -451,7 +363,7 @@ class RoomIpcController {
 		})
 	}
 	*/
-	getRoomDetail(event, param = {}){
+	getRoomDetail(param = {}){
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
 			log.error(`getRoomDetail roomId is ::: ${param.roomId}`);
 			return undefined;
@@ -470,7 +382,7 @@ class RoomIpcController {
 			}
 		});
 	}
-	isRoomFavorites(event, param = {}){
+	isRoomFavorites(param = {}){
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
 			log.error(`isRoomFavorites roomId is ::: ${param.roomId}`);
 			return undefined;
@@ -503,5 +415,5 @@ class RoomIpcController {
 		})
 	}
 }
-const roomIpcController = new RoomIpcController();
-module.exports = roomIpcController
+const roomController = new RoomController();
+module.exports = roomController
