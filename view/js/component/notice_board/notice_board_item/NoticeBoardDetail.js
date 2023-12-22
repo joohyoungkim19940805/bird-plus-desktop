@@ -331,6 +331,7 @@ export default new class NoticeBoardDetail{
                 if(isScriptBlur){
                     isScriptBlur = ! isScriptBlur;
                 }
+                this.#elementMap.toolbar.remove();
                 editor.contentEditable = false;
                 if( ! event.relatedTarget?.hasAttribute('data-tool_status')){
                     this.#elementMap.toolbar.remove();
@@ -358,7 +359,6 @@ export default new class NoticeBoardDetail{
                     orderSort: li.dataset.order_sort //([...this.#elementMap.noticeBoardDetailList.children].findIndex(e=>e==li) - 1) * -1,
                 };
                 this.#uploadNoticeBoard(editor, param);
-
             }
             editor.onkeydown = (event) => {
                 let {altKey, ctrlKey, shiftKey, key} = event;

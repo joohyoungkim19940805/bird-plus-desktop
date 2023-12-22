@@ -4,7 +4,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
-const apiS3Controller = require(path.join(__project_path, 'browser/contorller/ApiS3Controller.js'))
+const apiS3Controller = require(path.join(__project_path, 'browser/controller/ApiS3Controller.js'))
 class ApiS3Ipc {
 	constructor() {
 		ipcMain.handle('generatePutObjectPresignedUrl', async (event, param) => {
@@ -16,5 +16,5 @@ class ApiS3Ipc {
 	}
 	
 }
-const apiS3Ipc = new ApiS3IpcController();
+const apiS3Ipc = new ApiS3Ipc();
 module.exports = apiS3Ipc

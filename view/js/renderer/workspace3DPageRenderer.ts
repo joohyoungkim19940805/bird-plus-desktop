@@ -18,7 +18,8 @@ import {
 	Mesh,
 	Color3,
 	PointLight,
-	SpotLight
+	SpotLight,
+	PointerEventTypes
 } from '@babylonjs/core';
 import {
 	AdvancedDynamicTexture,
@@ -29,7 +30,10 @@ import {
 	StackPanel,
 	Button,
 	StackPanel3D,
-	InputPassword
+	InputPassword,
+	ScrollViewer,
+	Container,
+	TextWrapping
 } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF"
 //import { any } from '@tensorflow/tfjs';
@@ -62,6 +66,8 @@ new class Workspace3DPageRenderer{
 	private x = -0.03477393733415595;
 	private y = 2.918814528741556;
 	private z = 0.8905547236474616;
+
+	private isMouseDown = false;
 	constructor(){
 		this.canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 		this.engine = new Engine(this.canvas, true);
@@ -96,6 +102,13 @@ new class Workspace3DPageRenderer{
 		window.addEventListener("resize", () => {
 			this.engine.resize();
 		});
+		this.scene.onPointerObservable.add((ev) => {
+			if(ev.type == PointerEventTypes.POINTERDOWN){
+				this.isMouseDown = true;
+			}else if(ev.type == PointerEventTypes.POINTERUP){
+				this.isMouseDown = false;
+			}
+		})
 	}
 
     async create3DView(){
@@ -163,6 +176,7 @@ new class Workspace3DPageRenderer{
 			//monitorPanel.dispose();
 			let monitor = meshObejects['monitor'];
 			let monitorLeg = meshObejects['monitor_leg']
+			let monitorPanelTexture = AdvancedDynamicTexture.CreateForMesh(monitorPanel, undefined, undefined, true, true);
 			let isMonitorLocked = false;
 			monitor.actionManager = new ActionManager(this.scene);
 			monitorLeg.actionManager = monitor.actionManager;
@@ -178,13 +192,25 @@ new class Workspace3DPageRenderer{
 					this.camera.target = new Vector3(this.x, this.y, this.z);
 					this.camera.radius = this.radius, this.camera.alpha = this.alpha, this.camera.beta = this.beta
 				}
+				this.camera.attachControl(this.canvas, true);
 			}));
 			//monitorPanel.rotation = new Vector3();
 			//monitor.position = new Vector3();
 			
 			let {isLogin} = await (window as any).myAPI.isLogin();
 			if( ! isLogin){
-				this.createLoginPage(monitorPanel);
+				this.createLoginPage(monitorPanelTexture, (components : Record<string, InputText | InputPassword | Button>) => {
+					let {idInput, pwInput, loginButton, signUpButton} = components;
+					monitorPanelTexture.removeControl(idInput), monitorPanelTexture.removeControl(pwInput);
+					monitorPanelTexture.removeControl(loginButton), monitorPanelTexture.removeControl(signUpButton);
+					[idInput, pwInput, loginButton, signUpButton].forEach(e=>{
+						monitorPanelTexture.removeControl(e);
+						e.dispose()
+					})
+					this.createWorkspaceMyJoinedListPage(monitorPanelTexture);
+				});
+			}else{
+				this.createWorkspaceMyJoinedListPage(monitorPanelTexture);
 			}
         })
         this.loadLowPolyFan().then((result)=>{
@@ -269,23 +295,12 @@ new class Workspace3DPageRenderer{
         return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "low_poly_fan.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
 
-	createLoginPage(monitorPanel : Mesh | AbstractMesh, loginSuccessCallback : Function = ()=>{}){
-
-		//monitorPanel.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-		let texture = AdvancedDynamicTexture.CreateForMesh(monitorPanel, 1000, 1000, true, true);
-		//texture.invertZ = true;
-		//texture.background = 'red'
-		//let texture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-		//let panel = new StackPanel();
-		// /texture.addControl(panel);
-		//let texture = AdvancedDynamicTexture.CreateForMeshTexture(monitor, 2048, 2048, true, false)
-		//monitorPanel.position.y = 15
-		console.log(monitorPanel);
+	createLoginPage(texture : AdvancedDynamicTexture, loginSuccessCallback : Function = ()=>{}){
 		let idInput = new InputText();
 		let pwInput = new InputPassword();
 		let loginButton = Button.CreateSimpleButton('signIn', 'Login');
 		let signUpButton = Button.CreateSimpleButton('signUp', 'Sign Up')
-		
+		let components : Record<string, InputText | InputPassword | Button> = {idInput, pwInput, loginButton, signUpButton} ;
 		idInput.placeholderText = 'Please Enter Your ID';
 		idInput.placeholderColor = '#d5d2cab0';
 		pwInput.placeholderText = 'Please Enter Your PW';
@@ -299,7 +314,7 @@ new class Workspace3DPageRenderer{
 			input.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 			input.top = i == 0 ? '40px' : '110px', input.left = -30
 			input.width = 0.18, input.maxWidth = 0.18
-			input.height = '40px', input.fontSize = 16, input.color = 'white';;
+			input.height = '40px', input.fontSize = 16, input.color = 'white';
 			//input.color = "white", input.background = 'green';
 			input.onFocusObservable.add((ev) => {
 				//if(input == pwInput) input.text = '';
@@ -307,39 +322,30 @@ new class Workspace3DPageRenderer{
 				isIdInputFocus = input == idInput;
 				isPwInputFocus = input == pwInput;
 			});
-			let isTab = false;
 			input.onBlurObservable.add(() => {
 				isIdInputFocus = input == idInput ? false : isIdInputFocus;
 				isPwInputFocus = input == pwInput ? false : isPwInputFocus;
 				if(! isIdInputFocus && ! isPwInputFocus){
 					this.camera.attachControl(this.canvas, true);
 				};
-				if(! isTab){
-					return;
-				}
-				if(input == idInput) pwInput.focus();
-				else idInput.focus()
-				isTab = false;
 			});
 	
 			input.onKeyboardEventProcessedObservable.add((ev) => {
 				console.log(ev);
 				if(ev.key == 'Tab'){
-					isTab = true;
-					//if(input == idInput) pwInput.focus();
-					//else idInput.focus()
+					ev.preventDefault();
+					if(input == idInput) pwInput.focus();
+					else idInput.focus()
 					return;
 				}else if(ev.key == 'Enter'){
-					loginButton.onPointerClickObservable.observers.forEach(e=>{
+					loginButton.onPointerClickObservable.observers.forEach( e => {
 						(e as any).callback();
 					})
+				}else if(ev.ctrlKey && ev.key == 'Backspace'){
+					input.text = '';
 				}
-				isTab = false;
 			})
-			input.onBeforeKeyAddObservable.add(ev=>{
-				console.log(222)
 
-			})
 			//texture.addControl
 			texture.addControl(input);
 		})
@@ -366,7 +372,7 @@ new class Workspace3DPageRenderer{
 				let {code} = response;
 				if(code == 0){
 					//(window as any).myAPI.pageChange.changeWokrspacePage();
-					if(loginSuccessCallback) loginSuccessCallback();
+					if(loginSuccessCallback) loginSuccessCallback(components);
 				}else if(code == 101){
 					statusText.text = '해당 기능에 권한이 없습니다.'
 				}else if(code == 102){
@@ -407,15 +413,448 @@ new class Workspace3DPageRenderer{
 			});
 		})
 		texture.addControl(signUpButton);
-		
-		
-		
 
-		//texture.addControl(idInput);
-		//texture.addControl(pwInput);
-		//isVisible
+		return components
+	}
+
+	createWorkspaceMyJoinedListPage(texture : AdvancedDynamicTexture){
+		let page = 0, size = 10, totalElementsCount = 0, componentList : Array<Record<string, Rectangle | TextBlock>> = [];
+		let isContainerEnter = false, isItemEnter = false, isScrollViewEnter = false;
+
+		let pageLabel = new TextBlock('pageLabel');
+		pageLabel.paddingLeft = '10px', pageLabel.text = 'My Joined Workspaces', pageLabel.color = '#838383e0', pageLabel.fontSize = '15px' 
+		pageLabel.top = '15px', pageLabel.left = '-30px', pageLabel.fontWeight = '14px'
+		texture.addControl(pageLabel)
+
+		let topPanel = new Rectangle('topPanel');
+		topPanel.top = '120px', topPanel.thickness = 0.3
+		topPanel.width = 0.26, topPanel.height = 0.16;
+		texture.addControl(topPanel);
+
+		let scrollView = new ScrollViewer('workspaceListScrollView');
+		scrollView.width = '100%', scrollView.height = '100%';
+		scrollView.barSize = 15, scrollView.thickness = 0, scrollView.verticalBar.color = 'white';
+		scrollView.verticalBar.onPointerDownObservable.add(ev=>{
+			//console.log(ev);
+			this.camera.detachControl();
+		});
+		scrollView.verticalBar.onPointerUpObservable.add(ev=>{
+			//console.log(ev);
+			this.camera.attachControl(this.canvas, true);
+		});
+		scrollView.verticalBar.onPointerEnterObservable.add(ev=>{
+			isScrollViewEnter = true;
+			if(this.isMouseDown) return;
+			if(isContainerEnter || isItemEnter || isScrollViewEnter){
+				this.camera.detachControl();
+			}
+			//console.log('scroll enter', isContainerEnter, isItemEnter, isScrollViewEnter);
+		});
+		scrollView.verticalBar.onPointerOutObservable.add(ev=>{
+			isScrollViewEnter = false;
+			if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+				this.camera.attachControl(this.canvas, true);
+			}
+			//console.log('scroll out', isContainerEnter, isItemEnter, isScrollViewEnter);
+			//this.camera.attachControl(this.canvas, true);
+		});
+		scrollView.onBeforeDrawObservable.add(ev=>{
+			if(
+				scrollView.verticalBar.value != scrollView.verticalBar.maximum ||
+				componentList.length >= totalElementsCount
+			){
+				return;
+			}
+			scrollView.verticalBar.value = componentList.length / ( (page + 2) * size )
+			page += 1;
+			(window as any).myAPI.workspace.searchWorkspaceMyJoined({page, size}).then((result : any = {}) => {
+				console.log(result);
+				//container.height = result.data.totalElements * itemHeight;
+				let list : Array<WorkspaceListType> = result.data.content;
+				componentList.push(
+					...list.map((item, i) => createItem(item, i))
+				);
+			})
 		
+		});
+		topPanel.addControl(scrollView);
 		
+		let container = new StackPanel('workspaceListContainer');
+		container.color = "red", container.alpha = 0.65;
+		container.onPointerEnterObservable.add(ev=>{
+			isContainerEnter = true;
+			if(this.isMouseDown) return;
+			if(isContainerEnter || isItemEnter || isScrollViewEnter){
+				this.camera.detachControl();	
+			}
+			//console.log('container enter',isContainerEnter, isItemEnter, isScrollViewEnter);
+		})
+		container.onPointerOutObservable.add(ev=>{
+			isContainerEnter = false;
+			if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+				this.camera.attachControl(this.canvas, true);
+			}
+			//console.log('container out',isContainerEnter, isItemEnter, isScrollViewEnter);
+		});
+		scrollView.addControl(container);
+
+		let makeWorkspaceButton = Button.CreateSimpleButton('makeWorkspaceButton', 'Create New Workspace');
+		makeWorkspaceButton.top = '235px', makeWorkspaceButton.left = '-65px'
+		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
+		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
+		makeWorkspaceButton.hoverCursor = 'pointer'
+		texture.addControl(makeWorkspaceButton);
+		
+		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
+		searchWorkspaceButton.top = '235px', searchWorkspaceButton.left = '55px'
+		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
+		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
+		searchWorkspaceButton.hoverCursor = 'pointer'
+		searchWorkspaceButton.onPointerClickObservable.add(ev=> {
+			[
+				pageLabel, ...componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.itemPanel]), 
+				container, scrollView, makeWorkspaceButton, searchWorkspaceButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createSearchAntherWorkspacePage(texture);
+		})
+		texture.addControl(searchWorkspaceButton);
+		
+		interface WorkspaceListType{
+			accessFilter: Array<string>,
+			isEnabled: boolean,
+			isFinallyPermit: boolean,
+			joinedCount: number,
+			workspaceId: number,
+			workspaceName: string
+		}
+
+		const createItem = (item : WorkspaceListType, index: number) => {
+			//let num = index + 1;
+			let itemPanel = new Rectangle(`workspaceListItemPanel_${index}`);
+			itemPanel.onPointerEnterObservable.add(ev=>{
+				isItemEnter = true;
+				if(this.isMouseDown) return;
+				if(isContainerEnter || isItemEnter || isScrollViewEnter){
+					this.camera.detachControl();	
+				}
+				//console.log('item enter ',isContainerEnter, isItemEnter, isScrollViewEnter);
+			})
+			itemPanel.onPointerOutObservable.add(ev=>{
+				isItemEnter = false;
+				if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+					this.camera.attachControl(this.canvas, true);
+				}
+				//console.log('item out', isContainerEnter, isItemEnter, isScrollViewEnter);
+			});
+			itemPanel.onPointerClickObservable.add(ev=>{
+				(window as any).myAPI.resetWorkspaceId().then(()=>{
+					//console.log(item.wokrpsaceId);
+					(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.workspaceId});
+				});
+			})
+			itemPanel.hoverCursor = 'pointer', itemPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			//itemPanel.top = ( itemHeight * index ) + 5;
+			itemPanel.left = '4px', itemPanel.width = '90%';
+			itemPanel.height = '60px', itemPanel.background = "black";
+			itemPanel.alpha = 0.8, itemPanel.thickness = 0.2
+			//itemPanel.cornerRadius = 6;
+			itemPanel.paddingTop = 6, itemPanel.paddingBottom = 6;
+			container.addControl(itemPanel)
+
+			let workspaceName = new TextBlock(`workspaceName_${index}`);
+			workspaceName.textWrapping = TextWrapping.WordWrap;
+			workspaceName.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			workspaceName.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceName.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			workspaceName.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceName.paddingTop = '2%', workspaceName.paddingLeft = '2%';
+			workspaceName.color = "white", workspaceName.fontWeight = '12px';
+			workspaceName.fontSize = 16, workspaceName.text = item.workspaceName;
+
+			let workspaceJoinedCount = new TextBlock(`workspaceJoinedCount_${index}`);
+			workspaceJoinedCount.textWrapping = TextWrapping.WordWrap;
+			workspaceJoinedCount.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+			workspaceJoinedCount.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceJoinedCount.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+			workspaceJoinedCount.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceJoinedCount.color = 'white', workspaceJoinedCount.paddingBottom = '2%';
+			workspaceJoinedCount.paddingLeft = '2%', workspaceJoinedCount.fontSize = 12;
+			workspaceJoinedCount.text = `(${item.joinedCount} members)`;
+			
+			itemPanel.addControl(workspaceName), itemPanel.addControl(workspaceJoinedCount)
+			
+			return {itemPanel, workspaceName, workspaceJoinedCount}; 
+		}
+		(window as any).myAPI.workspace.searchWorkspaceMyJoined({page, size}).then((result : any = {}) => {
+			console.log(result);
+			totalElementsCount = result.data.totalElements;
+			//container.height = result.data.totalElements * itemHeight;
+			let list : Array<WorkspaceListType> = result.data.content;
+			componentList.push(
+				...list.map((item, i) => createItem(item, i))
+			);
+			
+		})
+
+
+	}
+
+	createSearchAntherWorkspacePage(texture : AdvancedDynamicTexture){
+		let page = 0, size = 10, totalElementsCount = 0, componentList : Array<Record<string, Rectangle | TextBlock>> = [];
+		let isContainerEnter = false, isItemEnter = false, isScrollViewEnter = false;
+
+		let searchInput = new InputText('workspaceSearchInput');
+		searchInput.color = 'white', searchInput.fontSize = '15px' 
+		searchInput.placeholderText = 'Search Workspace Name', searchInput.placeholderColor = '#d5d2cab0';
+		searchInput.top = '15px', searchInput.fontWeight = '14px'
+		searchInput.width = 0.23, searchInput.maxWidth = 0.23, searchInput.height = '30px';
+		searchInput.onKeyboardEventProcessedObservable.add((ev) => {
+			if(ev.key == 'Enter' || (ev.ctrlKey && ev.key == 'Backspace')){
+				componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.itemPanel]).forEach(e=>{
+					texture.removeControl(e);
+					e.dispose();
+				});
+				componentList = [];
+			}
+			
+			if(searchInput.text == '') return;
+
+			if(ev.key == 'Enter'){
+				console.log('searchInput.text', searchInput.text);
+				(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
+					console.log(result);
+					totalElementsCount = result.data.totalElements;
+					let list : Array<WorkspaceListType> = result.data.content;
+					componentList.push(
+						...list.map((item, i) => createItem(item, i))
+					);
+				});
+				searchInput.focus();
+			}else if(ev.ctrlKey && ev.key == 'Backspace'){
+				searchInput.text = '';
+			}
+		})
+		searchInput.onFocusObservable.add((ev) => {
+			//if(input == pwInput) input.text = '';
+			this.camera.detachControl();
+		});
+		searchInput.onBlurObservable.add(() => {
+			this.camera.attachControl(this.canvas, true);
+		});
+		texture.addControl(searchInput)
+		//searchInput.focus();
+
+		let makeWorkspaceButton = Button.CreateSimpleButton('makeWorkspaceButton', 'Create New Workspace');
+		makeWorkspaceButton.top = '235px', makeWorkspaceButton.left = '-65px'
+		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
+		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
+		makeWorkspaceButton.hoverCursor = 'pointer'
+		texture.addControl(makeWorkspaceButton);
+		
+		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
+		searchWorkspaceButton.top = '235px', searchWorkspaceButton.left = '55px'
+		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
+		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
+		searchWorkspaceButton.hoverCursor = 'pointer'
+		texture.addControl(searchWorkspaceButton);
+
+		let topPanel = new Rectangle('topPanel');
+		topPanel.top = '120px', topPanel.thickness = 0.3
+		topPanel.width = 0.26, topPanel.height = 0.16;
+		texture.addControl(topPanel);
+
+		let scrollView = new ScrollViewer('workspaceListScrollView');
+		scrollView.width = '100%', scrollView.height = '100%';
+		scrollView.barSize = 15, scrollView.thickness = 0, scrollView.verticalBar.color = 'white';
+		
+		scrollView.verticalBar.onPointerDownObservable.add(ev=>{
+			//console.log(ev);
+			this.camera.detachControl();
+		});
+		scrollView.verticalBar.onPointerUpObservable.add(ev=>{
+			//console.log(ev);
+			this.camera.attachControl(this.canvas, true);
+		});
+		scrollView.verticalBar.onPointerEnterObservable.add(ev=>{
+			isScrollViewEnter = true;
+			if(this.isMouseDown) return;
+			if(isContainerEnter || isItemEnter || isScrollViewEnter){
+				this.camera.detachControl();
+			}
+			//console.log('scroll enter', isContainerEnter, isItemEnter, isScrollViewEnter);
+		});
+		scrollView.verticalBar.onPointerOutObservable.add(ev=>{
+			isScrollViewEnter = false;
+			if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+				this.camera.attachControl(this.canvas, true);
+			}
+			//console.log('scroll out', isContainerEnter, isItemEnter, isScrollViewEnter);
+			//this.camera.attachControl(this.canvas, true);
+		});
+		scrollView.onBeforeDrawObservable.add(ev=>{
+			if(
+				scrollView.verticalBar.value != scrollView.verticalBar.maximum ||
+				componentList.length >= totalElementsCount
+			){
+				return;
+			}
+			scrollView.verticalBar.value = componentList.length / ( (page + 2) * size )
+			page += 1;
+			(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
+				console.log(result);
+				totalElementsCount = result.data.totalElements;
+				let list : Array<WorkspaceListType> = result.data.content;
+				componentList.push(
+					...list.map((item, i) => createItem(item, i))
+				);
+			})
+		
+		});
+		topPanel.addControl(scrollView);
+		
+		let container = new StackPanel('workspaceListContainer');
+		container.color = "red", container.alpha = 0.65;
+		container.onPointerEnterObservable.add(ev=>{
+			isContainerEnter = true;
+			if(this.isMouseDown) return;
+			if(isContainerEnter || isItemEnter || isScrollViewEnter){
+				this.camera.detachControl();	
+			}
+			//console.log('container enter',isContainerEnter, isItemEnter, isScrollViewEnter);
+		})
+		container.onPointerOutObservable.add(ev=>{
+			isContainerEnter = false;
+			if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+				this.camera.attachControl(this.canvas, true);
+			}
+			//console.log('container out',isContainerEnter, isItemEnter, isScrollViewEnter);
+		});
+		scrollView.addControl(container);
+
+
+		interface WorkspaceListType{
+			accessFilter: Array<string>,
+			isEnabled: boolean,
+			isFinallyPermit: boolean,
+			joinedCount: number,
+			id: number,
+			workspaceName: string
+		}
+
+		const createItem = (item : WorkspaceListType, index: number) => {
+			//let num = index + 1;
+			let itemPanel = new Rectangle(`workspaceListItemPanel_${index}`);
+			itemPanel.onPointerEnterObservable.add(ev=>{
+				isItemEnter = true;
+				if(this.isMouseDown) return;
+				if(isContainerEnter || isItemEnter || isScrollViewEnter){
+					this.camera.detachControl();	
+				}
+				//console.log('item enter ',isContainerEnter, isItemEnter, isScrollViewEnter);
+			})
+			itemPanel.onPointerOutObservable.add(ev=>{
+				isItemEnter = false;
+				if( ! isContainerEnter && ! isItemEnter && ! isScrollViewEnter){
+					this.camera.attachControl(this.canvas, true);
+				}
+				//console.log('item out', isContainerEnter, isItemEnter, isScrollViewEnter);
+			});
+			
+			itemPanel.hoverCursor = 'pointer', itemPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			//itemPanel.top = ( itemHeight * index ) + 5;
+			itemPanel.left = '4px', itemPanel.width = '90%';
+			itemPanel.height = '60px', itemPanel.background = "black";
+			itemPanel.alpha = 0.8, itemPanel.thickness = 0.2
+			//itemPanel.cornerRadius = 6;
+			itemPanel.paddingTop = 6, itemPanel.paddingBottom = 6;
+			container.addControl(itemPanel)
+
+			let workspaceName = new TextBlock(`workspaceName_${index}`);
+			//workspaceName.textWrapping = TextWrapping.WordWrap;
+			workspaceName.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			workspaceName.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceName.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			workspaceName.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceName.paddingTop = '2%', workspaceName.paddingLeft = '2%';
+			workspaceName.color = "white", workspaceName.fontWeight = '12px';
+			workspaceName.fontSize = 16, workspaceName.text = item.workspaceName;
+
+			let workspaceJoinedCount = new TextBlock(`workspaceJoinedCount_${index}`);
+			workspaceJoinedCount.textWrapping = TextWrapping.WordWrap;
+			workspaceJoinedCount.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+			workspaceJoinedCount.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceJoinedCount.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+			workspaceJoinedCount.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			workspaceJoinedCount.color = 'white', workspaceJoinedCount.paddingBottom = '2%';
+			workspaceJoinedCount.paddingLeft = '2%', workspaceJoinedCount.fontSize = 12;
+			workspaceJoinedCount.text = `(${item.joinedCount} members)`;
+			
+			let joinRequestButton = Button.CreateSimpleButton('JoinRequest', 'Join Request');
+			//joinRequestButton.top = '235px', joinRequestButton.left = '55px'
+			joinRequestButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+			joinRequestButton.width = '60px', joinRequestButton.height = '40px', joinRequestButton.fontSize = '11px';
+			joinRequestButton.paddingLeft = '10px', joinRequestButton.background = '#5f5f5fd1', joinRequestButton.color = 'white';
+			joinRequestButton.hoverCursor = 'pointer'
+			joinRequestButton.onPointerClickObservable.add(ev=>{
+				(window as any).myAPI.workspace.createWorkspaceJoined({id: item.id}).then((result : any) => {
+					let statusTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+					let statusPanel = new StackPanel();
+					statusPanel.background = '#5f5f5fd1'; //statusPanel.color = '#5f5f5fd1';
+					statusPanel.width = '100%', statusPanel.hoverCursor = 'pointer'
+					statusPanel.onPointerClickObservable.add(()=>statusPanel.dispose());
+					let statusText = new TextBlock();
+					statusText.textWrapping = TextWrapping.WordWrap;
+					statusText.width = '100%', statusText.height = '80px', statusText.color = 'white';
+					console.log(result);
+					if(result.code == 0){
+						if( ! result.data.isEnabled){
+							statusText.text = '승인 받은 사용자만 접속 가능합니다. 참여 요청이 전송되었으며, 관리자의 최종 승인을 기다리십시오.'
+							statusPanel.addControl(statusText)
+							statusTexture.addControl(statusPanel);
+							setTimeout(()=>{
+								statusPanel.removeControl(statusText);
+								statusTexture.removeControl(statusPanel);
+								statusText.dispose();
+								statusPanel.dispose();
+								statusTexture.dispose();
+							}, 2500)
+						}else{
+							(window as any).myAPI.resetWorkspaceId().then(()=>{
+							//	(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
+							});
+						}
+					}else if(result.code == 203){
+						(window as any).myAPI.resetWorkspaceId().then(()=>{
+						//	(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
+						});
+					}
+					else{
+						statusText.text = result.message
+						statusPanel.addControl(statusText)
+						statusTexture.addControl(statusPanel);
+						setTimeout(()=>{
+							statusPanel.removeControl(statusText);
+							statusTexture.removeControl(statusPanel);
+							statusText.dispose();
+							statusPanel.dispose();
+							statusTexture.dispose();
+						}, 1500)
+					}
+				});
+			});
+
+			itemPanel.addControl(workspaceName), itemPanel.addControl(workspaceJoinedCount), itemPanel.addControl(joinRequestButton);
+			
+			return {itemPanel, workspaceName, workspaceJoinedCount}; 
+		}
+ 
+	}
+
+	createMakeWorkspacePage(){
+
 	}
 
     setCamera(camera : any, option : {

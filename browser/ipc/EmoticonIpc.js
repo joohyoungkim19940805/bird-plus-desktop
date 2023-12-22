@@ -4,7 +4,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log')
-const emoticonController = require(path.join(__project_path, 'browser/contorller/EmoticonController.js'));
+const emoticonController = require(path.join(__project_path, 'browser/controller/EmoticonController.js'));
 class EmoticonIpc {
 	constructor() {
 		this.#initHanlder();

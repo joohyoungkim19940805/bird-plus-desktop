@@ -57,13 +57,10 @@ class WindowUtil{
 		let status = response.status;
 		let {code, data} = response.data;
         if(status == '200' || status == '201'){
-			if( ! code || (code && code == 0)){
-				return response
-			}else{
-				throw new Error(JSON.stringify(response));
-			}
+			return response
 		}else{
-			throw new Error(JSON.stringify(response));
+            log.error(response);
+			throw new Error(response.message);
 		}
 	}
 

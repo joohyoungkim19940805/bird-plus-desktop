@@ -4,7 +4,7 @@
     width: 20vw;
     height: 20vh;
     min-width: max-content;
-    z-index: 20;
+    z-index: 200;
     color: white;
 }
 .simple_option .simple_option_container{

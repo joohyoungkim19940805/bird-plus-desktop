@@ -5,7 +5,7 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
 const EventSource = require('eventsource');
-const roomController = require(path.join(__project_path, 'browser/contorller/RoomController.js'));
+const roomController = require(path.join(__project_path, 'browser/controller/RoomController.js'));
 class RoomIpc {
 	constructor() {
 		ipcMain.handle('createRoom', async (event, param = {}) => {

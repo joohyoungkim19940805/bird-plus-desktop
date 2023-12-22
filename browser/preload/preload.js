@@ -162,12 +162,14 @@ contextBridge.exposeInMainWorld('myAPI', {
 	
 	workspace : {
 		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
+		searchNameSpecificList: (param) => ipcRenderer.invoke('searchNameSpecificList', param),
 		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
 		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
 		createPermitWokrspaceInAccount: (param) => ipcRenderer.invoke('createPermitWokrspaceInAccount', param),
-		giveAdmin : (param) => ipcRenderer.invoke('giveAdmin', param),
+		createGiveAdmin : (param) => ipcRenderer.invoke('createGiveAdmin', param),
 		searchPermitRequestList : (param) => ipcRenderer.invoke('searchPermitRequestList', param),
 		getIsAdmin : (param) => ipcRenderer.invoke('getIsAdmin', param),
+		createWorkspaceJoined: (param) => ipcRenderer.invoke('createWorkspaceJoined', param),
 	},
 
 	room : {

@@ -4,7 +4,7 @@ const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWi
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
-const chattingController = require(path.join(__project_path, 'browser/contorller/ChattingController.js'))
+const chattingController = require(path.join(__project_path, 'browser/controller/ChattingController.js'))
 class ChattingIpc {
 	constructor() {
 		ipcMain.handle('sendChatting', async (event, param) => {

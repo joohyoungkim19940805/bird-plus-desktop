@@ -15,7 +15,8 @@ const {autoUpdater} = require('electron-updater');
 const log = require('electron-log');
 
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
-
+const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
+const axios = require('axios');
 /**
  * 메인 윈도우를 정의한다.
  * @author kimjoohyoung
@@ -198,7 +199,6 @@ class MainWindow extends BrowserWindow{
 			}
 			*/
 			let {url} = event;
-			console.log('event !! ::: ',event);
 			log.debug('MainWindow Line 100 ::: open url :::', url);
 			if(url.includes('blob:file:///')){
 				return {
@@ -325,13 +325,17 @@ class MainWindow extends BrowserWindow{
 	
 	changeLoginPage(){
 		//SELECT TOKEN, ISSUED_AT, EXPIRES_AT FROM ACCOUNT_LOG WHERE EXPIRES_AT > datetime('now','localtime') LIMIT 1;
+		this.resizable = true;
+		this.movable = true;
+		this.autoHideMenuBar = false;
+		this.menuBarVisible = true;
+		this.show();
+		this.titleBarStyle = 'visibble'
 		windowUtil.isLogin((result) => {
 			if(result.isLogin){
 				if( ! this.workspaceId){
 					//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 					this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
-						this.titleBarStyle = 'visibble'
-						this.show();
 						this.isOpening = false;
 						birdPlusOptions.optionLoadEnd.then(() => {
 							birdPlusOptions.setLastWindowSize(this);
@@ -339,14 +343,7 @@ class MainWindow extends BrowserWindow{
 						})
 					})
 				}else{
-					this.resizable = true;
-					this.movable = true;
-					this.autoHideMenuBar = false;
-					this.menuBarVisible = true;
-				
 					this.loadFile(path.join(__project_path, 'view/html/main.html')).then(e=>{
-						this.titleBarStyle = 'visibble'
-						this.show();
 						birdPlusOptions.optionLoadEnd.then(() => {
 							birdPlusOptions.setLastWindowSize(this);
 							birdPlusOptions.setLastWindowPosition(this);	
@@ -373,11 +370,6 @@ class MainWindow extends BrowserWindow{
 						if(err){
 							log.error(err);
 						}
-						this.resizable = true;
-						this.movable = true;
-						this.autoHideMenuBar = false;
-						this.menuBarVisible = true;
-		
 						if(rows[0]){
 							//global.__apiToken = rows[0].TOKEN
 							axios.defaults.headers.common['Authorization'] = rows[0].TOKEN;
@@ -385,8 +377,6 @@ class MainWindow extends BrowserWindow{
 								if(result.isLogin){
 									//mainWindow.loadFile(path.join(__project_path, 'view/html/workspacePage.html')).then(e=>{
 									this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
-										this.titleBarStyle = 'visibble'
-										this.show();
 										this.isOpening = false;
 										birdPlusOptions.optionLoadEnd.then(() => {
 											birdPlusOptions.setLastWindowSize(this);
@@ -417,8 +407,6 @@ class MainWindow extends BrowserWindow{
 	moveLoginPage(){
 		//mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
 		this.loadFile(path.join(__project_path, 'view/html/workspace3DPage.html')).then(e=>{
-			this.titleBarStyle = 'visibble'
-			this.show();
 			this.isOpening = false;
 			birdPlusOptions.optionLoadEnd.then(() => {
 				birdPlusOptions.setLastWindowSize(this);

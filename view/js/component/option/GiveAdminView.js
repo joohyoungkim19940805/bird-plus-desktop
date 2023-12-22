@@ -164,7 +164,7 @@ export default class GiveAdminView extends LayerPopupTemplate{
 			
 			Object.values(this.#inviteAccountMapper).forEach(e=>{
 				console.log(e);
-				window.myAPI.workspace.giveAdmin({
+				window.myAPI.workspace.createGiveAdmin({
 					id:e.id,
 					workspaceId: e.workspace_id
 				}).then((result)=>{

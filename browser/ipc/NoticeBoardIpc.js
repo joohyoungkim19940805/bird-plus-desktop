@@ -5,7 +5,7 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
 const EventSource = require('eventsource');
-const noticeBoardController = require(path.join(__project_path, 'browser/contorller/NoticeBoardController.js'));
+const noticeBoardController = require(path.join(__project_path, 'browser/controller/NoticeBoardController.js'));
 class NoticeBoardIpc {
 	constructor() {
         ipcMain.handle('createNoticeBoardGroup', async (event, param = {}) => {

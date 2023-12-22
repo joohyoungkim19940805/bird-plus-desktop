@@ -1,4 +1,5 @@
 const path = require('path');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
@@ -13,6 +14,7 @@ class AccountIpc {
 			return accountController.loginProcessing(param).then(response => {
 				let status = response.status;
 				let {data} = response;
+				console.log('response',response);
 				if((status == '200' || status == '201') && data.code == 0){
 					let db = DBConfig.getDB();
 					db.serialize( () => {

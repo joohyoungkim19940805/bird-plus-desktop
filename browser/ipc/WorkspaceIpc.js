@@ -5,12 +5,15 @@ const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
 const EventSource = require('eventsource');
-const workspaceController = require(path.join(__project_path, 'browser/contorller/WorkspaceController.js'));
+const workspaceController = require(path.join(__project_path, 'browser/controller/WorkspaceController.js'));
 class WorkspaceIpc {
 	constructor() {
 
         ipcMain.handle('searchWorkspaceMyJoined', async (event, param = {}) => {
 			return workspaceController.searchWorkspaceMyJoined(param);
+        })
+		ipcMain.handle('searchNameSpecificList', async (event, param = {}) => {
+			return workspaceController.searchNameSpecificList(param);
         })
 		ipcMain.handle('searchWorkspaceInAccount', async (event, param = {}) => {
 			return workspaceController.searchWorkspaceInAccount(param)
@@ -24,8 +27,8 @@ class WorkspaceIpc {
 			return workspaceController.createPermitWokrspaceInAccount(param);
 		})
 
-		ipcMain.handle('giveAdmin', async (event, param) => {
-			return workspaceController.giveAdmin(param);
+		ipcMain.handle('createGiveAdmin', async (event, param) => {
+			return workspaceController.createGiveAdmin(param);
 		})
 
 		ipcMain.handle('searchPermitRequestList', async (event, param) => {
@@ -66,7 +69,11 @@ class WorkspaceIpc {
 		})
 
 		ipcMain.handle('getIsAdmin', async (event, param) => {
-			return this.getIsAdmin(param);
+			return workspaceController.getIsAdmin(param);
+		})
+
+		ipcMain.handle('createWorkspaceJoined', async(event, param) => {
+			return workspaceController.createWorkspaceJoined(param);
 		})
 		
     }

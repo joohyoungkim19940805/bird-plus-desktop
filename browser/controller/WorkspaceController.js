@@ -2,6 +2,7 @@ const path = require('path');
 const axios = require('axios');
 const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
 const log = require('electron-log');
+
 class WorkspaceController {
 	constructor() {
 	}
@@ -10,6 +11,37 @@ class WorkspaceController {
 		return windowUtil.isLogin((result) => {
 			if(result.isLogin){
 				return axios.get(`${__serverApi}/api/workspace/search/my-joined-list?page=${param.page}&size=${param.size}`, {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response=>{
+					return response.data;
+				}).catch(err=>{
+					log.error('error : ', JSON.stringify(err));
+					if(err.response){
+						if( ! err.response.data.content){
+							err.response.data.content = [];
+						}
+						return err.response.data;
+					}else{
+
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	searchNameSpecificList(param = {}){
+		return windowUtil.isLogin((result) => {
+			if(result.isLogin){
+				return axios.get(`${__serverApi}/api/workspace/search/name-specific-list?page=${param.page}&size=${param.size}&workspaceName=${param.workspaceName}`, {
 					headers:{
 						'Content-Type': 'application/json'
 					}
@@ -124,7 +156,7 @@ class WorkspaceController {
 			return undefined;
 		})
 	}
-	giveAdmin(param={}){
+	createGiveAdmin(param={}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
 				param = Object.entries(param).reduce((total, [k,v]) => {
@@ -133,6 +165,7 @@ class WorkspaceController {
 					}
 					return total;
 				},{});
+				console.log(JSON.stringify(param));
 				return axios.post(`${__serverApi}/api/workspace/create/give-admin`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
@@ -178,6 +211,43 @@ class WorkspaceController {
 				}).catch(err=>{
 					log.error('IPC searchWorkspaceInAccount error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	createWorkspaceJoined(param = {}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+					if(v != undefined && v != ''){
+						total[k] = v;
+					}
+					return total;
+				},{});
+				return axios.post(`${__serverApi}/api/workspace/create/joined`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => {
+					return response.data
+				})
+				.catch(err=>{
+					log.error('IPC createPermitWokrspaceInAccount error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+
 					if(err.response){
 						return err.response.data;
 					}else{

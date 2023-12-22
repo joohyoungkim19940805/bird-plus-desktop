@@ -128,17 +128,17 @@ app.whenReady().then(()=>{
 				log.info('accountIpcController');
 				const workspaceIpc = require(path.join(__project_path, 'browser/ipc/WorkspaceIpc.js'));
 				log.info('workspaceIpcController');
-				const chattingIpc = require(path.join(__project_path, 'browser/ipcController/ChattingIpc.js'));
+				const chattingIpc = require(path.join(__project_path, 'browser/ipc/ChattingIpc.js'));
 				log.info('chattingController');
-				const roomIpc = require(path.join(__project_path, 'browser/ipcController/RoomIpc.js'));
+				const roomIpc = require(path.join(__project_path, 'browser/ipc/RoomIpc.js'));
 				log.info('roomController');
-				const eventStreamIpc = require(path.join(__project_path, 'browser/ipcController/EventStreamIpc.js'));
+				const eventStreamIpc = require(path.join(__project_path, 'browser/ipc/EventStreamIpc.js'));
 				log.info('eventStreamIpcController');
-				const noticeBoardIpc = require(path.join(__project_path, 'browser/ipcController/NoticeBoardIpc.js'));
+				const noticeBoardIpc = require(path.join(__project_path, 'browser/ipc/NoticeBoardIpc.js'));
 				log.info('noticeBoardIpccontroller');
-				const apiS3Ipc = require(path.join(__project_path, 'browser/ipcController/ApiS3Ipc.js'));
+				const apiS3Ipc = require(path.join(__project_path, 'browser/ipc/ApiS3Ipc.js'));
 				log.info('apiS3IpcController');
-				const emoticonIpc = require(path.join(__project_path, 'browser/ipcController/EmoticonIpc.js'));
+				const emoticonIpc = require(path.join(__project_path, 'browser/ipc/EmoticonIpc.js'));
 				log.info('emoticonIpcController');
 			}catch(err){
 				log.error(JSON.stringify(err));
@@ -152,11 +152,9 @@ app.whenReady().then(()=>{
 			mainWindow.isOpening = true;
 			
 		});
-		let isCheckUpdate = false;
-		
-		mainWindow.webContents.on('did-finish-load', () => {
-			if(isCheckUpdate) return;
-			autoUpdater.checkForUpdates().then(result=>{
+				
+		//mainWindow.webContents.on('did-finish-load', () => {
+						autoUpdater.checkForUpdates().then(result=>{
 			//autoUpdater.checkForUpdatesAndNotify().then(result => {
 				log.debug('checkForUpdates ::: ',result);
 				mainWindow.webContents.send('checkForUpdates', result)
@@ -192,8 +190,7 @@ app.whenReady().then(()=>{
 				log.debug('update-downloaded', event);
 				mainWindow.webContents.send('updateDownloaded');
 			});
-			isCheckUpdate = true;
-		})
+			//})
 		log.info('create mainWindow');
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 		log.info('create mainTray');
