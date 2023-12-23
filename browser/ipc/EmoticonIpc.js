@@ -9,13 +9,13 @@ class EmoticonIpc {
 	constructor() {
 		this.#initHanlder();
 		ipcMain.handle('createEmotionReaction', async (event, param = {}) => {
-			return emoticonController.createEmotionReaction(event, param);
+			return emoticonController.createEmotionReaction(param);
 		});
         ipcMain.handle('deleteEmoticon', async (event, param = {}) => {
-			return emoticonController.deleteEmoticon(event, param);
+			return emoticonController.deleteEmoticon(param);
 		});
 		ipcMain.handle('getIsReaction', async (event, param = {}) => {
-			return emoticonController.getIsReaction(event, param);
+			return emoticonController.getIsReaction(param);
 		});
     }
 

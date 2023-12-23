@@ -302,56 +302,37 @@ class RoomController {
 			return undefined;
 		})
 	}
-	searchRoomJoinedAccountList(param = {}){
-		
-	}
-	/*
-	searchRoomJoinedAccountList(param = {}){
+	searchRoomJoinedAccountList(param = {}, EventSource, eventSendObj){
+
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
 			log.error(`searchRoomJoinedAccountList roomId is ::: ${param.roomId}`);
 			return undefined;
 		}
+		if( ! EventSource) EventSource = top?.EventSource;
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
-				return axios.get(`${__serverApi}/api/room/search/in-account-list/${param.roomId}`, {
-					headers:{
-						'Content-Type': 'application/json',
-						'Accept': 'text/event-stream',
-					},
-					responseType: 'stream'
-				})
-				.then(windowUtil.responseCheck)
-				.then(response => response.data)
-				.catch(err=>{
-					log.error('IPC searchRoomJoinedAccountList error : ', JSON.stringify(err));
-					//axios.defaults.headers.common['Authorization'] = '';
-					if(err.response){
-						return err.response.data;
-					}else{
-						return err.message
-					}
-				}).then(stream => {
-					let streamEndResolve;
-					let promise = new Promise(res=>{
-						streamEndResolve = res;
-					})
-					stream.on('data', bufferArr => {
-						let str = '[' + String(bufferArr).replace(/data:{/g, '{').split('\n').map(e=>e.trim()).filter(e=>e!='' || e=='data:').join(',') + ']';
-						try{
-							let obj = JSON.parse(str);
-							obj.forEach(e=>{
-								this.#send('roomInAccountAccept', e);
-							})
-						}catch(ignore){
-							console.error(ignore);
-							console.log('str ::: ', str);
+				return new Promise(resolve=>{
+					let source = new EventSource(`${__serverApi}/api/room/search/in-account-list/${param.roomId}`, {
+						headers: {
+							'Authorization' : axios.defaults.headers.common['Authorization'],
+						},
+						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+					});
+					source.onmessage = (event) => {
+						//console.log('test message :::: ',event);
+						let {data, lastEventId, origin, type} = event;
+						data = JSON.parse(data);
+						if(eventSendObj.webEventSend){
+							eventSendObj.webEventSend('roomInAccountAccept', data);
+						}else{
+							eventSendObj.send('roomInAccountAccept', data);
 						}
-					})
-					stream.on('end', () => {
-						log.debug('end searchRoomJoinedAccountList stream ::: ')
-						streamEndResolve();
-					})
-					return promise.then(()=>'done');
+					}
+					source.onerror = (event) => {
+						//console.log('searchRoomJoinedAccountList error :::: ',event);
+						source.close();
+						resolve('done');
+					}
 				})
 			}else{
 				return {'isLogin': false};
@@ -362,7 +343,7 @@ class RoomController {
 			return undefined;
 		})
 	}
-	*/
+	
 	getRoomDetail(param = {}){
 		if( ! param.roomId || isNaN(parseInt(param.roomId))){
 			log.error(`getRoomDetail roomId is ::: ${param.roomId}`);

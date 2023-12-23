@@ -90,6 +90,7 @@ export default class SortBox {
                 -moz-user-select: none;
                 -ms-user-select: none;
                 user-select: none;
+                z-index: 999;
             }
             .sort-box-wrap .sort-box-container {
                 list-style-type: none;

@@ -40,7 +40,7 @@ export default new class Common{
 	 */
 	async getProjectPathPromise(){
 		return await window.myAPI.getProjectPath().then((data) => {
-			return data;
+			return data
 		}).catch(error=>{
 			console.error(error);
 			return '';

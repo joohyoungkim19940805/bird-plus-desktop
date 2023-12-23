@@ -39,8 +39,8 @@ export const simpleOption = new class SimpleOption{
             console.log(accountInfo); // undefined
         })*/
 
-        window.myAPI.getOption('componentOption').then((optionValue) => {
-            this.componentOption = optionValue;
+        window.myAPI.getOption('componentOption').then((option) => {
+            this.componentOption = option?.OPTION_VALUE || 'responsive';
         });
         window.myAPI.event.electronEventTrigger.addElectronEventListener('optionChange', ({name, value}) => {
             if(name == 'componentOption'){

@@ -122,6 +122,27 @@ class WorkspaceController {
 			}
 		});
 	}
+	getWorkspaceInAccountCount(param = {}){
+		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
+			log.error(`workspaceId is ::: ${param.workspaceId}`);
+			return undefined;
+		}
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				return axios.get(`${__serverApi}/api/workspace/search/count/${param.workspaceId}`, {
+					headers: {
+						'Content-Type' : 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => {
+					return response.data.data;
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		});
+	}
 	createPermitWokrspaceInAccount(param = {}){
 		return windowUtil.isLogin( result => {
 			if(result.isLogin){
@@ -165,7 +186,6 @@ class WorkspaceController {
 					}
 					return total;
 				},{});
-				console.log(JSON.stringify(param));
 				return axios.post(`${__serverApi}/api/workspace/create/give-admin`, JSON.stringify(param), {
 					headers:{
 						'Content-Type': 'application/json'
@@ -191,8 +211,46 @@ class WorkspaceController {
 			return undefined;
 		})
 	}
-	searchPermitRequestList(param = {}){
-		
+	searchPermitRequestList(param = {}, EventSource, eventSendObj){
+		if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
+			log.error(`searchPermitRequestList workspaceId is ::: ${param.workspaceId}`);
+			return undefined;
+		}
+		if( ! EventSource) EventSource = top?.EventSource;
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				//return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
+				return new Promise(resolve=>{
+					let source = new EventSource(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
+						headers: {
+							'Authorization' : axios.defaults.headers.common['Authorization'],
+						},
+						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+					});
+					source.onmessage = (event) => {
+						//console.log('test message :::: ',event);
+						let {data, lastEventId, origin, type} = event;
+						data = JSON.parse(data);
+						if(eventSendObj.webEventSend){
+							eventSendObj.webEventSend('workspacePermitRequestAccept', data);
+						}else{
+							eventSendObj.send('workspacePermitRequestAccept', data);
+						}
+					}
+					source.onerror = (event) => {
+						//console.log('searchPermitRequestList error :::: ',event);
+						source.close();
+						resolve('done');
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
 	}
 	getIsAdmin(param = {}){
 		return windowUtil.isLogin( result => {
@@ -209,7 +267,7 @@ class WorkspaceController {
 				.then(response => {
 					return response.data
 				}).catch(err=>{
-					log.error('IPC searchWorkspaceInAccount error : ', JSON.stringify(err));
+					log.error('IPC getIsAdmin error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
@@ -248,6 +306,41 @@ class WorkspaceController {
 					log.error('IPC createPermitWokrspaceInAccount error : ', JSON.stringify(err));
 					//axios.defaults.headers.common['Authorization'] = '';
 
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+
+	createWorkspace(param={}){
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				param = Object.entries(param).reduce((total, [k,v]) => {
+					if(v != undefined && v != ''){
+						total[k] = v;
+					}
+					return total;
+				},{});
+				return axios.post(`${__serverApi}/api/workspace/create/`, JSON.stringify(param), {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC createWorkspace error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
 					if(err.response){
 						return err.response.data;
 					}else{

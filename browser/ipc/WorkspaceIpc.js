@@ -22,7 +22,9 @@ class WorkspaceIpc {
 		ipcMain.handle('getWorkspaceDetail', async (event, param = {}) => {
 			return workspaceController.getWorkspaceDetail(param);
 		})
-
+		ipcMain.handle('getWorkspaceInAccountCount', async(event, param = {}) => {
+			return workspaceController.getWorkspaceInAccountCount(param);
+		})
 		ipcMain.handle('createPermitWokrspaceInAccount', async (event, param = {}) =>{
 			return workspaceController.createPermitWokrspaceInAccount(param);
 		})
@@ -32,40 +34,7 @@ class WorkspaceIpc {
 		})
 
 		ipcMain.handle('searchPermitRequestList', async (event, param) => {
-			if( ! param.workspaceId || isNaN(parseInt(param.workspaceId))){
-				log.error(`searchPermitRequestList workspaceId is ::: ${param.workspaceId}`);
-				return undefined;
-			}
-			return windowUtil.isLogin( result => {
-				if(result.isLogin){
-					//return axios.get(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
-					return new Promise(resolve=>{
-						let source = new EventSource(`${__serverApi}/api/workspace/search/permit-request-list/${param.workspaceId}`, {
-							headers: {
-								'Authorization' : axios.defaults.headers.common['Authorization'],
-							},
-							withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
-						});
-						source.onmessage = (event) => {
-							//console.log('test message :::: ',event);
-							let {data, lastEventId, origin, type} = event;
-							data = JSON.parse(data);
-							mainWindow.send('workspacePermitRequestAccept', data);
-						}
-						source.onerror = (event) => {
-							//console.log('searchPermitRequestList error :::: ',event);
-							source.close();
-							resolve('done');
-						}
-					})
-				}else{
-					return {'isLogin': false};
-				}
-			}).catch(error=>{
-				log.error('error ::: ', error.message)
-				log.error('error stack :::', error.stack)
-				return undefined;
-			})
+			return workspaceController.searchPermitRequestList(param, EventSource, mainWindow);
 		})
 
 		ipcMain.handle('getIsAdmin', async (event, param) => {
@@ -76,6 +45,9 @@ class WorkspaceIpc {
 			return workspaceController.createWorkspaceJoined(param);
 		})
 		
+		ipcMain.handle('createWorkspace', async (event, param) => {
+			return workspaceController.createWorkspace(param);
+		})
     }
 
 }

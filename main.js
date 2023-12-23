@@ -17,6 +17,7 @@ autoUpdater.logger = log
 //autoUpdater.autoDownload = false;
 //log.transports.file.level = 'info'
 //app.disableHardwareAcceleration();
+global.top = undefined;
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(process.env.MY_SERVER_PROFILES == 'local'){

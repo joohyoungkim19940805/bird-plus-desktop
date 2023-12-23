@@ -33,7 +33,8 @@ import {
 	InputPassword,
 	ScrollViewer,
 	Container,
-	TextWrapping
+	TextWrapping,
+	Checkbox
 } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF"
 //import { any } from '@tensorflow/tfjs';
@@ -48,6 +49,23 @@ import common from './../common';
 import HeaderDefault from "./../component/header/HeaderDefault"
 
 window.customElements.define('header-default', HeaderDefault);
+interface WorkspaceListType{
+	accessFilter: Array<string>,
+	isEnabled: boolean,
+	isFinallyPermit: boolean,
+	joinedCount: number,
+	workspaceId: number,
+	workspaceName: string
+}
+interface WorkspaceSearchListType{
+	accessFilter: Array<string>,
+	isEnabled: boolean,
+	isFinallyPermit: boolean,
+	joinedCount: number,
+	id: number,
+	workspaceName: string
+}
+
 new class Workspace3DPageRenderer{
     private canvas : HTMLCanvasElement; 
 	private scene : Scene;
@@ -68,6 +86,28 @@ new class Workspace3DPageRenderer{
 	private z = 0.8905547236474616;
 
 	private isMouseDown = false;
+
+	private lastWorkspaceInfoPromise : Promise<WorkspaceListType | undefined> = (() => {
+		return (window as any).myAPI.getOption('lastRoomInfo').then((option : any)=>{
+			if( ! option) return undefined;
+			let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
+			return (window as any).myAPI.workspace.getWorkspaceDetail({workspaceId: lastRoomInfo.workspaceId}).then((workspace: any) => {
+				//console.log(workspace);
+				return (window as any).myAPI.workspace.getWorkspaceInAccountCount({workspaceId : lastRoomInfo.workspaceId}).then((count : any) => {
+					//console.log(count);
+					let obj : WorkspaceListType = {
+						accessFilter : workspace.accessFilter,
+						isEnabled : workspace.isEnabled,
+						isFinallyPermit : workspace.isFinallyPermit,
+						joinedCount : count,
+						workspaceId : workspace.id,
+						workspaceName : workspace.workspaceName
+					}
+					return obj
+				})
+			})
+		})
+	})();
 	constructor(){
 		this.canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 		this.engine = new Engine(this.canvas, true);
@@ -280,19 +320,19 @@ new class Workspace3DPageRenderer{
 
     async loadChair(){
         let projectPath = await this.projectPath
-        return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "chair.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
+        return SceneLoader.ImportMeshAsync(null, projectPath+"model\\", "chair.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
     async loadDeskLamp(){
         let projectPath = await this.projectPath
-        return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "desk_lamp.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
+        return SceneLoader.ImportMeshAsync(null, projectPath+"model\\", "desk_lamp.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
     async loadComputerTable(){
         let projectPath = await this.projectPath
-        return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "computer_table.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
+        return SceneLoader.ImportMeshAsync(null, projectPath+"model\\", "computer_table.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
     async loadLowPolyFan(){
         let projectPath = await this.projectPath
-        return SceneLoader.ImportMeshAsync(null, projectPath+"view\\model\\", "low_poly_fan.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
+        return SceneLoader.ImportMeshAsync(null, projectPath+"model\\", "low_poly_fan.glb", this.scene, (event: ISceneLoaderProgressEvent)=>{/*LoaderProgress*/})
     }
 
 	createLoginPage(texture : AdvancedDynamicTexture, loginSuccessCallback : Function = ()=>{}){
@@ -367,12 +407,13 @@ new class Workspace3DPageRenderer{
 			statusText.width = '300px', statusText.height = '40px', statusText.color = 'white';
 			//statusText.hoverCursor = 'pointer', statusText.zIndex = 9;
 			console.log(id, password);
-			(window as any).myAPI.account.loginProcessing({accountName: id, password}).then(response=>{
+			(window as any).myAPI.account.loginProcessing({accountName: id, password}).then((response:any)=>{
 				console.log('response',response);
 				let {code} = response;
 				if(code == 0){
 					//(window as any).myAPI.pageChange.changeWokrspacePage();
 					if(loginSuccessCallback) loginSuccessCallback(components);
+					return;
 				}else if(code == 101){
 					statusText.text = '해당 기능에 권한이 없습니다.'
 				}else if(code == 102){
@@ -404,7 +445,7 @@ new class Workspace3DPageRenderer{
 		signUpButton.fontSize = 14, signUpButton.top = '200px', signUpButton.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 		signUpButton.onPointerClickObservable.add(() => {
 			(window as any).myAPI.getServerUrl().then((url : string)=>{
-				console.log(url)
+				//console.log(url)
 				let a = Object.assign(document.createElement('a'), {
 					target: '_blank',
 					href: url
@@ -417,7 +458,8 @@ new class Workspace3DPageRenderer{
 		return components
 	}
 
-	createWorkspaceMyJoinedListPage(texture : AdvancedDynamicTexture){
+	async createWorkspaceMyJoinedListPage(texture : AdvancedDynamicTexture){
+		let lastWorkspaceInfo = await this.lastWorkspaceInfoPromise
 		let page = 0, size = 10, totalElementsCount = 0, componentList : Array<Record<string, Rectangle | TextBlock>> = [];
 		let isContainerEnter = false, isItemEnter = false, isScrollViewEnter = false;
 
@@ -470,9 +512,10 @@ new class Workspace3DPageRenderer{
 			(window as any).myAPI.workspace.searchWorkspaceMyJoined({page, size}).then((result : any = {}) => {
 				console.log(result);
 				//container.height = result.data.totalElements * itemHeight;
-				let list : Array<WorkspaceListType> = result.data.content;
+				
+				let list : Array<WorkspaceListType> = result.data.content.filter( (e : WorkspaceListType) => e.workspaceId != lastWorkspaceInfo?.workspaceId);
 				componentList.push(
-					...list.map((item, i) => createItem(item, i))
+					...list.map((item, i) => createItem(item, componentList.length + i + 1))
 				);
 			})
 		
@@ -503,6 +546,16 @@ new class Workspace3DPageRenderer{
 		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
 		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
 		makeWorkspaceButton.hoverCursor = 'pointer'
+		makeWorkspaceButton.onPointerClickObservable.add(ev=> {
+			[
+				pageLabel, ...componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.itemPanel]), 
+				container, scrollView, makeWorkspaceButton, searchWorkspaceButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createMakeWorkspacePage(texture);
+		})
 		texture.addControl(makeWorkspaceButton);
 		
 		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
@@ -522,15 +575,7 @@ new class Workspace3DPageRenderer{
 		})
 		texture.addControl(searchWorkspaceButton);
 		
-		interface WorkspaceListType{
-			accessFilter: Array<string>,
-			isEnabled: boolean,
-			isFinallyPermit: boolean,
-			joinedCount: number,
-			workspaceId: number,
-			workspaceName: string
-		}
-
+		
 		const createItem = (item : WorkspaceListType, index: number) => {
 			//let num = index + 1;
 			let itemPanel = new Rectangle(`workspaceListItemPanel_${index}`);
@@ -588,17 +633,25 @@ new class Workspace3DPageRenderer{
 			
 			return {itemPanel, workspaceName, workspaceJoinedCount}; 
 		}
+
+		if(lastWorkspaceInfo){
+			let {itemPanel, workspaceName, workspaceJoinedCount} = createItem(lastWorkspaceInfo, 0);
+			itemPanel.height = (parseInt(itemPanel.height as string) * 1.3) + 'px'
+			workspaceName.text = `${lastWorkspaceInfo.workspaceName}\n(Your Last Access)`;
+			componentList.push( {itemPanel, workspaceName, workspaceJoinedCount} )
+		}
+
 		(window as any).myAPI.workspace.searchWorkspaceMyJoined({page, size}).then((result : any = {}) => {
 			console.log(result);
 			totalElementsCount = result.data.totalElements;
 			//container.height = result.data.totalElements * itemHeight;
-			let list : Array<WorkspaceListType> = result.data.content;
+			let list : Array<WorkspaceListType> = result.data.content.filter( (e : WorkspaceListType) => e.workspaceId != lastWorkspaceInfo?.workspaceId);
+				
 			componentList.push(
-				...list.map((item, i) => createItem(item, i))
+				...list.map((item, i) => createItem(item, componentList.length + i + 1))
 			);
 			
 		})
-
 
 	}
 
@@ -627,7 +680,7 @@ new class Workspace3DPageRenderer{
 				(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
 					console.log(result);
 					totalElementsCount = result.data.totalElements;
-					let list : Array<WorkspaceListType> = result.data.content;
+					let list : Array<WorkspaceSearchListType> = result.data.content;
 					componentList.push(
 						...list.map((item, i) => createItem(item, i))
 					);
@@ -652,14 +705,34 @@ new class Workspace3DPageRenderer{
 		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
 		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
 		makeWorkspaceButton.hoverCursor = 'pointer'
+		makeWorkspaceButton.onPointerClickObservable.add(ev=> {
+			[
+				searchInput, ...componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.joinRequestButton, e.itemPanel]), 
+				container, scrollView, makeWorkspaceButton, myWorkspacesButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createMakeWorkspacePage(texture);
+		})
 		texture.addControl(makeWorkspaceButton);
 		
-		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
-		searchWorkspaceButton.top = '235px', searchWorkspaceButton.left = '55px'
-		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
-		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
-		searchWorkspaceButton.hoverCursor = 'pointer'
-		texture.addControl(searchWorkspaceButton);
+		let myWorkspacesButton = Button.CreateSimpleButton('myWorkspacesButton', 'My Workspaces');
+		myWorkspacesButton.top = '235px', myWorkspacesButton.left = '55px'
+		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '35px', myWorkspacesButton.fontSize = '11px';
+		myWorkspacesButton.paddingLeft = '10px', myWorkspacesButton.background = '#5f5f5fd1', myWorkspacesButton.color = 'white';
+		myWorkspacesButton.hoverCursor = 'pointer'
+		myWorkspacesButton.onPointerClickObservable.add(ev=> {
+			[
+				searchInput, ...componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.joinRequestButton, e.itemPanel]), 
+				container, scrollView, makeWorkspaceButton, myWorkspacesButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createWorkspaceMyJoinedListPage(texture);
+		})
+		texture.addControl(myWorkspacesButton);
 
 		let topPanel = new Rectangle('topPanel');
 		topPanel.top = '120px', topPanel.thickness = 0.3
@@ -706,7 +779,7 @@ new class Workspace3DPageRenderer{
 			(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
 				console.log(result);
 				totalElementsCount = result.data.totalElements;
-				let list : Array<WorkspaceListType> = result.data.content;
+				let list : Array<WorkspaceSearchListType> = result.data.content;
 				componentList.push(
 					...list.map((item, i) => createItem(item, i))
 				);
@@ -734,17 +807,7 @@ new class Workspace3DPageRenderer{
 		});
 		scrollView.addControl(container);
 
-
-		interface WorkspaceListType{
-			accessFilter: Array<string>,
-			isEnabled: boolean,
-			isFinallyPermit: boolean,
-			joinedCount: number,
-			id: number,
-			workspaceName: string
-		}
-
-		const createItem = (item : WorkspaceListType, index: number) => {
+		const createItem = (item : WorkspaceSearchListType, index: number) => {
 			//let num = index + 1;
 			let itemPanel = new Rectangle(`workspaceListItemPanel_${index}`);
 			itemPanel.onPointerEnterObservable.add(ev=>{
@@ -823,12 +886,12 @@ new class Workspace3DPageRenderer{
 							}, 2500)
 						}else{
 							(window as any).myAPI.resetWorkspaceId().then(()=>{
-							//	(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
+								(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
 							});
 						}
 					}else if(result.code == 203){
 						(window as any).myAPI.resetWorkspaceId().then(()=>{
-						//	(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
+							(window as any).myAPI.pageChange.changeMainPage({workspaceId: item.id});
 						});
 					}
 					else{
@@ -848,12 +911,260 @@ new class Workspace3DPageRenderer{
 
 			itemPanel.addControl(workspaceName), itemPanel.addControl(workspaceJoinedCount), itemPanel.addControl(joinRequestButton);
 			
-			return {itemPanel, workspaceName, workspaceJoinedCount}; 
+			return {itemPanel, workspaceName, workspaceJoinedCount, joinRequestButton}; 
 		}
  
 	}
 
-	createMakeWorkspacePage(){
+	createMakeWorkspacePage(texture : AdvancedDynamicTexture){
+		let nameInput = new InputText('workspaceNameInput');
+		nameInput.color = 'white', nameInput.fontSize = '15px' 
+		nameInput.placeholderText = 'Your Workspace Name', nameInput.placeholderColor = '#d5d2cab0';
+		nameInput.top = '15px', nameInput.fontWeight = '14px'
+		nameInput.width = 0.23, nameInput.maxWidth = 0.23, nameInput.height = '30px';
+		nameInput.onKeyboardEventProcessedObservable.add((ev) => {
+			if(ev.key == 'Tab'){
+				ev.preventDefault();
+				emailFilterInput.focus();
+			}else if(ev.ctrlKey && ev.key == 'Backspace'){
+				nameInput.text = '';
+			}
+		})
+		nameInput.onFocusObservable.add((ev) => {
+			this.camera.detachControl();
+		});
+		nameInput.onBlurObservable.add(() => {
+			this.camera.attachControl(this.canvas, true);
+		});
+		texture.addControl(nameInput)
+
+		let emailFilterInput = new InputText('workspaceEmailFilter');
+		emailFilterInput.color = 'white', emailFilterInput.fontSize = '15px' 
+		emailFilterInput.placeholderText = 'Access Email Filter', emailFilterInput.placeholderColor = '#d5d2cab0';
+		emailFilterInput.top = '60px', emailFilterInput.left = "-25px", emailFilterInput.fontWeight = '14px'
+		emailFilterInput.width = 0.18, emailFilterInput.maxWidth = 0.18, emailFilterInput.height = '30px';
+		emailFilterInput.onKeyboardEventProcessedObservable.add((ev) => {
+			if(ev.key == 'Tab'){
+				ev.preventDefault();
+				nameInput.focus();
+			}else if(ev.key == 'Enter'){
+				emailFilterAddButton.onPointerClickObservable.observers.forEach( e => {
+					(e as any).callback();
+				})
+			}else if(ev.ctrlKey && ev.key == 'Backspace'){
+				emailFilterInput.text = '';
+			}
+		})
+		emailFilterInput.onFocusObservable.add((ev) => {
+			this.camera.detachControl();
+		});
+		emailFilterInput.onBlurObservable.add(() => {
+			this.camera.attachControl(this.canvas, true);
+		});
+		texture.addControl(emailFilterInput)
+
+		let emailFilterAddButton = Button.CreateSimpleButton('emailFilterAddButton', 'Add');
+		emailFilterAddButton.top = '61px', emailFilterAddButton.left = "92.5px", emailFilterAddButton.color = 'white';
+		emailFilterAddButton.thickness = 0, emailFilterAddButton.height = '36.5px', emailFilterAddButton.width = '52.5px';
+		emailFilterAddButton.hoverCursor = 'pointer', emailFilterAddButton.fontWeight = '10px',	emailFilterAddButton.fontSize = 14
+		emailFilterAddButton.paddingTop = 3, emailFilterAddButton.paddingBottom = 3, emailFilterAddButton.background = '#5f5f5fd1'; 
+		texture.addControl(emailFilterAddButton)
+		
+		let workspaceEmailList : Array<any> = [];
+		let workspaceEmailListTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+		let emailListTopPanel = new Rectangle('emailListTopPanel');
+		emailListTopPanel.thickness = 0, emailListTopPanel.width = 0.26, emailListTopPanel.height = 0.16;
+		emailListTopPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+		emailListTopPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		workspaceEmailListTexture.addControl(emailListTopPanel);
+
+		let workspaceEmailListView = new ScrollViewer('workspaceEmailListView');
+		workspaceEmailListView.width = '100%'; workspaceEmailListView.height = '100%';
+		workspaceEmailListView.barSize = 15, workspaceEmailListView.thickness = 0;
+		workspaceEmailListView.background = 'black', workspaceEmailListView.isVisible = false;
+		emailListTopPanel.addControl(workspaceEmailListView);
+		let workspaceEmailFilterContainer = new StackPanel('workspaceEmailFilterContainer');
+		workspaceEmailFilterContainer.alpha = 0.65;
+		workspaceEmailListView.addControl(workspaceEmailFilterContainer);
+		
+		emailFilterAddButton.onPointerClickObservable.add(ev=>{
+
+			let checkEmail = emailFilterInput.text.split('@');
+			let checkText : string | undefined;
+			let emailText = '@' + checkEmail[1];
+			if(checkEmail.length == 1){
+				checkText = "이메일 주소에 '@'를 포함해 주세요. 'email'에 '@'가 없습니다."
+			}else if(checkEmail.length > 2){
+				checkText = "'@' 다음 부분에 '@' 기호가 포함되면 안됩니다.";
+			}else if(checkEmail[1] == ''){
+				checkText = "'@' 뒷 부분을 입력해 주세요. 'awe@'(이)가 완전하지 않습니다.";
+			}else if( workspaceEmailList.some(e=>e.email.text == emailText) ){
+				emailFilterInput.text = '';
+				emailFilterInput.focus();
+				return;
+			}
+			if(checkText){
+				let statusTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+				let statusPanel = new StackPanel();
+				statusPanel.background = '#5f5f5fd1'; //statusPanel.color = '#5f5f5fd1';
+				statusPanel.width = '550px', statusPanel.hoverCursor = 'pointer'
+				statusPanel.onPointerClickObservable.add(()=>statusPanel.dispose());
+				let statusText = new TextBlock();
+				statusText.width = '550px', statusText.height = '40px', statusText.color = 'white';
+				statusText.text = checkText;
+				statusPanel.addControl(statusText);
+				statusTexture.addControl(statusPanel);
+				setTimeout(()=>{
+					statusPanel.removeControl(statusText);
+					statusTexture.removeControl(statusPanel);
+					statusText.dispose();
+					statusPanel.dispose();
+					statusTexture.dispose();
+				}, 1500)
+				emailFilterInput.focus();
+				return;
+			}
+
+			if( ! workspaceEmailListView.isVisible) workspaceEmailListView.isVisible = true;
+			emailFilterInput.text = '';
+			let parent = new Rectangle(`emailParent_${workspaceEmailList.length}`);
+			parent.thickness = 0.3, parent.left = '4px', parent.width = '90%';
+			parent.height = '30px', parent.background = "black";
+			parent.alpha = 0.8, parent.thickness = 0.2, parent.paddingBottom = 5
+			workspaceEmailFilterContainer.addControl(parent);
+			let email = new TextBlock(`email_${workspaceEmailList.length}`);
+			//email.paddingLeft = 10, email.top = (60 * workspaceEmailList.length) + 'px'
+			email.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			email.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER
+			email.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+			email.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+			email.text = emailText, email.color = 'white';
+			parent.addControl(email);
+
+			let deleteButton = Button.CreateSimpleButton('emailDelete', 'X');
+			deleteButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT, deleteButton.paddingRight = 1;
+			deleteButton.width = '20px', deleteButton.height = '100%';
+			deleteButton.color = 'white', deleteButton.fontSize = '15px', deleteButton.fontWeight = '10px';
+			deleteButton.onPointerClickObservable.add(ev=>{
+				[deleteButton, email].forEach(e=>{
+					parent.removeControl(e);
+					e.dispose();
+				})
+				workspaceEmailFilterContainer.removeControl(parent);
+				parent.dispose();
+				workspaceEmailList.splice(workspaceEmailList.findIndex(e=>e.deleteButton == deleteButton), 1);
+				if(workspaceEmailList.length == 0){
+					workspaceEmailListView.isVisible = false;
+				}
+			})
+			parent.addControl(deleteButton);			
+
+			workspaceEmailList.push({parent, email, deleteButton});
+			emailFilterInput.focus();
+		})
+
+		let emailFilterDescription = new TextBlock('emailFilterDescription');
+		emailFilterDescription.color = 'white', emailFilterDescription.fontSize = '13px'
+		emailFilterDescription.top = '90px', emailFilterDescription.text = 'if nothing selected, anyone can access';
+		emailFilterDescription.width = '230px', emailFilterDescription.height = '50px';
+		emailFilterDescription.textWrapping = TextWrapping.WordWrap;
+		texture.addControl(emailFilterDescription);
+
+		let workspacePermitDescription = Button.CreateSimpleButton('workspacePermitDescription', 'access is ultimately do permit by admin');
+		workspacePermitDescription.color = '#d5d2cab0', workspacePermitDescription.fontSize = '8px' 
+		workspacePermitDescription.top = '130px', workspacePermitDescription.fontWeight = '10px'
+		workspacePermitDescription.width = 0.23, workspacePermitDescription.height = '50px';
+		workspacePermitDescription.thickness = 1;
+		workspacePermitDescription.onPointerClickObservable.add(ev=>{
+			workspacePermitCheckBox.isChecked = ! workspacePermitCheckBox.isChecked;
+		})
+		texture.addControl(workspacePermitDescription);
+
+		let workspacePermitCheckBox = new Checkbox('workspacePermitCheckBox');
+		workspacePermitCheckBox.top = '140px', workspacePermitCheckBox.left = '80px';
+		workspacePermitCheckBox.width = '20px', workspacePermitCheckBox.height = '20px';
+		workspacePermitCheckBox.color = 'pink', workspacePermitCheckBox.isChecked = false, workspacePermitCheckBox.isEnabled = true;
+		workspacePermitCheckBox.background = 'white', workspacePermitCheckBox.hoverCursor = 'pointer';
+		texture.addControl(workspacePermitCheckBox);
+
+		let createWorkspaceButton = Button.CreateSimpleButton('createWorkspaceButton', 'Create Workspace');
+		createWorkspaceButton.top = '185px', createWorkspaceButton.color = 'white';
+		createWorkspaceButton.thickness = 1, createWorkspaceButton.height = '40px', createWorkspaceButton.width = 0.18;
+		createWorkspaceButton.hoverCursor = 'pointer', createWorkspaceButton.fontWeight = '3px', createWorkspaceButton.fontSize = '11px'
+		createWorkspaceButton.paddingTop = 3, createWorkspaceButton.paddingBottom = 3, createWorkspaceButton.background = '#5f5f5fd1'; 
+		createWorkspaceButton.onPointerClickObservable.add(ev=>{
+			(window as any).myAPI.workspace.createWorkspace({
+				workspaceName : nameInput.text,
+				accessFilter : workspaceEmailList.map(e=>e.email.text),
+				isFinallyPermit : workspacePermitCheckBox.isChecked
+			}).then( (e : any) => {
+				//console.log(e, e.id);
+				(window as any).myAPI.resetWorkspaceId().then(()=>{
+					(window as any).myAPI.pageChange.changeMainPage({workspaceId: e.data.id});
+				});
+			})
+		})
+		texture.addControl(createWorkspaceButton);
+
+		let myWorkspacesButton = Button.CreateSimpleButton('myWorkspacesButton', 'My Workspaces');
+		myWorkspacesButton.top = '237px', myWorkspacesButton.left = '-75px'
+		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '35px', myWorkspacesButton.fontSize = '11px';
+		myWorkspacesButton.paddingLeft = '10px', myWorkspacesButton.background = '#5f5f5fd1', myWorkspacesButton.color = 'white';
+		myWorkspacesButton.hoverCursor = 'pointer'
+		myWorkspacesButton.onPointerClickObservable.add(ev=>{
+			workspaceEmailList.forEach(e=>{
+				[e.deleteButton, e.email].forEach( ee =>{
+					e.parent.removeControl(ee);
+					ee.dispose();
+				})
+				workspaceEmailFilterContainer.removeControl(e.parent);
+				e.parent.dispose();
+			});
+			[workspaceEmailFilterContainer, workspaceEmailListView, emailListTopPanel].forEach(e=>{
+				workspaceEmailListTexture.removeControl(e);
+				e.dispose();
+			});
+			workspaceEmailListTexture.dispose();
+			[ 	
+				nameInput, emailFilterInput, emailFilterAddButton, emailFilterDescription, workspacePermitDescription, 
+				workspacePermitCheckBox, createWorkspaceButton, myWorkspacesButton, searchWorkspaceButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createWorkspaceMyJoinedListPage(texture);
+		})
+		texture.addControl(myWorkspacesButton);
+
+		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
+		searchWorkspaceButton.top = '237px', searchWorkspaceButton.left = '65px'
+		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
+		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
+		searchWorkspaceButton.hoverCursor = 'pointer'
+		searchWorkspaceButton.onPointerClickObservable.add(ev=>{
+			workspaceEmailList.forEach(e=>{
+				[e.deleteButton, e.email].forEach( ee =>{
+					e.parent.removeControl(ee);
+					ee.dispose();
+				})
+				workspaceEmailFilterContainer.removeControl(e.parent);
+				e.parent.dispose();
+			});
+			[workspaceEmailFilterContainer, workspaceEmailListView, emailListTopPanel].forEach(e=>{
+				workspaceEmailListTexture.removeControl(e);
+				e.dispose();
+			});
+			workspaceEmailListTexture.dispose();
+			[ 	
+				nameInput, emailFilterInput, emailFilterAddButton, emailFilterDescription, workspacePermitDescription, 
+				workspacePermitCheckBox, createWorkspaceButton, myWorkspacesButton, searchWorkspaceButton
+			].forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			this.createSearchAntherWorkspacePage(texture);
+		})
+		texture.addControl(searchWorkspaceButton);
 
 	}
 

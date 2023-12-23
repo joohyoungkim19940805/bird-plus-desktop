@@ -163,7 +163,8 @@ export default class FontFamilyBox {
 				-webkit-user-select:none;
 				-moz-user-select:none;
 				-ms-user-select:none;
-				user-select:none
+				user-select:none;
+                z-index: 999;
             }
             .font-box-wrap .font-box-container{
                 list-style-type: none;

@@ -80,7 +80,7 @@ new class WorkspacePageRenderer{
 				});
 				common.getProjectPathPromise().then(path => {
 					let img = Object.assign(document.createElement('img'),{
-						src: `${path}view\\image\\user.png`,
+						src: `${path}image\\user.png`,
 						width: 30
 					})
 					li.querySelector('.workspace_list_container').prepend(img);

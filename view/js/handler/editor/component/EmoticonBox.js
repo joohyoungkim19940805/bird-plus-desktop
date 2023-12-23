@@ -223,7 +223,7 @@ export default class EmoticonBox{
                 justify-content: space-around;
                 align-items: center;
                 justify-items: center;
-                z-index: 9999;
+                z-index: 999;
                 flex-direction: column;
             }
             .emoticon-box-wrap .emoticon-box-search-container{

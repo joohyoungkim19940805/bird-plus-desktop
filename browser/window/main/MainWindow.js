@@ -145,12 +145,18 @@ class MainWindow extends BrowserWindow{
 		});
 
 		ipcMain.handle('getOption', async (event, optionName) => {
-			return birdPlusOptions.optionLoadEnd.then(()=> birdPlusOptions[optionName]);
+			return birdPlusOptions.optionLoadEnd.then(()=> 
+				birdPlusOptions.getOption(optionName)
+			);
 		})
 		ipcMain.on('setOption', async (event, param) => {
 			birdPlusOptions.optionLoadEnd.then(()=> {
 				let {name, value} = param;
 				birdPlusOptions[name] = value;
+				birdPlusOptions.setOption = new OptionTemplate({
+					optionName : name,
+					optionValue : value
+				})
 				mainWindow.webContents.send('optionChange', {name, value});
 				Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
 					if(v.isDestroyed()){

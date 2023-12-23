@@ -587,7 +587,7 @@ export default new class ChattingInfo{
                 className: 'chatting_content_description_wrapper',
                 innerHTML: `
                     <div class="chatting_content_description_profile">
-                        <img src="${(await common.getProjectPathPromise())}view/image/user.png"/>
+                        <img src="${(await common.getProjectPathPromise())}image/user.png"/>
                     </div>
                     <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">

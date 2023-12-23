@@ -103,108 +103,110 @@ contextBridge.exposeInMainWorld('myAPI', {
 	 * event.electronEventTrigger은 일렉트론 + 웹이 함께써야 하는 부분이 있어 예외입니다.
 	 */
 
-	scanningUserDirectory : () => ipcRenderer.send('scanningUserDirectory'),
+	scanningUserDirectory : async () => ipcRenderer.send('scanningUserDirectory'),
 	
-	getProjectPath : () => ipcRenderer.invoke('getProjectPath'),
+	getProjectPath : async () => ipcRenderer.invoke('getProjectPath').then(data=>data + '/view/'),
 
-	createSubWindow : (param) => ipcRenderer.send('createSubWindow', param), 
+	createSubWindow : async (param) => ipcRenderer.send('createSubWindow', param), 
 
-	closeRequest : (param) => ipcRenderer.send('closeRequest'),
+	closeRequest : async (param) => ipcRenderer.send('closeRequest'),
 	
-	maximizeRequest : () => ipcRenderer.send('maximizeRequest'),
+	maximizeRequest : async () => ipcRenderer.send('maximizeRequest'),
 
-	unmaximizeRequest : () => ipcRenderer.send('unmaximizeRequest'),
+	unmaximizeRequest : async () => ipcRenderer.send('unmaximizeRequest'),
 	
-	minimizeRequest : () => ipcRenderer.send('minimizeRequest'),
+	minimizeRequest : async () => ipcRenderer.send('minimizeRequest'),
 	
-	restoreRequest : () => ipcRenderer.send('restoreRequest'),
+	restoreRequest : async () => ipcRenderer.send('restoreRequest'),
 	
-	isMaximize : () => ipcRenderer.invoke('isMaximize'),
+	isMaximize : async () => ipcRenderer.invoke('isMaximize'),
 
-	resetWorkspaceId: () => ipcRenderer.invoke('resetWorkspaceId'),
+	resetWorkspaceId: async () => ipcRenderer.invoke('resetWorkspaceId'),
 
-	getWorkspaceId: () => ipcRenderer.invoke('getWorkspaceId'),
+	getWorkspaceId: async () => ipcRenderer.invoke('getWorkspaceId'),
 
-	notifications: (param) => ipcRenderer.send('notifications', param),
+	notifications: async (param) => ipcRenderer.send('notifications', param),
 
-	getOption: (optionName) => ipcRenderer.invoke('getOption', optionName),
-	setOption: (param) => ipcRenderer.send('setOption', param),
+	getOption: async (optionName) => ipcRenderer.invoke('getOption', optionName),
+	setOption: async (param) => ipcRenderer.send('setOption', param),
 
-	isLogin: () => ipcRenderer.invoke('isLogin'),
+	isLogin: async () => ipcRenderer.invoke('isLogin'),
 
-	getServerUrl : () => ipcRenderer.invoke('getServerUrl'),
+	getServerUrl : async () => ipcRenderer.invoke('getServerUrl'),
 
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},
 
 	stream : {
-		initWorkspaceStream : (param) => ipcRenderer.send('initWorkspaceStream', param),
+		initWorkspaceStream : async (param) => ipcRenderer.send('initWorkspaceStream', param),
 	},
 
 	pageChange : {
-		changeLoginPage : () => ipcRenderer.send('changeLoginPage'),
-		changeWokrspacePage : () => ipcRenderer.send('changeWokrspacePage'),
-		changeMainPage : (workspaceId) => ipcRenderer.send('changeMainPage', workspaceId),
+		changeLoginPage : async () => ipcRenderer.send('changeLoginPage'),
+		changeWokrspacePage : async () => ipcRenderer.send('changeWokrspacePage'),
+		changeMainPage : async (workspaceId) => ipcRenderer.send('changeMainPage', workspaceId),
 	},
 
 	account : {
-		loginProcessing : (param) => ipcRenderer.invoke('loginProcessing', param),
-		getAccountInfo : () => ipcRenderer.invoke('getAccountInfo'),
-		updateSimpleAccountInfo : (param) => ipcRenderer.invoke('updateSimpleAccountInfo', param)
+		loginProcessing : async (param) => ipcRenderer.invoke('loginProcessing', param),
+		getAccountInfo : async () => ipcRenderer.invoke('getAccountInfo'),
+		updateSimpleAccountInfo : async (param) => ipcRenderer.invoke('updateSimpleAccountInfo', param)
 	},
 
 	chatting : {
-		sendChatting : (param) => ipcRenderer.invoke('sendChatting', param),
-		deleteChatting : (param) => ipcRenderer.invoke('deleteChatting', param),
-		searchChattingList : (param) => ipcRenderer.invoke('searchChattingList', param),
+		sendChatting : async (param) => ipcRenderer.invoke('sendChatting', param),
+		deleteChatting : async (param) => ipcRenderer.invoke('deleteChatting', param),
+		searchChattingList : async (param) => ipcRenderer.invoke('searchChattingList', param),
 	},
 	
 	workspace : {
-		searchWorkspaceMyJoined : (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
-		searchNameSpecificList: (param) => ipcRenderer.invoke('searchNameSpecificList', param),
-		searchWorkspaceInAccount : (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
-		getWorkspaceDetail : (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
-		createPermitWokrspaceInAccount: (param) => ipcRenderer.invoke('createPermitWokrspaceInAccount', param),
-		createGiveAdmin : (param) => ipcRenderer.invoke('createGiveAdmin', param),
-		searchPermitRequestList : (param) => ipcRenderer.invoke('searchPermitRequestList', param),
-		getIsAdmin : (param) => ipcRenderer.invoke('getIsAdmin', param),
-		createWorkspaceJoined: (param) => ipcRenderer.invoke('createWorkspaceJoined', param),
+		searchWorkspaceMyJoined : async (param) => ipcRenderer.invoke('searchWorkspaceMyJoined', param),
+		searchNameSpecificList: async (param) => ipcRenderer.invoke('searchNameSpecificList', param),
+		searchWorkspaceInAccount : async (param) => ipcRenderer.invoke('searchWorkspaceInAccount', param),
+		getWorkspaceDetail : async (param) => ipcRenderer.invoke('getWorkspaceDetail', param),
+		createPermitWokrspaceInAccount: async (param) => ipcRenderer.invoke('createPermitWokrspaceInAccount', param),
+		createGiveAdmin : async (param) => ipcRenderer.invoke('createGiveAdmin', param),
+		searchPermitRequestList : async (param) => ipcRenderer.invoke('searchPermitRequestList', param),
+		getIsAdmin : async (param) => ipcRenderer.invoke('getIsAdmin', param),
+		createWorkspaceJoined: async (param) => ipcRenderer.invoke('createWorkspaceJoined', param),
+		createWorkspace : async (param) => ipcRenderer.invoke('createWorkspace', param),
+		getWorkspaceInAccountCount : async (param) => ipcRenderer.invoke('getWorkspaceInAccountCount', param),
 	},
 
 	room : {
-		createRoom : (param) => ipcRenderer.invoke('createRoom', param),
-		createMySelfRoom : (param)=> ipcRenderer.invoke('createMySelfRoom', param),
-		createRoomInAccount : (param) => ipcRenderer.invoke('createRoomInAccount', param),
-		createRoomFavorites : (param) => ipcRenderer.invoke('createRoomFavorites', param),
-		updateRoomInAccoutOrder : (param) => ipcRenderer.invoke('updateRoomInAccoutOrder', param),
-		updateRoomFavorites : (param) => ipcRenderer.invoke('updateRoomFavorites', param),
-		searchRoom : (param) => ipcRenderer.invoke('searchRoom', param),
-		searchMyJoinedRoomList : (param) => ipcRenderer.invoke('searchMyJoinedRoomList', param),
-		searchRoomFavoritesList : (param) => ipcRenderer.invoke('searchRoomFavoritesList', param),
-		searchRoomJoinedAccountList : (param) => ipcRenderer.invoke('searchRoomJoinedAccountList', param),
-		getRoomDetail : (param) => ipcRenderer.invoke('getRoomDetail', param),
-		isRoomFavorites : (param) => ipcRenderer.invoke('isRoomFavorites', param)
+		createRoom : async (param) => ipcRenderer.invoke('createRoom', param),
+		createMySelfRoom : async (param)=> ipcRenderer.invoke('createMySelfRoom', param),
+		createRoomInAccount : async (param) => ipcRenderer.invoke('createRoomInAccount', param),
+		createRoomFavorites : async (param) => ipcRenderer.invoke('createRoomFavorites', param),
+		updateRoomInAccoutOrder : async (param) => ipcRenderer.invoke('updateRoomInAccoutOrder', param),
+		updateRoomFavorites : async (param) => ipcRenderer.invoke('updateRoomFavorites', param),
+		searchRoom : async (param) => ipcRenderer.invoke('searchRoom', param),
+		searchMyJoinedRoomList : async (param) => ipcRenderer.invoke('searchMyJoinedRoomList', param),
+		searchRoomFavoritesList : async (param) => ipcRenderer.invoke('searchRoomFavoritesList', param),
+		searchRoomJoinedAccountList : async (param) => ipcRenderer.invoke('searchRoomJoinedAccountList', param),
+		getRoomDetail : async (param) => ipcRenderer.invoke('getRoomDetail', param),
+		isRoomFavorites : async (param) => ipcRenderer.invoke('isRoomFavorites', param)
 	},
 
 	noticeBoard : {
-		createNoticeBoard : (param) => ipcRenderer.invoke('createNoticeBoard', param),
-		createNoticeBoardGroup : (param) => ipcRenderer.invoke('createNoticeBoardGroup', param),
-		createNoticeBoardDetail : (param) => ipcRenderer.invoke('createNoticeBoardDetail', param),
-		deleteNoticeBoard : (param) => ipcRenderer.invoke('deleteNoticeBoard', param),
-		deleteNoticeBoardGroup : (param) => ipcRenderer.invoke('deleteNoticeBoardGroup', param),
-		updateNoticeBoardOrder : (param) => ipcRenderer.invoke('updateNoticeBoardOrder', param),
-		updateNoticeBoardDetailOrder : (param) => ipcRenderer.invoke('updateNoticeBoardDetailOrder', param),
-		searchNoticeBoardList : (param) => ipcRenderer.invoke('searchNoticeBoardList', param),
-		searchNoticeBoardDetailList : (param) => ipcRenderer.invoke('searchNoticeBoardDetailList', param),
+		createNoticeBoard : async (param) => ipcRenderer.invoke('createNoticeBoard', param),
+		createNoticeBoardGroup : async (param) => ipcRenderer.invoke('createNoticeBoardGroup', param),
+		createNoticeBoardDetail : async (param) => ipcRenderer.invoke('createNoticeBoardDetail', param),
+		deleteNoticeBoard : async (param) => ipcRenderer.invoke('deleteNoticeBoard', param),
+		deleteNoticeBoardGroup : async (param) => ipcRenderer.invoke('deleteNoticeBoardGroup', param),
+		updateNoticeBoardOrder : async (param) => ipcRenderer.invoke('updateNoticeBoardOrder', param),
+		updateNoticeBoardDetailOrder : async (param) => ipcRenderer.invoke('updateNoticeBoardDetailOrder', param),
+		searchNoticeBoardList : async (param) => ipcRenderer.invoke('searchNoticeBoardList', param),
+		searchNoticeBoardDetailList : async (param) => ipcRenderer.invoke('searchNoticeBoardDetailList', param),
 	},
 	s3: {
-		generatePutObjectPresignedUrl : (param) => ipcRenderer.invoke('generatePutObjectPresignedUrl', param),
-		generateGetObjectPresignedUrl : (param) => ipcRenderer.invoke('generateGetObjectPresignedUrl', param),
+		generatePutObjectPresignedUrl : async (param) => ipcRenderer.invoke('generatePutObjectPresignedUrl', param),
+		generateGetObjectPresignedUrl : async (param) => ipcRenderer.invoke('generateGetObjectPresignedUrl', param),
 	},
 	emoticon: {
-		createEmotionReaction : (param) => ipcRenderer.invoke('createEmotionReaction', param),
-		getIsReaction : (param) => ipcRenderer.invoke('getIsReaction', param)
+		createEmotionReaction : async (param) => ipcRenderer.invoke('createEmotionReaction', param),
+		getIsReaction : async (param) => ipcRenderer.invoke('getIsReaction', param)
 	}
 
 })

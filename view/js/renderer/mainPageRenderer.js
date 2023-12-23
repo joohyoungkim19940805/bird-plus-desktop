@@ -383,10 +383,21 @@ window.addEventListener("DOMContentLoaded", (event) => {
 			name: 'mainPageRenderer',
 			callBack : () => {
 				window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
-					console.log(result.data.id);
+					console.log(result);
 					// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)
 					if(result.code == 0){
-						roomHandler.roomId = result.data.id;
+						window.myAPI.getOption('lastRoomInfo').then(option=>{
+							if( ! option){
+								roomHandler.roomId = result.data.id;
+								return;
+							}
+							let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
+							if(lastRoomInfo.workspaceId != workspaceId){
+								roomHandler.roomId = result.data.id;
+								return;
+							}
+							roomHandler.roomId = lastRoomInfo.id;
+						})
 					}
 				})
 			},

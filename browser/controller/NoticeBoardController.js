@@ -112,12 +112,93 @@ class NoticeBoardController {
 			return undefined;
 		})
     }
-    searchNoticeBoardList(param = {}){
-       
+    searchNoticeBoardList(param = {}, EventSource, eventSendObj){
+        if( ! EventSource) EventSource = top?.EventSource;
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                let {workspaceId, roomId} = param;
+                let queryString = Object.entries(param)
+                    .filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId')
+                    .map(([k,v]) => `${k}=${v}`).join('&')
+                    //console.log('queryString ::: ', queryString);
+                //return axios.get(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
+                return new Promise(resolve=>{
+                    let source = new EventSource(`${__serverApi}/api/notice-board/search/notice-board-list/${workspaceId}/${roomId}?${queryString}`, {
+                        headers: {
+                            'Authorization' : axios.defaults.headers.common['Authorization'],
+                        },
+                        withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+                    });
+                    source.onmessage = (event) => {
+                        //console.log('test message :::: ',event);
+                        let {data, lastEventId, origin, type} = event;
+                        data = JSON.parse(data);
+                        if(eventSendObj.webEventSend){
+							eventSendObj.webEventSend('noticeBoardAccept', data);
+						}else{
+							eventSendObj.send('noticeBoardAccept', data);
+						}
+                    }
+                    source.onerror = (event) => {
+                        //console.log('searchNoticeBoardList error :::: ',event);
+                        source.close();
+                        resolve('done');
+                    }
+                })
+            }else{
+                return {'isLogin': false};
+            }
+        }).catch(error=>{
+            log.error('error ::: ', error.message)
+            log.error('error stack :::', error.stack)
+            return undefined;
+        });
     }
 
-    searchNoticeBoardDetailList(param = {}){
-        
+    searchNoticeBoardDetailList(param = {}, EventSource, eventSendObj){
+        if( ! EventSource) EventSource = top?.EventSource;
+        return windowUtil.isLogin( result => {
+            if(result.isLogin){
+                let {workspaceId, roomId, noticeBoardId} = param;
+                if(! noticeBoardId){
+                    return;
+                }
+                let queryString = Object.entries(param)
+                    .filter(([k,v]) => v != undefined && v != '' && k != 'workspaceId' && k != 'roomId' && k != 'noticeBoardId')
+                    .map(([k,v]) => `${k}=${v}`).join('&')
+                    //console.log('queryString ::: ', queryString);
+                //return axios.get(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
+                return new Promise(resolve=>{
+                    let source = new EventSource(`${__serverApi}/api/notice-board/search/notice-board-detail-list/${workspaceId}/${roomId}/${noticeBoardId}?${queryString}`, {
+                        headers: {
+                            'Authorization' : axios.defaults.headers.common['Authorization'],
+                        },
+                        withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+                    });
+                    source.onmessage = (event) => {
+                        //console.log('test message :::: ',event);
+                        let {data, lastEventId, origin, type} = event;
+                        data = JSON.parse(data);
+                        if(eventSendObj.webEventSend){
+							eventSendObj.webEventSend('noticeBoardDetailAccept', data);
+						}else{
+							eventSendObj.send('noticeBoardDetailAccept', data);
+						}
+                    }
+                    source.onerror = (event) => {
+                        console.log('searchNoticeBoardDetailList error :::: ',event);
+                        source.close();
+                        resolve('done');
+                    }
+                })
+            }else{
+                return {'isLogin': false};
+            }
+        }).catch(error=>{
+            log.error('error ::: ', error.message)
+            log.error('error stack :::', error.stack)
+            return undefined;
+        });
     }
 
     deleteNoticeBoard(param = {}){

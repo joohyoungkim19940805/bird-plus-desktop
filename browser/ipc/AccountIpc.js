@@ -14,7 +14,6 @@ class AccountIpc {
 			return accountController.loginProcessing(param).then(response => {
 				let status = response.status;
 				let {data} = response;
-				console.log('response',response);
 				if((status == '200' || status == '201') && data.code == 0){
 					let db = DBConfig.getDB();
 					db.serialize( () => {

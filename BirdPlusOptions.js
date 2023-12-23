@@ -27,8 +27,8 @@ class OptionTemplate{
 	constructor({optionName, optionValue, createAt = new Date().getTime(), updateAt = new Date().getTime()} = {}){
 		this.#optionName = optionName;
 		this.#optionValue = optionValue;
-		this.#createAt = createAt;
-		this.#updateAt = updateAt;
+		this.#createAt = createAt || new Date().getTime();
+		this.#updateAt = updateAt || new Date().getTime();
 	}
 	set optionName(optionName){this.#optionName = optionName}
 	get optionName(){return this.#optionName}
@@ -77,13 +77,23 @@ const birdPlusOptions = new class BirdPlusOptions{
 				}
 				//console.log('rows>>>',rows);
 				rows.forEach(e=>{
-					if(e.OPTION_NAME == 'size' || e.OPTION_NAME == 'position'){
+					let firstChar = e.OPTION_VALUE.charAt(0);
+					let lastChar = e.OPTION_VALUE.charAt(e.OPTION_VALUE.length - 1);
+					if( 
+						(firstChar == '{' && lastChar == '}') || 
+						(firstChar == '[' && lastChar == ']')
+					){
 						this[e.OPTION_NAME] = JSON.parse(e.OPTION_VALUE)
 					}else {
 						this[e.OPTION_NAME] = e.OPTION_VALUE;
 					}
 				})
 				this.#optionLoadEndResolve();
+				db.close((err)=>{
+					if(err){
+						log.error(err.message);
+					}
+				})
 			})
 		})
 		/*db.serialize(() => {
@@ -330,13 +340,13 @@ const birdPlusOptions = new class BirdPlusOptions{
 					(
 						'${option.optionName}',
 						'${option.optionValue}',
-						${option.createAt},
-						${option.updateAt}
+						${option.createAt || new Date().getTime()},
+						${option.updateAt || new Date().getTime()}
 					)
 				ON CONFLICT (OPTION_NAME)
 				DO UPDATE SET	
 					OPTION_VALUE = '${option.optionValue}',
-					UPDATE_AT = ${option.updateAt}
+					UPDATE_AT = ${option.updateAt || new Date().getTime()}
 			`, (err) => {
 				if(err){
 					log.error(err);
@@ -349,7 +359,36 @@ const birdPlusOptions = new class BirdPlusOptions{
 			})
 		})
 	}
-
+	getOption(optionName){
+		return new Promise((resolve, reject)=>{
+			let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READONLY)
+			db.serialize(() => {
+				db.all(`
+					SELECT
+						OPTION_NAME,
+						OPTION_VALUE,
+						CREATE_AT,
+						UPDATE_AT
+					FROM
+						BIRD_PLUS_OPTIONS
+					WHERE
+						OPTION_NAME = '${optionName}'
+				`, [], (err, rows) => {
+					if(err){
+						log.error('getOptuon error', err);
+						reject(err);
+					}
+					resolve(rows[0])
+					db.close((err)=>{
+						if(err){
+							log.error(err.message);
+						}
+					})
+				})
+			})
+		})
+	}
+	
 }
 
 module.exports = {

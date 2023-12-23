@@ -34,6 +34,9 @@ export default new class RoomHandler{
         this.#roomId = roomId;
         window.myAPI.room.getRoomDetail({roomId}).then(result => {
             this.#room = result.data;
+            window.myAPI.setOption({
+                name: 'lastRoomInfo', value : JSON.stringify(this.#room)
+            })
             let startCallbackPromise = Promise.all(
                 Object.values(this.#addRoomIdChangeListener).map(async callBack => {
                     return new Promise(res => {

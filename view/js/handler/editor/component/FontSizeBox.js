@@ -200,7 +200,7 @@ export default class FontSizeBox {
                 -ms-user-select: none;
                 user-select: none;
                 overflow-x: hidden;
-                z-index: 20;
+                z-index: 999;
             }
 
             .font-size-wrap .font-size-search-wrap{

@@ -152,7 +152,7 @@ export default class HyperlinkBox{
 				justify-content: space-around;
 				align-items: center;
 				justify-items: center;
-				z-index: 9999;
+                z-index: 999;
 			}
 			.hyperlink-box-wrap .url-input-text-wrapper{
 				width: inherit;
