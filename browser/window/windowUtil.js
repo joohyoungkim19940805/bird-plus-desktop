@@ -2,12 +2,15 @@ const path = require('path');
 const axios = require('axios');
 const log = require('electron-log');
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
-
 class WindowUtil{
+    #loginRemeber;
     constructor(){
 
     }
     async isLogin(callBack = () => {}){
+        if(this.#loginRemeber){
+            return Promise.resolve(callBack(this.#loginRemeber));
+        }
         return axios.get(__serverApi + '/api/account/search/is-login', {
             headers:{
                 'Content-Type': 'application/json'
@@ -34,12 +37,11 @@ class WindowUtil{
 
                 if(! response.isLogin){
                     axios.defaults.headers.common['Authorization'] = '';
-                    mainWindow.loadFile(path.join(__project_path, 'view/html/loginPage.html')).then(e=>{
-                        mainWindow.titleBarStyle = 'visibble'
-                        mainWindow.show();
-                        mainWindow.isOpening = false;
-                        return 'done';
-                    })
+                }else{
+                    this.#loginRemeber = response;
+                    setTimeout(()=>{
+                        this.#loginRemeber = undefined;
+                    }, 1000 * 60)
                 }
                 return callBack(response);
             }

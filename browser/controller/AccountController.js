@@ -22,7 +22,6 @@ class AccountController {
 			}
 		})
 		.then(response=>{
-			console.log(response);
 			if(windowUtil.responseIsOk(response) && top.constructor.name == 'Window'){
 				return response.data;
 			}
