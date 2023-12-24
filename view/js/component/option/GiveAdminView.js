@@ -19,7 +19,7 @@ export default class GiveAdminView extends LayerPopupTemplate{
 					position: relative;
 				}
 				#give_admin_view_account_list{
-					width: 30vw;
+					width: 80%;
 					height: 50vh;
 					overflow-y: auto;
 					max-height: 1%;

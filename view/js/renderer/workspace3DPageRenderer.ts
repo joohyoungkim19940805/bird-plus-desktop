@@ -1,3 +1,4 @@
+
 //import * as BABYLON from '@babylonjs/core/Legacy/legacy';
 //import * as GUI from '@babylonjs/gui/legacy/legacy';
 import {
@@ -87,27 +88,7 @@ new class Workspace3DPageRenderer{
 
 	private isMouseDown = false;
 
-	private lastWorkspaceInfoPromise : Promise<WorkspaceListType | undefined> = (() => {
-		return (window as any).myAPI.getOption('lastRoomInfo').then((option : any)=>{
-			if( ! option) return undefined;
-			let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
-			return (window as any).myAPI.workspace.getWorkspaceDetail({workspaceId: lastRoomInfo.workspaceId}).then((workspace: any) => {
-				//console.log(workspace);
-				return (window as any).myAPI.workspace.getWorkspaceInAccountCount({workspaceId : lastRoomInfo.workspaceId}).then((count : any) => {
-					//console.log(count);
-					let obj : WorkspaceListType = {
-						accessFilter : workspace.accessFilter,
-						isEnabled : workspace.isEnabled,
-						isFinallyPermit : workspace.isFinallyPermit,
-						joinedCount : count,
-						workspaceId : workspace.id,
-						workspaceName : workspace.workspaceName
-					}
-					return obj
-				})
-			})
-		})
-	})();
+	private isMobile = /Mobi/i.test(window.navigator.userAgent)
 	constructor(){
 		this.canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 		this.engine = new Engine(this.canvas, true);
@@ -427,6 +408,7 @@ new class Workspace3DPageRenderer{
 				}else{
 					statusText.text = '서버로부터 응답이 없습니다.';
 				}
+				if( ! this.isMobile) idInput.focus();
 				statusPanel.addControl(statusText)
 				statusTexture.addControl(statusPanel);
 				setTimeout(()=>{
@@ -459,7 +441,25 @@ new class Workspace3DPageRenderer{
 	}
 
 	async createWorkspaceMyJoinedListPage(texture : AdvancedDynamicTexture){
-		let lastWorkspaceInfo = await this.lastWorkspaceInfoPromise
+		let lastWorkspaceInfo = await (window as any).myAPI.getOption('lastRoomInfo').then((option : any)=>{
+			if( ! option) return undefined;
+			let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
+			return (window as any).myAPI.workspace.getWorkspaceDetail({workspaceId: lastRoomInfo.workspaceId}).then((workspace: any) => {
+				//console.log(workspace);
+				return (window as any).myAPI.workspace.getWorkspaceInAccountCount({workspaceId : lastRoomInfo.workspaceId}).then((count : any) => {
+					//console.log(count);
+					let obj : WorkspaceListType = {
+						accessFilter : workspace.accessFilter,
+						isEnabled : workspace.isEnabled,
+						isFinallyPermit : workspace.isFinallyPermit,
+						joinedCount : count,
+						workspaceId : workspace.id,
+						workspaceName : workspace.workspaceName
+					}
+					return obj
+				})
+			})
+		})
 		let page = 0, size = 10, totalElementsCount = 0, componentList : Array<Record<string, Rectangle | TextBlock>> = [];
 		let isContainerEnter = false, isItemEnter = false, isScrollViewEnter = false;
 
@@ -543,7 +543,7 @@ new class Workspace3DPageRenderer{
 
 		let makeWorkspaceButton = Button.CreateSimpleButton('makeWorkspaceButton', 'Create New Workspace');
 		makeWorkspaceButton.top = '235px', makeWorkspaceButton.left = '-65px'
-		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
+		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '42px', makeWorkspaceButton.fontSize = '11px';
 		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
 		makeWorkspaceButton.hoverCursor = 'pointer'
 		makeWorkspaceButton.onPointerClickObservable.add(ev=> {
@@ -560,7 +560,7 @@ new class Workspace3DPageRenderer{
 		
 		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
 		searchWorkspaceButton.top = '235px', searchWorkspaceButton.left = '55px'
-		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
+		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '42px', searchWorkspaceButton.fontSize = '11px';
 		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
 		searchWorkspaceButton.hoverCursor = 'pointer'
 		searchWorkspaceButton.onPointerClickObservable.add(ev=> {
@@ -676,7 +676,6 @@ new class Workspace3DPageRenderer{
 			if(searchInput.text == '') return;
 
 			if(ev.key == 'Enter'){
-				console.log('searchInput.text', searchInput.text);
 				(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
 					console.log(result);
 					totalElementsCount = result.data.totalElements;
@@ -685,7 +684,7 @@ new class Workspace3DPageRenderer{
 						...list.map((item, i) => createItem(item, i))
 					);
 				});
-				searchInput.focus();
+				if( ! this.isMobile) searchInput.focus();
 			}else if(ev.ctrlKey && ev.key == 'Backspace'){
 				searchInput.text = '';
 			}
@@ -696,13 +695,27 @@ new class Workspace3DPageRenderer{
 		});
 		searchInput.onBlurObservable.add(() => {
 			this.camera.attachControl(this.canvas, true);
+			if(searchInput.text == '') return;
+			componentList.flatMap(e=>[e.workspaceName, e.workspaceJoinedCount, e.itemPanel]).forEach(e=>{
+				texture.removeControl(e);
+				e.dispose();
+			});
+			componentList = [];
+			(window as any).myAPI.workspace.searchNameSpecificList({page, size, workspaceName: searchInput.text}).then((result : any = {}) => {
+				console.log(result);
+				totalElementsCount = result.data.totalElements;
+				let list : Array<WorkspaceSearchListType> = result.data.content;
+				componentList.push(
+					...list.map((item, i) => createItem(item, i))
+				);
+			});
 		});
 		texture.addControl(searchInput)
 		//searchInput.focus();
 
 		let makeWorkspaceButton = Button.CreateSimpleButton('makeWorkspaceButton', 'Create New Workspace');
 		makeWorkspaceButton.top = '235px', makeWorkspaceButton.left = '-65px'
-		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '35px', makeWorkspaceButton.fontSize = '11px';
+		makeWorkspaceButton.width = '100px', makeWorkspaceButton.height = '42px', makeWorkspaceButton.fontSize = '11px';
 		makeWorkspaceButton.paddingLeft = '10px', makeWorkspaceButton.background = '#5f5f5fd1', makeWorkspaceButton.color = 'white';
 		makeWorkspaceButton.hoverCursor = 'pointer'
 		makeWorkspaceButton.onPointerClickObservable.add(ev=> {
@@ -719,7 +732,7 @@ new class Workspace3DPageRenderer{
 		
 		let myWorkspacesButton = Button.CreateSimpleButton('myWorkspacesButton', 'My Workspaces');
 		myWorkspacesButton.top = '235px', myWorkspacesButton.left = '55px'
-		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '35px', myWorkspacesButton.fontSize = '11px';
+		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '42px', myWorkspacesButton.fontSize = '11px';
 		myWorkspacesButton.paddingLeft = '10px', myWorkspacesButton.background = '#5f5f5fd1', myWorkspacesButton.color = 'white';
 		myWorkspacesButton.hoverCursor = 'pointer'
 		myWorkspacesButton.onPointerClickObservable.add(ev=> {
@@ -1000,7 +1013,7 @@ new class Workspace3DPageRenderer{
 				checkText = "'@' 뒷 부분을 입력해 주세요. 'awe@'(이)가 완전하지 않습니다.";
 			}else if( workspaceEmailList.some(e=>e.email.text == emailText) ){
 				emailFilterInput.text = '';
-				emailFilterInput.focus();
+				if( ! this.isMobile) emailFilterInput.focus();
 				return;
 			}
 			if(checkText){
@@ -1021,7 +1034,7 @@ new class Workspace3DPageRenderer{
 					statusPanel.dispose();
 					statusTexture.dispose();
 				}, 1500)
-				emailFilterInput.focus();
+				if( ! this.isMobile) emailFilterInput.focus();
 				return;
 			}
 
@@ -1060,7 +1073,7 @@ new class Workspace3DPageRenderer{
 			parent.addControl(deleteButton);			
 
 			workspaceEmailList.push({parent, email, deleteButton});
-			emailFilterInput.focus();
+			if( ! this.isMobile) emailFilterInput.focus();
 		})
 
 		let emailFilterDescription = new TextBlock('emailFilterDescription');
@@ -1108,7 +1121,7 @@ new class Workspace3DPageRenderer{
 
 		let myWorkspacesButton = Button.CreateSimpleButton('myWorkspacesButton', 'My Workspaces');
 		myWorkspacesButton.top = '237px', myWorkspacesButton.left = '-75px'
-		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '35px', myWorkspacesButton.fontSize = '11px';
+		myWorkspacesButton.width = '100px', myWorkspacesButton.height = '42px', myWorkspacesButton.fontSize = '11px';
 		myWorkspacesButton.paddingLeft = '10px', myWorkspacesButton.background = '#5f5f5fd1', myWorkspacesButton.color = 'white';
 		myWorkspacesButton.hoverCursor = 'pointer'
 		myWorkspacesButton.onPointerClickObservable.add(ev=>{
@@ -1138,7 +1151,7 @@ new class Workspace3DPageRenderer{
 
 		let searchWorkspaceButton = Button.CreateSimpleButton('searchWorkspaceButton', 'Search Workspace');
 		searchWorkspaceButton.top = '237px', searchWorkspaceButton.left = '65px'
-		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '35px', searchWorkspaceButton.fontSize = '11px';
+		searchWorkspaceButton.width = '100px', searchWorkspaceButton.height = '42px', searchWorkspaceButton.fontSize = '11px';
 		searchWorkspaceButton.paddingLeft = '10px', searchWorkspaceButton.background = '#5f5f5fd1', searchWorkspaceButton.color = 'white';
 		searchWorkspaceButton.hoverCursor = 'pointer'
 		searchWorkspaceButton.onPointerClickObservable.add(ev=>{

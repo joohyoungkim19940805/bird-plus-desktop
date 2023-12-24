@@ -183,6 +183,7 @@
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper chatting-info-line{
     padding-top: 0;
     margin-top: 0;
+    white-space: break-spaces;
 }
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list{
     overflow-wrap: anywhere;

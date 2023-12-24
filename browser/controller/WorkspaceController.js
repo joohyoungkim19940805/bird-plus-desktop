@@ -225,7 +225,7 @@ class WorkspaceController {
 						headers: {
 							'Authorization' : axios.defaults.headers.common['Authorization'],
 						},
-						withCredentials : ! process.env.MY_SERVER_PROFILES == 'local'
+						withCredentials : ! top.__isLocal
 					});
 					source.onmessage = (event) => {
 						//console.log('test message :::: ',event);

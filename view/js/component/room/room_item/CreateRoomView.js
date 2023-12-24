@@ -21,7 +21,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
     				align-items: center;
 				}
 				#create_room_view_account_list{
-					width: 30vw;
+					width: 80%;
 					height: 30vh;
 					overflow-y: auto;
 					max-height: 1%;

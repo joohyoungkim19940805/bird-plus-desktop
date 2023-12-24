@@ -1,6 +1,7 @@
 import chattingHandler from "@handler/chatting/ChattingHandler"
 import roomHandler from "@handler/room/RoomHandler"
 import workspaceHandler from "@handler/workspace/WorkspaceHandler"
+import {accountHandler} from "@handler/account/AccountHandler"
 
 import FreeWillEditor from "@handler/editor/FreeWillEditor"
 import Strong from "@handler/editor/tools/Strong"
@@ -577,8 +578,7 @@ export default new class ChattingInfo{
             createMils,
             updateMils,
             fullName,
-            accountName,
-            isMyChatting
+            accountName
         } = data;
         return new Promise(async resolve => {
             let li = Object.assign(document.createElement('li'), {
@@ -592,7 +592,7 @@ export default new class ChattingInfo{
                     <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">
                             <div class="chatting_content_description_name_container">
-                                <div class="chatting_content_description_name">${isMyChatting ? '나' : fullName}</div>
+                                <div class="chatting_content_description_name">${accountHandler.accountInfo.accountName == accountName ? '나' : fullName}</div>
                                 <div class="chatting_content_description_time">${this.#processingTimeText(createMils)}</div>
                             </div>
                             <div class="chatting_content_description_option_container">

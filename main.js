@@ -17,10 +17,12 @@ autoUpdater.logger = log
 //autoUpdater.autoDownload = false;
 //log.transports.file.level = 'info'
 //app.disableHardwareAcceleration();
-global.top = undefined;
+// web and electron 양쪽에서 쓸 top 변수 선언 (window == top) 
+global.top = {};
+global.top.__isLocal = process.env.MY_SERVER_PROFILES == 'local';
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
-	if(process.env.MY_SERVER_PROFILES == 'local'){
+	if(top.__isLocal){
 		//autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 		/*Object.defineProperty(app, 'isPackaged', {
@@ -44,7 +46,7 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(process.env.MY_SERVER_PROFILES == 'local' && ! app.isPackaged){
+if(top.__isLocal && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),

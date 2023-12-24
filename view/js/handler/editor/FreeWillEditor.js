@@ -141,9 +141,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 			let observer = new MutationObserver( (mutationList, observer) => {
 				mutationList.forEach((mutation) => {
-					if(this.contentEditable == 'false'){
-						return;
-					}
+					//if(this.contentEditable == 'false'){
+					//	return;
+					//}
 					
 					if(this.childElementCount == 0){
 						this.startFirstLine();
@@ -305,6 +305,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			return startLine.line.applyTool(TargetTool, selection.getRangeAt(0), endLine)
 		})
 		.then(lastApplyTool=> {
+			if( ! this.#undoManager){
+				this.#undoManager = new UndoManager(this);
+			}
 			this.#undoManager.addUndoRedo(true);
 			let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
 			let scrollTarget;

@@ -195,8 +195,8 @@ p {
 
 input[type="checkbox"]{
 	accent-color: black !important;
-    width: 2vw !important;
-    height: 3vh !important;
+    width: 1.2rem !important;
+    height: 2.2rem !important;
 }
 
 .pointer{

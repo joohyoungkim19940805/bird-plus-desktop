@@ -305,12 +305,12 @@ class FlexLayout extends HTMLElement {
 		this.totalMovement = 0;
 		this.parentSize = 0;
 		let prevTouchEvent;
+		
 		new Array('mousedown', 'touchstart').forEach(eventName => {
-			resizePanel.addEventListener(eventName, () => {
+			resizePanel.addEventListener(eventName, (event) => {
 				this.totalMovement = 0;
 				prevTouchEvent = undefined;
 				this.parentSize = this.getBoundingClientRect()[this.sizeName];
-				
 				resizePanel.setAttribute('data-is_mouse_down', '');
 				resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 				document.body.style.cursor = this.resizeCursor;
@@ -342,11 +342,14 @@ class FlexLayout extends HTMLElement {
 					return;
 				}
 				if(eventName == 'touchmove' && ! prevTouchEvent){
+					event.movementX = 0
+					event.movementY = 0
 					prevTouchEvent = event;
 					return;
 				}else if(eventName == 'touchmove'){
 					event.movementX = (prevTouchEvent.touches[0].pageX - event.touches[0].pageX) * -1
 					event.movementY = (prevTouchEvent.touches[0].pageY - event.touches[0].pageY) * -1
+					prevTouchEvent = event;
 				}
 				this.moveMouseFlex(resizePanel, event);
 			})
@@ -425,8 +428,8 @@ class FlexLayout extends HTMLElement {
 			if( ! resizeTarget.hasAttribute('data-is_resize')){
 				resolve(resizeTarget);
 				return;
-			}else if(resizeTarget.dataset.is_resize == 'false'){
-				resizeTarget.dataset.is_resize = 'true';
+			}else if(resizeTarget.dataset.is_resize == 'true'){
+				resizeTarget.dataset.is_resize = 'false';
 			}
 
 			resizeTarget.dataset.prev_grow = this.getGrow(resizeTarget);

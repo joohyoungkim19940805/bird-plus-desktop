@@ -116,6 +116,12 @@ export default class HeaderDefault extends HTMLElement {
                 </div>
             </div>
             `
+            let homeIcon = this.querySelector('.home_icon')
+            if(homeIcon){
+                homeIcon.onclick = () => {
+                    window.myAPI.pageChange.changeWokrspacePage();
+                }
+            }
             let defaultIconContainer = this.querySelector('.default_icon_container')
             this.createDefaultIcon(defaultIconContainer);
             //this.style.webkitAppRegion = 'drag';
@@ -143,13 +149,16 @@ export default class HeaderDefault extends HTMLElement {
         if( ! this.hasAttribute('data-is_no_menu') ){
             item += `
             <div class="header_item" id="left_wrapper" data-info="아이콘이나 메뉴 영역">
-                <img/>
+                <button class="home_icon">
+                    <svg class="css-gg-home" width="1rem" height="1rem" style="zoom:125%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M21 8.77217L14.0208 1.79299C12.8492 0.621414 10.9497 0.621413 9.77817 1.79299L3 8.57116V23.0858H10V17.0858C10 15.9812 10.8954 15.0858 12 15.0858C13.1046 15.0858 14 15.9812 14 17.0858V23.0858H21V8.77217ZM11.1924 3.2072L5 9.39959V21.0858H8V17.0858C8 14.8767 9.79086 13.0858 12 13.0858C14.2091 13.0858 16 14.8767 16 17.0858V21.0858H19V9.6006L12.6066 3.2072C12.2161 2.81668 11.5829 2.81668 11.1924 3.2072Z" fill="currentColor"/>
+                    </svg>
+                </button>
             </div>` 
         }
         if( ! this.hasAttribute('data-is_no_search') ){
             item += `
-                <div class="header_item" data-info="검색 영역">
-                    필터와 검색
+                <div class="header_item" data-info="검색 영역 필터와 검색">
                 </div>`
         }
         if(item === ''){

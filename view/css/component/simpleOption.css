@@ -2,7 +2,7 @@
     position: fixed;
     background-color: #343434;
     width: 20vw;
-    height: 20vh;
+    height: max-content;
     min-width: max-content;
     z-index: 200;
     color: white;
@@ -34,7 +34,8 @@
 
 .simple_option .component_option_container label,
 .simple_option #simple_profile_container *{
-    color: white
+    color: white;
+    font-size: 1rem;
 }
 
 .simple_option [name="component_option"]{

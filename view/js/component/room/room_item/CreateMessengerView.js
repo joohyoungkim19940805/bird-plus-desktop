@@ -19,7 +19,7 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 					position: relative;
 				}
 				#create_messenger_view_account_list{
-					width: 30vw;
+					width: 80%;
 					height: 50vh;
 					overflow-y: auto;
 					max-height: 1%;

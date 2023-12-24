@@ -213,6 +213,8 @@ export const simpleOption = new class SimpleOption{
 
             window.myAPI.setOption({name : 'componentOption', value : this.#componentOption});
 
+            this.open();
+
             /* 멀티 윈도우에서 동시에 동일한 데이터베이스를 바라볼 수 없어서 주석 처리 20231214
             this.#indexedDBHandler.addItem({
                 optionName: 'componentOption',
@@ -358,6 +360,7 @@ export const simpleOption = new class SimpleOption{
         }
     }
     get componentOption(){return this.#componentOption;}
+
     async open(){
         document.body.append(this.#wrap);
         this.#wrap.append(this.#container)

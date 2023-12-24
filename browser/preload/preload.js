@@ -145,7 +145,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 	pageChange : {
 		changeLoginPage : async () => ipcRenderer.send('changeLoginPage'),
 		changeWokrspacePage : async () => ipcRenderer.send('changeWokrspacePage'),
-		changeMainPage : async (workspaceId) => ipcRenderer.send('changeMainPage', workspaceId),
+		changeMainPage : async (param) => ipcRenderer.send('changeMainPage', param),
 	},
 
 	account : {

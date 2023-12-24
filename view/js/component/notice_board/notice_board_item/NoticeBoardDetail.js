@@ -116,8 +116,10 @@ export default new class NoticeBoardDetail{
         };
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
-            console.log(data);
+            //console.log(data);
+            let isEventStream
             if(data && data.serverSentStreamType){
+                isEventStream = true;
                 data = data.content;
             }
             
@@ -132,26 +134,23 @@ export default new class NoticeBoardDetail{
 
                 let listObserver = new MutationObserver( (mutationList, observer) => {
                     mutationList.forEach((mutation) => {
+                        if( ! isEventStream) return;
                         let {addedNodes, removedNodes} = mutation;
                         let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.parentLi)
                         if(isAddedActiveTarget){
                             //setTimeout(()=>{
-                                lastTarget.contentEditable = true;
+                                //lastTarget.contentEditable = true;
                                 let cursorTarget = lastTarget.hasAttribute('is_cursor') ? lastTarget : lastTarget.querySelector('[is_cursor]');
+                                if( ! cursorTarget) return;
                                 let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes;
                                 let selection = window.getSelection();
-                                console.log(cursorTarget);
                                 if(type.value == Node.ELEMENT_NODE){
-                                    console.log(11111111111)
                                     let node = cursorTarget.childNodes[index.value]; 
                                     selection.setPosition(node, offset.value);
                                 }else if(type.value == Node.TEXT_NODE){
-                                    console.log(22222222222222)
                                     selection.setPosition(cursorTarget, offset.value);
                                 }
-                                console.log('lastTarget.isConnected',lastTarget.isConnected)
-                                console.log('lastTarget.parentLi',lastTarget.parentLi.isConnected);
-                                console.log('lastTarget.isConnected',lastTarget.isLoaded);
+
                             //},5000)
                         }
                     })
@@ -240,14 +239,13 @@ export default new class NoticeBoardDetail{
                 textContent: '+'
             });
             let editor = new NoticeBoardLine(li, this);
-            editor.contentEditable = false;
             let positionChangeIcon = Object.assign(document.createElement('span'),{
                 className: 'notice_board_detail_item_position_change_icon pointer',
                 textContent: '〓'
             })
 
             let datasetPromise = common.jsonToSaveElementDataset(data, li);
-            console.log(data.content);
+            //console.log(data.content);
             if(data.content){
                 let {content} = data;
                 delete data.content;
@@ -265,6 +263,7 @@ export default new class NoticeBoardDetail{
                                 editor.remove();
                                 li.prepend(addButton);
                             }
+                            editor.contentEditable = false;
                         },50)
                     })
                 })
@@ -337,6 +336,7 @@ export default new class NoticeBoardDetail{
                     this.#elementMap.toolbar.remove();
                 }
                 if(editor.isEmpty){
+                    editor.replaceChildren();
                     editor.remove();
                     positionChangeIcon.remove();
                     li.prepend(addButton);
@@ -480,7 +480,7 @@ export default new class NoticeBoardDetail{
         }).then(jsonList => {
 
             param.content = JSON.stringify(jsonList);
-
+            if(param.content.length == 0) param.content = undefined
             window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(res=>{
                 let {data} = res
                 this.innerText = '';
@@ -495,6 +495,7 @@ export default new class NoticeBoardDetail{
                         e.data.is_upload_end = '';
                     });
                     param.content = JSON.stringify(jsonList);
+                    if(param.content.length == 0) param.content = undefined
                     window.myAPI.noticeBoard.createNoticeBoardDetail(param).then(response=>{
                         //window.getSelection().setPosition(this, 1)
                     });
