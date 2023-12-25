@@ -582,6 +582,7 @@ export default new class ChattingInfo{
         } = data;
         return new Promise(async resolve => {
             let li = Object.assign(document.createElement('li'), {
+                tabIndex:-1,
             });
             let descriptionWrap = Object.assign(document.createElement('div'),{
                 className: 'chatting_content_description_wrapper',
@@ -730,6 +731,7 @@ export default new class ChattingInfo{
 				</svg>
                 `,
                 onclick : (event) => {
+                    li.tabIndex = '';
                     editor.contentEditable = true;
                     this.#emoticonBox.close();
                     anotherEmoji.removeAttribute('open');

@@ -1,3 +1,4 @@
+
 import roomContainer from "@component/room/RoomContainer"
 import chattingContainer from "@component/chatting/ChattingContainer"
 import noticeBoardContainer from "@component/notice_board/NoticeBoardContainer"
@@ -117,7 +118,7 @@ window.addEventListener('load', async () => {
 		})
 
 		if(isHasRememberFile.result){
-			let url = URL.createObjectURL(isHasRememberFile.result.fileData, targetTools.dataset.content_type)
+			let url = window.URL.createObjectURL(isHasRememberFile.result.fileData, targetTools.dataset.content_type)
 			targetTools.dataset.url = url;
 			if(targetTools.image){
 				targetTools.image.src = url;
@@ -243,7 +244,7 @@ window.addEventListener('load', async () => {
 						);
 						/*
 						let newBlob = new Blob([buffer], { type: imageEditor.dataset.content_type });
-						let imgUrl = URL.createObjectURL(newBlob);
+						let imgUrl = window.URL.createObjectURL(newBlob);
 						*/
 					})
 					.then(stream => new Response(stream))
@@ -261,7 +262,7 @@ window.addEventListener('load', async () => {
 								roomId: roomHandler.roomId,
 								workspaceId: workspaceHandler.workspaceId
 							}).then(()=>{
-								return URL.createObjectURL(newBlob)
+								return window.URL.createObjectURL(newBlob)
 							})
 						})
 					})

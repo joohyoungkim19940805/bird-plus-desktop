@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 /**
  * development
@@ -8,8 +9,8 @@ const path = require('path');
  * devtool 제거
  */
 module.exports = {
-	mode: 'development',
-	devtool: 'cheap-module-source-map',
+	mode: 'production',
+	devtool: 'source-map',
 	entry: {
 		openingRenderer: "./view/js/renderer/openingRenderer.js",
 		workspacePageRenderer: "./view/js/renderer/workspacePageRenderer.js",
@@ -50,5 +51,24 @@ module.exports = {
 			'@handler' : path.resolve(__dirname, './view/js/handler/'),
 			'@root' : path.resolve(__dirname, './view')
 		}
+	},
+	optimization: {
+		minimize: true,
+		minimizer: [
+			new TerserPlugin({
+			extractComments: false,
+			terserOptions: {
+				format: {
+					comments: false,
+				},
+			},
+			}),
+		],
+	},
+	performance: {
+		hints: false
+	},
+	optimization:{
+		minimize:false
 	}
 }

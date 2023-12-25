@@ -1,3 +1,4 @@
+
 import FreedomInterface from "../module/FreedomInterface"
 import ToolHandler from "../module/ToolHandler"
 import ImageBox from "../component/ImageBox"
@@ -17,8 +18,7 @@ export default class Image extends FreedomInterface {
 
     static #selectedFile = Object.assign(document.createElement('input'), {
         type: 'file',
-        accept: 'image/*',
-        capture: 'camera',
+        accept: 'image/*'
     });
 
     static get selectedFile(){

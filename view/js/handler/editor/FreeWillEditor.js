@@ -176,7 +176,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 								if( ! element.line){
 									new Line(element);
 								}
-								if(element.innerText.length == 0 || (element.innerText.length == 1 && element.innerText.charAt(0) == '\n')){
+								if(element.innerText.length == 0){
 									element.innerText = '\n';
 									window.getSelection().setPosition(element, 1)
 									element.focus();

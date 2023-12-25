@@ -152,6 +152,7 @@ export default class FreedomInterface extends HTMLElement {
 							}
 							return e;
 						});
+
 						//if(lastItemIndex){
 						//	resultList[lastItemIndex].line.lookAtMe();
 						//}
@@ -199,9 +200,12 @@ export default class FreedomInterface extends HTMLElement {
 		})
 
 		if( ! this.constructor.toolHandler.isInline){
-			/*FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
-				//console.log(newEvent);
-			})*/
+			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
+				if(this.isCursor() && newEvent.key == 'ArrowDown' && ! this.parentLine.nextElementSibling){
+					let nextLine = this.parentEditor.createLine();
+					nextLine.line?.lookAtMe();
+				}
+			})
 		}
 	}
 	connectedCallback(){
@@ -292,6 +296,19 @@ export default class FreedomInterface extends HTMLElement {
 		}
         return this.innerText.length == 0 || (this.innerText.length == 1 && (this.innerText == '\n' || this.innerText == '\u200B'));
     }
+
+	isCursor(){
+		let selection = window.getSelection();
+		if(! document.activeElement.classList.contains('free-will-editor')){
+			return false;
+		}
+		if(selection.type == 'None'){
+			return false;
+		}
+
+		return selection.containsNode(this, true) || selection.containsNode(this, false)
+	}
+
 	/**
 	 * @param {Function}
 	 */
