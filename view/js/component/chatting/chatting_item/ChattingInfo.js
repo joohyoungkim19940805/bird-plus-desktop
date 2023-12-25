@@ -831,7 +831,7 @@ export default new class ChattingInfo{
                 return button;
             }))
             hoverButtonWrapper.append(recommendEmojiContainer, buttonContainer);
-            if(li.dataset.is_my_chatting == 'true'){
+            if(li.dataset.account_name == accountHandler.accountInfo.accountName){
                 buttonContainer.append(anotherEmoji, deleteButton, updateButton, replyButton);
             }else{
                 buttonContainer.append(anotherEmoji, replyButton);

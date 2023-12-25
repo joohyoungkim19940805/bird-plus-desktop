@@ -204,6 +204,35 @@ export default class Resources extends FreedomInterface {
             }
         }
 
+        let resourcesChagneObserver = new MutationObserver( (mutationList, observer) => {
+            mutationList.forEach((mutation) => {
+                console.log(this.resources.data);
+                if( ! this.resources.classList.contains('unload')){
+                    let clone = this.resources.cloneNode(true);
+                    clone.onload = () => {
+                        if(this.dataset.width){
+                            clone.width = this.dataset.width;
+                        }
+                        if( ! clone.contentWindow){
+                            clone.classList.add('unload')
+                        }
+                        this.resources.remove();
+                        this.resources = clone;
+                        resourcesChagneObserver.disconnect();
+                        resourcesChagneObserver.observe(clone, {attributeFilter : ['data'], attributeOldValue: true})
+                    }
+                    clone.onerror = () => {
+                        clone.dataset.error = '';
+                        if( ! clone.contentWindow){
+                            clone.classList.add('unload')
+                        }
+                        clone.remove();
+                    }
+                    this.resources.after(clone);
+                }
+            });
+        })
+        resourcesChagneObserver.observe(this.resources, {attributeFilter : ['data'], attributeOldValue: true})
 	}
 
     createDefaultContent(){
@@ -265,7 +294,7 @@ export default class Resources extends FreedomInterface {
                 className: `${Resources.defaultStyle.id} resources-download-button`,
                 innerHTML : `<b>Download</b>`,
                 onclick : () => {
-                    fetch(this.dataset.url).then(res=>res.blob()).then(blob => {
+                    fetch(this.resources.data).then(res=>res.blob()).then(blob => {
                         let url = URL.createObjectURL(blob, this.dataset.content_type);
                         let a = document.createElement('a');
                         a.href = url;

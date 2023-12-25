@@ -11,6 +11,11 @@ const axios = require('axios');
 // 일렉트론 모듈 호출
 const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
 app.setAppUserModelId(app.name);
+/**
+ * @see
+ * https://github.com/electron/electron/issues/38790
+ */
+app.commandLine.appendSwitch('disable-features', 'WidgetLayering');
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 autoUpdater.logger = log

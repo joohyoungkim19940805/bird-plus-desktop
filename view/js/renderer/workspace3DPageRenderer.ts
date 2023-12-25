@@ -1,9 +1,3 @@
-/**
- * web용
- */
-import { ipcRenderer, myAPI } from "./../../../browser/preload/preload"
-(window as any).myAPI = myAPI;
-
 //import * as BABYLON from '@babylonjs/core/Legacy/legacy';
 //import * as GUI from '@babylonjs/gui/legacy/legacy';
 import {
