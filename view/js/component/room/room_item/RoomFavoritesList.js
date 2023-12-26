@@ -237,7 +237,7 @@ export default new class RoomFavoritesList{
 				}
 				roomName = roomNameList.sort((a,b)=> a.localeCompare(b)).join(', ')
 			}else{ // ROOM_TYPE == SELF
-				roomName = '나';
+				roomName = `나(${accountHandler.accountInfo.fullName})`;
 			}
 			let li = Object.assign(document.createElement('li'), {
 				className: 'room_container_item pointer',

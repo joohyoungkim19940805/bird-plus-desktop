@@ -6,7 +6,7 @@ export default class Resources extends FreedomInterface {
 
 	static toolHandler = new ToolHandler(this);
 
-    static customResourcesCallback; 
+    static customResourcesCallback = () => {}; 
 
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-resources-style'
@@ -22,7 +22,9 @@ export default class Resources extends FreedomInterface {
         return this.#selectedFile;
     }
 
-    static #uploadCallback;
+    static #resourcesCallback = () => {};
+
+    static #sizeLimitOverCallback = () => {};
 
 	static{
 		this.toolHandler.extendsElement = '';
@@ -80,7 +82,7 @@ export default class Resources extends FreedomInterface {
                 font-size: small;
                 color: #bdbdbd;
             }
-            .${this.#defaultStyle.id}.resources-download-button{
+            .${this.#defaultStyle.id}.resources-download-button, .${this.#defaultStyle.id}.resources-preview-button{
                 margin-left: 1vw;
                 border: solid 2px #e5e5e5;
                 cursor: pointer;
@@ -127,11 +129,18 @@ export default class Resources extends FreedomInterface {
 		this.#defaultStyle.sheet.insertRule(style);
 	}
 
-    static set uploadCallback(callback){
-        this.#uploadCallback = callback;
+    static set resourcesCallback(callback){
+        this.#resourcesCallback = callback;
     }
-    static get uploadCallback(){
-        return this.#uploadCallback;
+    static get resourcesCallback(){
+        return this.#resourcesCallback;
+    }
+
+    static set sizeLimitOverCallback(callback){
+        this.#sizeLimitOverCallback = callback;
+    }
+    static get sizeLimitOverCallback(){
+        return this.#sizeLimitOverCallback;
     }
 
     #file;
@@ -165,16 +174,6 @@ export default class Resources extends FreedomInterface {
                 }
             })*/
            
-        }else if(( ! this.dataset.url || this.dataset.url.startsWith('blob:file')) && this.dataset.base64){
-            /*
-            fetch(this.dataset.base64)
-            .then(async res=>{
-                return res.blob().then(blob=>{
-                    let imgUrl = URL.createObjectURL(blob, res.headers.get('Content-Type'))
-                    this.dataset.url = imgUrl;
-                    this.resources.data = this.dataset.url;
-                })
-            })*/
         }else if(Resources.customResourcesCallback && typeof Resources.customResourcesCallback == 'function'){
             Resources.customResourcesCallback(this);
         }else if(this.dataset.url){
@@ -182,7 +181,7 @@ export default class Resources extends FreedomInterface {
         this.resources.type = this.dataset.content_type;
         this.resources.data = this.dataset.url;
         this.resources.dataset.resources_name = this.dataset.name
-        console.log(this.#file);
+
         if(! this.dataset.name){
             this.remove();
             throw new Error(`this file is undefined ${this.dataset.name}`);
@@ -198,42 +197,14 @@ export default class Resources extends FreedomInterface {
         });
         
         this.disconnectedAfterCallback = () => {
+            this.resources.remove();
             if(this.dataset.url.startsWith('blob:file')){
-                setTimeout(() => {
-                    URL.revokeObjectURL(this.dataset.url);
-                }, 1000 * 60 * 2)
+                //setTimeout(() => {
+                    //URL.revokeObjectURL(this.dataset.url);
+                //}, 1000 * 60 * 2)
             }
         }
 
-        let resourcesChagneObserver = new MutationObserver( (mutationList, observer) => {
-            mutationList.forEach((mutation) => {
-                console.log(this.resources.data);
-                if( ! this.resources.classList.contains('unload')){
-                    let clone = this.resources.cloneNode(true);
-                    clone.onload = () => {
-                        if(this.dataset.width){
-                            clone.width = this.dataset.width;
-                        }
-                        if( ! clone.contentWindow){
-                            clone.classList.add('unload')
-                        }
-                        this.resources.remove();
-                        this.resources = clone;
-                        resourcesChagneObserver.disconnect();
-                        resourcesChagneObserver.observe(clone, {attributeFilter : ['data'], attributeOldValue: true})
-                    }
-                    clone.onerror = () => {
-                        clone.dataset.error = '';
-                        if( ! clone.contentWindow){
-                            clone.classList.add('unload')
-                        }
-                        clone.remove();
-                    }
-                    this.resources.after(clone);
-                }
-            });
-        })
-        resourcesChagneObserver.observe(this.resources, {attributeFilter : ['data'], attributeOldValue: true})
 	}
 
     createDefaultContent(){
@@ -259,7 +230,7 @@ export default class Resources extends FreedomInterface {
 
             //}
 
-            resourcesContanier.append(this.resources);
+            //resourcesContanier.append(this.resources);
 
             this.resources.onload = (event) => {
                 if(this.dataset.width){
@@ -268,7 +239,12 @@ export default class Resources extends FreedomInterface {
                 //console.log(this.resources.contentWindow);
                 if( ! this.resources.contentWindow){
                     this.resources.classList.add('unload')
+                }else{
+                    this.resources.contentWindow.document.body.style.contentVisibility = 'auto'
+                    this.resources.contentWindow.document.body.style.containIntrinsicSize = '1px 5000px'
                 }
+
+                Resources.resourcesCallback({status : 'load', resources : this.resources});
                 /*let applyToolAfterSelection = window.getSelection(), range = applyToolAfterSelection.getRangeAt(0);
                 let scrollTarget;
                 if(range.endContainer.nodeType == Node.TEXT_NODE){
@@ -288,6 +264,8 @@ export default class Resources extends FreedomInterface {
                 if( ! this.resources.contentWindow){
                     this.resources.classList.add('unload')
                 }
+                Resources.resourcesCallback({status : 'error', resources : this.resources});
+                
             }
 
             let {description, slot, aticle} = this.createDescription(this.resources, resourcesContanier);
@@ -308,12 +286,19 @@ export default class Resources extends FreedomInterface {
                     })
                 }
             });
+            let previewButton = Object.assign(document.createElement('button'), {
+                className: `${Resources.defaultStyle.id} resources-preview-button`,
+                innerHTML : `<b>Preview</b>`,
+                onclick : () => {
+                    resourcesContanier.append(this.resources);
+                }
+            });
 
             this.connectedAfterOnlyOneCallback = () => {
                 if(this.childNodes.length != 0 && this.childNodes[0]?.tagName != 'BR'){
                     aticle.append(...[...this.childNodes].filter(e=>e!=aticle));
                 }
-                wrap.replaceChildren(...[description,downloadButton,resourcesContanier].filter(e=>e != undefined));
+                wrap.replaceChildren(...[description,downloadButton,previewButton,resourcesContanier].filter(e=>e != undefined));
                 
                 if(this.nextSibling?.tagName == 'BR'){
                     this.nextSibling.remove()
@@ -419,10 +404,29 @@ export default class Resources extends FreedomInterface {
         return this.#file
     }
     
-    /*(set resourcesChange(url){
-        let newResources
-        this.resources.dataset.resources_name = this.dataset.name
-        this.resources.type = this.dataset.content_type
-        this.resources.data = url
-    }*/
+    set resourcesUrl(url){
+        let clone = this.resources.cloneNode(true);
+        clone.data = url;
+        this.resources.after(clone);
+        this.resources.remove();
+        this.resources = clone;
+        clone.onload = () => {
+            if(this.resources == clone) return;
+            if(this.dataset.width){
+                clone.width = this.dataset.width;
+            }
+            if( ! clone.contentWindow){
+                clone.classList.add('unload')
+            }
+        }
+        clone.onerror = () => {
+            clone.dataset.error = '';
+            if( ! clone.contentWindow){
+                clone.classList.add('unload')
+            }
+        }
+    }
+    get resourcesUrl(){
+        this.resources.data;
+    }
 }

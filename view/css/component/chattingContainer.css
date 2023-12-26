@@ -185,6 +185,11 @@
     margin-top: 0;
     white-space: break-spaces;
 }
+#chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper chatting-info-line[contentEditable="true"]{
+    border: solid 1px #ededed;
+    border-radius: 4px;
+    padding: 1%;
+}
 #chatting_info_wrapper .chatting_content_list > li .chatting_content_description_wrapper .chatting_container .chatting_reaction_list{
     overflow-wrap: anywhere;
     display: flex;

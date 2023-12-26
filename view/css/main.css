@@ -39,7 +39,7 @@ div[is="content-block"]{
 /* 채팅 영역 시작 [S] */
 
 .toolbar{
-	background-color: #d7d7d7cf;
+	background-color: #e1e1e1;
     padding-left: 1%;
     padding-right: 1%;
     /*border-top: ridge 2px;*/
@@ -58,7 +58,7 @@ div[is="content-block"]{
 	color: #7c7c7cd1;
     padding-bottom: 3.675px;
     padding-top: 5.125px;
-	border-bottom: groove 1px #ffffff40;
+	border-bottom: groove 1px #9f9f9f17;
 	transition: background-color 0.7s;
     min-height: 22px;
     display: flex;

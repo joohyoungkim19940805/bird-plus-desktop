@@ -793,6 +793,9 @@ export default new class ChattingInfo{
                 </svg>
                 `,
                 onclick : (event) => {
+                    if( ! window.confirm('정말 삭제하시겠습니까?')){
+                        return;
+                    }
                     window.myAPI.chatting.deleteChatting({
                         id: li.dataset.id,
                         workspaceId : li.dataset.workspace_id,
@@ -800,6 +803,7 @@ export default new class ChattingInfo{
                     }).then((result)=>{
                         console.log('deleteChatting', result);
                     })
+                
                 }
             })
             let replyButton = Object.assign(document.createElement('button'),{

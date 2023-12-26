@@ -125,7 +125,8 @@ window.addEventListener('load', async () => {
 			}else if(targetTools.video){
 				targetTools.video.src = url;
 			}else{
-				targetTools.resources.data = url;
+				//targetTools.resources.data = url;
+				targetTools.resourcesUrl = url;
 			}
 			return;
 		}
@@ -154,7 +155,12 @@ window.addEventListener('load', async () => {
 					filePreview.querySelector('[data-file_preview_button]').className = 'file_preview_button'; 
 					filePreview.className = 'file_preview';
 				}
-
+				filePreview.style.display = 'none';
+				Resources.resourcesCallback = ({status, resources}) => {
+					if(status == 'error'){
+						filePreview.style.display = '';
+					}
+				}
 				filePreview.onclick = (event) => {
 					event.stopPropagation();
 				}
@@ -273,7 +279,8 @@ window.addEventListener('load', async () => {
 						}else if(targetTools.video){
 							targetTools.video.src = url;
 						}else{
-							targetTools.resources.data = url;
+							//targetTools.resources.data = url;
+							targetTools.resourcesUrl = url;
 						}
 
 						if(filePreview){

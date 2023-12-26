@@ -79,7 +79,7 @@ export default new class NoticeBoardDetail{
                 <ul class="notice_board_detail_content" data-bind_name="noticeBoardDetailList">
  
                 </ul>
-                <div class="toolbar" style="position: fixed;" data-bind_name="toolbar"></div>
+                <div class="toolbar" style="position: fixed; z-index: 2000;" data-bind_name="toolbar"></div>
             </div>
         `
     })
