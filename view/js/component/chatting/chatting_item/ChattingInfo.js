@@ -714,6 +714,8 @@ export default new class ChattingInfo{
             })
             let prevText;
             let isScriptBlur = false;
+            let isUpdateCancel = false;
+            let updateBeforeText;
             let updateButton = Object.assign(document.createElement('button'), {
                 className: 'css-gg-pen',
                 innerHTML: `
@@ -737,6 +739,7 @@ export default new class ChattingInfo{
                     anotherEmoji.removeAttribute('open');
                     hoverButtonWrapper.remove();
                     window.getSelection().setPosition(editor, editor.childElementCount)
+                    updateBeforeText = editor.innerHTML;
                 }
             })
             editor.onfocus = (event) => {
@@ -744,6 +747,9 @@ export default new class ChattingInfo{
             }
             editor.onblur = (event) => {
                 if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.toolbar.matches(':hover') || document.activeElement == editor)){
+                    return;
+                }else if(isUpdateCancel){
+                    isUpdateCancel = false;
                     return;
                 }
                 if(isScriptBlur){
@@ -760,8 +766,14 @@ export default new class ChattingInfo{
                 this.#sendChatting(li);
             }
             editor.onkeydown = (event) => {
+                console.log(event);
                 let {altKey, ctrlKey, shiftKey, key} = event;
-                if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
+                if(key == 'Escape'){
+                    isUpdateCancel = true;
+                    editor.contentEditable = false;
+                    editor.innerHTML = updateBeforeText; 
+                    updateBeforeText = ''
+                } else if(key == 'Enter' && (altKey || ctrlKey || shiftKey)){
                     event.preventDefault();
                     let LineBreakMode;
                     if(altKey){

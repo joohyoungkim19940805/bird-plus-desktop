@@ -113,17 +113,17 @@ export default class VideoBox {
             }
         })
         
-        this.#videoBox.onwheel = (event) => {
+        this.#videoBox.addEventListener('wheel', (event) => {
             if(this.#videoBox.hasAttribute('data-is_shft')){
                 return;
             }
-            event.preventDefault();
+            //event.preventDefault();
             let {deltaY} = event;
             
             this.#videoBox.scrollTo(
                 this.#videoBox.scrollLeft + deltaY, undefined
             );
-        }
+        }, {passive: true});
         let [width, height] = this.#videoBox.querySelectorAll('#video-box-resize-width, #video-box-resize-height');
         
         window.addEventListener('keyup', (event) => {

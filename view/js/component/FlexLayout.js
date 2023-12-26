@@ -314,7 +314,7 @@ class FlexLayout extends HTMLElement {
 				resizePanel.setAttribute('data-is_mouse_down', '');
 				resizePanel.querySelector('.hover').setAttribute('data-is_hover', '');
 				document.body.style.cursor = this.resizeCursor;
-			})
+			}, {passive: eventName == 'touchstart'})
 		})
 		new Array('mouseup', 'touchend').forEach(eventName => {
 			window.addEventListener(eventName, (event) => {

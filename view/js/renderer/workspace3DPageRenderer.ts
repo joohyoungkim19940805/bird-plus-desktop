@@ -441,23 +441,27 @@ new class Workspace3DPageRenderer{
 
 	async createWorkspaceMyJoinedListPage(texture : AdvancedDynamicTexture){
 		let lastWorkspaceInfo = await (window as any).myAPI.getOption('lastRoomInfo').then((option : any)=>{
-			if( ! option) return undefined;
-			let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
-			return (window as any).myAPI.workspace.getWorkspaceDetail({workspaceId: lastRoomInfo.workspaceId}).then((workspace: any) => {
-				//console.log(workspace);
-				return (window as any).myAPI.workspace.getWorkspaceInAccountCount({workspaceId : lastRoomInfo.workspaceId}).then((count : any) => {
-					//console.log(count);
-					let obj : WorkspaceListType = {
-						accessFilter : workspace.accessFilter,
-						isEnabled : workspace.isEnabled,
-						isFinallyPermit : workspace.isFinallyPermit,
-						joinedCount : count,
-						workspaceId : workspace.id,
-						workspaceName : workspace.workspaceName
-					}
-					return obj
+			try{
+				if( ! option) return undefined;
+				let lastRoomInfo = JSON.parse(option.OPTION_VALUE);
+				return (window as any).myAPI.workspace.getWorkspaceDetail({workspaceId: lastRoomInfo.workspaceId}).then((workspace: any) => {
+					//console.log(workspace);
+					return (window as any).myAPI.workspace.getWorkspaceInAccountCount({workspaceId : lastRoomInfo.workspaceId}).then((count : any) => {
+						//console.log(count);
+						let obj : WorkspaceListType = {
+							accessFilter : workspace.accessFilter,
+							isEnabled : workspace.isEnabled,
+							isFinallyPermit : workspace.isFinallyPermit,
+							joinedCount : count,
+							workspaceId : workspace.id,
+							workspaceName : workspace.workspaceName
+						}
+						return obj
+					})
 				})
-			})
+			}catch(ignore){
+				return undefined;
+			}
 		})
 		let page = 0, size = 10, totalElementsCount = 0, componentList : Array<Record<string, Rectangle | TextBlock>> = [];
 		let isContainerEnter = false, isItemEnter = false, isScrollViewEnter = false;
@@ -1109,6 +1113,26 @@ new class Workspace3DPageRenderer{
 		createWorkspaceButton.hoverCursor = 'pointer', createWorkspaceButton.fontWeight = '3px', createWorkspaceButton.fontSize = '11px'
 		createWorkspaceButton.paddingTop = 3, createWorkspaceButton.paddingBottom = 3, createWorkspaceButton.background = '#5f5f5fd1'; 
 		createWorkspaceButton.onPointerClickObservable.add(ev=>{
+			if(nameInput.text == ''){
+				let statusTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+				let statusPanel = new StackPanel();
+				statusPanel.background = '#5f5f5fd1'; //statusPanel.color = '#5f5f5fd1';
+				statusPanel.width = '550px', statusPanel.hoverCursor = 'pointer'
+				statusPanel.onPointerClickObservable.add(()=>statusPanel.dispose());
+				let statusText = new TextBlock();
+				statusText.width = '550px', statusText.height = '40px', statusText.color = 'white';
+				statusText.text = '워크스페이스의 이름이 비어있습니다.';
+				statusPanel.addControl(statusText);
+				statusTexture.addControl(statusPanel);
+				setTimeout(()=>{
+					statusPanel.removeControl(statusText);
+					statusTexture.removeControl(statusPanel);
+					statusText.dispose();
+					statusPanel.dispose();
+					statusTexture.dispose();
+				}, 1500)
+				return;
+			}
 			(window as any).myAPI.workspace.createWorkspace({
 				workspaceName : nameInput.text,
 				accessFilter : workspaceEmailList.map(e=>e.email.text),

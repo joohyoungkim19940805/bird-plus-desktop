@@ -134,18 +134,17 @@ export default class ImageBox {
             }
         })
         
-        this.#imageBox.onwheel = (event) => {
+        this.#imageBox.addEventListener('wheel', (event) => {
             if(this.#imageBox.hasAttribute('data-is_shft')){
                 return;
             }
-            event.preventDefault();
+            //event.preventDefault();
             let {deltaY} = event;
             
             this.#imageBox.scrollTo(
                 this.#imageBox.scrollLeft + deltaY, undefined
             );
-        }
-       
+        }, {passive: true})
         let [width, height] = this.#imageBox.querySelectorAll('#image-box-resize-width, #image-box-resize-height');
         
         window.addEventListener('keyup', (event) => {

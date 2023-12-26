@@ -94,11 +94,11 @@ export default new class ChattingHead{
                 }
             })
             
-            scrollTarget.onwheel = (event) => {
+            scrollTarget.addEventListener('wheel', (event) => {
                 if(scrollTarget.hasAttribute('data-is_shft')){
                     return;
                 }
-                event.preventDefault();
+                //event.preventDefault();
                 let {deltaY} = event;
                 
                 scrollTarget.scrollTo(
@@ -111,7 +111,7 @@ export default new class ChattingHead{
                     behavior: 'smooth'
                 });
                 */
-            }
+            }, {passive: true})
         })
 
 

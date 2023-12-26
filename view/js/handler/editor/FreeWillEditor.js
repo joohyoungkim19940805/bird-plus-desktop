@@ -50,7 +50,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				// 동일한 동작이 수행되지 않도록 추가 2023 05 25
 			//	return;
 			//}
-			if(this.contentEditable == 'false'){
+			if(this.contentEditable == 'false' || (mutation.target.dataset.tool_status == 'connected' &&  mutation.oldValue == mutation.target.dataset.tool_status == 'connected')){
 				//observer.disconnect();
 				return;
 			}
@@ -287,10 +287,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	#renderingTools(TargetTool){
 		let selection = window.getSelection();
-		//if( ! anchorNodeLine || ! focusNodeLine){
-		//	return;
-		//}
-		
+		let {isCollapsed, anchorNode, focusNode} = selection;
+		// 범위 선택 x인 경우 넘어가기
+		if(isCollapsed && TargetTool.toolHandler.isInline){
+			return;
+		}
 		super.getLineRange(selection)
 		.then(({startLine, endLine}) => { 
 			if( ! startLine){
@@ -335,13 +336,13 @@ export default class FreeWillEditor extends FreeWiilHandler {
 	#removerTools(TargetTool){
 		let selection = window.getSelection();
 		let {isCollapsed, anchorNode, focusNode} = selection;
-		/*
+		
 		// 범위 선택 x인 경우 넘어가기
-		if(isCollapsed){
+		if(isCollapsed && TargetTool.toolHandler.isInline){
 			return;
-		}*/
+		}
 		super.getLineRange(selection).then(({startLine, endLine})=> {
-			console.log(endLine);
+			//console.log(endLine);
 			if( ! startLine){
 				startLine = endLine
 			}
@@ -351,17 +352,22 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			if( ! endLine.line){
 				new Line(endLine);
 			}
-			startLine.line.cancelTool(TargetTool, selection, endLine);
-		}).then(()=>{
-			this.#undoManager.addUndoRedo(true);
-			/*[...this.children]
-			.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
-			.forEach(lineElement=>{
-				if(lineElement.line.isLineEmpty()){
-					//lineElement.line = undefined;
-					//lineElement.remove();
+			startLine.line.cancelTool(TargetTool, selection, endLine)
+			.then(()=>{
+				if( ! this.#undoManager){
+					this.#undoManager = new UndoManager(this);
 				}
-			})*/
+				this.#undoManager.addUndoRedo(true);
+				window.getSelection().setPosition(startLine, startLine.childElementCount);
+				/*[...this.children]
+				.filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
+				.forEach(lineElement=>{
+					if(lineElement.line.isLineEmpty()){
+						//lineElement.line = undefined;
+						//lineElement.remove();
+					}
+				})*/
+			});
 		})
 	}
 	

@@ -257,12 +257,16 @@ export default new class NoticeBoardDetail{
                         let appendAwait = setInterval(()=>{
                             if( ! editor.isConnected) return;
                             clearInterval(appendAwait);
-                            if( ! editor.isEmpty){
+                            if(editor.isEmpty){
+                                editor.remove();
+                                li.prepend(addButton);
+                            }
+                            /*if( ! editor.isEmpty){
                                 li.append(positionChangeIcon)
                             }else {
                                 editor.remove();
                                 li.prepend(addButton);
-                            }
+                            }*/
                         },50)
                     })
                 })
@@ -276,11 +280,17 @@ export default new class NoticeBoardDetail{
                     return;
                 }
                 li.draggable = false;
+                if( ! editor.isEmpty){
+                    li.append(positionChangeIcon)
+                }
             }
             li.onmouseleave = () => {
                 if(addButton.isConnected){
                     addButton.classList.remove('active');
                     return;
+                }
+                if(positionChangeIcon.isConnected){
+                    positionChangeIcon.remove();
                 }
             }
             //let isPositionChangeIconOver = false;

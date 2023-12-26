@@ -9,6 +9,7 @@ import chattingHandler from "@handler/chatting/ChattingHandler"
 import Image from "@handler/editor/tools/Image"
 import Video from "@handler/editor/tools/Video"
 import Resources from "@handler/editor/tools/Resources"
+import FontSize from "@handler/editor/tools/FontSize"
 
 import { accountHandler } from "@handler/account/AccountHandler"
 import { s3EncryptionUtil } from "@handler/S3EncryptionUtil"
@@ -18,6 +19,11 @@ import IndexedDBHandler from "@handler/IndexedDBHandler"
 import HeaderDefault from "@component/header/HeaderDefault"
 
 import common from "@root/js/common";
+
+FontSize.unit = 'rem';
+FontSize.min = 0.1;
+FontSize.max = 5;
+FontSize.weight = 0.1;
 
 window.customElements.define('header-default', HeaderDefault);
 
@@ -256,7 +262,6 @@ window.addEventListener('load', async () => {
 					.then(stream => new Response(stream))
 					.then(res => res.blob())
 					.then(async blob => {
-						console.log(totalLen);
 						let newBlob = new Blob([blob], { type: targetTools.dataset.content_type });
 						return dbOpenPromise.then( async () => {
 							return indexedDBHandler.addItem({

@@ -11,6 +11,14 @@ export default class FontSize extends FreedomInterface {
 
     static fontSizeBox;
 
+	static unit = 'px';
+
+	static min = 1;
+
+	static max = 50;
+
+	static weight = 1;
+
     static{
         
 		this.toolHandler.extendsElement = '';
@@ -22,7 +30,7 @@ export default class FontSize extends FreedomInterface {
 			title: 'Font Size'
         });
 
-		this.fontSizeBox = new FontSizeBox({min:1, max:50});
+		this.fontSizeBox = new FontSizeBox(this);
 
 		this.toolHandler.toolButton.onclick = ()=>{
 			if(this.toolHandler.toolButton.dataset.tool_status == 'active' || this.toolHandler.toolButton.dataset.tool_status == 'connected'){

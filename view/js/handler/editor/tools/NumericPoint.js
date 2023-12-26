@@ -38,12 +38,12 @@ export default class NumericPoint extends FreedomInterface {
 			.${this.toolHandler.defaultClass} {
 				display: block;
 				margin-inline: 1.3em;
-				list-style-type: none;
 			}
 			.${this.toolHandler.defaultClass} > * {
-				list-style-type: decimal;
-				display: list-item;
 				margin-inline: 1.3em;
+			}
+			.${this.toolHandler.defaultClass} > *:before{
+				content: attr(data-order)
 			}
 		`
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);
@@ -74,6 +74,12 @@ export default class NumericPoint extends FreedomInterface {
 	constructor(dataset){
 		super(NumericPoint, dataset, {deleteOption : FreedomInterface.DeleteOption.EMPTY_CONTENT_IS_NOT_DELETE});
 		super.connectedChildAfterCallback = (list) => {
+			new Promise(r=>{
+				[...this.children].forEach((e,i)=>{
+					e.dataset.order = (i + 1) + '. ';
+				});
+				r();
+			});
 			let lastItem = list.at(-1);
 			if(lastItem.nodeType == Node.ELEMENT_NODE){
 				let inter = setInterval(()=>{
@@ -91,6 +97,7 @@ export default class NumericPoint extends FreedomInterface {
 				}, 50);
 			}
 		}
+
 		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);

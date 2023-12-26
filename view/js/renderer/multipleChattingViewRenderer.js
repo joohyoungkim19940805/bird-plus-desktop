@@ -18,6 +18,16 @@ import { simpleOption } from "@component/option/SimpleOption"
 
 import common from "@root/js/common";
 
+/*
+indexedDBHandler.open().then(()=>{
+	indexedDBHandler.addItem({
+		fileName:'test',
+		lastModified:'1111',
+		targetId: '1',
+		uploadType: 'abcd'
+	});
+})
+*/
 const oneDay = 1000 * 60 * 60 * 24;
 window.addEventListener('load', async () => {
 	const indexedDBHandler = new IndexedDBHandler({
@@ -243,7 +253,6 @@ window.addEventListener('load', async () => {
 					.then(stream => new Response(stream))
 					.then(res => res.blob())
 					.then(async blob => {
-						console.log(totalLen);
 						let newBlob = new Blob([blob], { type: targetTools.dataset.content_type });
 						return dbOpenPromise.then( async () => {
 							return indexedDBHandler.addItem({

@@ -6,10 +6,6 @@ export default class FontSizeBox {
 
     #fontSizeBoxVw = 30;
 
-    #min
-    
-    #max
-
     #fontSizeBox = Object.assign(document.createElement('div'), {
         className: 'font-size-wrap',
     })
@@ -19,7 +15,7 @@ export default class FontSizeBox {
     
     #searchInputText = Object.assign(document.createElement('input'), {
         autocomplete: 'off',
-        placeholder: 'searching your font size',
+        placeholder: 'search your font size',
         type: 'number',
         name: 'font-size-search',
         className: 'font-size-search',
@@ -41,13 +37,10 @@ export default class FontSizeBox {
 
     #lastSelectionRange;
 
-    constructor({min, max}){
-        if( ! min || ! max){
-            throw new Error('font size is undefined');
-        }
-        this.#min = min;
-        this.#max = max;
+    #fontSizeObject;
 
+    constructor(fontSizeObject){
+        this.#fontSizeObject = fontSizeObject
         let style = document.querySelector(`#${this.#style.id}`);
         if(! style){
             document.head.append(this.createStyle());
@@ -74,7 +67,7 @@ export default class FontSizeBox {
                 this.#fontSizeBoxContainer.replaceChildren(...fontElementList);
             });
             return;
-        }else if(isNaN(number) || this.#min > number || this.#max < number){
+        }else if(isNaN(number) || this.#fontSizeObject.min > number || this.#fontSizeObject.max < number){
             this.#fontSizeBoxContainer.replaceChildren();
             return;
         }
@@ -87,7 +80,7 @@ export default class FontSizeBox {
         }else{
             li.textContent = this.#sampleText;
         }
-        li.style.fontSize = number + 'px';
+        li.style.fontSize = number + this.#fontSizeObject.unit;
         li.dataset.size = number;
         this.#addFontItemEvent(li);
         this.#fontSizeBoxContainer.replaceChildren(li);
@@ -114,7 +107,12 @@ export default class FontSizeBox {
     #createFontElementList(sampleText){
         return new Promise(resolve=> {
             let list = [];
-            for(let i = this.#min, len = this.#max + 1 ; i < len ; i += 1){
+            let fixedLength = String(this.#fontSizeObject.weight).replace('.', '').length;
+            for(let i = this.#fontSizeObject.min, len = this.#fontSizeObject.max + this.#fontSizeObject.weight ; 
+                i < len ;
+                i = parseFloat( (i + this.#fontSizeObject.weight).toFixed(fixedLength) )
+            ){
+                console.log(i);
                 let li = Object.assign(document.createElement('li'),{
                     className: 'font-size-item',
                 });
@@ -123,7 +121,7 @@ export default class FontSizeBox {
                 }else{
                     li.textContent = sampleText;
                 }
-                li.style.fontSize = i + 'px';
+                li.style.fontSize = i + this.#fontSizeObject.unit;
                 this.#addFontItemEvent(li);
                 list.push(li);
             }
@@ -132,6 +130,10 @@ export default class FontSizeBox {
     }
 
     async open(){
+        this.#searchInputText.step = this.#fontSizeObject.weight;
+        this.#searchInputText.min = this.#fontSizeObject.min;
+        this.#searchInputText.max = this.#fontSizeObject.max;
+        
         let selection = window.getSelection();
         if(selection.rangeCount != 0 && selection.isCollapsed == false){
             let range = selection.getRangeAt(0);
@@ -210,6 +212,8 @@ export default class FontSizeBox {
             .font-size-wrap .font-size-search-wrap [name="font-size-search"]{
                 outline: none;
                 -moz-appearance: textfield;
+                width: 100%;
+                color: white;
             }
             .font-size-wrap .font-size-search-wrap [name="font-size-search"]::-webkit-outer-spin-button,
             .font-size-wrap .font-size-search-wrap [name="font-size-search"]::-webkit-inner-spin-button{

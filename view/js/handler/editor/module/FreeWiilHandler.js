@@ -87,6 +87,7 @@ export default class FreeWiilHandler extends HTMLElement{
             let {anchorNode, focusNode} = selection; 
             let startAndEndLineObject;
             if(anchorNode == this){
+                //console.log(111)
                 let allLine = [...this.children].filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
                 startAndEndLineObject = {
                     startLine : allLine[0],
@@ -99,15 +100,20 @@ export default class FreeWiilHandler extends HTMLElement{
                 range.setEnd(endLineChildNodes, endLineChildNodes.nodeType == Node.TEXT_NODE ? endLineChildNodes.textContent.length : startAndEndLineObject.endLine.childNodes.length);
                 selection.addRange(range);
             }else{
+                //console.log(222)
                 let anchorNodeLine = Line.getLine(anchorNode);
                 let focusNodeLine = Line.getLine(focusNode);
                 if(anchorNodeLine == focusNodeLine){
+                    //console.log(333)
                     resolve({
                         startLine: anchorNodeLine,
                         endLine: focusNodeLine
                     })
+                    return;
                 }
-                startAndEndLineObject = [...this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
+                //console.log(4444, anchorNodeLine , focusNodeLine);
+                startAndEndLineObject = {startLine : anchorNodeLine, endLine : focusNodeLine};
+                /*startAndEndLineObject = [...this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
                     if(item == anchorNodeLine || item == focusNodeLine){
                         let key = 'startLine';
                         if(obj.hasOwnProperty(key)){
@@ -117,7 +123,7 @@ export default class FreeWiilHandler extends HTMLElement{
                         }
                     }
                     return obj;
-                },{})
+                },{})*/
             }
             resolve(startAndEndLineObject);
         })

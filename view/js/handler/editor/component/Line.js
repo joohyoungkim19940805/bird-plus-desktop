@@ -444,13 +444,23 @@ export default class Line {
 
 			let selection = window.getSelection()
 
-			if(tool.childNodes.length > 1){
-				let list = [...tool.childNodes];
-				let index = list.findIndex(e=> selection.containsNode(e, true) || selection.containsNode(e, false))
-				targetWrap = list[index]
-				leftList = list.slice(0, index);
-				rightList = list.slice(index + 1);
+			//if(tool.childNodes.length > 1){
+			let list = [...tool.childNodes];
+			if( ! TargetTool.toolHandler.isInline){
+				try{
+					this.lineElement.append(...list);
+				}catch(Ignore){
+					Line.getLine(tool).append(...list);
+				}
+				tool.remove();
+				resolve();
+				return
 			}
+			let index = list.findIndex(e=> selection.containsNode(e, true) || selection.containsNode(e, false))
+			targetWrap = list[index]
+			leftList = list.slice(0, index);
+			rightList = list.slice(index + 1);
+			//}
 			
 
 			if(startContainer.textContent.length != offset){
@@ -675,7 +685,7 @@ export default class Line {
 				TargetTool.toolHandler.toolButton.dataset.tool_status = 'connected'
 				resolve();
 			}else{
-				if(startContainer === endContainer && this.lineElement.innerText.length != range.toString().length){
+				if( ! TargetTool.toolHandler.isInline || (startContainer === endContainer && this.lineElement.innerText.length != range.toString().length ) ){
 					this.#cancelOnlyOneTool(range, tool, TargetTool).then(()=>{
 						console.log('cancelOnlyOneTool')
 						resolve();

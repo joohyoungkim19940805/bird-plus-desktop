@@ -4,8 +4,8 @@ html{
     -moz-text-size-adjust : 100%;  /* 파이어폭스 */
 }
 body, html{
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     margin: 0;
 	display: inline-flex;
 	flex-direction: column;
