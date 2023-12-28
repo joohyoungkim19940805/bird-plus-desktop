@@ -1,5 +1,5 @@
 
-export default new class NoticeBoardHandler{
+export const noticeBoardHandler = new class NoticeBoardHandler{
     #noticeBoardId
     #noticeBoard = [];
     #addNoticeBoardIdChangeListener = {};

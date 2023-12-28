@@ -1,7 +1,7 @@
-import chattingHead from './chatting_item/ChattingHead'
-import chattingInfo from './chatting_item/ChattingInfo';
-import chattingRegist from './chatting_item/ChattingRegist';
-import roomHandler from "@handler/room/RoomHandler";
+import {chattingHead} from './chatting_item/ChattingHead'
+import {chattingInfo} from './chatting_item/ChattingInfo';
+import {chattingRegist} from './chatting_item/ChattingRegist';
+import {roomHandler} from "@handler/room/RoomHandler";
 
 import SimpleSvgPipMode from '@component/SimpleSvgPipMode';
 

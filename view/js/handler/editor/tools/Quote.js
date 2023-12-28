@@ -9,7 +9,7 @@ export default class Quote extends FreedomInterface {
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-quote-style'
 	});
-
+	static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-quote';

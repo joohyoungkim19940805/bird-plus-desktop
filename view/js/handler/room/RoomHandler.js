@@ -1,4 +1,4 @@
-export default new class RoomHandler{
+export const roomHandler = new class RoomHandler{
     #roomId
     #room;
     #addRoomIdChangeListener = {};

@@ -17,11 +17,11 @@ import Resources from "@handler/editor/tools/Resources";
 import Code from "@handler/editor/tools/Code"
 import Hyperlink from "@handler/editor/tools/Hyperlink"
 
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import common from "@root/js/common"
 import PositionChanger from "@handler/PositionChangeer";
-import noticeBoardHandler from "@handler/notice_board/NoticeBoardHandler";
+import {noticeBoardHandler} from "@handler/notice_board/NoticeBoardHandler";
 
 import { accountHandler } from "@handler/account/AccountHandler";
 import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
@@ -69,7 +69,7 @@ class NoticeBoardLine extends FreeWillEditor{
 
 }
 
-export default new class NoticeBoardDetail{
+export const noticeBoardDetail = new class NoticeBoardDetail{
 	#memory = {}
 
     #element = Object.assign(document.createElement('div'), {
@@ -251,7 +251,7 @@ export default new class NoticeBoardDetail{
                 datasetPromise.then(() => {
                     li.removeAttribute('data-content');
                     
-                    editor.parseLowDoseJSON(content).then(() => {
+                    NoticeBoardDetail.parseLowDoseJSON(editor, content).then(() => {
                         editor.contentEditable = false;
                         li.append(editor);
                         let appendAwait = setInterval(()=>{
@@ -402,7 +402,7 @@ export default new class NoticeBoardDetail{
         let promiseList = [];
 
         editor.contentEditable = false;
-        editor.getLowDoseJSON(editor, {
+        NoticeBoardLine.getLowDoseJSON(editor, {
             afterCallback : (json) => {
                 if(json.tagName != Image.toolHandler.defaultClass && 
                     json.tagName != Video.toolHandler.defaultClass &&

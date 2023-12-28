@@ -1,8 +1,8 @@
-import noticeBoardList from "./notice_board_item/NoticeBoardList"
-import noticeBoardDetail from "./notice_board_item/NoticeBoardDetail"
-import roomHandler from "@handler/room/RoomHandler";
+import {noticeBoardList} from "./notice_board_item/NoticeBoardList"
+import {noticeBoardDetail} from "./notice_board_item/NoticeBoardDetail"
+import {roomHandler} from "@handler/room/RoomHandler";
 
-export default new class NoticeBoardContainer{
+export const noticeBoardContainer = new class NoticeBoardContainer{
 
 	#contentList;
 	#wrap = (() => {

@@ -24,7 +24,7 @@ export default class Image extends FreedomInterface {
     static get selectedFile(){
         return this.#selectedFile;
     }
-
+    static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-image';

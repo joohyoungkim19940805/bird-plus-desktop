@@ -1,7 +1,7 @@
-import roomMenuList from "./room_item/RoomMenuList"
-import roomFavoritesList from "./room_item/RoomFavoritesList"
-import roomList from "./room_item/RoomList"
-import roomMessengerList from "./room_item/RoomMessengerList"
+import {roomMenuList} from "./room_item/RoomMenuList"
+import {roomFavoritesList} from "./room_item/RoomFavoritesList"
+import {roomList} from "./room_item/RoomList"
+import {roomMessengerList} from "./room_item/RoomMessengerList"
 
 export default new class RoomContainer{
 

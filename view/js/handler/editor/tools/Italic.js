@@ -7,7 +7,7 @@ export default class Italic extends FreedomInterface {
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-italic-style'
 	});
-
+	static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-italic';

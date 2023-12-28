@@ -38,6 +38,110 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		static NEXT_LINE_LAST = new this.#LineBreakModeEnum(3);
 	}
 
+	static async getLowDoseJSON(targetElement = this, {afterCallback = (json)=> {}} = {}){
+		return Promise.all([...targetElement.childNodes]
+			.map(async (node, index)=>{
+				return new Promise(resolve =>{
+					//if(targetElement == this && node.nodeType == Node.TEXT_NODE){
+					//	resolve(undefined);
+					//}
+					resolve( this.#toJSON(node, {afterCallback}) )
+				})
+			})).then(jsonList=>jsonList.filter(e=>e != undefined).map(e=> {
+				delete e.node;
+				return e;
+			}))
+	}
+
+	static async #toJSON(node, {afterCallback}){
+		return new Promise(resolve=>{
+			let obj = {};
+			if(node.nodeType == Node.TEXT_NODE && node.textContent != '' && node.textContent){
+				obj.type = Node.TEXT_NODE;
+				obj.name = node.constructor.name;
+				obj.text = node.textContent
+				obj.node = node;
+				afterCallback(obj);
+				resolve(obj);
+			}else if(node.nodeType == Node.ELEMENT_NODE){
+				obj.type = Node.ELEMENT_NODE;
+				obj.name = node.constructor.name;
+				obj.tagName = node.localName;
+				obj.data = Object.assign({}, node.dataset);
+				obj.node = node;
+				if(node.hasAttribute('is_cursor')){
+					obj.cursor_offset = node.getAttribute('cursor_offset');
+					obj.cursor_type = node.getAttribute('cursor_type');
+					obj.cursor_index = node.getAttribute('cursor_index');
+					obj.cursor_scroll_x = node.getAttribute('cursor__scroll_x');
+					obj.cursor_scroll_y = node.getAttribute('cursor_scroll_y');
+				}
+				this.getLowDoseJSON(node, {afterCallback})
+				.then(jsonList => {
+					obj.childs = jsonList.filter(e=> e != undefined)
+					afterCallback(obj);
+					resolve(obj);
+				})
+			}else{
+				//afterCallback(undefined)
+				resolve(undefined);
+			}
+			
+		})
+	}
+
+	static async parseLowDoseJSON(target, json, {beforeCallback = (json) => {}, afterCallback = (node)=> {}} = {}){
+		return new Promise(resolve => {
+			let jsonObj = json;
+			if(typeof json == 'string'){
+				jsonObj = JSON.parse(json);
+			}
+
+			if(jsonObj instanceof Array){
+				resolve(
+					Promise.all(this.#toHTML(jsonObj, {beforeCallback, afterCallback}))
+					.then(htmlList => {
+						target.replaceChildren(...htmlList.filter(e=> e != undefined))
+					})
+				);
+			}
+			resolve(undefined);
+		})
+	}
+
+	static #toHTML(objList, {beforeCallback, afterCallback}){
+		return objList.filter(e=>e!=undefined).map(async jsonNode => {
+			return new Promise(resolve => {
+				beforeCallback(jsonNode);
+				let node = undefined;
+				if(jsonNode.type == Node.TEXT_NODE){
+					node = document.createTextNode(jsonNode.text);
+				}else if(jsonNode.type == Node.ELEMENT_NODE){
+					//let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name]
+					let editorTarget = window.customElements.get(jsonNode.tagName);
+					if(editorTarget && editorTarget.toolHandler){
+						node = new editorTarget.prototype.constructor(jsonNode.data);
+					}else if(jsonNode.data.hasOwnProperty('is_line')){
+						let line = new Line(document.createElement(jsonNode.tagName));
+						node = line.lineElement;
+						Object.assign(node.dataset, jsonNode.data);
+					}else{
+						//node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
+						node = document.createElement(jsonNode.tagName);
+						Object.assign(node.dataset, jsonNode.data);
+					}
+					afterCallback(node)
+					if(jsonNode.childs.length != 0){
+						Promise.all(this.#toHTML(jsonNode.childs, {beforeCallback, afterCallback})).then(childList => {
+							node.append(...childList);
+						})
+					}
+				}
+				resolve(node);
+			})
+		})
+	}
+
 	#isLoaded = false;
 	components;
 	tools;
@@ -120,7 +224,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				if(FreeWillEditor.toolsMap[Tool.name]){
 					return;
 				}
-				if(this.isDefaultStyle){
+				if(Tool.isDefaultStyle){
 					Tool.createDefaultStyle();
 				}
 				Tool.toolHandler.toolButton.__Tool = Tool;
@@ -396,110 +500,6 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				lineElement.line.lookAtMe();
 			}
 
-		})
-	}
-
-	async getLowDoseJSON(targetElement = this, {afterCallback = (json)=> {}} = {}){
-		console.log(targetElement)
-		return Promise.all([...targetElement.childNodes]
-			.map(async (node, index)=>{
-				return new Promise(resolve =>{
-					if(targetElement == this && node.nodeType == Node.TEXT_NODE){
-						resolve(undefined);
-					}
-					resolve( this.#toJSON(node, {afterCallback}) )
-				})
-			})).then(jsonList=>jsonList.filter(e=>e != undefined).map(e=> {
-				delete e.node;
-				return e;
-			}))
-	}
-
-	async #toJSON(node, {afterCallback}){
-		return new Promise(resolve=>{
-			let obj = {};
-			if(node.nodeType == Node.TEXT_NODE && node.textContent != '' && node.textContent){
-				obj.type = Node.TEXT_NODE;
-				obj.name = node.constructor.name;
-				obj.text = node.textContent
-				obj.node = node;
-				afterCallback(obj);
-				resolve(obj);
-			}else if(node.nodeType == Node.ELEMENT_NODE){
-				obj.type = Node.ELEMENT_NODE;
-				obj.name = node.constructor.name;
-				obj.tagName = node.localName;
-				obj.data = Object.assign({}, node.dataset);
-				obj.node = node;
-				if(node.hasAttribute('is_cursor')){
-					obj.cursor_offset = node.getAttribute('cursor_offset');
-					obj.cursor_type = node.getAttribute('cursor_type');
-					obj.cursor_index = node.getAttribute('cursor_index');
-					obj.cursor_scroll_x = node.getAttribute('cursor__scroll_x');
-					obj.cursor_scroll_y = node.getAttribute('cursor_scroll_y');
-				}
-				this.getLowDoseJSON(node, {afterCallback})
-				.then(jsonList => {
-					obj.childs = jsonList.filter(e=> e != undefined)
-					afterCallback(obj);
-					resolve(obj);
-				})
-			}else{
-				//afterCallback(undefined)
-				resolve(undefined);
-			}
-			
-		})
-	}
-
-	async parseLowDoseJSON(json, {beforeCallback = (json) => {}, afterCallback = (node)=> {}} = {}){
-		return new Promise(resolve => {
-			let jsonObj = json;
-			if(typeof json == 'string'){
-				jsonObj = JSON.parse(json);
-			}
-
-			if(jsonObj instanceof Array){
-				resolve(
-					Promise.all(this.#toHTML(jsonObj, {beforeCallback, afterCallback}))
-					.then(htmlList => {
-						this.replaceChildren(...htmlList.filter(e=> e != undefined))
-					})
-				);
-			}
-			resolve(undefined);
-		})
-	}
-
-	#toHTML(objList, {beforeCallback, afterCallback}){
-		return objList.filter(e=>e!=undefined).map(async jsonNode => {
-			return new Promise(resolve => {
-				beforeCallback(jsonNode);
-				let node = undefined;
-				if(jsonNode.type == Node.TEXT_NODE){
-					node = document.createTextNode(jsonNode.text);
-				}else if(jsonNode.type == Node.ELEMENT_NODE){
-					let EditorTarget = FreeWillEditor.componentsMap[jsonNode.name] || FreeWillEditor.toolsMap[jsonNode.name]
-					if(EditorTarget){
-						node = new EditorTarget(jsonNode.data);
-					}else if(jsonNode.data.hasOwnProperty('is_line')){
-						let line = new Line(document.createElement(jsonNode.tagName));
-						node = line.lineElement;
-						Object.assign(node.dataset, jsonNode.data);
-					}else{
-						//node = document.createElement(jsonNode.name.replaceAll(/HTML|Element/g, '').toLowerCase());
-						node = document.createElement(jsonNode.tagName);
-						Object.assign(node.dataset, jsonNode.data);
-					}
-					afterCallback(node)
-					if(jsonNode.childs.length != 0){
-						Promise.all(this.#toHTML(jsonNode.childs, {beforeCallback, afterCallback})).then(childList => {
-							node.append(...childList);
-						})
-					}
-				}
-				resolve(node);
-			})
 		})
 	}
 

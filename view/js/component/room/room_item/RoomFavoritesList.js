@@ -1,5 +1,5 @@
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
 
 import { accountHandler } from "@handler/account/AccountHandler"

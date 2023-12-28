@@ -1,11 +1,11 @@
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
 import noticeBoardDetail from "./NoticeBoardDetail";
 import common from "@root/js/common";
-import noticeBoardHandler from "@handler/notice_board/NoticeBoardHandler";
+import {noticeBoardHandler} from "@handler/notice_board/NoticeBoardHandler";
 
-export default new class NoticeBoardList{
+export const noticeBoardList = new class NoticeBoardList{
 	#memory = {}
 
     #element = Object.assign(document.createElement('div'), {

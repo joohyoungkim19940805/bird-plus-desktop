@@ -10,7 +10,7 @@ export default class Hyperlink extends FreedomInterface {
 	});
 
     static hyperlinkBox;
-
+	static isDefaultStyle = true;
 	static{
 
 		this.toolHandler.extendsElement = '';
@@ -52,19 +52,19 @@ export default class Hyperlink extends FreedomInterface {
 				this.hyperlinkBox.close();
 			}else{
 				this.hyperlinkBox.open().then(()=>{
-					this.toolHandler.processingElementPosition(this.hyperlinkBox.hyperlinkBox);
+					super.processingElementPosition(this.hyperlinkBox.hyperlinkBox, this.toolHandler.toolButton);
 				});
 			}
 		}
 
 		document.addEventListener("scroll", () => {
 			if(this.hyperlinkBox.hyperlinkBox.isConnected){
-				this.toolHandler.processingElementPosition(this.hyperlinkBox.hyperlinkBox);
+				super.processingElementPosition(this.hyperlinkBox.hyperlinkBox, this.toolHandler.toolButton);
 			}
 		});
         window.addEventListener('resize', (event) => {
             if(this.hyperlinkBox.hyperlinkBox.isConnected){
-				this.toolHandler.processingElementPosition(this.hyperlinkBox.hyperlinkBox);
+				super.processingElementPosition(this.hyperlinkBox.hyperlinkBox, this.toolHandler.toolButton);
             }
 		})
 
@@ -287,35 +287,6 @@ export default class Hyperlink extends FreedomInterface {
 			}) 
 		}
 
-
-		/*
-		this.onmouseenter = () => {
-			if(this.#previewUrl.src != this.dataset.href){
-				this.#previewUrl.src = this.dataset.href;
-			}
-			if( ! this.#previewUrl.isConnected){
-				document.body.append(this.#previewUrl);
-				//this.append(this.#previewUrl);
-			}
-			Hyperlink.toolHandler.processingElementPosition(this.#previewUrl, this);
-		}		
-
-		FreedomInterface.outClickElementListener(this.#previewUrl, ({oldEvent, newEvent, isMouseOut})=>{
-			if(isMouseOut && this.#previewUrl.isConnected && ! FreedomInterface.isMouseInnerElement(this)){
-				this.#previewUrl.remove();
-			}
-		})
-		document.addEventListener("scroll", () => {
-			if(this.#previewUrl.isConnected){
-				Hyperlink.toolHandler.processingElementPosition(this.#previewUrl, this);
-			}
-		});
-		window.addEventListener('resize', (event) => {
-			if(this.#previewUrl.isConnected){
-				Hyperlink.toolHandler.processingElementPosition(this.#previewUrl, this);
-			}
-		})
-		*/
 	}
 
 }

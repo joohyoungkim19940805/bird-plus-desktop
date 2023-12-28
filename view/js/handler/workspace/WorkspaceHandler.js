@@ -1,5 +1,5 @@
 
-export default new class WorkspaceHandler{
+export const workspaceHandler = new class WorkspaceHandler{
     #workspace;
     #workspaceId;
     #addWorkspaceIdChangedListener = {};

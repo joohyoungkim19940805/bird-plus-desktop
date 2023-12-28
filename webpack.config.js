@@ -10,7 +10,7 @@ const TerserPlugin = require('terser-webpack-plugin');
  */
 module.exports = {
 	mode: 'development',
-	devtool: 'cheap-module-source-map',
+	devtool: 'source-map',
 	entry: {
 		openingRenderer: "./view/js/renderer/openingRenderer.js",
 		workspacePageRenderer: "./view/js/renderer/workspacePageRenderer.js",
@@ -53,7 +53,7 @@ module.exports = {
 		}
 	},
 	optimization: {
-		minimize: true,
+		minimize: false,
 		minimizer: [
 			new TerserPlugin({
 			extractComments: false,
@@ -67,8 +67,5 @@ module.exports = {
 	},
 	performance: {
 		hints: false
-	},
-	optimization:{
-		minimize:false
 	}
 }

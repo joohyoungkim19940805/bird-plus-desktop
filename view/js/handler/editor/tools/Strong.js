@@ -7,7 +7,7 @@ export default class Strong extends FreedomInterface {
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-strong-style'
 	});
-
+	static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-strong';

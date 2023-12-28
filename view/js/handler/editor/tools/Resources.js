@@ -25,7 +25,7 @@ export default class Resources extends FreedomInterface {
     static #resourcesCallback = () => {};
 
     static #sizeLimitOverCallback = () => {};
-
+    static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-editor-resources';

@@ -1,6 +1,6 @@
-import chattingHandler from "@handler/chatting/ChattingHandler"
-import roomHandler from "@handler/room/RoomHandler"
-import workspaceHandler from "@handler/workspace/WorkspaceHandler"
+import {chattingHandler} from "@handler/chatting/ChattingHandler"
+import {roomHandler} from "@handler/room/RoomHandler"
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler"
 import {accountHandler} from "@handler/account/AccountHandler"
 
 import FreeWillEditor from "@handler/editor/FreeWillEditor"
@@ -31,9 +31,9 @@ import EmoticonBox from "@handler/editor/component/EmoticonBox"
 
 import NotificationsIcon from "@component/NotificationsIcon"
 
-import roomList from "@component/room/room_item/RoomList"
-import roomFavoritesList from "@component/room/room_item/RoomFavoritesList"
-import roomMessengerList from "@component/room/room_item/RoomMessengerList"
+import {roomList} from "@component/room/room_item/RoomList"
+import {roomFavoritesList} from "@component/room/room_item/RoomFavoritesList"
+import {roomMessengerList} from "@component/room/room_item/RoomMessengerList"
 
 
 class ChattingInfoLine extends FreeWillEditor{
@@ -71,7 +71,7 @@ class ChattingInfoLine extends FreeWillEditor{
     }
 }
 
-export default new class ChattingInfo{
+export const chattingInfo = new class ChattingInfo{
     
     #memory = {}
 
@@ -466,7 +466,6 @@ export default new class ChattingInfo{
             let {content} = event
             console.log('delete accept content', content);
             this.reset();
-            console.log(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId])
             delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId][content.chattingId];
             if(roomHandler.roomId == content.roomId){
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
@@ -613,7 +612,7 @@ export default new class ChattingInfo{
             });
             li.append(descriptionWrap);
             let content = new ChattingInfoLine();
-            content.parseLowDoseJSON(chatting).then((e)=>{
+            ChattingInfoLine.parseLowDoseJSON(content, chatting).then((e)=>{
                 resolve(li)
             });
             descriptionWrap.querySelector('.chatting_container .chatting_content_description_name_wrapper').after(content);
@@ -887,7 +886,7 @@ export default new class ChattingInfo{
     async #sendChatting(li){
         let editor = li.__editor;
         let promiseList = [];
-        editor.getLowDoseJSON(editor, {
+        ChattingInfoLine.getLowDoseJSON(editor, {
             afterCallback : (json) => {
                 if(json.tagName != Image.toolHandler.defaultClass && 
                     json.tagName != Video.toolHandler.defaultClass &&

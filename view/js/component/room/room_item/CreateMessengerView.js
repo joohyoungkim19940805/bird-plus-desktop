@@ -1,6 +1,6 @@
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 import LayerPopupTemplate from "@component/LayerPopupTemplate"
-import roomHandler from "@handler/room/RoomHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 

@@ -11,6 +11,8 @@ export default class Background extends FreedomInterface {
 
 	static palette;
 
+	static isDefaultStyle = true;
+
 	static{
 
 		this.toolHandler.extendsElement = '';

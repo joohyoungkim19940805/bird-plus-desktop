@@ -1,7 +1,7 @@
 import PositionChanger from "@handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
 
-export default new class RoomMenuList{
+export const roomMenuList = new class RoomMenuList{
 	#page = 0;
 	#size = 10;
 	#element = Object.assign(document.createElement('div'), {

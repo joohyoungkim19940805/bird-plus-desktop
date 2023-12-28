@@ -1,11 +1,11 @@
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
 import CreateMessengerView from "./CreateMessengerView";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
-export default new class RoomMessengerList{
+export const roomMessengerList = new class RoomMessengerList{
 
 	#memory = {};
 

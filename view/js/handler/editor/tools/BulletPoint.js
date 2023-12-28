@@ -9,7 +9,7 @@ export default class BulletPoint extends FreedomInterface {
 	static #defaultStyle = Object.assign(document.createElement('style'), {
 		id: 'free-will-editor-bullet-point-style'
 	});
-
+	static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-bullet-point';

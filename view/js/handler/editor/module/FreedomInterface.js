@@ -16,6 +16,7 @@ export default class FreedomInterface extends HTMLElement {
 	static globalSelectionChangeEventPromise = new Promise(resolve=>{
 		this.globalSelectionChangeEventPromiseResolve = resolve;
 	})
+	
 	static{
 		document.addEventListener('mousemove', (event) => {
 			//mousePos = { x: event.clientX, y: event.clientY };
@@ -100,6 +101,25 @@ export default class FreedomInterface extends HTMLElement {
 			})
 		}
 		simpleObserver();
+	}
+	
+	static processingElementPosition(element, target){
+		let {x, y, height} = target.getBoundingClientRect();
+		
+		let elementTop = (y - element.clientHeight)
+		let elementLeft = (x - element.clientWidth)
+		if(elementTop > 0){
+			element.style.top = elementTop + 'px';
+		}else{
+			element.style.top = y + height + 'px';
+		}
+
+		if(elementLeft > 0){
+			element.style.left = elementLeft + 'px'
+		}else{
+			element.style.left = x + width + 'px';
+		}
+		
 	}
 	
 	static DeleteOption = class DeleteOption{

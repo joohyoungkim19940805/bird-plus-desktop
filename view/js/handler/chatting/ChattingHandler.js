@@ -1,5 +1,5 @@
 
-export default new class ChattingHandler{
+export const chattingHandler = new class ChattingHandler{
 	#lastChattingId;
 	#lastChatting;
     #addChattingEventListener = {};

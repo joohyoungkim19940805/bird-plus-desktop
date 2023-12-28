@@ -18,7 +18,7 @@ export default class FontSize extends FreedomInterface {
 	static max = 50;
 
 	static weight = 1;
-
+	static isDefaultStyle = true;
     static{
         
 		this.toolHandler.extendsElement = '';
@@ -39,7 +39,7 @@ export default class FontSize extends FreedomInterface {
 				this.fontSizeBox.close();
 			}else{
 				this.fontSizeBox.open().then(fontSizeBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontSizeBox.fontSizeBox);
+				    super.processingElementPosition(this.fontSizeBox.fontSizeBox, this.toolHandler.toolButton);
                 });
 			}
 		}
@@ -51,13 +51,13 @@ export default class FontSize extends FreedomInterface {
 
         document.addEventListener("scroll", () => {
 			if(this.fontSizeBox.fontSizeBox.isConnected){
-				this.toolHandler.processingElementPosition(this.fontSizeBox.fontSizeBox);
+				super.processingElementPosition(this.fontSizeBox.fontSizeBox, this.toolHandler.toolButton);
 			}
 		});
         window.addEventListener('resize', (event) => {
             if(this.fontSizeBox.fontSizeBox.isConnected){
                 this.fontSizeBox.open().then(fontSizeBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontSizeBox.fontSizeBox);
+					super.processingElementPosition(this.fontSizeBox.fontSizeBox, this.toolHandler.toolButton);
                 });
             }
 		})

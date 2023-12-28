@@ -28,6 +28,7 @@ export default class FontFamily extends FreedomInterface {
         'MS Sans Serif, Geneva, Sans-Serif',
         'MS Serif, New York, Serif'
     ]
+    static isDefaultStyle = true;
     static{
         
 		this.toolHandler.extendsElement = '';
@@ -48,7 +49,7 @@ export default class FontFamily extends FreedomInterface {
 				this.fontFamilyBox.close();
 			}else{
 				this.fontFamilyBox.open().then(fontFamilyBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
+				    super.processingElementPosition(this.fontFamilyBox.fontFamilyBox, this.toolHandler.toolButton);
                 });
 			}
 		}
@@ -60,13 +61,13 @@ export default class FontFamily extends FreedomInterface {
 
         document.addEventListener("scroll", () => {
 			if(this.fontFamilyBox.fontFamilyBox.isConnected){
-				this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
+                super.processingElementPosition(this.fontFamilyBox.fontFamilyBox, this.toolHandler.toolButton);
 			}
 		});
         window.addEventListener('resize', (event) => {
             if(this.fontFamilyBox.fontFamilyBox.isConnected){
                 this.fontFamilyBox.open().then(fontFamilyBoxContainer=>{
-				    this.toolHandler.processingElementPosition(this.fontFamilyBox.fontFamilyBox);
+                    super.processingElementPosition(this.fontFamilyBox.fontFamilyBox, this.toolHandler.toolButton);
                 });
             }
 		})

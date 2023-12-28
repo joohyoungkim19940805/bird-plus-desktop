@@ -11,6 +11,7 @@ export default class Strikethrough extends FreedomInterface {
 	});
 
     static palette;
+	static isDefaultStyle = true;
 	static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-strikethrough';

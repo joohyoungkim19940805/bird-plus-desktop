@@ -10,7 +10,7 @@ export default class Color extends FreedomInterface {
 	});
 
 	static palette;
-
+	static isDefaultStyle = true;
 	static{
 
 		this.toolHandler.extendsElement = '';

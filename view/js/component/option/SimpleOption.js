@@ -2,7 +2,7 @@ import common from "@root/js/common";
 import IndexedDBHandler from "@handler/IndexedDBHandler";
 
 import { accountHandler } from "@handler/account/AccountHandler";
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 
 import GiveAdminView from "@component/option/GiveAdminView"
 
@@ -79,19 +79,36 @@ export const simpleOption = new class SimpleOption{
         */
 
         let simpleMemory = {};
+        let {li, attendRequest, attendRequestFilter, attendRequestSearch} = this.#attendRequestObject
+        
+        attendRequestSearch.oninput = (event) => {
+            if(event.constructor.name == Event.name){
+                li.dataset.is_not_leave = '';
+            }
+            let itemList = Object.values(simpleMemory[workspaceHandler.workspaceId]).filter(e=> 
+                (e.__filterOption.value.includes(attendRequestSearch.value) || e.__filterOption.textContent.includes(attendRequestSearch.value))
+            )
+            attendRequest.style.minHeight = attendRequest.getBoundingClientRect().height + 'px';;
+            attendRequest.replaceChildren(
+                ...itemList
+            )
+            attendRequestFilter.replaceChildren(
+                ...itemList.map(e=>e.__filterOption)
+            )
+            attendRequest.style.minHeight = '';
+        }
         
         window.myAPI.event.electronEventTrigger.addElectronEventListener('workspacePermitRequestAccept', (event)=>{
             
             if( ! this.#isAdmin) return;
 
             let {content = event} = event;
-            console.log(content);
-            let {attendRequest} = this.#attendRequestObject
+
             let item = Object.assign(document.createElement('li'),{
                 className: 'attend_request_item',
                 innerHTML:`
                     <div class="attend_request_item_container">
-                        <div class="attend_request_item_emain">
+                        <div class="attend_request_item_email">
                             <span>${content.email}</span>
                         </div>
                         <div class="attend_request_item_name">
@@ -108,6 +125,12 @@ export const simpleOption = new class SimpleOption{
                     </div>
                 `
             })
+            item.__filterOption = Object.assign(document.createElement('option'), {
+                value : content.fullName,
+                textContent: content.email
+            });
+            //item.__filterOption.__targetLi = item;
+
             let [permit, reject] = item.querySelectorAll('.attend_request_item_permit, .attend_request_tiem_reject');
             [permit, reject].forEach(e=>{
                 e.onclick = () => {
@@ -128,8 +151,12 @@ export const simpleOption = new class SimpleOption{
 
             if(workspaceHandler.workspaceId == content.workspaceId){
                 //console.log(Object.values(simpleMemory[content.workspaceId]))
+                let itemList = Object.values(simpleMemory[content.workspaceId]);
                 attendRequest.replaceChildren(
-                    ...Object.values(simpleMemory[content.workspaceId])
+                    ...itemList
+                )
+                attendRequestFilter.replaceChildren(
+                    ...itemList.map(e=>e.__filterOption)
                 )
             }
 
@@ -139,10 +166,15 @@ export const simpleOption = new class SimpleOption{
             let {content = event} = event;
 
             if(workspaceHandler.workspaceId == content.workspaceId){
-                let {attendRequest} = this.#attendRequestObject
+
                 delete simpleMemory[content.workspaceId][content.accountName];
+                
+                let itemList = Object.values(simpleMemory[content.workspaceId])
                 attendRequest.replaceChildren(
-                    ...Object.values(simpleMemory[content.workspaceId])
+                    ...itemList
+                );
+                attendRequest.replaceChildren(
+                    ...itemList.map(e=>e.__filterOption)
                 )
             }
         })
@@ -226,57 +258,25 @@ export const simpleOption = new class SimpleOption{
 
         li.onmouseenter = () => {
             li.append(optionContainer)
+            this.#positionRemain(optionContainer)
         }
-
         li.onmouseleave = () => {
             optionContainer.remove();
+        }
+        li.onclick = (event) => {
+            if(event.target != li && event.target != title) return;
+
+            if(optionContainer.isConnected){
+                optionContainer.remove();
+            }else {
+                li.append(optionContainer)
+                this.#positionRemain(optionContainer)
+            }
         }
 
         li.append(title);
 
         return li;
-    }
-
-    #createPermitRequest(){
-        let li = Object.assign(document.createElement('li'), {
-
-        });
-        let title = Object.assign(document.createElement('span'),{
-            textContent: 'Attend Request'
-        })
-        
-
-
-        let attendRequest = Object.assign(document.createElement('ul'), {
-            className: 'attend_request_container',
-        });
-
-        li.append(title);
-        li.onmouseenter = () => {
-            li.append(attendRequest)
-        }
-
-        li.onmouseleave = () => {
-            attendRequest.remove();
-        }
-        return {li, title, attendRequest};
-    }
-
-    #createGiveAdmin(){
-        
-        let li = Object.assign(document.createElement('li'), {
-            className: 'pointer'
-        });
-        let title = Object.assign(document.createElement('span'),{
-            textContent: 'Give Admin'
-        })
-
-        li.append(title);
-        li.onclick = () => {
-            this.#giveAdminView.open();
-        }
-
-        return {li, title};
     }
     
     #createSimpleProfile(){
@@ -344,12 +344,125 @@ export const simpleOption = new class SimpleOption{
         li.append(title);
         li.onmouseenter = () => {
             li.append(simpleProfileContainer)
+            this.#positionRemain(simpleProfileContainer)
         }
-
         li.onmouseleave = () => {
             simpleProfileContainer.remove();
         }
+        li.onclick = (event) => {
+            if(event.target != li && event.target != title) return;
+            
+            if(simpleProfileContainer.isConnected){
+                simpleProfileContainer.remove()
+            }else{
+                li.append(simpleProfileContainer)
+                this.#positionRemain(simpleProfileContainer)
+            }
+        }
+
         return li;
+    }
+    #createPermitRequest(){
+        let li = Object.assign(document.createElement('li'), {
+
+        });
+        let title = Object.assign(document.createElement('span'),{
+            textContent: 'Attend Request'
+        })
+        
+        let attendRequestWrapper = Object.assign(document.createElement('div'), {
+            className: 'attend_request_wrapper',
+            innerHTML : `
+                <div class="attend_request_search_container">
+                    <input type="search" placeholder="search user" list="attend_request_filter" class="attend_request_search"/>
+                    <datalist id="attend_request_filter" class="attend_request_filter">
+                    </datalist>
+                </div>
+            `
+        })
+        let attendRequestSearch = attendRequestWrapper.querySelector('.attend_request_search');
+        
+        let attendRequestFilter = attendRequestWrapper.querySelector('.attend_request_filter');
+        
+        let attendRequest = Object.assign(document.createElement('ul'), {
+            className: 'attend_request_container list_scroll list_scroll-y',
+        });
+
+        attendRequestWrapper.append(attendRequest);
+
+        li.append(title);
+        li.onmouseenter = () => {
+            if(document.activeElement == attendRequestSearch) {
+                return;
+            }else if(li.hasAttribute('data-is_not_leave')){
+                li.removeAttribute('data-is_not_leave')
+                return;
+            }
+            li.append(attendRequestWrapper)
+            this.#positionRemain(attendRequestWrapper)
+        }
+        li.onmouseleave = (event) => {
+            if(document.activeElement == attendRequestSearch) {
+                return;
+            }else if(li.hasAttribute('data-is_not_leave')){
+                li.removeAttribute('data-is_not_leave')
+                return;
+            }
+            attendRequestWrapper.remove();
+        }
+
+        li.onclick = (event) => {
+            if(event.target != li && event.target != title) return;
+            
+            if(attendRequestWrapper.isConnected){
+                attendRequestWrapper.remove()
+            }else{
+                li.append(attendRequestWrapper)
+                this.#positionRemain(attendRequestWrapper)
+            }
+        }
+        return {li, title, attendRequest, attendRequestWrapper, attendRequestSearch, attendRequestFilter};
+    }
+
+    #createGiveAdmin(){
+        
+        let li = Object.assign(document.createElement('li'), {
+            className: 'pointer'
+        });
+        let title = Object.assign(document.createElement('span'),{
+            textContent: 'Give Admin'
+        })
+
+        li.append(title);
+        li.onclick = () => {
+            this.#giveAdminView.open();
+        }
+
+        return {li, title};
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} target 
+     */
+    #positionRemain(target){
+        target.style.display = 'none';
+        let appendAwait = setInterval(()=>{
+            if( ! target.isConnected) return;
+            target.style.display = '';
+            clearInterval(appendAwait);
+            let originRect = target.getBoundingClientRect() 
+            if(originRect.left < 0){
+                target.style.left = '100%';
+            }
+
+            if(target.getBoundingClientRect().right > window.outerWidth){
+                target.style.left = '0%';
+                target.style.right = '0%';
+                target.style.top = '100%';
+                //target.style.top = this.#container.getBoundingClientRect().bottom + 'px';
+            }
+        },50);
     }
     set componentOption(option){
         this.#componentOption = option;
@@ -379,4 +492,6 @@ export const simpleOption = new class SimpleOption{
     get wrap(){
         return this.#wrap;
     }
+    
+
 }

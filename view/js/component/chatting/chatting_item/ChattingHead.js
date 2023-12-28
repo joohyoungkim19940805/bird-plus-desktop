@@ -1,15 +1,15 @@
-import roomHandler from "@handler/room/RoomHandler"
-import workspaceHandler from "@handler/workspace/WorkspaceHandler"
+import {roomHandler} from "@handler/room/RoomHandler"
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler"
 import roomFavoritesList from "@component/room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
-import roomContainer from "@component/room/RoomContainer";
-import noticeBoardContainer from "@component/notice_board/NoticeBoardContainer";
+import {roomContainer} from "@component/room/RoomContainer";
+import {noticeBoardContainer} from "@component/notice_board/NoticeBoardContainer";
 import common from "@root/js/common"
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
-export default new class ChattingHead{
+export const chattingHead = new class ChattingHead{
     #chattingHeadMemory = {};
     //electron datalist 위치 문제 -> electrom 23버전으로 업그레이드
     #element = Object.assign(document.createElement('div'), {

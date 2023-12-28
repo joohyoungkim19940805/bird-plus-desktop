@@ -1,8 +1,8 @@
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
 import CreateRoomView from "./CreateRoomView";
-export default new class RoomList{
+export const roomList = new class RoomList{
 	#memory = {}
 
 	#page = 0;

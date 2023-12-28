@@ -17,15 +17,15 @@ import Resources from "@handler/editor/tools/Resources";
 import Code from "@handler/editor/tools/Code"
 import Hyperlink from "@handler/editor/tools/Hyperlink"
 
-import workspaceHandler from "@handler/workspace/WorkspaceHandler";
-import roomHandler from "@handler/room/RoomHandler";
+import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
+import {roomHandler} from "@handler/room/RoomHandler";
 import common from "@root/js/common";
 
 import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
-export default new class ChattingRegist extends FreeWillEditor{
+export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
     static{
         window.customElements.define('free-will-editor', ChattingRegist);
     }
@@ -125,7 +125,7 @@ export default new class ChattingRegist extends FreeWillEditor{
 				}
 				isEnter = true;
 				let promiseList = [];
-				this.getLowDoseJSON(this, {
+				ChattingRegist.getLowDoseJSON(this, {
 					afterCallback : (json) => {
 						if(json.tagName != Image.toolHandler.defaultClass && 
 							json.tagName != Video.toolHandler.defaultClass &&

@@ -10,7 +10,7 @@ export default class Sort extends FreedomInterface {
 	});
 
     static sortBox; 
-
+	static isDefaultStyle = true;
     static{
 		this.toolHandler.extendsElement = '';
 		this.toolHandler.defaultClass = 'free-will-index';
@@ -31,7 +31,7 @@ export default class Sort extends FreedomInterface {
 				this.sortBox.close();
 			}else{
 				this.sortBox.open();
-                this.toolHandler.processingElementPosition(this.sortBox.sortBox);
+                super.processingElementPosition(this.sortBox.sortBox, this.toolHandler.toolButton);
 			}
 		}
 
@@ -48,7 +48,7 @@ export default class Sort extends FreedomInterface {
         window.addEventListener('resize', (event) => {
             if(this.sortBox.sortBox.isConnected){
                 this.sortBox.open();
-                this.toolHandler.processingElementPosition(this.sortBox.sortBox);
+                super.processingElementPosition(this.sortBox.sortBox, this.toolHandler.toolButton);
             }
 		})
 

@@ -9,7 +9,6 @@ export default class Palette {
 		className: 'palette-wrap'
 	});
 
-	#paletteVw = 20; 
 	#componentMap = undefined;
 	
 	#lastPanelPosition = undefined;
@@ -902,16 +901,16 @@ export default class Palette {
 			.palette-wrap{
 				background: #343434;
 				padding: 0.9%;
-				width: ${this.#paletteVw}vw;
+				width: 30dvw;
 				height: fit-content;
 				color: white;
 				font-size: 13px;
-				min-width: 300px;
 				z-index: 999;
-				-webkit-user-select:none;
-				-moz-user-select:none;
-				-ms-user-select:none;
-				user-select:none
+				min-width: 20vmax;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
 			}
 			.palette-wrap .palette-panel{
 				width: 90%;
@@ -931,6 +930,7 @@ export default class Palette {
 				display: flex;
 				justify-content: center;
 				align-items: center;
+				text-wrap: nowrap;
 			}
 			.palette-wrap .top-text-wrap .previous-rgb-bg{
 				text-align-last: center;
@@ -1013,6 +1013,7 @@ export default class Palette {
 				justify-content: space-between;
 				align-items: center;
 				margin-bottom: 2%;
+				text-wrap: nowrap;
 			}
 			.palette-wrap .bottom-text-wrap .selection-rgb-text{
 				margin-right: 5%;
