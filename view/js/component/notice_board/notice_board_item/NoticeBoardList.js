@@ -1,7 +1,7 @@
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
-import noticeBoardDetail from "./NoticeBoardDetail";
+import {noticeBoardDetail} from "./NoticeBoardDetail";
 import common from "@root/js/common";
 import {noticeBoardHandler} from "@handler/notice_board/NoticeBoardHandler";
 

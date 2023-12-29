@@ -9,8 +9,7 @@ const TerserPlugin = require('terser-webpack-plugin');
  * devtool 제거
  */
 module.exports = {
-	mode: 'development',
-	devtool: 'source-map',
+	mode: 'production',
 	entry: {
 		openingRenderer: "./view/js/renderer/openingRenderer.js",
 		workspacePageRenderer: "./view/js/renderer/workspacePageRenderer.js",
@@ -53,7 +52,7 @@ module.exports = {
 		}
 	},
 	optimization: {
-		minimize: false,
+		minimize: true,
 		minimizer: [
 			new TerserPlugin({
 			extractComments: false,

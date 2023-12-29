@@ -26,7 +26,7 @@ import {noticeBoardHandler} from "@handler/notice_board/NoticeBoardHandler";
 import { accountHandler } from "@handler/account/AccountHandler";
 import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
 
-class NoticeBoardLine extends FreeWillEditor{
+export class NoticeBoardLine extends FreeWillEditor{
     static{
         window.customElements.define('notice-board-line', NoticeBoardLine);
     }

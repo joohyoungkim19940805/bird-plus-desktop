@@ -20,6 +20,8 @@ import Resources from './tools/Resources'
 import Code from "./tools/Code"
 import Hyperlink from "./tools/Hyperlink"
 
+import FreedomInterface from './module/FreedomInterface'
+
 export default class FreeWillEditor extends FreeWiilHandler {
 	
 	static componentsMap = {};
@@ -38,14 +40,14 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		static NEXT_LINE_LAST = new this.#LineBreakModeEnum(3);
 	}
 
-	static async getLowDoseJSON(targetElement = this, {afterCallback = (json)=> {}} = {}){
+	static async getLowDoseJSON(targetElement, {afterCallback = (json)=> {}} = {}){
 		return Promise.all([...targetElement.childNodes]
 			.map(async (node, index)=>{
 				return new Promise(resolve =>{
 					//if(targetElement == this && node.nodeType == Node.TEXT_NODE){
 					//	resolve(undefined);
 					//}
-					resolve( this.#toJSON(node, {afterCallback}) )
+					resolve( FreeWillEditor.#toJSON(node, {afterCallback}) )
 				})
 			})).then(jsonList=>jsonList.filter(e=>e != undefined).map(e=> {
 				delete e.node;
@@ -99,9 +101,10 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 			if(jsonObj instanceof Array){
 				resolve(
-					Promise.all(this.#toHTML(jsonObj, {beforeCallback, afterCallback}))
+					Promise.all(FreeWillEditor.#toHTML(jsonObj, {beforeCallback, afterCallback}))
 					.then(htmlList => {
-						target.replaceChildren(...htmlList.filter(e=> e != undefined))
+						target.append(...htmlList.filter(e=> e != undefined))
+						return htmlList;
 					})
 				);
 			}
@@ -132,7 +135,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 					}
 					afterCallback(node)
 					if(jsonNode.childs.length != 0){
-						Promise.all(this.#toHTML(jsonNode.childs, {beforeCallback, afterCallback})).then(childList => {
+						Promise.all(FreeWillEditor.#toHTML(jsonNode.childs, {beforeCallback, afterCallback})).then(childList => {
 							node.append(...childList);
 						})
 					}
@@ -300,6 +303,26 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			})
 			resolve();
 		});
+		FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
+			//&& ! super.isNextLineExist()
+			if(newEvent.key != 'ArrowDown' || ! this.isCursor()) return;
+
+			let currentLine = this.getCurrentLine(undefined, {isRoot : true});
+			if( ! currentLine) return;
+			let nextLine = currentLine.nextElementSibling;
+			while(nextLine){
+				if(nextLine.contentEditable == 'false'){
+					nextLine = nextLine.nextElementSibling;
+				}else{
+					break;
+				}
+			}
+
+			if( ! nextLine){
+				let nextLine = super.createLine();
+				nextLine.line?.lookAtMe();
+			}
+		})
 	}
 
 	connectedCallback(){
@@ -456,6 +479,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			if( ! endLine.line){
 				new Line(endLine);
 			}
+			console.log(startLine, endLine);
 			startLine.line.cancelTool(TargetTool, selection, endLine)
 			.then(()=>{
 				if( ! this.#undoManager){
@@ -474,8 +498,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			});
 		})
 	}
-	
-	async lineBreak(LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST){
+
+    async lineBreak(LineBreakMode = FreeWillEditor.LineBreakMode.NEXT_LINE_FIRST){
 		let selection = window.getSelection();
 		return super.getLineRange(selection)
 		.then(({startLine, endLine}) => { 

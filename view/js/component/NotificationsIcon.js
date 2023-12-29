@@ -27,6 +27,7 @@ export default class NotificationsIcon{
     #target;
 
     #zeroCountCallback = (element, target) => {};
+
     constructor({
         target,
         positionOption = NotificationsIcon.PositionOption.RIGHT_UP, 
@@ -41,7 +42,7 @@ export default class NotificationsIcon{
 
         })
         Object.assign(this.#element.style, {
-            position: 'fixed',
+            position: 'absolute',
             width: 'fit-content',
             height: 'fit-content',
             zIndex: '100',
@@ -73,13 +74,14 @@ export default class NotificationsIcon{
             }
             this.#processingElementPosition();
         })
+        
     }
 
     addCount(data, key){
         this.#keyMapper[key] = data;
         let len = Object.values(this.#keyMapper).length;
         if(len > 0){
-            //document.body.append(this.#element);
+            this.#target.style.position = 'relative' 
             this.#processingElementPosition();
         }
         this.#counterSpan.textContent = len;
@@ -89,6 +91,7 @@ export default class NotificationsIcon{
         delete this.#keyMapper[key];
         let len = Object.values(this.#keyMapper).length;
         if(len == 0){
+            this.#target.style.position = '' 
             this.#element.remove();
             this.#zeroCountCallback(this.#element, this.#target);
         }
@@ -97,14 +100,15 @@ export default class NotificationsIcon{
 
     #processingElementPosition(){
 
-        document.body.append(this.#element);
+        //document.body.append(this.#element);
+        this.#target.append(this.#element);
         this.#element.fontSize = parseFloat(window.getComputedStyle(this.#target).fontSize);
         let appendAwait = setInterval(()=>{
-            console.log(Object.values(this.#keyMapper).length);
             if(Object.values(this.#keyMapper).length == 0){
                 clearInterval(appendAwait);
             }
-            if( ! this.#element.isConnected){
+            if( ! this.#element.isConnected || this.#target.dataset.visibility == 'h'){
+                this.#element.remove();
                 return;
             }
             clearInterval(appendAwait);
@@ -112,9 +116,8 @@ export default class NotificationsIcon{
             let elementRect = this.#element.getBoundingClientRect();
 
             let positionObj = this.#getPosition(targetRect, elementRect)
-            console.log(positionObj);
             Object.assign(this.#element.style, positionObj)
-
+            
         }, Math.floor(Math.random() * (500 - 100) + 100) );
     }
 
@@ -140,6 +143,7 @@ export default class NotificationsIcon{
             }
         }
 
+        /*
         if(
             this.#positionOption == NotificationsIcon.PositionOption.RIGHT_CENTER ||
             this.#positionOption == NotificationsIcon.PositionOption.LEFT_CENTER
@@ -162,6 +166,7 @@ export default class NotificationsIcon{
                 obj.top = targetRect.y - targetRect.height;
             }
         }
+        */
 
         return Object.entries(obj).reduce(( t, [k,v] )=>{
             if(v != 0){

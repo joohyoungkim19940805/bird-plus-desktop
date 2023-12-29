@@ -219,14 +219,6 @@ export default class FreedomInterface extends HTMLElement {
 			}
 		})
 
-		if( ! this.constructor.toolHandler.isInline){
-			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
-				if(this.isCursor() && newEvent.key == 'ArrowDown' && ! this.parentLine.nextElementSibling){
-					let nextLine = this.parentEditor.createLine();
-					nextLine.line?.lookAtMe();
-				}
-			})
-		}
 	}
 	connectedCallback(){
 
@@ -325,7 +317,6 @@ export default class FreedomInterface extends HTMLElement {
 		if(selection.type == 'None'){
 			return false;
 		}
-
 		return selection.containsNode(this, true) || selection.containsNode(this, false)
 	}
 

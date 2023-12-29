@@ -87,7 +87,7 @@ export default class FreeWiilHandler extends HTMLElement{
             let {anchorNode, focusNode} = selection; 
             let startAndEndLineObject;
             if(anchorNode == this){
-                //console.log(111)
+                console.log(111)
                 let allLine = [...this.children].filter(e=>e.classList.contains(`${Line.toolHandler.defaultClass}`))
                 startAndEndLineObject = {
                     startLine : allLine[0],
@@ -100,7 +100,7 @@ export default class FreeWiilHandler extends HTMLElement{
                 range.setEnd(endLineChildNodes, endLineChildNodes.nodeType == Node.TEXT_NODE ? endLineChildNodes.textContent.length : startAndEndLineObject.endLine.childNodes.length);
                 selection.addRange(range);
             }else{
-                //console.log(222)
+                console.log(222)
                 let anchorNodeLine = Line.getLine(anchorNode);
                 let focusNodeLine = Line.getLine(focusNode);
                 if(anchorNodeLine == focusNodeLine){
@@ -113,9 +113,9 @@ export default class FreeWiilHandler extends HTMLElement{
                 }
                 //console.log(4444, anchorNodeLine , focusNodeLine);
                 startAndEndLineObject = {startLine : anchorNodeLine, endLine : focusNodeLine};
-                /*startAndEndLineObject = [...this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
+                let key = 'startLine';
+                startAndEndLineObject = [...this.querySelectorAll(`.${Line.toolHandler.defaultClass}`)].reduce((obj,item,index)=>{
                     if(item == anchorNodeLine || item == focusNodeLine){
-                        let key = 'startLine';
                         if(obj.hasOwnProperty(key)){
                             obj['endLine'] = item
                         }else{
@@ -123,14 +123,14 @@ export default class FreeWiilHandler extends HTMLElement{
                         }
                     }
                     return obj;
-                },{})*/
+                },{})
             }
             resolve(startAndEndLineObject);
         })
     }
 
-    isNextLineExist(element){
-        let line = Line.getLine(element);
+    isNextLineExist(element = window.getSelection(), {isRoot = false} = {}){
+        let line = isRoot ? Line.getRootLine(element) : Line.getLine(element);
 
         let nextLine = line.nextElementSibling;
         if( ! nextLine){
@@ -145,8 +145,10 @@ export default class FreeWiilHandler extends HTMLElement{
      * @param {Object} param1 
      * @returns {HTMLElement}
      */
-    getNextLine(element, {focus = false} = {}){
-        let line = Line.getLine(element);
+    getNextLine(element = window.getSelection(), {focus = false, isRoot = false} = {}){
+
+        let line = isRoot ? Line.getRootLine(element) : Line.getLine(element);
+
         if( ! line){
             return undefined;
         }
@@ -167,8 +169,9 @@ export default class FreeWiilHandler extends HTMLElement{
      * @param {Object} param1 
      * @returns {HTMLElement}
      */
-    getPrevLine(element, {focus = false} = {}){
-        let line = Line.getLine(element);
+    getPrevLine(element = window.getSelection(), {focus = false, isRoot = false} = {}){
+
+        let line = isRoot ? Line.getRootLine(element) : Line.getLine(element);
         if( ! line){
             return undefined;
         }
@@ -182,8 +185,37 @@ export default class FreeWiilHandler extends HTMLElement{
         return undefined;
     }
 
-    getLine(element){
-        return Line.getLine(element);
+    getLine(element = window.getSelection(), {isRoot = false} = {}){
+        return isRoot ? Line.getRootLine(element) : Line.getLine(element);
+    }
+
+	isCursor(){
+		let selection = window.getSelection();
+		if(! document.activeElement.classList.contains('free-will-editor')){
+			return false;
+		}
+		if(selection.type == 'None'){
+			return false;
+		}
+		return selection.containsNode(this, true) || selection.containsNode(this, false)
+	}
+
+    getCurrentLine(element, {isRoot = false} = {}){
+		let selection = window.getSelection();
+		if(! document.activeElement.classList.contains('free-will-editor')){
+			return ;
+		}
+		if(selection.type == 'None'){
+			return ;
+		}
+        if( ! element){
+            element = selection.focusNode;
+        }
+		if(selection.containsNode(this, true) || selection.containsNode(this, false)){
+            return isRoot ? Line.getRootLine(element) : Line.getLine(element);
+        }else{
+            return ;
+        }
     }
 
 }

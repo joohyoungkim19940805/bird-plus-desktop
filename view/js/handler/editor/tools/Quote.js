@@ -37,9 +37,9 @@ export default class Quote extends FreedomInterface {
 			}
 			.${this.toolHandler.defaultClass} {
 				display: block;
-				padding-left: 1em;
+				padding-left: 0.5em;
 				border-left: 3px solid #d7d7db;
-				margin-inline: 2.5em;
+				margin-inline: 1.5em;
 			}
 		`
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);

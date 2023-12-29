@@ -35,6 +35,7 @@ import {roomList} from "@component/room/room_item/RoomList"
 import {roomFavoritesList} from "@component/room/room_item/RoomFavoritesList"
 import {roomMessengerList} from "@component/room/room_item/RoomMessengerList"
 
+import { chattingRegist } from "./ChattingRegist"
 
 class ChattingInfoLine extends FreeWillEditor{
     static{
@@ -92,69 +93,73 @@ export const chattingInfo = new class ChattingInfo{
     
     likeAndScrapWrapper;
     
-    #totalPages
-
+    #totalPagesMapper = {};
+    #totalElementsMapper = {};
+    #lastPageNumberMapper = {};
+    #firstOpenCheckMapper = {};
     #lastVisibleTarget;
     #firstVisibleTarget;
-
     #lastPageNumber;
     #firstPageNumber;
+    #lastReplyTarget;
 
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if ( ! entry.isIntersecting){
                 return;
             }
-            //console.log(entry.target);
-            console.log(this.#lastVisibleTarget);
-            //console.log(this.#firstVisibleTarget);
-            //this.#lastItemVisibleObserver.disconnect();
-            //return ;
+
+            let lastTotalPages = this.#totalPagesMapper[entry.target.dataset.room_id]; 
+            if( lastTotalPages && this.#page >= lastTotalPages){
+                this.#lastItemVisibleObserver.disconnect();
+            }
             if(entry.target == this.#lastVisibleTarget){
                 this.#page = this.#lastPageNumber;
-                if(this.#lastVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
-            }else{ //if(entry.target == this.#firstVisibleTarget){
+                this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
+            }else if(entry.target == this.#firstVisibleTarget){
                 this.#page = this.#firstPageNumber;
-                if(this.#firstVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
+                this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
             }
+
+            this.#lastPageNumberMapper[roomHandler.roomId] = this.#page;
+
             let promise;
-            let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[this.#page] || {});
-            
+            let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+            .filter(e=>e.dataset.page == this.#page)
+            .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils));
+
             if(memory && memory.length != 0){
-                promise = new Promise(res => {
-                    setTimeout(()=>{ 
-                        res(
-                            memory
-                            .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                        )
-                    },50);
-                })
+                promise = Promise.resolve(memory);
             }else{
                 promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
-                    .then(async data=> 
-                        this.createPage(data).then(liList => {
-                            console.log(this.#page,liList);
-                            this.#totalPages = data.totalPages;        
-                            if(this.#page >= data.totalPages){
+                    .then(async data=> {
+                        this.#totalPagesMapper[entry.target.dataset.room_id] = data?.totalPages || this.#totalPagesMapper[entry.target.dataset.room_id];
+                        this.#totalElementsMapper[entry.target.dataset.room_id] = data?.totalElements || this.#totalElementsMapper[entry.target.dataset.room_id];
+                        return this.createPage(data).then(liList => {
+                            // 날짜 관련 함수 코드 실행
+                            //console.log(this.#liList);
+                            if(this.#page >= data?.totalPages){
                                 // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
                                 // 날짜 관련 함수 코드 실행
-                                let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
-                                let timeText; 
-                                if(date.toDateString() == new Date().toDateString()){
-                                    timeText = 'to day'
-                                }else{
-                                    timeText = date.toLocaleDateString(undefined, {
-                                        weekday: 'short',
-                                        month: 'short',
-                                        day: '2-digit',
-                                        formatMatcher: 'best fit'
-                                    })
-                                }
-                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild)
+                            
+                                //this.#lastItemVisibleObserver.disconnect();
+                                if(this.#lastVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
+                                
+                            }else if(this.#page <= 0){
+                               
+                                //this.#lastItemVisibleObserver.disconnect();
+                                if(this.#firstVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget);
+                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
+                                // 날짜 관련 함수 코드 실행
+                                this.#processingTimeGrouping(this.#liList[1], this.#liList[0]);
+                                this.#processingTimeGrouping(this.#liList[0], this.#liList[1]);
+                                
                             }
+
                             return liList;
                         })
-                    )
+                    })
             }
             
             promise.then(liList => {
@@ -162,11 +167,22 @@ export const chattingInfo = new class ChattingInfo{
                     return;
                 }
                 
-                this.#liList = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                this.#liList.push(...liList)//Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
                     //.flatMap(e=>Object.values(e))
-                    .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                    //.filter(e=>e.dataset.page == this.#page)
+                this.#liList = Object.values(this.#liList.reduce((total, item)=>{
+                    total[item.dataset.id] = item;
+                    return total;
+                }, {}))
+                .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                 this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                
+
+                if(entry.target == this.#lastVisibleTarget){
+                    this.#lastPageNumber += 1 //this.#page <= 0 ? 1 : this.#page + 1
+                }else if(entry.target == this.#firstVisibleTarget){
+                    this.#firstPageNumber = this.#firstPageNumber <= 0 ? -1 : this.#firstPageNumber - 1 // this.#page <= 0 ? -1: this.#page - 1
+                }
+
                 let isConnectedAwait = setInterval(()=>{
                     if( ! this.#liList[0]){
                         clearInterval(isConnectedAwait);
@@ -180,14 +196,19 @@ export const chattingInfo = new class ChattingInfo{
                     this.#firstVisibleTarget = this.#liList[0];
                     if(this.#lastVisibleTarget){
                         this.#lastItemVisibleObserver.observe(this.#lastVisibleTarget);
-                        this.#lastPageNumber += 1 //this.#page <= 0 ? 1 : this.#page + 1
                     }  
                     if(this.#firstVisibleTarget){
                         this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
-                        this.#firstPageNumber = this.#firstPageNumber <= 0 ? -1 : this.#firstPageNumber - 1 // this.#page <= 0 ? -1: this.#page - 1
                     }
 
+                    console.log(this.#page, this.#lastPageNumber, this.#firstPageNumber, this.#totalElementsMapper, this.#totalPagesMapper)
+                    
                     entry.target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                    
+                    if(this.#lastReplyTarget){
+                        this.#lastReplyTarget.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                        this.#lastReplyTarget = undefined;
+                    }
                     clearInterval(isConnectedAwait);
                 },50);
 
@@ -260,7 +281,7 @@ export const chattingInfo = new class ChattingInfo{
                                     
                                     let notificationsIcon
                                     if( ! e.__notificationsIcon){
-                                        notificationsIcon = new NotificationsIcon({target: e, positionOption : NotificationsIcon.PositionOption.RIGHT_CENTER})
+                                        notificationsIcon = new NotificationsIcon({target: e, positionOption : NotificationsIcon.PositionOption.LEFT_CENTER})
                                         e.__notificationsIcon = notificationsIcon;
                                     }else{
                                         notificationsIcon = e.__notificationsIcon;
@@ -286,7 +307,7 @@ export const chattingInfo = new class ChattingInfo{
                     }
                     let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                     if(memory && memory.length != 0){
-                        this.#page = memory.length - 1;
+                        this.#page = Math.floor(memory.length / 10);
                         this.#liList = memory
                             .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
                         this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
@@ -298,9 +319,12 @@ export const chattingInfo = new class ChattingInfo{
                             if( ! this.#liList[0].isConnected){
                                 return;
                             }
-                            this.#elementMap.chattingContentList.scrollBy(undefined, 
-                                this.#elementMap.chattingContentList.scrollHeight
-                            )
+                            if(
+                                accountHandler.accountInfo.accountName == liElement.dataset.account_name &&
+                                liElement.dataset.create_mils == liElement.dataset.update_mils
+                            ){
+                                this.#elementMap.chattingContentList.scrollBy(undefined, this.#elementMap.chattingContentList.scrollHeight)
+                            }
                             clearInterval(isConnectedAwait);
 
                             Promise.all(this.#liList.map(async (e,i)=>{
@@ -313,19 +337,7 @@ export const chattingInfo = new class ChattingInfo{
                                 //if(result){
                                 //    return;
                                 //}
-                                let date = new Date(Number(this.elementMap.chattingContentList.lastChild.dataset.create_mils));
-                                let timeText; 
-                                if(date.toDateString() == new Date().toDateString()){
-                                    timeText = 'to day'
-                                }else{
-                                    timeText = date.toLocaleDateString(undefined, {
-                                        weekday: 'short',
-                                        month: 'short',
-                                        day: '2-digit',
-                                        formatMatcher: 'best fit'
-                                    })
-                                }
-                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild, timeText)
+                                this.#createTimeGroupingElement(this.elementMap.chattingContentList.lastChild)
                             });
                         },50);
                         
@@ -333,105 +345,13 @@ export const chattingInfo = new class ChattingInfo{
                 });
             }
         }
-        let firstOpenCheckMapper = {};
+        let prevRoomId;
         roomHandler.addRoomIdChangeListener = {
             name: 'chattingInfo',
             callBack: () => {
-                this.reset();
-                let promise;
-                let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-                let isMemory = memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId];
-                if( isMemory ){
-                    this.#page = memory.length - 1;
-                    promise = Promise.resolve(
-                        memory
-                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                    );
-                }else{
-                    promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
-                    .then(async data=> 
-                        this.createPage(data)
-                        .then(liList => {
-                            if(this.#page >= data?.totalPages){
-                                //this.#lastItemVisibleObserver.disconnect();
-                                if(this.#lastVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget);
-                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
-                                // 날짜 관련 함수 코드 실행
-                                this.#processingTimeGrouping(
-                                    this.#liList.at(-2), 
-                                    this.#liList.at(-1)
-                                ); 
-                            }else if(this.#page <= 0){
-                                //this.#lastItemVisibleObserver.disconnect();
-                                if(this.#firstVisibleTarget) this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget);
-                                // 마지막 페이지인 경우 - 가장 마지막 채팅에는 날짜가 붙지 않기에 
-                                // 날짜 관련 함수 코드 실행
-                                this.#processingTimeGrouping(
-                                    this.#liList[1], 
-                                    this.#liList[0]
-                                );
-                            }
-                            return liList;
-                        })
-                    )
-                }
-
-                promise.then(liList => {
-
-                    if(this.#lastVisibleTarget?.dataset.visibility == 'v') this.#lastItemVisibleObserver.unobserve(this.#lastVisibleTarget)
-                    if(this.#firstVisibleTarget?.dataset.visibility == 'v') this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget)    
-
-                    if(liList.length == 0){
-                        //this.#lastItemVisibleObserver.disconnect();
-                        return;
-                    }
-
-                    if( ! firstOpenCheckMapper[roomHandler.roomId]){
-                        this.#liList.push(...liList, ...memory);
-                        this.#liList = Object.values(this.#liList.reduce((total, item)=>{
-                            total[item.dataset.id] = item;
-                            return total;
-                        }, {}))
-                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
-                    }else{
-                        this.#liList.push(...liList);
-                    }
-                  
-                    this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
-                    let isConnectedAwait = setInterval(()=>{
-                        if( ! this.#liList[0]){
-                            clearInterval(isConnectedAwait);
-                            return;
-                        }
-                        if( ! this.#liList[0].isConnected){
-                            return;
-                        }
-                        if(isMemory){
-                            Promise.all(this.#liList.map(async (e,i)=>{
-                                if(i == 0 || i == this.#liList.length - 1)return;
-                                return this.#processingTimeGrouping(e, this.#liList[i - 1])    
-                            }))
-                        }
-                        this.#elementMap.chattingContentList.scrollBy(undefined, 
-                            this.#elementMap.chattingContentList.scrollHeight
-                        )
-
-                        this.#lastVisibleTarget = this.#liList.at(-1);
-                        this.#firstVisibleTarget = this.#liList[0];
-                        if(this.#lastVisibleTarget){
-                            this.#lastItemVisibleObserver.observe(this.#lastVisibleTarget);
-                            this.#lastPageNumber = this.#page <= 0 ? 1 : this.#page + 1
-                        }  
-                        if(this.#firstVisibleTarget){
-                            this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
-                            this.#firstPageNumber = this.#page <= 0 ? -1 : this.#page - 1
-                        }
-
-                        clearInterval(isConnectedAwait);
-                    },50);
-                    firstOpenCheckMapper[roomHandler.roomId] = '';
-                })
-
+                if(roomHandler.roomId == prevRoomId) return;
+                prevRoomId = roomHandler.roomId;
+                this.#roomIdChange();
             },
             runTheFirst: false
         }
@@ -469,12 +389,11 @@ export const chattingInfo = new class ChattingInfo{
             delete this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId][content.chattingId];
             if(roomHandler.roomId == content.roomId){
                 let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
-                //if( memory && memory.length != 0 && firstOpenCheckMapper[roomHandler.roomId] ){
                 Promise.all(this.#liList.map(async (e,i)=>{
                     if(i == 0 || i == this.#liList.length - 1)return;
                     return this.#processingTimeGrouping(e, this.#liList[i - 1])    
                 }))
-                this.#page = memory.length - 1;
+                this.#page = Math.floor(memory.length / 10);
                 this.#liList = memory.sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils));
                 this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                 //}
@@ -522,23 +441,14 @@ export const chattingInfo = new class ChattingInfo{
 		})
     }
 
-    callData(page, size, workspaceId, roomId, chatting){
+    callData(page, size, workspaceId, roomId, chattingText, chattingId){
 		if(page < 0){
            return Promise.resolve({});
         }
-        let searchPromise;
-
-		if(chatting && chatting != ''){
-			searchPromise = window.myAPI.chatting.searchChattingList({
-				page, size, workspaceId, roomId, chatting
-			})
-		}else{
-			searchPromise = window.myAPI.chatting.searchChattingList({
-				page, size, workspaceId, roomId, chatting
-			})
-		}
-		return searchPromise.then((result = {}) =>{
-			console.log(result)
+		return window.myAPI.chatting.searchChattingList({
+            page, size, workspaceId, roomId, chattingText, chattingId
+        }).then((result = {}) =>{
+			console.log(page, result)
 			return result.data || {};
 		});
 	}
@@ -583,6 +493,7 @@ export const chattingInfo = new class ChattingInfo{
             let li = Object.assign(document.createElement('li'), {
                 tabIndex:-1,
             });
+            li.dataset.page = this.#page;
             let descriptionWrap = Object.assign(document.createElement('div'),{
                 className: 'chatting_content_description_wrapper',
                 innerHTML: `
@@ -612,7 +523,61 @@ export const chattingInfo = new class ChattingInfo{
             });
             li.append(descriptionWrap);
             let content = new ChattingInfoLine();
-            ChattingInfoLine.parseLowDoseJSON(content, chatting).then((e)=>{
+            ChattingInfoLine.parseLowDoseJSON(content, chatting, {afterCallback : (node) => {
+                if( ! node.hasAttribute('data-reply')){
+                    return;
+                }
+                node.contentEditable = 'false';
+                node.classList.add('pointer');
+                node.onclick = (event) => {
+                    if(event.composedPath()[0].hasAttribute('data-expand')){
+                        return;
+                    }
+                    
+                    this.#moveReplyTarget(
+                        li.dataset.workspace_id, li.dataset.room_id, node.dataset.reply_id,
+                        Math.floor( ( this.#totalElementsMapper[roomId] - parseInt(node.dataset.page_sequence) ) / 10 )
+                    )
+                }
+                let appendAwait = setInterval(()=>{
+                    if( ! node.isConnected){
+                        return;
+                    }
+                    clearInterval(appendAwait);
+                    console.log(node, Quote.toolHandler.defaultClass);
+                    let quote = node.querySelector(Quote.toolHandler.defaultClass);
+                    console.log(quote);
+                    if(quote.childElementCount > 3 ){
+                        node.classList.add('expand_mode')
+                        let expand = node.querySelector('[data-expand]');
+                        expand.onclick = () => {
+                            node.classList.toggle('expand_mode');
+                            if(node.classList.contains('expand_mode')){
+                                node.classList.add('expand_mode');
+                            }else{
+                                node.classList.remove('expand_mode');
+                            }
+                        }
+                    }
+                }, 50)
+                /*console.log('aaaaaaaaaaaaaaaaaaaaa',e)
+                console.log(node, Quote.toolHandler.defaultClass);
+                let quote = node.querySelector(Quote.toolHandler.defaultClass);
+                console.log(quote);
+                if(quote.childElementCount > 3 ){
+                    node.classList.add('expand_mode')
+                    let expand = node.querySelector('[data-expand]');
+                    expand.onclick = () => {
+                        node.classList.toggle('expand_mode');
+                        if(node.classList.contains('expand_mode')){
+                            node.classList.add('expand_mode');
+                        }else{
+                            node.classList.remove('expand_mode');
+                        }
+                    }
+                }*/
+
+            }}).then((e)=>{
                 resolve(li)
             });
             descriptionWrap.querySelector('.chatting_container .chatting_content_description_name_wrapper').after(content);
@@ -634,13 +599,7 @@ export const chattingInfo = new class ChattingInfo{
             
             common.jsonToSaveElementDataset(data, li).then(() => {
                 this.#createDescription(li, descriptionWrap);
-                if( ! prevItemPromise && this.#lastLiItem){
-                    this.#processingTimeGrouping(li, this.#lastLiItem);
-                }else{
-                   prevItemPromise?.then(prevItem => this.#processingTimeGrouping(li, prevItem));
-                }
             });
-
 
             //resolve(li);
         })
@@ -685,11 +644,6 @@ export const chattingInfo = new class ChattingInfo{
                             let emptyPadding = Object.assign(document.createElement('div'), {
                                 className : 'empty_padding'
                             })
-                            Object.assign(emptyPadding.style, {
-                                height: '1.4vh',
-                                width: '100%',
-                                background: '#ffffff00'
-                            })
                             this.#emoticonBox.emoticonBox.append(emptyPadding)
                         }
                         this.#emoticonBox.applyCallback = (emoticonObject) => {
@@ -732,7 +686,7 @@ export const chattingInfo = new class ChattingInfo{
 				</svg>
                 `,
                 onclick : (event) => {
-                    li.tabIndex = '';
+                    //li.tabIndex = '';
                     editor.contentEditable = true;
                     this.#emoticonBox.close();
                     anotherEmoji.removeAttribute('open');
@@ -826,7 +780,53 @@ export const chattingInfo = new class ChattingInfo{
                         fill="currentColor"
                     />
                 </svg>
-                `
+                `,
+                onclick : () => {
+                    ChattingInfoLine.getLowDoseJSON(editor).then(jsonList => {
+                        ChattingInfoLine.parseLowDoseJSON(chattingRegist, jsonList).then(result => {
+                            let quote = new Quote();
+                            quote.append(...result);
+                            let lineElement = chattingRegist.createLine();
+                            chattingRegist.createLine();
+                            window.getSelection().setPosition(chattingRegist, 1);
+                            let pageSequence = parseInt(li.dataset.page_sequence);
+                            lineElement.dataset.reply = li.dataset.full_name;
+                            lineElement.dataset.reply_id = li.dataset.id;
+                            lineElement.dataset.page_sequence = pageSequence;
+                            //lineElement.dataset.child_count = quote.childElementCount;
+                            lineElement.append(quote);
+                            lineElement.contentEditable = 'false';
+                            lineElement.classList.add('pointer');
+                            if(quote.childElementCount > 3){
+                                lineElement.classList.add('expand_mode')
+                                let expand = Object.assign(document.createElement('span'),{
+                                    textContent: '펼치기',
+                                    className: 'expand',
+                                    onclick : () => {
+                                        lineElement.classList.toggle('expand_mode');
+                                        if(lineElement.classList.contains('expand_mode')){
+                                            lineElement.classList.add('expand_mode');
+                                        }else{
+                                            lineElement.classList.remove('expand_mode');
+                                        }
+                                    }
+                                });
+                                expand.dataset.expand = '';
+                                lineElement.append(expand);
+                            }
+                            lineElement.onclick = (event) => {
+                                if(event.composedPath()[0].hasAttribute('data-expand')){
+                                    return;
+                                }
+                                this.#moveReplyTarget(
+                                    li.dataset.workspace_id, li.dataset.room_id, li.dataset.id,
+                                    Math.floor( ( this.#totalElementsMapper[li.dataset.room_id] - pageSequence ) / 10 )
+                                );
+                            }
+                            
+                        });
+                    })
+                }
             })
             recommendEmojiContainer.append(...defaultEmoticon.map(e=>{
                 let button = document.createElement('button');
@@ -1061,7 +1061,7 @@ export const chattingInfo = new class ChattingInfo{
                 resolve();
                 return;
             }
-            let prevDate = new Date(Number(prevItem.dataset.create_mils));
+            //let prevDate = new Date(Number(prevItem.dataset.create_mils));
             let prevDateYearMonth = new Date(Number(prevItem.dataset.create_mils));
             prevDateYearMonth.setHours(0,0,0,0);
             //let currentDate = new Date(Number(li.dataset.create_mils));
@@ -1069,7 +1069,6 @@ export const chattingInfo = new class ChattingInfo{
             currentDateYearMonth.setHours(0,0,0,0);
             let diffMils = prevDateYearMonth.getTime() - currentDateYearMonth.getTime();
 
-            //하루 이상 차이 나는 경우
             if(Math.abs(diffMils) < this.#day){
                 resolve();
                 return;
@@ -1078,28 +1077,25 @@ export const chattingInfo = new class ChattingInfo{
                 return;
             }
             
-            let timeText;
-
-            
-            if(prevDate.toDateString() == new Date().toDateString()){
-                timeText = 'to day'
-            }else{
-                timeText = prevDate.toLocaleDateString(undefined, {
-                    weekday: 'short',
-                    month: 'short',
-                    day: '2-digit',
-                    formatMatcher: 'best fit'
-                })
-            }
-            resolve(
-                this.#createTimeGroupingElement(prevItem, timeText)
-            );
+            resolve(this.#createTimeGroupingElement(prevItem));
         });
     }
 
-    #createTimeGroupingElement(target, timeText){
+    #createTimeGroupingElement(target){
         if(target.querySelector('.time_grouping')){
             return;
+        }
+        let date = new Date(Number(target.dataset.create_mils));
+        let timeText; 
+        if(date.toDateString() == new Date().toDateString()){
+            timeText = 'to day'
+        }else{
+            timeText = date.toLocaleDateString(undefined, {
+                weekday: 'short',
+                month: 'short',
+                day: '2-digit',
+                formatMatcher: 'best fit'
+            })
         }
         let timeGroupingElement = Object.assign(document.createElement('div'), {
             className: 'time_grouping',
@@ -1111,10 +1107,161 @@ export const chattingInfo = new class ChattingInfo{
         return timeGroupingElement;
     }
 
+    #roomIdChange(targetPage){
+        this.reset();
+        this.#page = targetPage || this.#page//this.#lastPageNumberMapper[roomHandler.roomId] || 0;
+        console.log(targetPage, this.#page);
+        let promise;
+        let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
+        let isTarget = false;
+        if(targetPage){
+            isTarget =  memory.some(e=>e.dataset.page == targetPage);
+            /*
+            let pageMemory = memory.filter(e=>e.dataset.page == targetPage);
+            console.log(pageMemory);
+            if(pageMemory.length != 0){
+                isTarget = true;
+                memory = pageMemory;
+            }
+            */
+        }
+        let isMemory = ( memory && memory.length != 0 && this.#firstOpenCheckMapper.hasOwnProperty( roomHandler.roomId ) );
+        if( (isMemory && isTarget) || (isMemory && ! targetPage)){
+            this.#page = Math.floor(memory.length / 10);
+            promise = Promise.resolve(
+                memory
+                .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+            );
+        }else{
+            promise = this.callData(this.#page, this.#size, workspaceHandler.workspaceId, roomHandler.roomId)
+            .then(async data=> {
+                this.#totalPagesMapper[roomHandler.roomId] = data?.totalPages || this.#totalPagesMapper[roomHandler.roomId];
+                this.#totalElementsMapper[roomHandler.roomId] = data?.totalElements || this.#totalElementsMapper[roomHandler.roomId];
+                return this.createPage(data)
+                .then(liList => {
+                    return Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {})
+                        .filter(e=>e.dataset.page == (targetPage || this.#page))
+                        .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+                    ;
+                })
+            })
+        }
+
+        return promise.then(liList => {
+            return new Promise(res=>{
+                if(liList.length == 0){
+                    return;
+                }
+
+                if( ! this.#firstOpenCheckMapper.hasOwnProperty(roomHandler.roomId) || targetPage){
+                    this.#liList = liList;
+                    this.#firstOpenCheckMapper[roomHandler.roomId] = '';
+                }else{
+                    this.#liList.push(...liList);
+                }
+                this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
+                
+                let isConnectedAwait = setInterval(()=>{
+                    if( ! this.#liList[0]){
+                        clearInterval(isConnectedAwait);
+                        return;
+                    }
+                    if( ! this.#liList[0].isConnected){
+                        return;
+                    }
+                    clearInterval(isConnectedAwait);
+
+                    Promise.all(this.#liList.map(async (e,i)=>{
+                        if(i == 0 || i == this.#liList.length - 1)return;
+                        return this.#processingTimeGrouping(e, this.#liList[i - 1])    
+                    }))
+                    
+                    this.#addVisibleObserver(liList.at(-1), liList[0]);
+
+                    res(this.#liList);
+                },50);
+            })
+        })
+
+    }
+
+    #addVisibleObserver(first = this.#liList.at(-1), last = this.#liList[0]){
+        this.#lastVisibleTarget = first//this.#liList.at(-1);
+        this.#firstVisibleTarget = last//this.#liList[0];
+        if(this.#lastVisibleTarget){
+            this.#lastPageNumber = this.#page <= 0 ? 1 : this.#page + 1
+            this.#lastItemVisibleObserver.observe(this.#lastVisibleTarget);
+        }  
+        if(this.#firstVisibleTarget){
+            this.#firstPageNumber = this.#page <= 0 ? -1 : this.#page - 1
+            this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
+        }
+    }
+
+    #moveReplyTarget(workspaceId, roomId, chattingId, page){
+        //if( ! targetElement) throw new Error('targetElement is undefined');
+        return new Promise(resolve=>{
+            this.#lastPageNumber = page
+            let memoryTarget = this.#memory[workspaceId]?.[roomId]?.[chattingId];
+            //Object.values(this.#memory[li.dataset.workspace_id]?.[li.dataset.room_id]?.[node.dataset.reply_id])
+            if(memoryTarget && memoryTarget.isConnected){
+                memoryTarget.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                let flash = document.createElement('div');
+                Object.assign(flash.style, {
+                    position: 'absolute',top: '0px',left: '0px',
+                    width: '100%',height: '100%', background: 'rgb(223 223 223 / 40%)',
+                    transition: 'opacity 0.2s ease 0s', opacity: 0
+                })
+                memoryTarget.append(flash);
+                let flashAwait = setInterval(()=>{
+                    if( ! flash.isConnected)return; 
+                    clearInterval(flashAwait);
+                    flash.style.opacity = 1;
+                    flash.ontransitionend = () => {
+                        flash.style.opacity = 0;
+                        flash.ontransitionend = () => {
+                            flash.remove();
+                        }
+                    }
+                }, 50)
+                this.#page = page;
+                resolve(memoryTarget);
+                return;
+            }
+            //this.reset();
+ 
+            this.#roomIdChange(page).then(() => {
+                let target = this.#memory[workspaceId][roomId][chattingId]
+                this.#lastReplyTarget = target;
+                target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
+                resolve(target);/*
+                let appendAwait = setInterval(()=>{
+                    if( ! targetElement.isConnected){
+                        return;
+                    }
+                    clearInterval(appendAwait);
+                    //let target
+                    if( ! memoryTarget){
+                        //target = this.#memory[li.dataset.workspace_id][li.dataset.room_id][node.dataset.reply_id]
+                    }else{
+                        //target = memoryTarget;
+                    }
+
+                    
+                }, 50)*/
+                //this.#addVisibleObserver();
+            });
+        })
+    }
+
     reset(){
 		this.#page = 0;
+        this.#lastPageNumber = undefined;
+        this.#firstPageNumber = undefined;
+        this.#lastVisibleTarget = undefined;
+        this.#firstVisibleTarget = undefined;
 		this.#liList = [];
-		this.#lastItemVisibleObserver.disconnect();
+        this.#lastItemVisibleObserver.disconnect();
 		this.#elementMap.chattingContentList.replaceChildren();
 	}
 

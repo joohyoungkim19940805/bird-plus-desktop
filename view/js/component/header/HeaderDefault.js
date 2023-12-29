@@ -8,8 +8,8 @@ import FreedomInterface from "@handler/editor/module/FreedomInterface";
 export default class HeaderDefault extends HTMLElement {
 	#isLoaded = false;
     content;
-	isMobile = /Mobi/i.test(window.navigator.userAgent)
-
+	#isMobile = /Mobi/i.test(window.navigator.userAgent)
+    #isWeb = top.location.protocol == 'https:'
     #unmaximizeIcon = Object.assign(document.createElement('button'), {
         className: 'unmaximize_icon',
         innerHTML: `
@@ -133,7 +133,7 @@ export default class HeaderDefault extends HTMLElement {
     async createDefaultIcon(container){
         let targetWindowSizeIcon = (await window.myAPI.isMaximize()) ? this.#unmaximizeIcon : this.#maximizeIcon
 
-        if(this.isMobile){
+        if(this.#isMobile || this.#isWeb){
             container.replaceChildren(this.#optionIcon);
         }else{
             container.replaceChildren(

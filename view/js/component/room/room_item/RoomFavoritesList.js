@@ -4,7 +4,7 @@ import PositionChanger from "@handler/PositionChangeer";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
-export default new class RoomFavoritesList{
+export const roomFavoritesList = new class RoomFavoritesList{
 
 	#memory = {};
 

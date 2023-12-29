@@ -50,6 +50,29 @@ export default class Line {
 		}
 		return line;
 	}
+		/**
+	 * 
+	 * @param {HTMLElement} element 
+	 * @returns {HTMLElement} 
+	 */
+		static getRootLine(element){
+			let line = undefined;
+			if( ! element.parentElement){
+				return line;
+			}else if(element.classList?.contains(Line.toolHandler.defaultClass)){
+				return element;
+			}else if(element.parentElement.classList.contains(Line.toolHandler.defaultClass)){
+				line = element.parentElement;
+			}else{
+				line = element.parentElement.closest(`.${Line.toolHandler.defaultClass}`);
+			}
+			let parent = line?.closest(`.${Line.toolHandler.defaultClass}`);
+			if( ! parent){
+				return line;
+			}else{
+				return Line.getRootLine(line);
+			}
+		}
 	static getTool(element, TargetTool){
 		let tool = undefined;
 		
@@ -266,6 +289,7 @@ export default class Line {
 				let itemRemoveList = [];
 				let itemAppendList = [];
 				while(targetStartLineItem){
+					//console.log('targetStartLineItem',targetStartLineItem)
 					if(targetStartLineItem.nodeType == Node.ELEMENT_NODE){
 						if(tool == targetStartLineItem){
 							break;
@@ -289,13 +313,9 @@ export default class Line {
 				nextTool.append(tool.parentElement.nextSibling);
 				tool.parentElement.after(nextTool);
 				let nextItem = nextTool.nextSibling;
-
-				while(nextItem){		
-					if(nextTool == nextItem){
-						break;
-					}
+				
+				if(nextItem && nextTool != nextItem){
 					nextTool.append(nextItem);
-
 				}
 			}
 			
@@ -304,6 +324,7 @@ export default class Line {
 			let middleTargetTool;
 			
 			while(targetLine){
+				//console.log('targetLine', targetLine)
 				if(targetLine === endLine){
 					break;
 				}
@@ -332,6 +353,7 @@ export default class Line {
 					let itemAppendList = [];
 
 					while(targetEndLineItem){
+						//console.log('targetEndLineItem', targetEndLineItem)
 						if(targetEndLineItem.nodeType == Node.ELEMENT_NODE){
 							endTool.prepend(targetEndLineItem);
 							/*

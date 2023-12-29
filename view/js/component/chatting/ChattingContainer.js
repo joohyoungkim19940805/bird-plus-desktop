@@ -5,7 +5,7 @@ import {roomHandler} from "@handler/room/RoomHandler";
 
 import SimpleSvgPipMode from '@component/SimpleSvgPipMode';
 
-export default new class ChattingContainer{
+export const chattingContainer = new class ChattingContainer{
     
     #contentList;
     #wrap = (() => {

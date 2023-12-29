@@ -1,6 +1,6 @@
 import {roomHandler} from "@handler/room/RoomHandler"
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler"
-import roomFavoritesList from "@component/room/room_item/RoomFavoritesList";
+import {roomFavoritesList} from "@component/room/room_item/RoomFavoritesList";
 import AccountInviteRoomView from "./AccountInviteRoomView";
 
 import {roomContainer} from "@component/room/RoomContainer";

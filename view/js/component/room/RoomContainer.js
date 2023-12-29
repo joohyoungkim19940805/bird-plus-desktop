@@ -3,7 +3,7 @@ import {roomFavoritesList} from "./room_item/RoomFavoritesList"
 import {roomList} from "./room_item/RoomList"
 import {roomMessengerList} from "./room_item/RoomMessengerList"
 
-export default new class RoomContainer{
+export const roomContainer = new class RoomContainer{
 
 	#contentList 
 	#wrap = (()=>{

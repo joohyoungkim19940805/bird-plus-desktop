@@ -154,7 +154,11 @@ export default class UndoManager{
             }*/
             if(type.value == Node.ELEMENT_NODE){
                 let node = cursorTarget.childNodes[index.value]; 
-                selection.setPosition(node, offset.value);
+                if(this.#editor.isEmpty){
+                    selection.setPosition(node, 0);
+                }else{
+                    selection.setPosition(node, offset.value);
+                }
             }else if(type.value == Node.TEXT_NODE){
                 selection.setPosition(cursorTarget, offset.value);
             }

@@ -99,6 +99,7 @@ export default class Sort extends FreedomInterface {
         }
         this.style.textAlign = this.dataset.text_align;
 
+		/*
 		super.connectedAfterOnlyOneCallback = () => {
 			this.dataset.index = Sort.toolHandler.connectedFriends.length;
 			let nextLine = this.parentEditor.getNextLine(this.parentLine);
@@ -115,7 +116,7 @@ export default class Sort extends FreedomInterface {
 				this.parentEditor.createLine();
 			}
         }
-
+		*/
 	}
 
 }
