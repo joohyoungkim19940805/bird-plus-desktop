@@ -345,6 +345,7 @@ export const simpleOption = new class SimpleOption{
                 return;
             }
             let profileImageUrl;
+            let profileChangeFailed = false;
             if(profileImageInput.files.length == 0){
                 profileImageUrl = accountHandler.accountInfo.profileImage;
             }else{
@@ -373,7 +374,7 @@ export const simpleOption = new class SimpleOption{
                 })
                 if( ! profileImageUrl) {
                     profileImageUrl = accountHandler.accountInfo.profileImage;
-                    common.showToastMessage(['프로필 이미지 변경에 실패하였습니다.']);
+                    profileChangeFailed = true;
                 }
                 profileImageInput.files = new DataTransfer().files;
             }
@@ -389,7 +390,11 @@ export const simpleOption = new class SimpleOption{
                 imgTempUrlList.forEach(async e=> {
                     URL.revokeObjectURL(e);
                 })
-                common.showToastMessage([result.message]);
+                if(profileChangeFailed){ 
+                    common.showToastMessage([result.message, '그러나 프로필 이미지 변경은 실패하였습니다.']);
+                }else{
+                    common.showToastMessage([result.message]);
+                }
                 simpleProfileContainer.remove();
             })
 
