@@ -64,9 +64,12 @@ class ChattingInfoLine extends FreeWillEditor{
     static option = {
         isDefaultStyle : true
     }
-    
-    constructor(){
+    __parentWrapper;
+    constructor(parent){
         super(ChattingInfoLine.tools, ChattingInfoLine.option);
+        
+        this.__parentWrapper = parent;
+
         super.contentEditable = false;
         super.placeholder = ''
     }
@@ -191,7 +194,7 @@ export const chattingInfo = new class ChattingInfo{
                     if( ! this.#liList[0].isConnected){
                         return;
                     }
-
+                    clearInterval(isConnectedAwait);
                     this.#lastVisibleTarget = this.#liList.at(-1);
                     this.#firstVisibleTarget = this.#liList[0];
                     if(this.#lastVisibleTarget){
@@ -201,15 +204,13 @@ export const chattingInfo = new class ChattingInfo{
                         this.#lastItemVisibleObserver.observe(this.#firstVisibleTarget);
                     }
 
-                    console.log(this.#page, this.#lastPageNumber, this.#firstPageNumber, this.#totalElementsMapper, this.#totalPagesMapper)
-                    
                     entry.target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                     
                     if(this.#lastReplyTarget){
                         this.#lastReplyTarget.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                         this.#lastReplyTarget = undefined;
                     }
-                    clearInterval(isConnectedAwait);
+                    
                 },50);
 
                 //let visibilityLastItem = [...this.#elementMap.chattingContentList.querySelectorAll('[data-visibility="v"]')].at(-1);
@@ -256,6 +257,10 @@ export const chattingInfo = new class ChattingInfo{
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
             callBack: (chattingData) => {
+                let lastTarget = document.activeElement;
+                console.log(lastTarget);
+                if(lastTarget.__parentWrapper) lastTarget.dataset.is_update = '';
+
                 this.createItemElement(chattingData).then(liElement => {
 
                     this.#addMemory(liElement, chattingData.workspaceId, chattingData.roomId, chattingData.id)
@@ -275,7 +280,6 @@ export const chattingInfo = new class ChattingInfo{
                                 ]
                                 list.flatMap(e=>e).filter(e=>e.dataset.room_id == chattingData.roomId).forEach(e=>{
                                     if( ! e.isConnected){
-                                        console.log(roomHandler.roomMessengerListMemory);
                                         return;
                                     }
                                     
@@ -305,27 +309,54 @@ export const chattingInfo = new class ChattingInfo{
                         },1000)
                         return;
                     }
+
                     let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
                     if(memory && memory.length != 0){
                         this.#page = Math.floor(memory.length / 10);
                         this.#liList = memory
                             .sort((a,b) => Number(b.dataset.create_mils) - Number(a.dataset.create_mils))
+
+                        let listObserver = new MutationObserver( (mutationList, observer) => {
+                            mutationList.forEach((mutation) => {
+                                let {addedNodes, removedNodes} = mutation;
+                                let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.__parentWrapper)
+                                if( ! isAddedActiveTarget) return;
+                                lastTarget.contentEditable = true;
+                                let cursorTarget = lastTarget.hasAttribute('is_cursor') ? lastTarget : lastTarget.querySelector('[is_cursor]');
+                                if( ! cursorTarget) return;
+                                let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes;
+                                let selection = window.getSelection();
+                                if(type.value == Node.ELEMENT_NODE){
+                                    let node = cursorTarget.childNodes[index.value]; 
+                                    selection.setPosition(node, offset.value);
+                                }else if(type.value == Node.TEXT_NODE){
+                                    selection.setPosition(cursorTarget, offset.value);
+                                }
+                            })
+                        });
+                        if(lastTarget && lastTarget.__parentWrapper){
+                            listObserver.observe(this.#elementMap.chattingContentList, {childList:true});
+                        }
+            
                         this.#elementMap.chattingContentList.replaceChildren(...this.#liList);
                         let isConnectedAwait = setInterval(()=>{
-                            if( ! this.#liList[0]){
+                            if( ! liElement){
                                 clearInterval(isConnectedAwait);
                                 return;
                             }
-                            if( ! this.#liList[0].isConnected){
+                            if( ! liElement.isConnected){
                                 return;
                             }
+                            clearInterval(isConnectedAwait);
+                            listObserver.disconnect();
+                            lastTarget.removeAttribute('data-is_update');
                             if(
                                 accountHandler.accountInfo.accountName == liElement.dataset.account_name &&
                                 liElement.dataset.create_mils == liElement.dataset.update_mils
                             ){
                                 this.#elementMap.chattingContentList.scrollBy(undefined, this.#elementMap.chattingContentList.scrollHeight)
                             }
-                            clearInterval(isConnectedAwait);
+                            
 
                             Promise.all(this.#liList.map(async (e,i)=>{
                                 if(i == 0 || i == this.#liList.length - 1)return;
@@ -487,7 +518,8 @@ export const chattingInfo = new class ChattingInfo{
             createMils,
             updateMils,
             fullName,
-            accountName
+            accountName,
+            profileImage
         } = data;
         return new Promise(async resolve => {
             let li = Object.assign(document.createElement('li'), {
@@ -498,7 +530,7 @@ export const chattingInfo = new class ChattingInfo{
                 className: 'chatting_content_description_wrapper',
                 innerHTML: `
                     <div class="chatting_content_description_profile">
-                        <img src="${(await common.getProjectPathPromise())}image/user.png"/>
+                        <img class="profile_image" src="${profileImage}"/>
                     </div>
                     <div class="chatting_container">
                         <div class="chatting_content_description_name_wrapper">
@@ -522,7 +554,7 @@ export const chattingInfo = new class ChattingInfo{
                 `
             });
             li.append(descriptionWrap);
-            let content = new ChattingInfoLine();
+            let content = new ChattingInfoLine(li);
             ChattingInfoLine.parseLowDoseJSON(content, chatting, {afterCallback : (node) => {
                 if( ! node.hasAttribute('data-reply')){
                     return;
@@ -539,14 +571,17 @@ export const chattingInfo = new class ChattingInfo{
                         Math.floor( ( this.#totalElementsMapper[roomId] - parseInt(node.dataset.page_sequence) ) / 10 )
                     )
                 }
+
                 let appendAwait = setInterval(()=>{
                     if( ! node.isConnected){
                         return;
                     }
                     clearInterval(appendAwait);
-                    console.log(node, Quote.toolHandler.defaultClass);
                     let quote = node.querySelector(Quote.toolHandler.defaultClass);
-                    console.log(quote);
+                    quote.setAttribute('date_text', new Date(Number(node.dataset.reply_mils)).toLocaleString({
+                        year: '2-digit', month: 'short', weekday: 'short', day: '2-digit',
+                        formatMatcher: 'best fit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    }));
                     if(quote.childElementCount > 3 ){
                         node.classList.add('expand_mode')
                         let expand = node.querySelector('[data-expand]');
@@ -699,7 +734,14 @@ export const chattingInfo = new class ChattingInfo{
                 prevText = editor.innerHTML;
             }
             editor.onblur = (event) => {
-                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.toolbar.matches(':hover') || document.activeElement == editor)){
+                if( ! isScriptBlur && (
+                        editor.matches(':hover') || 
+                        this.#elementMap.toolbar.matches(':hover') || 
+                        document.activeElement == editor ||
+                        editor.hasAttribute('data-is_update')
+                    )
+                ){
+                    event.preventDefault();
                     return;
                 }else if(isUpdateCancel){
                     isUpdateCancel = false;
@@ -719,7 +761,6 @@ export const chattingInfo = new class ChattingInfo{
                 this.#sendChatting(li);
             }
             editor.onkeydown = (event) => {
-                console.log(event);
                 let {altKey, ctrlKey, shiftKey, key} = event;
                 if(key == 'Escape'){
                     isUpdateCancel = true;
@@ -786,6 +827,10 @@ export const chattingInfo = new class ChattingInfo{
                         ChattingInfoLine.parseLowDoseJSON(chattingRegist, jsonList).then(result => {
                             let quote = new Quote();
                             quote.append(...result);
+                            quote.setAttribute('date_text', new Date(Number(li.dataset.create_mils)).toLocaleString({
+                                year: '2-digit', month: 'short', weekday: 'short', day: '2-digit',
+                                formatMatcher: 'best fit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                            }));
                             let lineElement = chattingRegist.createLine();
                             chattingRegist.createLine();
                             window.getSelection().setPosition(chattingRegist, 1);
@@ -793,7 +838,7 @@ export const chattingInfo = new class ChattingInfo{
                             lineElement.dataset.reply = li.dataset.full_name;
                             lineElement.dataset.reply_id = li.dataset.id;
                             lineElement.dataset.page_sequence = pageSequence;
-                            //lineElement.dataset.child_count = quote.childElementCount;
+                            lineElement.dataset.reply_mils = li.dataset.create_mils;
                             lineElement.append(quote);
                             lineElement.contentEditable = 'false';
                             lineElement.classList.add('pointer');
@@ -911,7 +956,7 @@ export const chattingInfo = new class ChattingInfo{
 
                     let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
                     let putSignData = `${li.dataset.roomId}:${li.dataset.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
-                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityPutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -954,7 +999,7 @@ export const chattingInfo = new class ChattingInfo{
                     }
                     let getSignData = `${li.dataset.roomId}:${li.dataset.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
                     
-                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityGetObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -1109,21 +1154,13 @@ export const chattingInfo = new class ChattingInfo{
 
     #roomIdChange(targetPage){
         this.reset();
-        this.#page = targetPage || this.#page//this.#lastPageNumberMapper[roomHandler.roomId] || 0;
+        this.#page = targetPage || this.#page
         console.log(targetPage, this.#page);
         let promise;
         let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
         let isTarget = false;
         if(targetPage){
             isTarget =  memory.some(e=>e.dataset.page == targetPage);
-            /*
-            let pageMemory = memory.filter(e=>e.dataset.page == targetPage);
-            console.log(pageMemory);
-            if(pageMemory.length != 0){
-                isTarget = true;
-                memory = pageMemory;
-            }
-            */
         }
         let isMemory = ( memory && memory.length != 0 && this.#firstOpenCheckMapper.hasOwnProperty( roomHandler.roomId ) );
         if( (isMemory && isTarget) || (isMemory && ! targetPage)){
@@ -1232,6 +1269,10 @@ export const chattingInfo = new class ChattingInfo{
  
             this.#roomIdChange(page).then(() => {
                 let target = this.#memory[workspaceId][roomId][chattingId]
+                if( ! target){
+                    common.showToastMessage(['해당하는 페이지를 찾았으나', '메시지는 찾지 못했습니다.']);
+                    return;
+                }
                 this.#lastReplyTarget = target;
                 target.scrollIntoView({ behavior: "instant", block: "start", inline: "nearest" });
                 resolve(target);/*

@@ -114,7 +114,7 @@ export default class Hyperlink extends FreedomInterface {
 			}
 			.${this.toolHandler.defaultClass}-preview-url{
 				position: fixed;
-				z-index: 9999;
+				z-index: 9000;
 				width: 50vw;
 				height: 50vh;
 			}

@@ -5,7 +5,7 @@ export default class SimpleSvgPipMode{
         className: 'pointer',
         innerHTML : `
             <foreignObject  width="100%" height="100%" stlye="position:relative;">
-                <div style="position:absolute; width:100%; height:100%; background-color: rgba(0,0,0,0); z-index:9999"></div>
+                <div style="position:absolute; width:100%; height:100%; background-color: rgba(0,0,0,0); z-index:9000"></div>
                 <main></main>
             </foreignObject>
         `

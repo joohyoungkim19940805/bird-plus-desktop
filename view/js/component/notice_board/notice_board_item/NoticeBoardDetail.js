@@ -54,14 +54,13 @@ export class NoticeBoardLine extends FreeWillEditor{
         isDefaultStyle : true
     }
     
-    parentLi;
-    parentClass;
-    constructor(parentLi, parentClass){
+    __parentWrapper;
+
+    constructor(parent){
 
 		super(NoticeBoardLine.tools, NoticeBoardLine.option);
 
-        this.parentLi = parentLi;
-        this.parentClass = parentClass;
+        this.__parentWrapper = parent;
         
         super.placeholder = ''
         super.spellcheck = true
@@ -117,13 +116,14 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardDetailAccept', (data) => {
             //console.log(data);
+            let lastTarget = document.activeElement;
+            if(lastTarget.__parentWrapper) lastTarget.dataset.is_update = '';
+
             let isEventStream
             if(data && data.serverSentStreamType){
                 isEventStream = true;
                 data = data.content;
             }
-            
-            let lastTarget = document.activeElement;
             this.createItemElement(data)
             .then(li => {
                 this.#addMemory(li, data.workspaceId, data.roomId, data.noticeBoardId, data.id);
@@ -135,38 +135,34 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
                 let listObserver = new MutationObserver( (mutationList, observer) => {
                     mutationList.forEach((mutation) => {
                         let {addedNodes, removedNodes} = mutation;
-                        let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.parentLi)
-                        if(isAddedActiveTarget){
-                            //setTimeout(()=>{
-                                lastTarget.contentEditable = true;
-                                let cursorTarget = lastTarget.hasAttribute('is_cursor') ? lastTarget : lastTarget.querySelector('[is_cursor]');
-                                if( ! cursorTarget) return;
-                                let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes;
-                                let selection = window.getSelection();
-                                if(type.value == Node.ELEMENT_NODE){
-                                    let node = cursorTarget.childNodes[index.value]; 
-                                    selection.setPosition(node, offset.value);
-                                }else if(type.value == Node.TEXT_NODE){
-                                    selection.setPosition(cursorTarget, offset.value);
-                                }
-
-                            //},5000)
+                        let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.__parentWrapper)
+                        if( ! isAddedActiveTarget) return;
+                        lastTarget.contentEditable = true;
+                        let cursorTarget = lastTarget.hasAttribute('is_cursor') ? lastTarget : lastTarget.querySelector('[is_cursor]');
+                        if( ! cursorTarget) return;
+                        let {'cursor_offset': offset, 'cursor_type': type, 'cursor_index': index, 'cursor_scroll_x': x, 'cursor_scroll_y': y} = cursorTarget.attributes;
+                        let selection = window.getSelection();
+                        if(type.value == Node.ELEMENT_NODE){
+                            let node = cursorTarget.childNodes[index.value]; 
+                            selection.setPosition(node, offset.value);
+                        }else if(type.value == Node.TEXT_NODE){
+                            selection.setPosition(cursorTarget, offset.value);
                         }
                     })
                 });
-                if(lastTarget && lastTarget.tagName == 'NOTICE-BOARD-LINE'){ //|| ! checkTarget){    
+                if(lastTarget && lastTarget.__parentWrapper){   
                     listObserver.observe(this.#elementMap.noticeBoardDetailList, {childList:true});
                 }
 
                 this.#elementMap.noticeBoardDetailList.replaceChildren(...list);
 
-                //this.#elementMap.noticeBoardDetailList.append();
                 let appendAwait = setInterval(()=>{
                     if( ! li.isConnected){
                         return;
                     }
                     clearInterval(appendAwait);
                     listObserver.disconnect();
+                    lastTarget.removeAttribute('data-is_update');
                 }, 50)
             })
         })
@@ -237,7 +233,7 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
                 className: 'notice_board_detail_item_add_content',
                 textContent: '+'
             });
-            let editor = new NoticeBoardLine(li, this);
+            let editor = new NoticeBoardLine(li);
             let positionChangeIcon = Object.assign(document.createElement('span'),{
                 className: 'notice_board_detail_item_position_change_icon pointer',
                 textContent: '〓'
@@ -251,7 +247,7 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
                 datasetPromise.then(() => {
                     li.removeAttribute('data-content');
                     
-                    NoticeBoardDetail.parseLowDoseJSON(editor, content).then(() => {
+                    NoticeBoardLine.parseLowDoseJSON(editor, content).then(() => {
                         editor.contentEditable = false;
                         li.append(editor);
                         let appendAwait = setInterval(()=>{
@@ -333,7 +329,14 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
             }
             let isScriptBlur = false;
             editor.onblur = (event) => {
-                if( ! isScriptBlur && (editor.matches(':hover') || this.#elementMap.toolbar.matches(':hover') || document.activeElement == editor)){
+                if( ! isScriptBlur && (
+                        editor.matches(':hover') || 
+                        this.#elementMap.toolbar.matches(':hover') || 
+                        document.activeElement == editor ||
+                        editor.hasAttribute('data-is_update')
+                    )
+                ){
+                    event.preventDefault();
                     return;
                 }
                 if(isScriptBlur){
@@ -428,7 +431,7 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
 
                     let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
                     let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
-                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'NOTICE'})
+                    let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityPutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'NOTICE'})
                     .then( (result) => {
                         if(! result){
                             return;
@@ -472,7 +475,7 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
                     }
                     let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
                     
-                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'NOTICE'})
+                    s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityGetObjectPresignedUrl, getSignData, {fileType, uploadType: 'NOTICE'})
                     .then( (result) => {
                         if(! result){
                             return;

@@ -102,8 +102,7 @@ export default class Image extends FreedomInterface {
                 max-width: 100%;
                 height: auto;
                 aspect-ratio: attr(width) / attr(height);
-                image-rendering: crisp-edges;
-                image-rendering: -webkit-optimize-contrast;
+                image-rendering: auto;
             }
         ` 
 		let defaultStyle = document.querySelector(`#${this.#defaultStyle.id}`);

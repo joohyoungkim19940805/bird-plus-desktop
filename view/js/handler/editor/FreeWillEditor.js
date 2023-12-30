@@ -175,6 +175,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			}
 		});
 	});
+	#keydownEventCallback;
+	numberIndexMapper = ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+	numberToSpecialMapper = ['~','!', '@', '#', '$', '%', '^', '&', '*', '('];
 	constructor(
 		tools = [
 			Strong,
@@ -195,9 +198,11 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			Code,
 			Hyperlink,
 		],
-		{isDefaultStyle = true} = {}
+		{isDefaultStyle = true, isDefaultShortcutKeyEvent = true} = {},
+		keydownEventCallback
 	){
 		super();
+		this.keydownEventCallback = keydownEventCallback;
 		if(isDefaultStyle){
 			FreeWiilHandler.createDefaultStyle();
 		}
@@ -303,9 +308,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 			})
 			resolve();
 		});
-		FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
-			//&& ! super.isNextLineExist()
-			if(newEvent.key != 'ArrowDown' || ! this.isCursor()) return;
+		
+		const arrowDownEvent = (event) => {
+			if(! this.isCursor() || event.key != 'ArrowDown') return;
 
 			let currentLine = this.getCurrentLine(undefined, {isRoot : true});
 			if( ! currentLine) return;
@@ -322,7 +327,68 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				let nextLine = super.createLine();
 				nextLine.line?.lookAtMe();
 			}
-		})
+		}
+		
+		if(isDefaultShortcutKeyEvent){
+
+			FreedomInterface.globalKeydownEventListener(this, ({oldEvent, newEvent}) => {
+				if(! this.isCursor()) return;
+				let isKeyAddEvent = false;
+				if(this.keydownEventCallback != null){
+					isKeyAddEvent = this.keydownEventCallback(newEvent);
+				}
+				
+				if(isKeyAddEvent) return;
+				
+				//let selection = window.getSelection();
+
+				arrowDownEvent(newEvent);
+				let {ctrlKey, shiftKey, altKey, key} = newEvent;
+
+				if(ctrlKey && key.toLowerCase() == 'b'){
+					newEvent.preventDefault()
+					Strong.toolHandler.toolButton.click();
+					return;
+				}else if(ctrlKey && key.toLowerCase == 'u'){
+					newEvent.preventDefault()
+					Underline.toolHandler.toolButton.click();
+					return;
+				}else if(ctrlKey && key.toLowerCase == 'i'){
+					newEvent.preventDefault()
+					Italic.toolHandler.toolButton.click();
+					return;
+				}
+				let clone = [...tools];
+				new Promise(res=>{
+					let firstKeyGroupList = clone.splice(0,10);
+					let isStop = false;
+					for(let i = 0, len = firstKeyGroupList.length ; i < len ; i += 1){
+						let s = String(i), index = s.substring(s.length - 1);
+						if(ctrlKey && altKey && key == this.numberIndexMapper[index]){
+							let e = firstKeyGroupList[i];
+							newEvent.preventDefault();
+							e.toolHandler.toolButton.click();
+							isStop = true;
+							break;
+						}
+					}
+					if(isStop) {
+						res(); 
+						return;
+					}
+					for(let i = 0, len = clone.length ; i < len ; i += 1){
+						let s = String(i), index = s.substring(s.length - 1);
+						if(ctrlKey && shiftKey && key == this.numberToSpecialMapper[index]){
+							let e = clone[i];
+							newEvent.preventDefault();
+							e.toolHandler.toolButton.click();
+							break;
+						}
+					}
+					res();
+				});
+			})
+		}
 	}
 
 	connectedCallback(){
@@ -544,5 +610,12 @@ export default class FreeWillEditor extends FreeWiilHandler {
 
 	get isLoaded(){
 		return this.#isLoaded;
+	}
+
+	set keydownEventCallback(callBack){
+		this.#keydownEventCallback = callBack;
+	}
+	get keydownEventCallback(){
+		return this.#keydownEventCallback;
 	}
 }

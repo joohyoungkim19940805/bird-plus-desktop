@@ -129,9 +129,13 @@ export const noticeBoardList = new class NoticeBoardList{
 		}
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('noticeBoardAccept', (data) => {
-
+			let lastTarget = document.activeElement;
+			if(lastTarget.__parentWrapper) lastTarget.dataset.is_update = '';
+			let lastSelectionFocusOffset = window.getSelection().focusOffset;
+			
 			let {content = data} = data;
 			let parentRoot = content.parentGroupId == null ? this.#elementMap.noticeBoardList : this.#element.querySelector(`ul[data-parent_group_id="${content.parentGroupId}"]`)
+
 			this.createItemElement(
 				content, 
 				parentRoot
@@ -146,10 +150,38 @@ export const noticeBoardList = new class NoticeBoardList{
 				});
 				let list = Object.values(this.#memory[content.workspaceId]?.[content.roomId] || {}).filter(e=>(e.dataset.parent_group_id || 0) == (parentRoot.dataset.parent_group_id || 0))
 					.sort((a,b) => Number(b.dataset.order_sort) - Number(a.dataset.order_sort));
-				if(list.length != 0){
-					this.#positionChanger.addPositionChangeEvent(list, parentRoot)
-					parentRoot.replaceChildren(...list);
-				}
+				
+				//if(list.length == 0) return;
+
+				this.#positionChanger.addPositionChangeEvent(list, parentRoot)
+				
+				let listObserver = new MutationObserver( (mutationList, observer) => {
+                    mutationList.forEach((mutation) => {
+                        let {addedNodes, removedNodes} = mutation;
+						let isAddedActiveTarget = [...addedNodes].some(e=> e == lastTarget.__parentWrapper)
+						if( ! isAddedActiveTarget) return;
+                        lastTarget.contentEditable = true;
+                        let selection = window.getSelection();
+                        selection.setPosition(lastTarget.childNodes[0], lastSelectionFocusOffset)
+						lastTarget.classList.remove('pointer');
+                    })
+                });
+                if(lastTarget && lastTarget.__parentWrapper){
+                    listObserver.observe(lastTarget.__parentWrapper.__parentRoot, {childList:true});
+                }
+				
+				parentRoot.replaceChildren(...list);
+				
+				
+				let appendAwait = setInterval(()=>{
+                    if( ! li.isConnected){
+                        return;
+                    }
+                    clearInterval(appendAwait);
+                    listObserver.disconnect();
+					lastTarget.removeAttribute('data-is_update');
+                }, 50)
+				
 			})
 
 		});
@@ -215,6 +247,7 @@ export const noticeBoardList = new class NoticeBoardList{
 		childRoot.__component = {
 			marker, titleName, buttonWrapper, addButton, folderAddButton, childRoot, li
 		};
+		titleName.__parentWrapper = li;
 		let markerObserve = new MutationObserver((mutationList, observer) => {
 			mutationList.forEach((mutation) => {
 				let isOpen = JSON.parse(marker.dataset.is_open);
@@ -318,6 +351,11 @@ export const noticeBoardList = new class NoticeBoardList{
 			marker.click();
 		}
 		titleName.onblur = (event) => {
+			if(titleName.hasAttribute('data-is_update')) {
+				event.preventDefault();
+				return;
+			}
+			
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
@@ -361,6 +399,8 @@ export const noticeBoardList = new class NoticeBoardList{
 		});
 		li.__parentRoot = parentRoot;
 		let [titleName, buttonWrapper] = li.querySelectorAll('.notice_board_list_content_item_title_name, .notice_board_list_content_button_wrapper');
+		titleName.__parentWrapper = li;
+		
 		let deleteButton  = Object.assign(document.createElement('button'),{
 			className: 'css-gg-remove',
 			innerHTML: `
@@ -455,6 +495,10 @@ export const noticeBoardList = new class NoticeBoardList{
 			})
 		}
 		titleName.onblur = (event) => {
+			if(titleName.hasAttribute('data-is_update')) {
+				event.preventDefault();
+				return;
+			}
 			if(titleName.textContent != '' && ! deleteButton.hasAttribute('data-is_mouseover')){
 				deleteButton.remove();
 				titleName.contentEditable = false;
@@ -549,13 +593,14 @@ export const noticeBoardList = new class NoticeBoardList{
 					buttonWrapper.prepend(deleteButton);
 				}
 			}
+			/*
 			let titleNameConnectedAwait = setInterval(()=>{
 				if(titleName.isConnected && Boolean(li.dataset.is_empty)){
 					titleName.focus();
 					clearInterval(titleNameConnectedAwait);
 				}
 			}, 100);
-
+			*/
 			[titleName, buttonWrapper].forEach(e=> e.onmouseenter = (event) => {
 				if(Boolean(li.dataset.is_empty) || document.activeElement == titleName){
 					return;

@@ -4,6 +4,9 @@ export default class ToolHandler{
 	#extendsElement;
 	#defaultClass;
 	#isInline = true;
+	/**
+	 * @type {HTMLButtonElement}
+	 */
 	#toolButton;
 	#identity;
 	#connectedFriends = [];

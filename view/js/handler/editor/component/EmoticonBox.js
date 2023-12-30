@@ -137,7 +137,6 @@ export default class EmoticonBox{
     createEmoticonList(groupTitle, subgroupTitle, toneType){
         return new Promise(resolve => {
             let targetGroup;
-            console.log(groupTitle, subgroupTitle)
             if( ! groupTitle && subgroupTitle){
                 targetGroup = Object.values(emoticon).find(e=> e[subgroupTitle])?.[subgroupTitle] || [];
             }else if( groupTitle && ! subgroupTitle){

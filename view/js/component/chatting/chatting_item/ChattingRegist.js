@@ -151,7 +151,7 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 
 							let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
 							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
-							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
+							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityPutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
 								if(! result){
 									return;
@@ -188,14 +188,13 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 									return true;
 								})
 							})
-							console.log(isUpload);
 							if( ! isUpload){
 								resolve();
 								return;
 							}
 							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
 							
-							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generatePutObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
+							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityGetObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
 								if(! result){
 									return;
@@ -243,15 +242,6 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 				})
 			}
 		}
-	}
-
-	#chattingLineBreak(){
-		if(document.activeElement != this){
-			return;
-		}
-		let range = window.getSelection().getRangeAt(0)
-
-		//collapsed == false = 범위 선택 x
 	}
 
     get element(){

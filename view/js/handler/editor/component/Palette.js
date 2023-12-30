@@ -950,7 +950,7 @@ export default class Palette {
 
 			.palette-wrap .color-wrap .panel-selected{
 				position: fixed;
-				z-index: 9999;
+				z-index: 9000;
 			}
 			.palette-wrap .color-wrap .panel-selected-pointer{
 				position: fixed;

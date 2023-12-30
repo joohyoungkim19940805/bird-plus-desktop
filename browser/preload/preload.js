@@ -134,18 +134,18 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 	getServerUrl : async () => ipcRenderer.invoke('getServerUrl'),
 
+	pageChange : {
+		changeLoginPage : async () => ipcRenderer.send('changeLoginPage'),
+		changeWokrspacePage : async () => ipcRenderer.send('changeWokrspacePage'),
+		changeMainPage : async (param) => ipcRenderer.send('changeMainPage', param),
+	},
+	
 	event : {
 		electronEventTrigger : electronEventTrigger,
 	},
 
 	stream : {
 		initWorkspaceStream : async (param) => ipcRenderer.send('initWorkspaceStream', param),
-	},
-
-	pageChange : {
-		changeLoginPage : async () => ipcRenderer.send('changeLoginPage'),
-		changeWokrspacePage : async () => ipcRenderer.send('changeWokrspacePage'),
-		changeMainPage : async (param) => ipcRenderer.send('changeMainPage', param),
 	},
 
 	account : {
@@ -201,8 +201,9 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchNoticeBoardDetailList : async (param) => ipcRenderer.invoke('searchNoticeBoardDetailList', param),
 	},
 	s3: {
-		generatePutObjectPresignedUrl : async (param) => ipcRenderer.invoke('generatePutObjectPresignedUrl', param),
-		generateGetObjectPresignedUrl : async (param) => ipcRenderer.invoke('generateGetObjectPresignedUrl', param),
+		generateSecurityPutObjectPresignedUrl : async (param) => ipcRenderer.invoke('generateSecurityPutObjectPresignedUrl', param),
+		generateSecurityGetObjectPresignedUrl : async (param) => ipcRenderer.invoke('generateSecurityGetObjectPresignedUrl', param),
+		generateGetObjectPresignedUrl : async(param) => ipcRenderer.invoke('generateGetObjectPresignedUrl', param),
 	},
 	emoticon: {
 		createEmotionReaction : async (param) => ipcRenderer.invoke('createEmotionReaction', param),

@@ -7,8 +7,11 @@ const log = require('electron-log');
 const apiS3Controller = require(path.join(__project_path, 'browser/controller/ApiS3Controller.js'))
 class ApiS3Ipc {
 	constructor() {
-		ipcMain.handle('generatePutObjectPresignedUrl', async (event, param) => {
-			return apiS3Controller.generatePutObjectPresignedUrl(param);
+		ipcMain.handle('generateSecurityPutObjectPresignedUrl', async (event, param) => {
+			return apiS3Controller.generateSecurityPutObjectPresignedUrl(param);
+		})
+		ipcMain.handle('generateSecurityGetObjectPresignedUrl', async (event, param) => {
+			return apiS3Controller.generateSecurityGetObjectPresignedUrl(param);
 		})
 		ipcMain.handle('generateGetObjectPresignedUrl', async (event, param) => {
 			return apiS3Controller.generateGetObjectPresignedUrl(param);

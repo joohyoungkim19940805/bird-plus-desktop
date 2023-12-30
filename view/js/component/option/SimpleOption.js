@@ -294,6 +294,10 @@ export const simpleOption = new class SimpleOption{
             id : 'simple_profile_container',
             innerHTML : `
             <div class="simple_profile_input_container">
+                <img class="profile_image" src="${accountHandler.accountInfo.profileImage}"/>
+                <input id="simple_profile_image" type="file" accept="image/*">
+            </div>
+            <div class="simple_profile_input_container">
                 <label for="simple_profile_full_name">Full Name</label>
                 <input type="text" id="simple_profile_full_name" name="fullName" value="${accountHandler.accountInfo?.fullName || ''}"/>
             </div>
@@ -312,9 +316,21 @@ export const simpleOption = new class SimpleOption{
             </div>
             `,
         });
-
-        simpleProfileContainer.onsubmit = (event)=>{
+        let profileImageInput = simpleProfileContainer.simple_profile_image;
+        let profileImage = simpleProfileContainer.querySelector('.profile_image')
+        let imgTempUrlList = []; 
+        profileImageInput.oninput = (event) => {
+            console.log(event);
+            if(event.constructor.name == Event.name){
+                li.dataset.is_not_leave = '';
+            }
+            profileImage.src = URL.createObjectURL(profileImageInput.files[0], profileImageInput.files[0].type); 
+            imgTempUrlList.push(profileImage.src);
+        }
+        
+        simpleProfileContainer.onsubmit = async (event)=>{
             event.preventDefault();
+
             let fullName = simpleProfileContainer.simple_profile_full_name.value;
             let jobGrade = simpleProfileContainer.simple_profile_job_grade.value;
             let department = simpleProfileContainer.simple_profile_department.value;
@@ -322,19 +338,59 @@ export const simpleOption = new class SimpleOption{
             if(
                 accountHandler.accountInfo.fullName == fullName &&
                 accountHandler.accountInfo.jobGrade == jobGrade &&
-                accountHandler.accountInfo.fullName == department
+                accountHandler.accountInfo.department == department &&
+                profileImageInput.files.length == 0
             ){
+                common.showToastMessage(['변동 사항이 없습니다.']);
                 return;
             }
-
+            let profileImageUrl;
+            if(profileImageInput.files.length == 0){
+                profileImageUrl = accountHandler.accountInfo.profileImage;
+            }else{
+                profileImageUrl = await window.myAPI.s3.generateGetObjectPresignedUrl({
+                    fileName : profileImageInput.files[0].name,
+                    uploadType : 'PROFILE'
+                }).then(async result=>{
+                    if(result.code != 0){
+                        common.showToastMessage(result.message.split('\n'));
+                        return ;
+                    }
+                    return await fetch(result.data, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Encoding' : 'base64',
+				            'Content-Type' : 'application/octet-stream',
+                        },
+                        body: profileImageInput.files[0]
+                    }).then(res=>{
+                        if( ! (res.status == 200 || res.status == 201) ) throw new Error(res.status)
+                        return result.data.split('?')[0]
+                    }).catch(err=>{
+                        console.error(err);
+                        return;
+                    })
+                })
+                if( ! profileImageUrl) {
+                    profileImageUrl = accountHandler.accountInfo.profileImage;
+                    common.showToastMessage(['프로필 이미지 변경에 실패하였습니다.']);
+                }
+                profileImageInput.files = new DataTransfer().files;
+            }
+            
             window.myAPI.account.updateSimpleAccountInfo({
-                fullName, jobGrade, department
+                fullName, jobGrade, department, profileImage : profileImageUrl
             }).then(result => {
                 console.log('result updateSimpleAccountInfo ::: ', result);
                 if(accountHandler.accountInfo.fullName != fullName){
                     window.myAPI.room.createMySelfRoom({workspaceId : workspaceHandler.workspaceId});
                 }
                 accountHandler.searchAccountInfo();
+                imgTempUrlList.forEach(async e=> {
+                    URL.revokeObjectURL(e);
+                })
+                common.showToastMessage([result.message]);
+                simpleProfileContainer.remove();
             })
 
         }
@@ -343,10 +399,22 @@ export const simpleOption = new class SimpleOption{
         }
         li.append(title);
         li.onmouseenter = () => {
+            if(document.activeElement == profileImageInput) {
+                return;
+            }else if(li.hasAttribute('data-is_not_leave')){
+                li.removeAttribute('data-is_not_leave')
+                return;
+            }
             li.append(simpleProfileContainer)
             this.#positionRemain(simpleProfileContainer)
         }
         li.onmouseleave = () => {
+            if(document.activeElement == profileImageInput) {
+                return;
+            }else if(li.hasAttribute('data-is_not_leave')){
+                li.removeAttribute('data-is_not_leave')
+                return;
+            }
             simpleProfileContainer.remove();
         }
         li.onclick = (event) => {

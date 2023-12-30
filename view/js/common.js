@@ -91,4 +91,30 @@ export default new class Common{
 		const size = Math.floor(byte / Math.pow(1024, (rank >= 9 ? 8 : rank) ));
 		return {size, rank, rankText};
 	}
+
+	/**
+	 * 
+	 * @param {Array<string>} text 
+	 */
+	showToastMessage(textList){
+		let div = Object.assign(document.createElement('div'), {
+			className: 'toast_message'
+		});
+		div.append(...textList.map(e=>Object.assign(document.createElement('div'), {
+			textContent : e
+		})));
+		document.body.append(div);
+		let appendAwait = setInterval(()=>{
+			if( ! div.isConnected) return;
+			clearInterval(appendAwait);
+			setTimeout(() => {
+				div.style.opacity = 0;
+				div.ontransitionend = () => {
+					div.remove();
+				}
+			},1000)
+		}, 50)
+
+	}
+
 }

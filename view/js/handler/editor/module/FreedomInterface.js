@@ -52,7 +52,13 @@ export default class FreedomInterface extends HTMLElement {
 		let isMouseInnerY = ((y + height) >= clientY && y <= clientY);
 		return (isMouseInnerX && isMouseInnerY);
 	}
+	/**
+	 * 
+	 * @param {HtmlElement} element 
+	 * @param {Function} callBack 
+	 */
 	static globalKeydownEventListener(element, callBack = ({oldEvent, newEvent})=>{}){
+		
 		let oldEvent = undefined;
 		let newEvent = undefined;
 		const simpleObserver = () => {
@@ -104,7 +110,7 @@ export default class FreedomInterface extends HTMLElement {
 	}
 	
 	static processingElementPosition(element, target){
-		let {x, y, height} = target.getBoundingClientRect();
+		let {x, y, height, width} = target.getBoundingClientRect();
 		
 		let elementTop = (y - element.clientHeight)
 		let elementLeft = (x - element.clientWidth)

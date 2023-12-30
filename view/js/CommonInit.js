@@ -184,7 +184,7 @@ export default class CommonInit{
 				startPromise.then((filePreview) => {
 					document.body.closest
 					let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${targetTools.dataset.new_file_name}:${targetTools.closest('[data-account_name]')?.dataset.account_name}`
-					s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateGetObjectPresignedUrl, getSignData, {uploadType : targetTools.dataset.upload_type, fileType})
+					s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityGetObjectPresignedUrl, getSignData, {uploadType : targetTools.dataset.upload_type, fileType})
 					.then( (result) => {
 						if(! result){
 							return;

@@ -111,7 +111,13 @@ export default class HyperlinkBox{
 			this.#lastSelectionRange = range.cloneRange();
 		}
 		document.body.append(this.#hyperlinkBox);
-		this.#urlInputText.focus();
+		let appendAwait = setInterval(()=>{
+			if( ! this.#hyperlinkBox.isConnected){
+				return;
+			}
+			clearInterval(appendAwait);
+			this.#urlInputText.focus();
+		},50)
     }
 
     close(){
