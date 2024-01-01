@@ -14,4 +14,5 @@ export const accountHandler = new class AccountHandler{
     get accountInfo(){
         return this.#accountInfo;
     }
+
 };

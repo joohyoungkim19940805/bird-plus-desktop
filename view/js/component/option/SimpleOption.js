@@ -383,9 +383,11 @@ export const simpleOption = new class SimpleOption{
                 fullName, jobGrade, department, profileImage : profileImageUrl
             }).then(result => {
                 console.log('result updateSimpleAccountInfo ::: ', result);
+                
                 if(accountHandler.accountInfo.fullName != fullName){
                     window.myAPI.room.createMySelfRoom({workspaceId : workspaceHandler.workspaceId});
                 }
+
                 accountHandler.searchAccountInfo();
                 imgTempUrlList.forEach(async e=> {
                     URL.revokeObjectURL(e);

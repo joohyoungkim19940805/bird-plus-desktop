@@ -118,9 +118,15 @@ export default class HeaderDefault extends HTMLElement {
             </div>
             `
             let homeIcon = this.querySelector('.home_icon')
+            let refreshIcon = this.querySelector('.refresh_icon')
             if(homeIcon){
                 homeIcon.onclick = () => {
                     window.myAPI.pageChange.changeWokrspacePage();
+                }
+            }
+            if(refreshIcon){
+                refreshIcon.onclick = () => {
+                    window.location.reload(true);
                 }
             }
             let defaultIconContainer = this.querySelector('.default_icon_container')
@@ -157,6 +163,11 @@ export default class HeaderDefault extends HTMLElement {
                 <button class="home_icon">
                     <svg class="css-gg-home" width="1rem" height="1rem" style="zoom:125%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M21 8.77217L14.0208 1.79299C12.8492 0.621414 10.9497 0.621413 9.77817 1.79299L3 8.57116V23.0858H10V17.0858C10 15.9812 10.8954 15.0858 12 15.0858C13.1046 15.0858 14 15.9812 14 17.0858V23.0858H21V8.77217ZM11.1924 3.2072L5 9.39959V21.0858H8V17.0858C8 14.8767 9.79086 13.0858 12 13.0858C14.2091 13.0858 16 14.8767 16 17.0858V21.0858H19V9.6006L12.6066 3.2072C12.2161 2.81668 11.5829 2.81668 11.1924 3.2072Z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="refresh_icon">
+                    <svg class="css-gg-undo" width="1rem" height="1rem" style="zoom:150%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.33929 4.46777H7.33929V7.02487C8.52931 6.08978 10.0299 5.53207 11.6607 5.53207C15.5267 5.53207 18.6607 8.66608 18.6607 12.5321C18.6607 16.3981 15.5267 19.5321 11.6607 19.5321C9.51025 19.5321 7.58625 18.5623 6.30219 17.0363L7.92151 15.8515C8.83741 16.8825 10.1732 17.5321 11.6607 17.5321C14.4222 17.5321 16.6607 15.2935 16.6607 12.5321C16.6607 9.77065 14.4222 7.53207 11.6607 7.53207C10.5739 7.53207 9.56805 7.87884 8.74779 8.46777L11.3393 8.46777V10.4678H5.33929V4.46777Z" fill="currentColor"/>
                     </svg>
                 </button>
             </div>` 

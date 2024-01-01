@@ -63,7 +63,8 @@ class EventStreamController {
                 }
             })*/
             //연결 실패되면 계속 시도하기에 임시 조치로 close
-            //this.source.close();
+            this.source.close();
+            this.#connect(workspaceId);
             //stop();
         };
         this.source.onopen = (success) => {
@@ -101,6 +102,14 @@ class EventStreamController {
         */
         //}
 	}
+    #connect(workspaceId){
+        this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}`, {
+            headers: {
+                'Authorization' : axios.defaults.headers.common['Authorization'],
+            },
+            withCredentials : ! top.__isLocal
+        });
+    }
 
 }
 

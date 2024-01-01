@@ -258,7 +258,7 @@ export const chattingInfo = new class ChattingInfo{
             name: 'chattingInfo',
             callBack: (chattingData) => {
                 let lastTarget = document.activeElement;
-                console.log(lastTarget);
+
                 if(lastTarget.__parentWrapper) lastTarget.dataset.is_update = '';
 
                 this.createItemElement(chattingData).then(liElement => {
@@ -1155,7 +1155,7 @@ export const chattingInfo = new class ChattingInfo{
     #roomIdChange(targetPage){
         this.reset();
         this.#page = targetPage || this.#page
-        console.log(targetPage, this.#page);
+        //console.log(targetPage, this.#page);
         let promise;
         let memory = Object.values(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId] || {});
         let isTarget = false;
