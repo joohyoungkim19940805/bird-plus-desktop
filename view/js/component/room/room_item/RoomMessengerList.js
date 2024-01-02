@@ -125,7 +125,7 @@ export const roomMessengerList = new class RoomMessengerList{
 
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomMessengerList',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.refresh();
 			},
 			runTheFirst: true
@@ -159,7 +159,7 @@ export const roomMessengerList = new class RoomMessengerList{
 
 		roomHandler.addRoomIdChangeListener = {
 			name: 'roomMessengerList',
-			callBack: (handler) => {
+			callback: (handler) => {
 				/*if(this.#roomId == handler.roomId){
 					return;
 				}*/

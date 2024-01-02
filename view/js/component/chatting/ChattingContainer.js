@@ -32,7 +32,7 @@ export const chattingContainer = new class ChattingContainer{
         }
         roomHandler.addRoomIdChangeListener = {
             name : 'chattingContainer',
-            callBack : () => {
+            callback : () => {
                 if( ! simpleSvgPipMode.svg?.isConnected){
                     return;
                 }

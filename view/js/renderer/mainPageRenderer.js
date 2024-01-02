@@ -45,7 +45,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 		)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'mainPageRenderer',
-			callBack : () => {
+			callback : () => {
 				window.myAPI.room.createMySelfRoom({workspaceId}).then(result => { 
 					console.log(result);
 					// 방에 접속하면 자기 자신의 방을 무조건 생성하는 리퀘스트를 날린다.(어차피 서버에서 체크)

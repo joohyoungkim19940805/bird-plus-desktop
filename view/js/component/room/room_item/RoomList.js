@@ -125,7 +125,7 @@ export const roomList = new class RoomList{
 		
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomList',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.refresh();
 			},
 			runTheFirst: true
@@ -159,7 +159,7 @@ export const roomList = new class RoomList{
 
 		roomHandler.addRoomIdChangeListener = {
 			name: 'roomList',
-			callBack: (handler) => {
+			callback: (handler) => {
 				new Promise(resolve => {
 					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);

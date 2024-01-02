@@ -170,7 +170,7 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
         this.#elementMap.noticeBoardDetailList
         noticeBoardHandler.addNoticeBoardIdChangeListener = {
             name: 'noticeBoardDetailIdChange',
-            callBack: (handler, data)=>{
+            callback: (handler, data)=>{
                 this.#elementMap.noticeBoardDetailList.replaceChildren();
                 this.refresh();
                 /*if(this.#memory[workspaceHandler.workspaceId]?.[roomHandler.roomId]?.[noticeBoardHandler.noticeBoardId]){

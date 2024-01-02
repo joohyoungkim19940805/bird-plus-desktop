@@ -181,7 +181,7 @@ export const simpleOption = new class SimpleOption{
         //console.log(workspaceHandler.workspaceId);
         workspaceHandler.addWorkspaceIdChangedListener = {
             name: 'simpleOptuon',
-            callBack: () => {
+            callback: () => {
                 window.myAPI.workspace.getIsAdmin({workspaceId : workspaceHandler.workspaceId}).then(result => {
                     if(result.code == 0){
                         this.#isAdmin = result.data;

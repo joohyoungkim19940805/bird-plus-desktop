@@ -127,7 +127,7 @@ export default class GiveAdminView extends LayerPopupTemplate{
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'giveAdminView',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true

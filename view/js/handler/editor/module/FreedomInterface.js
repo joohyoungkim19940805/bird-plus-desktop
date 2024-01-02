@@ -55,29 +55,29 @@ export default class FreedomInterface extends HTMLElement {
 	/**
 	 * 
 	 * @param {HtmlElement} element 
-	 * @param {Function} callBack 
+	 * @param {Function} callback 
 	 */
-	static globalKeydownEventListener(element, callBack = ({oldEvent, newEvent})=>{}){
+	static globalKeydownEventListener(element, callback = ({oldEvent, newEvent})=>{}){
 		
 		let oldEvent = undefined;
 		let newEvent = undefined;
 		const simpleObserver = () => {
 			this.globalKeydownEventPromise.then((event)=>{
 				newEvent = event;
-				callBack({oldEvent, newEvent});
+				callback({oldEvent, newEvent});
 				oldEvent = event;
 				simpleObserver();
 			})
 		}
 		simpleObserver();
 	}
-	static globalSelectionChangeEventListener(element, callBack = ({oldEvent, newEvent})=>{}){
+	static globalSelectionChangeEventListener(element, callback = ({oldEvent, newEvent})=>{}){
 		let oldEvent = undefined;
 		let newEvent = undefined;
 		const simpleObserver = () => {
 			this.globalSelectionChangeEventPromise.then((event)=>{
 				newEvent = event;
-				callBack({oldEvent, newEvent});
+				callback({oldEvent, newEvent});
 				oldEvent = event;
 				simpleObserver();
 			})
@@ -87,9 +87,9 @@ export default class FreedomInterface extends HTMLElement {
 	/**
 	 * 
 	 * @param {HTMLElement} element 
-	 * @param {Function} callBack 
+	 * @param {Function} callback 
 	 */
-	static outClickElementListener(element, callBack = ({oldEvent, newEvent, isMouseOut = false})=>{}){
+	static outClickElementListener(element, callback = ({oldEvent, newEvent, isMouseOut = false})=>{}){
 
 		if(element == undefined || element?.nodeType != Node.ELEMENT_NODE){
 			throw new Error('element is not Element');
@@ -101,7 +101,7 @@ export default class FreedomInterface extends HTMLElement {
 			this.globalClickEventPromise.then((event)=>{
 				let isMouseOut = ! this.isMouseInnerElement(element);
 				newEvent = event;
-				callBack({oldEvent, newEvent, isMouseOut});
+				callback({oldEvent, newEvent, isMouseOut});
 				oldEvent = event;
 				simpleObserver();
 			})

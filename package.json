@@ -13,7 +13,8 @@
 		"deploy": "tsc && webpack && electron-builder build --win --publish always",
 		"dev-build": "tsc && webpack --watch ",
 		"dev-tsc-build": "webpack && tsc --watch",
-		"dev-watch": "nodemon --exec electron ."
+		"dev-watch": "nodemon --exec electron .",
+		"test-history": "./latestHistoryDeploy.js"
 	},
 	"repository": {
 		"type": "git",

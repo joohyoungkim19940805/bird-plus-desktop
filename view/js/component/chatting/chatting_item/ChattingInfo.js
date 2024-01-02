@@ -111,7 +111,7 @@ export const chattingInfo = new class ChattingInfo{
 			if ( ! entry.isIntersecting){
                 return;
             }
-
+            
             let lastTotalPages = this.#totalPagesMapper[entry.target.dataset.room_id]; 
             if( lastTotalPages && this.#page >= lastTotalPages){
                 this.#lastItemVisibleObserver.disconnect();
@@ -123,7 +123,6 @@ export const chattingInfo = new class ChattingInfo{
                 this.#page = this.#firstPageNumber;
                 this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
             }
-
             this.#lastPageNumberMapper[roomHandler.roomId] = this.#page;
 
             let promise;
@@ -240,8 +239,6 @@ export const chattingInfo = new class ChattingInfo{
     #hour = this.#minute * 60;
     #day = this.#hour * 24;
 
-    #lastLiItem;
-
     #emoticonBox = new EmoticonBox();
 
     #lastEmoticonBoxTarget;
@@ -256,7 +253,7 @@ export const chattingInfo = new class ChattingInfo{
 
         chattingHandler.addChattingEventListener = {
             name: 'chattingInfo',
-            callBack: (chattingData) => {
+            callback: (chattingData) => {
                 let lastTarget = document.activeElement;
 
                 if(lastTarget.__parentWrapper) lastTarget.dataset.is_update = '';
@@ -379,10 +376,11 @@ export const chattingInfo = new class ChattingInfo{
         let prevRoomId;
         roomHandler.addRoomIdChangeListener = {
             name: 'chattingInfo',
-            callBack: () => {
+            callback: () => {
                 if(roomHandler.roomId == prevRoomId) return;
                 prevRoomId = roomHandler.roomId;
-                this.#roomIdChange();
+                //this.#totalPagesMapper[prevRoomId] = 0;
+                this.#initChattingView();
             },
             runTheFirst: false
         }
@@ -479,7 +477,8 @@ export const chattingInfo = new class ChattingInfo{
 		return window.myAPI.chatting.searchChattingList({
             page, size, workspaceId, roomId, chattingText, chattingId
         }).then((result = {}) =>{
-			console.log(page, result)
+            console.log(result);
+			//console.log(page, result)
 			return result.data || {};
 		});
 	}
@@ -595,22 +594,6 @@ export const chattingInfo = new class ChattingInfo{
                         }
                     }
                 }, 50)
-                /*console.log('aaaaaaaaaaaaaaaaaaaaa',e)
-                console.log(node, Quote.toolHandler.defaultClass);
-                let quote = node.querySelector(Quote.toolHandler.defaultClass);
-                console.log(quote);
-                if(quote.childElementCount > 3 ){
-                    node.classList.add('expand_mode')
-                    let expand = node.querySelector('[data-expand]');
-                    expand.onclick = () => {
-                        node.classList.toggle('expand_mode');
-                        if(node.classList.contains('expand_mode')){
-                            node.classList.add('expand_mode');
-                        }else{
-                            node.classList.remove('expand_mode');
-                        }
-                    }
-                }*/
 
             }}).then((e)=>{
                 resolve(li)
@@ -630,10 +613,19 @@ export const chattingInfo = new class ChattingInfo{
 
             li.__editor = content;
             this.#addMemory(li, workspaceId, roomId, id);
-            this.#lastLiItem = li;
-            
+
             common.jsonToSaveElementDataset(data, li).then(() => {
                 this.#createDescription(li, descriptionWrap);
+                let profileImage = li.querySelector('.profile_image');
+                let fullName = li.querySelector('.chatting_content_description_name')
+
+                accountHandler.accountInfoChangeAcceptEventListener(({oldData, newData})=>{
+                    //console.log(newData);
+                    if(li.dataset.account_name == newData.accountName){
+                        profileImage.src = newData.profileImage;
+                        fullName.textContent = newData.fullName;
+                    }
+                })
             });
 
             //resolve(li);
@@ -1152,7 +1144,7 @@ export const chattingInfo = new class ChattingInfo{
         return timeGroupingElement;
     }
 
-    #roomIdChange(targetPage){
+    #initChattingView(targetPage){
         this.reset();
         this.#page = targetPage || this.#page
         //console.log(targetPage, this.#page);
@@ -1212,7 +1204,12 @@ export const chattingInfo = new class ChattingInfo{
                         if(i == 0 || i == this.#liList.length - 1)return;
                         return this.#processingTimeGrouping(e, this.#liList[i - 1])    
                     }))
-                    
+                    if(this.#totalPagesMapper[roomHandler.roomId] && this.#totalPagesMapper[roomHandler.roomId] <= this.#page + 1){
+                        //this.#lastItemVisibleObserver.disconnect();
+                        //return;
+                        //this.#lastItemVisibleObserver.disconnect();
+                        return;
+                    }
                     this.#addVisibleObserver(liList.at(-1), liList[0]);
 
                     res(this.#liList);
@@ -1259,6 +1256,7 @@ export const chattingInfo = new class ChattingInfo{
                         flash.ontransitionend = () => {
                             flash.remove();
                         }
+                        setTimeout(() => flash.remove(), 2000)
                     }
                 }, 50)
                 this.#page = page;
@@ -1267,7 +1265,7 @@ export const chattingInfo = new class ChattingInfo{
             }
             //this.reset();
  
-            this.#roomIdChange(page).then(() => {
+            this.#initChattingView(page).then(() => {
                 let target = this.#memory[workspaceId][roomId][chattingId]
                 if( ! target){
                     common.showToastMessage(['해당하는 페이지를 찾았으나', '메시지는 찾지 못했습니다.']);

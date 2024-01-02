@@ -16,10 +16,10 @@ export const workspaceHandler = new class WorkspaceHandler{
         //});
     }
 
-    set addWorkspaceIdChangedListener({name, callBack, runTheFirst}){
-        this.#addWorkspaceIdChangedListener[name] = callBack;
+    set addWorkspaceIdChangedListener({name, callback, runTheFirst}){
+        this.#addWorkspaceIdChangedListener[name] = callback;
         if(runTheFirst && this.workspaceId){
-            callBack(this);
+            callback(this);
         }
     }
     get addWorkspaceIdChangedListener(){
@@ -31,9 +31,9 @@ export const workspaceHandler = new class WorkspaceHandler{
         this.#workspaceId = workspaceId;
         window.myAPI.workspace.getWorkspaceDetail({workspaceId}).then((workspace) => {
             this.#workspace = workspace;
-            let startCallbackPromise = Promise.all(Object.values(this.#addWorkspaceIdChangedListener).map(async callBack => {
+            let startCallbackPromise = Promise.all(Object.values(this.#addWorkspaceIdChangedListener).map(async callback => {
                 return new Promise(res => {
-                    callBack(this);
+                    callback(this);
                     res();
                 });
             }));

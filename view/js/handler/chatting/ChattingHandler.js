@@ -16,17 +16,17 @@ export const chattingHandler = new class ChattingHandler{
 			type: "message"
 			*/
 			
-			Object.values(this.#addChattingEventListener).forEach(async callBack => {
+			Object.values(this.#addChattingEventListener).forEach(async callback => {
                 new Promise(res => {
-                    callBack(content);
+                    callback(content);
                     res();
                 })
             });
 		});
     }
 
-    set addChattingEventListener({name, callBack}){
-        this.#addChattingEventListener[name] = callBack;
+    set addChattingEventListener({name, callback}){
+        this.#addChattingEventListener[name] = callback;
     }
 
     get addChattingEventListener(){

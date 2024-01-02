@@ -63,8 +63,14 @@ class EventStreamController {
                 }
             })*/
             //연결 실패되면 계속 시도하기에 임시 조치로 close
+            //모바일 웹에서는 연결 실패 후 재시도 안하기에 수동 재시도로 변경
             this.source.close();
-            this.#connect(workspaceId);
+            this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}`, {
+                headers: {
+                    'Authorization' : axios.defaults.headers.common['Authorization'],
+                },
+                withCredentials : ! top.__isLocal
+            });
             //stop();
         };
         this.source.onopen = (success) => {
@@ -102,14 +108,6 @@ class EventStreamController {
         */
         //}
 	}
-    #connect(workspaceId){
-        this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}`, {
-            headers: {
-                'Authorization' : axios.defaults.headers.common['Authorization'],
-            },
-            withCredentials : ! top.__isLocal
-        });
-    }
 
 }
 

@@ -612,8 +612,8 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		return this.#isLoaded;
 	}
 
-	set keydownEventCallback(callBack){
-		this.#keydownEventCallback = callBack;
+	set keydownEventCallback(callback){
+		this.#keydownEventCallback = callback;
 	}
 	get keydownEventCallback(){
 		return this.#keydownEventCallback;

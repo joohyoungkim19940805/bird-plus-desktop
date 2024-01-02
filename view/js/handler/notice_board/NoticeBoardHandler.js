@@ -9,10 +9,10 @@ export const noticeBoardHandler = new class NoticeBoardHandler{
 
     }
 
-    set addNoticeBoardIdChangeListener({name, callBack, runTheFirst}){
-        this.#addNoticeBoardIdChangeListener[name] = callBack;
+    set addNoticeBoardIdChangeListener({name, callback, runTheFirst}){
+        this.#addNoticeBoardIdChangeListener[name] = callback;
         if(runTheFirst && this.#noticeBoardId){
-            callBack(this);
+            callback(this);
         }
     }
 
@@ -28,9 +28,9 @@ export const noticeBoardHandler = new class NoticeBoardHandler{
         this.#noticeBoard = [];
         this.#noticeBoardId = noticeBoardId;
         let startCallbackPromise = Promise.all(
-            Object.values(this.#addNoticeBoardIdChangeListener).map(async callBack => {
+            Object.values(this.#addNoticeBoardIdChangeListener).map(async callback => {
                 return new Promise(res => {
-                    callBack(this);
+                    callback(this);
                     res();
                 })
             })

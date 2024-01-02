@@ -139,22 +139,22 @@ export default class PositionChanger{
 		});
 	}
 
-	set onDropEndChangePositionCallback(callBack){
-		this.#onDropEndChangePositionCallback = callBack;
+	set onDropEndChangePositionCallback(callback){
+		this.#onDropEndChangePositionCallback = callback;
 	}
 	get onDropEndChangePositionCallback(){
 		return this.#onDropEndChangePositionCallback;
 	}
 
-	set onDropDocumentOutCallback(callBack){
-		this.#onDropDocumentOutCallback = callBack;
+	set onDropDocumentOutCallback(callback){
+		this.#onDropDocumentOutCallback = callback;
 	}
 	get onDropDocumentOutCallback(){
 		return this.#onDropDocumentOutCallback;
 	}
 
-	set onIfCancelCallback(callBack){
-		this.#onIfCancelCallback = callBack
+	set onIfCancelCallback(callback){
+		this.#onIfCancelCallback = callback
 	}
 	get onIfCancelCallback(){
 		return this.#onIfCancelCallback;

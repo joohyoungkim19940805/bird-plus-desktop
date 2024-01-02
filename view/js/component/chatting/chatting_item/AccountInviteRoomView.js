@@ -131,7 +131,7 @@ export default class AccountInviteRoomView extends LayerPopupTemplate{
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'accountInviteRoomView',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true

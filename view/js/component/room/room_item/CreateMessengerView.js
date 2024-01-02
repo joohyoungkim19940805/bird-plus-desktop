@@ -126,7 +126,7 @@ export default class CreateMessengerView extends LayerPopupTemplate{
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'createMessengerView',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.workspaceId = handler.workspaceId;
 			},
 			runTheFirst: true

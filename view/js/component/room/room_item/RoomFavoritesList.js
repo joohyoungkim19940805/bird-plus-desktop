@@ -110,7 +110,7 @@ export const roomFavoritesList = new class RoomFavoritesList{
 		}
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'roomFavoritesList',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.refresh();
 			},
 			runTheFirst: true
@@ -142,8 +142,7 @@ export const roomFavoritesList = new class RoomFavoritesList{
 
 		roomHandler.addRoomIdChangeListener = {
 			name: 'roomFavoritesList',
-			callBack: (handler) => {
-				console.log(handler.roomId);
+			callback: (handler) => {
 				new Promise(resolve => {
 					this.#liList.forEach((item) => {
 						let itemRoomId = Number(item.dataset.room_id);

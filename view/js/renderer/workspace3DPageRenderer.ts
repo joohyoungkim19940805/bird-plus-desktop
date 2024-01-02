@@ -429,7 +429,7 @@ new class Workspace3DPageRenderer{
 				//console.log(url)
 				let a = Object.assign(document.createElement('a'), {
 					target: '_blank',
-					href: url
+					href: url + '/login-page?sign_up=true'
 				});
 				a.click();
 			});

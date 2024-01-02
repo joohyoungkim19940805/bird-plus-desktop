@@ -149,7 +149,7 @@ export const chattingHead = new class ChattingHead{
         const memberAddButton = this.#elementMap.memberAddButton;
         roomHandler.addRoomIdChangeListener = {
 			name: 'chattingHead',
-			callBack: (handler) => {
+			callback: (handler) => {
                 this.#roomId = handler.roomId;
                 if(handler.room.roomType == 'MESSENGER'){
                     let roomNameList = handler.room.roomName.split(',');
@@ -163,7 +163,7 @@ export const chattingHead = new class ChattingHead{
                 }
                 this.#elementMap.chattingHeadJoinedMembers.replaceChildren();
                 window.myAPI.room.searchRoomJoinedAccountList({roomId: handler.roomId}).then(result=>{
-                    console.log(result);
+                    //console.log(result);
                 });
 
                 window.myAPI.room.isRoomFavorites({roomId : handler.roomId}).then(result => {
@@ -266,10 +266,18 @@ export const chattingHead = new class ChattingHead{
         let li = Object.assign(document.createElement('li'), {
             className: 'pointer',
             innerHTML: `
-                <span>${obj.fullName}</span>
+                <span class="chatting_head_full_name">${obj.fullName}</span>
             `
         });
-        common.jsonToSaveElementDataset(obj, li);
+        let fullName = li.querySelector('.chatting_head_full_name');
+        common.jsonToSaveElementDataset(obj, li).then(() => {
+            accountHandler.accountInfoChangeAcceptEventListener(({oldData, newData})=>{
+                //console.log(newData);
+                if(li.dataset.account_name == newData.accountName){
+                    fullName.textContent = newData.fullName;
+                }
+            })
+        });
         return li
     }
 

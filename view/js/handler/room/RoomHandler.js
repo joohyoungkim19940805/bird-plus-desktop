@@ -16,10 +16,10 @@ export const roomHandler = new class RoomHandler{
 
     }
 
-    set addRoomIdChangeListener({name, callBack, runTheFirst}){
-        this.#addRoomIdChangeListener[name] = callBack;
+    set addRoomIdChangeListener({name, callback, runTheFirst}){
+        this.#addRoomIdChangeListener[name] = callback;
         if(runTheFirst && this.#roomId){
-            callBack(this);
+            callback(this);
         }
     }
 
@@ -38,9 +38,9 @@ export const roomHandler = new class RoomHandler{
                 name: 'lastRoomInfo', value : JSON.stringify(this.#room)
             })
             let startCallbackPromise = Promise.all(
-                Object.values(this.#addRoomIdChangeListener).map(async callBack => {
+                Object.values(this.#addRoomIdChangeListener).map(async callback => {
                     return new Promise(res => {
-                        callBack(this);
+                        callback(this);
                         res();
                     })
                 })

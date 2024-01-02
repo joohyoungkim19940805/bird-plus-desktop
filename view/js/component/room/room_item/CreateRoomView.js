@@ -139,7 +139,7 @@ export default class CreateRoomView extends LayerPopupTemplate{
 		super.container.append(this.#layerContent)
 		workspaceHandler.addWorkspaceIdChangedListener = {
 			name: 'createRoomView',
-			callBack: (handler) => {
+			callback: (handler) => {
 				this.reset();
 				let fullName = this.form.create_room_search_user.value;
 				this.callData(this.page, this.size, workspaceHandler.workspaceId, fullName).then(data => {
