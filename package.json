@@ -43,7 +43,8 @@
 		"typescript": "^5.3.2",
 		"webpack": "^5.89.0",
 		"webpack-cli": "^5.1.4",
-		"webpack-dev-server": "^4.15.1"
+		"webpack-dev-server": "^4.15.1",
+		"gitlog": "^4.0.8"
 	},
 	"dependencies": {
 		"@babylonjs/core": "^6.30.0",
@@ -58,9 +59,7 @@
 		"source-map-support": "^0.5.21",
 		"sqlite3": "^5.1.6"
 	},
-	"keywords": [
-
-	],
+	"keywords": [],
 	"build": {
 		"productName": "greased-lightning-chat",
 		"appId": "com.radcns.grease-lightning-chat.desktop",
@@ -68,18 +67,18 @@
 		"protocols": {
 			"name": "grease-lightning-chat-protocol",
 			"schemes": [
-			"grease-lightning-chat"
+				"grease-lightning-chat"
 			]
 		},
 		"mac": {
 			"target": [
-			"default"
+				"default"
 			],
 			"icon": "./view/image/icon.ico"
 		},
 		"win": {
 			"target": [
-			"nsis"
+				"nsis"
 			],
 			"icon": "./view/image/icon.ico"
 		},
@@ -94,7 +93,7 @@
 			"output": "./dist/",
 			"app": "."
 		},
-		"publish" : {
+		"publish": {
 			"provider": "s3",
 			"path": "/update",
 			"region": "ap-northeast-2",
