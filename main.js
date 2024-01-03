@@ -119,7 +119,7 @@ app.on('open-url', (event, url) => {
 	dialog.showErrorBox(`이미 애플리케이션이 실행 중입니다. url : ${url}, event : ${event}`);
 })
 
-// app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
+// app이 실행 될 때, 프로미스를 반환받고 창을 만든다./
 app.whenReady().then(()=>{
 	try{
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
