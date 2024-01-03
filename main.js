@@ -50,7 +50,7 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(top.__isLocal){// && ! app.isPackaged){
+if(top.__isLocal && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
