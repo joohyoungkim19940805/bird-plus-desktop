@@ -210,9 +210,11 @@ app.whenReady().then(()=>{
 						try{
 							log.info('start call updatehistory');
 							const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
-							
 							log.info('packageJson ::: ',packageJson);
 							
+							//20240103 배포 버전에서는 packageJson에 빌드 정보가 들어있지 않아 주석처리
+							//const {bucket, region, channel} = packageJson.build.publish	
+
 							let newVersion = Number(event.version.replace(/\./g, ''));
 							let oldVersion = Number(packageJson.version.replace(/\./g, ''));
 							log.info('newVersion ::: ', newVersion);

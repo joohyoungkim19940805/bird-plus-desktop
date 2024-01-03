@@ -56,7 +56,10 @@ updateLatestYmlPromise.then(yml => {
 			Bucket: bucket,
 			Key: `update/history_${packageJson.version}.json`,
 			ContentType: 'application/json',
-			Body: JSON.stringify( commits ) 
+			Body: JSON.stringify( commits.map(e=>{
+				e.files = e.files.map(e=>e.split('/').at(-1))
+				return e;
+			}) ) 
 		}, (err, data) => {
 			if (err) {
 				console.error('s3 upload failed ::: ', err.message);
