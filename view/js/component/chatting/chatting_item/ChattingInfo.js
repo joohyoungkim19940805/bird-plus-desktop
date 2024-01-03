@@ -81,7 +81,7 @@ export const chattingInfo = new class ChattingInfo{
 
     #page = 0;
 	#size = 10;
-
+//
     #element = Object.assign(document.createElement('div'), {
         id: 'chatting_info_wrapper',
         innerHTML: `
