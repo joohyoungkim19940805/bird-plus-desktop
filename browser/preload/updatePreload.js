@@ -93,7 +93,7 @@ const style = Object.assign(document.createElement('style'), {
 			overflow: hidden;
 		}
 		.update_history_item .update_history_author,
-		.update_history_item .update_history_author{
+		.update_history_item .update_history_date{
 			font-size: 80%;
 			color: #bfbfbf;
 		}
@@ -126,7 +126,7 @@ ipcRenderer.on('updateHistory', (event, message = []) => {
 			innerHTML : `
 				<div class="update_history_subject">${subject}</div>
 				<div class="update_history_author">${authorName}</div>
-				<div calss="update_history_date">(${
+				<div class="update_history_date">(${
 					new Date(authorDate).toLocaleString({
 						year: '2-digit', month: 'short', weekday: 'short', day: '2-digit',
 						formatMatcher: 'best fit', hour: '2-digit', minute: '2-digit', second: '2-digit'

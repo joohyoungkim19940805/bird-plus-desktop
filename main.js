@@ -25,6 +25,8 @@ autoUpdater.logger = log
 // web and electron 양쪽에서 쓸 top 변수 선언 (window == top) 
 global.top = {};
 global.top.__isLocal = process.env.MY_SERVER_PROFILES == 'local';
+global.top.__s3PublicBucket = 'bird-plus-s3-public'
+global.top.__s3PublicRegion = 'ap-northeast-2'
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(top.__isLocal){
@@ -208,8 +210,8 @@ app.whenReady().then(()=>{
 						try{
 							log.info('start call updatehistory');
 							const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
+							
 							log.info('packageJson ::: ',packageJson);
-							const {bucket, region, channel} = packageJson.build.publish
 							
 							let newVersion = Number(event.version.replace(/\./g, ''));
 							let oldVersion = Number(packageJson.version.replace(/\./g, ''));
@@ -221,7 +223,7 @@ app.whenReady().then(()=>{
 								let midVersion = Number(targetVersionList[2]);
 								let bottomVersion = Number(targetVersionList[3]);
 
-								const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
+								const s3Url = `https://${top.__s3PublicBucket}.s3.${top.__s3PublicRegion}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
 								axios.get(s3Url).then( response => {
 									if (response.status == 200 || response.status == 201) {
 										updateHistoryWindow.webContents.send('updateHistory', response.data);
