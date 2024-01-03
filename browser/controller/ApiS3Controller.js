@@ -1,6 +1,6 @@
 const path = require('path');
 const axios = require('axios');
-const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 const log = require('electron-log');
 class ApiS3Controller {
 	constructor() {

@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 //const allDirectoryPathScanning = require(path.join(__project_path, 'browser/service/AllDirectoryPathScanning.js'))
 const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
-const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 const axios = require('axios');
 const log = require('electron-log');
 class OpeningIpcController {

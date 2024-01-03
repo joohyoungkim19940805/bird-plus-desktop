@@ -1,6 +1,6 @@
 const path = require('path');
 
-const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 const axios = require('axios');
 const log = require('electron-log');
 
