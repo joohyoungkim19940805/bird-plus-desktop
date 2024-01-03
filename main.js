@@ -9,6 +9,7 @@ const path = require('path');
 const axios = require('axios');
 // 일렉트론 모듈 호출
 const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
+const process = require('process')
 app.setAppUserModelId(app.name);
 /**
  * @see
@@ -27,13 +28,15 @@ global.top.__isLocal = process.env.MY_SERVER_PROFILES == 'local';
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(top.__isLocal){
-		autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
-		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-		Object.defineProperty(app, 'isPackaged', {
-			get() {
-				return true;
-			}
-		});
+		if( ! app.isPackaged){
+			autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+			Object.defineProperty(app, 'isPackaged', {
+				get() {
+					return true;
+				}
+			});
+		}
 		return 'https://localhost:8443';
 	}else{
 		return 'https://mozu.co.kr'
@@ -118,13 +121,19 @@ app.on('open-url', (event, url) => {
 
 // app이 실행 될 때, 프로미스를 반환받고 창을 만든다.
 app.whenReady().then(()=>{
+	try{
+		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
+	}catch(err){
+		log.error(err.message);
 
+	}
 	//app.setPath(app.getPath('userData'), "DB_NEW_LOCATION");
 	DBConfig.loadEndPromise.then(() => {
 		log.info('DBConfig loadEndPromise');
 
-		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
-		mainWindow.webContentsAwait.then( async () => {
+		log.info('load mainWindow')
+		log.info('load mainWindow end');
+		mainWindow.webContentsAwait.then( () => {
 			log.info('webContentsAwait start!!!!');
 			try{
 				const openingIpc = require(path.join(__project_path, 'browser/ipc/OpeningIpc.js'));
@@ -153,83 +162,80 @@ app.whenReady().then(()=>{
 			}
 			log.info('create IPC END')
 
-			log.info('-----------------------\n');
-			log.info('start update check')
-
-			autoUpdater.checkForUpdates().then(result=>{
-			//autoUpdater.checkForUpdatesAndNotify().then(result => {
-				//log.debug('checkForUpdates ::: ',result);
-				//mainWindow.webContents.send('checkForUpdates', result)
-			});
-	
-			autoUpdater.on('update-available', (event) => {
-				ipcMain.on('startUpdateDownloaded', () => {
-					autoUpdater.quitAndInstall();
-				})
-				log.debug('update-available ::: ',event);
-				
-			});
-			
-			autoUpdater.on('update-downloaded', (event) => {
-				log.debug('update-downloaded', event);
-				//console.log(event)
-				mainWindow.webContents.send('updateAvailable', event);
-				let updateHistoryWindow = new BrowserWindow({
-					width : 700, height : 700,
-					icon : path.join(__project_path, 'view/image/icon.ico'),
-					webPreferences : {
-						preload : path.join(__project_path, 'browser/preload/updatePreload.js'),
-						protocol: "file", slashes: true
-					},
-					autoHideMenuBar : true, titleBarStyle : 'visible', movable : true, resizable : true,
-					trafficLightPosition: { x: 15, y: 13, },
-					center : true, title: 'Grease Lightning Chat',	
-				})
-				updateHistoryWindow.on('startUpdateDownloaded', () => {
-					autoUpdater.quitAndInstall(true, true);
-				})
-				
-				updateHistoryWindow.loadFile(path.join(__project_path, 'view/html/updateHistory.html')).then(()=>{
-					const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
-
-					const {bucket, region, channel} = packageJson.build.publish
-					
-					let newVersion = Number(event.version.replace(/\./g, ''));
-					let oldVersion = Number(packageJson.version.replace(/\./g, ''));
-
-					for(let i = oldVersion, len = newVersion + 1 ; i < len ; i += 1){
-						let targetVersionList = String(i).padStart(4, 0).split('');
-						let topVersion = Number(targetVersionList[0] + targetVersionList[1]);
-						let midVersion = Number(targetVersionList[2]);
-						let bottomVersion = Number(targetVersionList[3]);
-
-						const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
-						axios.get(s3Url).then( response => {
-							if (response.status == 200 || response.status == 201) {
-								updateHistoryWindow.webContents.send('updateHistory', response.data);
-								return;
-							}
-							updateHistoryWindow.webContents.send('updateHistory', undefined);
-							//throw new Error({status : response.status, errorMessage : response.message})
-						});
-					}
-
-					
-
-				});
-			});
-
-			return;
 		}).then(() => {
 			mainWindow.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
 				//mainWindow.webContents.openDevTools();
 				mainWindow.isOpening = true;
 				
 			}).then(() => {
+				log.info('-----------------------\n');
+				log.info('start update check')
+
+				autoUpdater.checkForUpdates().then(result=>{
+				//autoUpdater.checkForUpdatesAndNotify().then(result => {
+					//log.debug('checkForUpdates ::: ',result);
+					//mainWindow.webContents.send('checkForUpdates', result)
+				});
+		
+				autoUpdater.on('update-available', (event) => {
+					ipcMain.on('startUpdateDownloaded', () => {
+						autoUpdater.quitAndInstall();
+					})
+					log.debug('update-available ::: ',event);
+					
+				});
 				
-				//})
+				autoUpdater.on('update-downloaded', (event) => {
+					log.debug('update-downloaded', event);
+					//console.log(event)
+					mainWindow.webContents.send('updateAvailable', event);
+					let updateHistoryWindow = new BrowserWindow({
+						width : 700, height : 700,
+						icon : path.join(__project_path, 'view/image/icon.ico'),
+						webPreferences : {
+							preload : path.join(__project_path, 'browser/preload/updatePreload.js'),
+							protocol: "file", slashes: true
+						},
+						autoHideMenuBar : true, titleBarStyle : 'visible', movable : true, resizable : true,
+						trafficLightPosition: { x: 15, y: 13, },
+						center : true, title: 'Grease Lightning Chat',	
+					})
+					updateHistoryWindow.on('startUpdateDownloaded', () => {
+						autoUpdater.quitAndInstall(true, true);
+					})
+					
+					updateHistoryWindow.loadFile(path.join(__project_path, 'view/html/updateHistory.html')).then(()=>{
+						const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
+
+						const {bucket, region, channel} = packageJson.build.publish
+						
+						let newVersion = Number(event.version.replace(/\./g, ''));
+						let oldVersion = Number(packageJson.version.replace(/\./g, ''));
+
+						for(let i = oldVersion, len = newVersion + 1 ; i < len ; i += 1){
+							let targetVersionList = String(i).padStart(4, 0).split('');
+							let topVersion = Number(targetVersionList[0] + targetVersionList[1]);
+							let midVersion = Number(targetVersionList[2]);
+							let bottomVersion = Number(targetVersionList[3]);
+
+							const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
+							axios.get(s3Url).then( response => {
+								if (response.status == 200 || response.status == 201) {
+									updateHistoryWindow.webContents.send('updateHistory', response.data);
+									return;
+								}
+								updateHistoryWindow.webContents.send('updateHistory', undefined);
+								//throw new Error({status : response.status, errorMessage : response.message})
+							})
+							.catch(err=>{
+								log.error(err.message);
+							});
+						}
+
+					});
+				});
 			});
-		})
+		}).catch(err=>log.error(err.message))
 
 
 				

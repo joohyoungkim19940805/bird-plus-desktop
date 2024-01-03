@@ -13,8 +13,7 @@ const {birdPlusOptions, OptionTemplate} = require(path.join(__project_path, 'Bir
 // 자동 업데이트 모듈 호출
 const {autoUpdater} = require('electron-updater');
 const log = require('electron-log');
-
-const windowUtil = require(path.join(__project_path,'browser/window/WindowUtil.js'))
+const windowUtil = require(path.join(__project_path,'browser/window/windowUtil.js'))
 const DBConfig = require(path.join(__project_path, 'DB/DBConfig.js'))
 const axios = require('axios');
 /**
@@ -41,197 +40,202 @@ class MainWindow extends BrowserWindow{
 	 * @author mozu123
 	 */
 	constructor() {
-		//console.log('__project_path in MainWindow :::', __project_path);
-		super({
-			width : 800,
-			height : 300,
-			icon: path.join(__project_path, 'view/image/icon.ico'),
-			webPreferences : {
-				preload : path.join(__project_path, 'browser/preload/preload.js'),
-				protocol: "file",
-      			slashes: true
-			},
-			center : true,
-			autoHideMenuBar : true,
-			titleBarStyle: 'hidden',
-			titleBarOverlay: false,
-			movable : false,
-			resizable : false,
-			trafficLightPosition: {
-				x: 15,
-				y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
-			},
-			title: 'Grease Lightning Chat'
-		});
-		log.info('create MainWindow constructor')
-		this.#webContentsResolve();
-		//super.setTitleBarOverlay
+		try{
+			log.info('start MainWindow constructor')
+			//console.log('__project_path in MainWindow :::', __project_path);
+			super({
+				width : 800,
+				height : 300,
+				icon: path.join(__project_path, 'view/image/icon.ico'),
+				webPreferences : {
+					preload : path.join(__project_path, 'browser/preload/preload.js'),
+					protocol: "file",
+					slashes: true
+				},
+				center : true,
+				autoHideMenuBar : true,
+				titleBarStyle: 'hidden',
+				titleBarOverlay: false,
+				movable : false,
+				resizable : false,
+				trafficLightPosition: {
+					x: 15,
+					y: 13,  // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+				},
+				title: 'Grease Lightning Chat'
+			});
 
-		super.on('maximize', (event) => {
-			//console.log('max >>> ', event);
-			super.webContents.send('maximize', {});
-		})
-		super.on('unmaximize', (event) => {
-			//console.log('unmax >>> ', event);
-			super.webContents.send('unmaximize', {});
-		})
-		super.on('minimize', (event) => {
-			//console.log('minimize >>> ', event);
-			super.webContents.send('minimize', {});
-		})
-		super.on('restore', (event) => {
-			//console.log('restore >>> ' , event);
-			super.webContents.send('restore', {});
-		})
-		super.on('close', event => {
-			//console.log(event);
-			//console.log(event.sender);
-			if(this.#workspaceId){	
-				this.hide()
-				event.preventDefault(); // prevent quit process
-			}
-		})
-		super.on('resize', (event) => {
-			if(this.#isOpening){
-				return;
-			}
-			let [w,h] = super.getSize();
-			mainWindow.webContents.send("resized", super.getSize());
-			birdPlusOptions.size = {w,h};
-		});
+			//super.setTitleBarOverlay
 
-		super.on('move' , (event) => {
-			if(this.#isOpening){
-				return;
-			}
-			let [x,y] =  super.getPosition();
-			birdPlusOptions.position = {x,y};
-		})
-		ipcMain.handle('getProjectPath', (event) => {
-			return global.__project_path;
-		})
-		ipcMain.handle('isMaximize', () => {
-			return super.isMaximized()
-		})
-		ipcMain.on('closeRequest', () => {
-			super.close();
-		})
-		ipcMain.on('maximizeRequest', () => {
-			super.maximize();
-		})
-		ipcMain.on('unmaximizeRequest', () => {
-			super.unmaximize();
-		})
-		ipcMain.on('minimizeRequest', () => {
-			super.minimize();
-		})
-		ipcMain.on('restoreRequest', () => {
-			super.restore();
-		})
+			super.on('maximize', (event) => {
+				//console.log('max >>> ', event);
+				super.webContents.send('maximize', {});
+			})
+			super.on('unmaximize', (event) => {
+				//console.log('unmax >>> ', event);
+				super.webContents.send('unmaximize', {});
+			})
+			super.on('minimize', (event) => {
+				//console.log('minimize >>> ', event);
+				super.webContents.send('minimize', {});
+			})
+			super.on('restore', (event) => {
+				//console.log('restore >>> ' , event);
+				super.webContents.send('restore', {});
+			})
+			super.on('close', event => {
+				//console.log(event);
+				//console.log(event.sender);
+				if(this.#workspaceId){	
+					this.hide()
+					event.preventDefault(); // prevent quit process
+				}
+			})
+			super.on('resize', (event) => {
+				if(this.#isOpening){
+					return;
+				}
+				let [w,h] = super.getSize();
+				mainWindow.webContents.send("resized", super.getSize());
+				birdPlusOptions.size = {w,h};
+			});
 
-		ipcMain.handle('resetWorkspaceId', async () => {
-			return this.resetWorkspace();
-		})
-		ipcMain.handle('getWorkspaceId', async () => {
-			return this.workspaceId;
-		})
-		/*ipcMain.on('setTitle', async (event, param) => {
-			console.log(param);
-			super.setTitle = param.title;
-		});*/
+			super.on('move' , (event) => {
+				if(this.#isOpening){
+					return;
+				}
+				let [x,y] =  super.getPosition();
+				birdPlusOptions.position = {x,y};
+			})
+			ipcMain.handle('getProjectPath', (event) => {
+				return global.__project_path;
+			})
+			ipcMain.handle('isMaximize', () => {
+				return super.isMaximized()
+			})
+			ipcMain.on('closeRequest', () => {
+				super.close();
+			})
+			ipcMain.on('maximizeRequest', () => {
+				super.maximize();
+			})
+			ipcMain.on('unmaximizeRequest', () => {
+				super.unmaximize();
+			})
+			ipcMain.on('minimizeRequest', () => {
+				super.minimize();
+			})
+			ipcMain.on('restoreRequest', () => {
+				super.restore();
+			})
 
-		ipcMain.on('createSubWindow', async (event, param) => {
-			this.createSubWindow(param);
-		});
+			ipcMain.handle('resetWorkspaceId', async () => {
+				return this.resetWorkspace();
+			})
+			ipcMain.handle('getWorkspaceId', async () => {
+				return this.workspaceId;
+			})
+			/*ipcMain.on('setTitle', async (event, param) => {
+				console.log(param);
+				super.setTitle = param.title;
+			});*/
 
-		ipcMain.handle('getOption', async (event, optionName) => {
-			return birdPlusOptions.optionLoadEnd.then(()=> 
-				birdPlusOptions.getOption(optionName)
-			);
-		})
-		ipcMain.on('setOption', async (event, param) => {
-			birdPlusOptions.optionLoadEnd.then(()=> {
-				let {name, value} = param;
-				birdPlusOptions[name] = value;
-				birdPlusOptions.setOption = new OptionTemplate({
-					optionName : name,
-					optionValue : value
-				})
-				mainWindow.webContents.send('optionChange', {name, value});
-				Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
-					if(v.isDestroyed()){
-						delete mainWindow.subWindow[k];
-						return;
-					}
-					v.webContents.send('optionChange', {name, value});
+			ipcMain.on('createSubWindow', async (event, param) => {
+				this.createSubWindow(param);
+			});
+
+			ipcMain.handle('getOption', async (event, optionName) => {
+				return birdPlusOptions.optionLoadEnd.then(()=> 
+					birdPlusOptions.getOption(optionName)
+				);
+			})
+			ipcMain.on('setOption', async (event, param) => {
+				birdPlusOptions.optionLoadEnd.then(()=> {
+					let {name, value} = param;
+					birdPlusOptions[name] = value;
+					birdPlusOptions.setOption = new OptionTemplate({
+						optionName : name,
+						optionValue : value
+					})
+					mainWindow.webContents.send('optionChange', {name, value});
+					Object.entries(mainWindow.subWindow).forEach( async ([k,v]) =>{
+						if(v.isDestroyed()){
+							delete mainWindow.subWindow[k];
+							return;
+						}
+						v.webContents.send('optionChange', {name, value});
+					})
 				})
 			})
-		})
-		ipcMain.handle('isLogin', async (event, param) => {
-			return windowUtil.isLogin((result => {
-				return {isLogin:result.isLogin};
-			}));
-		})
-		ipcMain.handle('getServerUrl', async (event, param)=> {
-			return global.__serverApi;
-		})
-		ipcMain.on('changeLoginPage', async (event) => {
-			this.changeLoginPage(event);
-		});
-		ipcMain.on('changeMainPage', async (event, param) => {
-			this.changeMainPage(param);
-		});
-		ipcMain.on('changeWokrspacePage', async (event) => {
-			this.changeWokrspacePage(event);
-        })
-		/*
-		ipcMain.on('ondragstart', (event, param) => {
-			console.log('event', event);
-			console.log('filePath', filePath);
-			event.sender.startDrag()
-		})
-		*/
-
-		//새창 팝업 열릴시 트리거
-		super.webContents.setWindowOpenHandler((event) => {
+			ipcMain.handle('isLogin', async (event, param) => {
+				return windowUtil.isLogin((result => {
+					return {isLogin:result.isLogin};
+				}));
+			})
+			ipcMain.handle('getServerUrl', async (event, param)=> {
+				return global.__serverApi;
+			})
+			ipcMain.on('changeLoginPage', async (event) => {
+				this.changeLoginPage(event);
+			});
+			ipcMain.on('changeMainPage', async (event, param) => {
+				this.changeMainPage(param);
+			});
+			ipcMain.on('changeWokrspacePage', async (event) => {
+				this.changeWokrspacePage(event);
+			})
 			/*
-			event{
-			 	url: 'https://naver.com/',
-				frameName: '',
-				features: '',
-				disposition: 'foreground-tab',
-				referrer: { url: '', policy: 'strict-origin-when-cross-origin' },
-				postBody: undefined
-			}
+			ipcMain.on('ondragstart', (event, param) => {
+				console.log('event', event);
+				console.log('filePath', filePath);
+				event.sender.startDrag()
+			})
 			*/
-			let {url} = event;
-			log.debug('MainWindow Line 100 ::: open url :::', url);
-			if(url.includes('blob:file:///')){
-				return {
-					action: 'allow',
-					outlivesOpener: false,
-					overrideBrowserWindowOptions: {
-						frame: true,
-						fullscreenable: true,
-						backgroundColor: 'black',
-						autoHideMenuBar : true,
-						//autoHideMenuBar : false,
-						movable : true,
-						resizable : true,
-						titleBarStyle: 'visible',
-						titleBarOverlay: true,
-						webPreferences: {
-							preload : path.join(__project_path, 'browser/preload/imageAndVideoDetailPreload.js')
+
+			//새창 팝업 열릴시 트리거
+			super.webContents.setWindowOpenHandler((event) => {
+				/*
+				event{
+					url: 'https://naver.com/',
+					frameName: '',
+					features: '',
+					disposition: 'foreground-tab',
+					referrer: { url: '', policy: 'strict-origin-when-cross-origin' },
+					postBody: undefined
+				}
+				*/
+				let {url} = event;
+				log.debug('MainWindow Line 100 ::: open url :::', url);
+				if(url.includes('blob:file:///')){
+					return {
+						action: 'allow',
+						outlivesOpener: false,
+						overrideBrowserWindowOptions: {
+							frame: true,
+							fullscreenable: true,
+							backgroundColor: 'black',
+							autoHideMenuBar : true,
+							//autoHideMenuBar : false,
+							movable : true,
+							resizable : true,
+							titleBarStyle: 'visible',
+							titleBarOverlay: true,
+							webPreferences: {
+								preload : path.join(__project_path, 'browser/preload/imageAndVideoDetailPreload.js')
+							}
 						}
 					}
+				}else{
+					shell.openExternal(url);
 				}
-			}else{
-				shell.openExternal(url);
-			}
 
-			return { action: 'deny' }
-		});
-	
+				return { action: 'deny' }
+			});
+			this.#webContentsResolve();
+			log.info('end MainWindow constructor')
+		}catch(err){
+			log.error(err.message);
+		}
 	}
 	set workspaceId(workspaceId){
 		if(this.#workspaceId === workspaceId){

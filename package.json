@@ -1,6 +1,6 @@
 {
 	"name": "Grease_Lightning_Chat",
-	"version": "0.2.4",
+	"version": "0.1.6",
 	"description": "Grease Lightning Chat",
 	"main": "main.js",
 	"scripts": {

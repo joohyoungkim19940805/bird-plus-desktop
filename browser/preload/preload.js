@@ -47,11 +47,6 @@ const electronEventTrigger = {
 					}
 					new Promise(res=>{	
 						try{
-							if(eventName == 'checkForUpdates' || eventName == 'updateAvailable' || eventName == 'updateDownloaded'){
-								callback(event,message);
-								return;
-							}
-			
 							callback(message);
 						}catch(err){
 							console.error(`${eventName} error message ::: `,err.message);

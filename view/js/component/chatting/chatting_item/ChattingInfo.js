@@ -623,7 +623,11 @@ export const chattingInfo = new class ChattingInfo{
                     //console.log(newData);
                     if(li.dataset.account_name == newData.accountName){
                         profileImage.src = newData.profileImage;
-                        fullName.textContent = newData.fullName;
+                        if(newData.accountName == accountHandler.accountInfo.accountName){
+                            fullName.textContent = '나';    
+                        }else{
+                            fullName.textContent = newData.fullName;
+                        }
                     }
                 })
             });

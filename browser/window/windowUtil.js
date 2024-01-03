@@ -1,7 +1,6 @@
 const path = require('path');
 const axios = require('axios');
 const log = require('electron-log');
-const mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'))
 class WindowUtil{
     #loginRemeber;
     constructor(){
