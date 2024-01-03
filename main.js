@@ -208,7 +208,7 @@ app.whenReady().then(()=>{
 						try{
 							log.info('start call updatehistory');
 							const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
-
+							log.info('packageJson ::: ',packageJson);
 							const {bucket, region, channel} = packageJson.build.publish
 							
 							let newVersion = Number(event.version.replace(/\./g, ''));
