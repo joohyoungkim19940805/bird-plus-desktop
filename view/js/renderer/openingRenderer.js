@@ -24,13 +24,14 @@ new class OpeningRenderer{
 			// 디벨로퍼보다 빨리 실행되어 디버깅이 안되기 때문에 지연을 넣는다.
 			setTimeout(()=>{
 				resolve('done');
-			}, 5000*2)
+			}, 5000)
 		})
 		.then(() => {
 			return window.myAPI.pageChange.changeLoginPage();
 		}).then((e)=>{
 			console.log(e)
 		});
+		/*
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('checkForUpdates', (event, message) => {
 			let div = Object.assign(document.createElement('div'), {
 				innerHTML: `
@@ -48,6 +49,7 @@ new class OpeningRenderer{
 		})
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('updateAvailable', (event, message) => {
+			alert('????')
 			let div = Object.assign(document.createElement('div'), {
 				innerHTML: `
 					<div>
@@ -62,6 +64,7 @@ new class OpeningRenderer{
 		})
 
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('updateDownloaded', (event, message) => {
+			alert('????')
 			let div = Object.assign(document.createElement('div'), {
 				innerHTML: `
 					<div>
@@ -75,6 +78,7 @@ new class OpeningRenderer{
 			document.querySelector('#container').append(div);
 
 		})
+		*/
 	}
 
 }();

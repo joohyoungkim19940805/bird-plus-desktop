@@ -7,7 +7,6 @@
 const log = require('electron-log');
 const path = require('path');
 const axios = require('axios');
-
 // 일렉트론 모듈 호출
 const { app, BrowserWindow, ipcMain, dialog/*, ipcMain, shell*/ } = require('electron');
 app.setAppUserModelId(app.name);
@@ -28,13 +27,13 @@ global.top.__isLocal = process.env.MY_SERVER_PROFILES == 'local';
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(top.__isLocal){
-		//autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
+		autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-		/*Object.defineProperty(app, 'isPackaged', {
+		Object.defineProperty(app, 'isPackaged', {
 			get() {
 				return true;
 			}
-		});*/
+		});
 		return 'https://localhost:8443';
 	}else{
 		return 'https://mozu.co.kr'
@@ -51,7 +50,7 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(top.__isLocal && ! app.isPackaged){
+if(top.__isLocal){// && ! app.isPackaged){
 	const { default: electronReload } = require('electron-reload');
 	require('electron-reload')(__project_path, {
 		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
@@ -108,7 +107,7 @@ if (!gotTheLock) {
 			mainWindow.focus();
 		}
 
-		dialog.showErrorBox(`Welcome Back`, `You arrived from: ${commandLine.pop().slice(0, -1)}`)
+		//dialog.showErrorBox(`Welcome Back`, `You arrived from: ${commandLine.pop().slice(0, -1)}`)
 	})
 }
 
@@ -125,7 +124,7 @@ app.whenReady().then(()=>{
 		log.info('DBConfig loadEndPromise');
 
 		mainWindow = require(path.join(__project_path, 'browser/window/main/MainWindow.js'));
-		mainWindow.webContentsAwait.then( () => {
+		mainWindow.webContentsAwait.then( async () => {
 			log.info('webContentsAwait start!!!!');
 			try{
 				const openingIpc = require(path.join(__project_path, 'browser/ipc/OpeningIpc.js'));
@@ -153,52 +152,89 @@ app.whenReady().then(()=>{
 				log.error(err.message);
 			}
 			log.info('create IPC END')
-		})
 
-		mainWindow.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
-			mainWindow.webContents.openDevTools();
-			mainWindow.isOpening = true;
-			
-		});
-				
-		//mainWindow.webContents.on('did-finish-load', () => {
-						autoUpdater.checkForUpdates().then(result=>{
+			log.info('-----------------------\n');
+			log.info('start update check')
+
+			autoUpdater.checkForUpdates().then(result=>{
 			//autoUpdater.checkForUpdatesAndNotify().then(result => {
-				log.debug('checkForUpdates ::: ',result);
-				mainWindow.webContents.send('checkForUpdates', result)
+				//log.debug('checkForUpdates ::: ',result);
+				//mainWindow.webContents.send('checkForUpdates', result)
 			});
 	
 			autoUpdater.on('update-available', (event) => {
-				log.debug('update-available',event);
-				//
-				mainWindow.webContents.send('updateAvailable');
-				dialog.showMessageBox({
-					type:'info',
-					buttons: ['Ok'],
-					defaultId:1,
-					title:'UpdateMessage',
-					message: 'Find Update Latest',
-					detail: '업데이트 내역이 있습니다. 백그라운드에서 업데이트를 진행하며, 필요한 경우 재시작 할 수 있습니다.',
-				}).then(() => {
-					try{
-						//해당 코드가 autoUpdater.autoDownload = true; 인 경우 오류 발생
-						//autoUpdater.downloadUpdate();
-						autoUpdater.on('update-downloaded', () => {
-							autoUpdater.quitAndInstall();
-						})
-					}catch(err){
-						log.error(JSON.stringify(err));
-						log.error(err.message);
-					}
+				ipcMain.on('startUpdateDownloaded', () => {
+					autoUpdater.quitAndInstall();
 				})
-				//dialog.showErrorBox('Find Update Latest','업데이트 내역이 있습니다. 확인을 누르면 10초 후 종료되며, 업데이트를 진행합니다.')
+				log.debug('update-available ::: ',event);
+				
 			});
-
+			
 			autoUpdater.on('update-downloaded', (event) => {
 				log.debug('update-downloaded', event);
-				mainWindow.webContents.send('updateDownloaded');
+				//console.log(event)
+				mainWindow.webContents.send('updateAvailable', event);
+				let updateHistoryWindow = new BrowserWindow({
+					width : 700, height : 700,
+					icon : path.join(__project_path, 'view/image/icon.ico'),
+					webPreferences : {
+						preload : path.join(__project_path, 'browser/preload/updatePreload.js'),
+						protocol: "file", slashes: true
+					},
+					autoHideMenuBar : true, titleBarStyle : 'visible', movable : true, resizable : true,
+					trafficLightPosition: { x: 15, y: 13, },
+					center : true, title: 'Grease Lightning Chat',	
+				})
+				updateHistoryWindow.on('startUpdateDownloaded', () => {
+					autoUpdater.quitAndInstall(true, true);
+				})
+				
+				updateHistoryWindow.loadFile(path.join(__project_path, 'view/html/updateHistory.html')).then(()=>{
+					const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
+
+					const {bucket, region, channel} = packageJson.build.publish
+					
+					let newVersion = Number(event.version.replace(/\./g, ''));
+					let oldVersion = Number(packageJson.version.replace(/\./g, ''));
+
+					for(let i = oldVersion, len = newVersion + 1 ; i < len ; i += 1){
+						let targetVersionList = String(i).padStart(4, 0).split('');
+						let topVersion = Number(targetVersionList[0] + targetVersionList[1]);
+						let midVersion = Number(targetVersionList[2]);
+						let bottomVersion = Number(targetVersionList[3]);
+
+						const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
+						axios.get(s3Url).then( response => {
+							if (response.status == 200 || response.status == 201) {
+								updateHistoryWindow.webContents.send('updateHistory', response.data);
+								return;
+							}
+							updateHistoryWindow.webContents.send('updateHistory', undefined);
+							//throw new Error({status : response.status, errorMessage : response.message})
+						});
+					}
+
+					
+
+				});
 			});
-			//})
+
+			return;
+		}).then(() => {
+			mainWindow.loadFile(path.join(__project_path, 'view/html/opening.html')).then(e=>{
+				//mainWindow.webContents.openDevTools();
+				mainWindow.isOpening = true;
+				
+			}).then(() => {
+				
+				//})
+			});
+		})
+
+
+				
+		//mainWindow.webContents.on('did-finish-load', () => {
+			
 		log.info('create mainWindow');
 		const mainTray = require(path.join(__project_path, 'browser/window/tray/MainTray.js'))
 		log.info('create mainTray');
@@ -215,7 +251,7 @@ app.whenReady().then(()=>{
 				mainWindow.workspaceId = params.workspaceId;
 				axios.defaults.headers.common['Authorization'] = params.Authorization
 			}catch(err){
-				dialog.showErrorBox('test4:::', err.message);
+				//dialog.showErrorBox('test4:::', err.message);
 			}
 			
 		}	

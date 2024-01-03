@@ -1,6 +1,6 @@
 {
 	"name": "Grease_Lightning_Chat",
-	"version": "0.2.2",
+	"version": "0.2.4",
 	"description": "Grease Lightning Chat",
 	"main": "main.js",
 	"scripts": {
@@ -10,7 +10,7 @@
 		"package": "electron-forge package",
 		"make": "electron-forge make",
 		"//deploy": "electron-builder --windows nsis:ia32",
-		"deploy": "tsc && webpack && electron-builder build --win --publish always",
+		"deploy": "tsc && webpack && node latestDeployHistory.js && electron-builder build --win --publish always",
 		"dev-build": "tsc && webpack --watch ",
 		"dev-tsc-build": "webpack && tsc --watch",
 		"dev-watch": "nodemon --exec electron .",
@@ -38,6 +38,7 @@
 		"electron-reload": "^2.0.0-alpha.1",
 		"electron-reloader": "^1.2.3",
 		"gitlog": "^4.0.8",
+		"js-yaml": "^4.1.0",
 		"nodemon": "^3.0.1",
 		"style-loader": "^3.3.3",
 		"ts-loader": "^9.5.1",
@@ -45,7 +46,7 @@
 		"webpack": "^5.89.0",
 		"webpack-cli": "^5.1.4",
 		"webpack-dev-server": "^4.15.1",
-		"js-yaml": "^4.1.0"
+		"aws-sdk": "^2.1528.0"
 	},
 	"dependencies": {
 		"@babylonjs/core": "^6.30.0",
