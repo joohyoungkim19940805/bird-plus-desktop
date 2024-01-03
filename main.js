@@ -205,33 +205,39 @@ app.whenReady().then(()=>{
 					})
 					
 					updateHistoryWindow.loadFile(path.join(__project_path, 'view/html/updateHistory.html')).then(()=>{
-						const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
+						try{
+							log.info('start call updatehistory');
+							const packageJson = JSON.parse( fs.readFileSync(path.join(__project_path, '/package.json'), 'utf8') );
 
-						const {bucket, region, channel} = packageJson.build.publish
-						
-						let newVersion = Number(event.version.replace(/\./g, ''));
-						let oldVersion = Number(packageJson.version.replace(/\./g, ''));
+							const {bucket, region, channel} = packageJson.build.publish
+							
+							let newVersion = Number(event.version.replace(/\./g, ''));
+							let oldVersion = Number(packageJson.version.replace(/\./g, ''));
+							log.info('newVersion ::: ', newVersion);
+							log.info('oldVersion ::: ', oldVersion);
+							for(let i = oldVersion, len = newVersion + 1 ; i < len ; i += 1){
+								let targetVersionList = String(i).padStart(4, 0).split('');
+								let topVersion = Number(targetVersionList[0] + targetVersionList[1]);
+								let midVersion = Number(targetVersionList[2]);
+								let bottomVersion = Number(targetVersionList[3]);
 
-						for(let i = oldVersion, len = newVersion + 1 ; i < len ; i += 1){
-							let targetVersionList = String(i).padStart(4, 0).split('');
-							let topVersion = Number(targetVersionList[0] + targetVersionList[1]);
-							let midVersion = Number(targetVersionList[2]);
-							let bottomVersion = Number(targetVersionList[3]);
-
-							const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
-							axios.get(s3Url).then( response => {
-								if (response.status == 200 || response.status == 201) {
-									updateHistoryWindow.webContents.send('updateHistory', response.data);
-									return;
-								}
-								updateHistoryWindow.webContents.send('updateHistory', undefined);
-								//throw new Error({status : response.status, errorMessage : response.message})
-							})
-							.catch(err=>{
-								log.error(err.message);
-							});
+								const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/update/history_${topVersion}.${midVersion}.${bottomVersion}.json`;
+								axios.get(s3Url).then( response => {
+									if (response.status == 200 || response.status == 201) {
+										updateHistoryWindow.webContents.send('updateHistory', response.data);
+										return;
+									}
+									log.error(response.status, response.message);
+									updateHistoryWindow.webContents.send('updateHistory', undefined);
+									//throw new Error({status : response.status, errorMessage : response.message})
+								})
+								.catch(err=>{
+									log.error(err.message);
+								});
+							}
+						}catch(error){
+							log.error(error.message);
 						}
-
 					});
 				});
 			});
