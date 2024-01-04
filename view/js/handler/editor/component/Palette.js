@@ -901,10 +901,10 @@ export default class Palette {
 			.palette-wrap{
 				background: #343434;
 				padding: 0.9%;
-				width: 30dvw;
+				width: 35dvw;
 				height: fit-content;
 				color: white;
-				font-size: 13px;
+				font-size: 0.9rem;
 				z-index: 999;
 				min-width: 20vmax;
 				-webkit-user-select: none;

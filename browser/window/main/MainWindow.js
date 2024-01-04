@@ -175,6 +175,20 @@ class MainWindow extends BrowserWindow{
 			ipcMain.handle('getServerUrl', async (event, param)=> {
 				return global.__serverApi;
 			})
+			ipcMain.handle('logout', async (event) => {
+				windowUtil.resetLoginRemeber();
+				axios.defaults.headers.common['Authorization'] = '';
+				return new Promise(res=>{
+					let db = DBConfig.getDB(DBConfig.sqlite3.OPEN_READWRITE);
+					db.serialize( () => {
+						Promise.all([this.deleteLastToken(db), this.deleteLastRoomInfo(db)]).then(()=>{
+							
+							res();
+						})
+					})
+				})
+			})
+
 			ipcMain.on('changeLoginPage', async (event) => {
 				this.changeLoginPage(event);
 			});
@@ -287,6 +301,24 @@ class MainWindow extends BrowserWindow{
 			delete this.subWindow[param.pageId];
 			delete this.subWindow[param.pageName];
 		}else if(duplecateWindow){
+			duplecateWindow.loadFile(path.join(__project_path, `view/html/${param.pageName}.html`)).then(() => {
+				if(param.roomId){
+					duplecateWindow.webContents.send('roomChange', {
+						roomId:param.roomId
+					});
+					//window.webContents.openDevTools();
+				}
+				if(param.noticeBoardId){
+					duplecateWindow.webContents.send('noticeBoardChange', {
+						noticeBoardId:param.noticeBoardId
+					});
+				}
+				if(duplecateWindow.isMinimized()){
+					// 앱이 최소화 된 상태인 경우 포커스가 미동작하기에 최소화 해제
+					duplecateWindow.restore();
+				}
+				duplecateWindow.focus();
+			});
 			return;
 		}
 		let window = new BrowserWindow(
@@ -469,6 +501,50 @@ class MainWindow extends BrowserWindow{
 				return;
 			}
 			v.webContents.send(eventName, data);
+		})
+	}
+
+	deleteLastToken(db){
+		return new Promise(resolve=>{
+			db.run(`
+				DELETE FROM 
+					ACCOUNT_LOG
+				WHERE
+					TOKEN = (
+						SELECT
+							TOKEN
+						FROM
+							ACCOUNT_LOG
+						WHERE 
+							EXPIRES_AT >= datetime('now','localtime') 
+						ORDER BY 
+							EXPIRES_AT DESC
+						LIMIT 1
+					)
+			`, (err, rows) => {
+				if(err){
+					log.error(err);
+				}
+				console.log(rows);
+				resolve();
+			})
+		})
+	}
+
+	deleteLastRoomInfo(db){
+		return new Promise(resolve => {	
+			db.run(`
+				DELETE FROM
+					BIRD_PLUS_OPTIONS
+				WHERE
+					OPTION_NAME = 'lastRoomInfo'
+			`, (err, rows) => {
+				if(err){
+					log.error(err);
+				}
+				console.log(rows);
+				resolve();
+			})
 		})
 	}
 }

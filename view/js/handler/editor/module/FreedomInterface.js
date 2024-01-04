@@ -108,9 +108,30 @@ export default class FreedomInterface extends HTMLElement {
 		}
 		simpleObserver();
 	}
-	
+	static isElement(targetObject, checkClazz){
+        let check = Object.getPrototypeOf(targetObject)
+        let isElement = false;
+        while(check != undefined){
+
+            if(check?.constructor  == checkClazz){
+                isElement = true;
+                break;
+            }else{
+                check = Object.getPrototypeOf(check);
+            }
+        }
+        return isElement;
+    }
+
 	static processingElementPosition(element, target){
-		let {x, y, height, width} = target.getBoundingClientRect();
+		let rect;
+		if(FreedomInterface.isElement(target, HTMLElement)){
+			rect = target.getBoundingClientRect();
+		}else{
+			rect = target;
+		}
+
+		let {x, y, height, width} = rect;
 		
 		let elementTop = (y - element.clientHeight)
 		let elementLeft = (x - element.clientWidth)

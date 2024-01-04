@@ -7,7 +7,6 @@ import {roomHandler} from "@handler/room/RoomHandler"
 import CommonInit from "@root/js/CommonInit";
 
 new CommonInit('multipleChatting');
-
 window.addEventListener("DOMContentLoaded", (event) => {
 	let workspaceIdResolve;
 	let workspaceIdPromise = new Promise(resolve=>{

@@ -157,7 +157,9 @@ export default class FreeWillEditor extends FreeWiilHandler {
 				// 동일한 동작이 수행되지 않도록 추가 2023 05 25
 			//	return;
 			//}
+			//console.log('111111111111111111111111111111')
 			if(this.contentEditable == 'false' || (mutation.target.dataset.tool_status == 'connected' &&  mutation.oldValue == mutation.target.dataset.tool_status == 'connected')){
+				//console.log('??????????????')
 				//observer.disconnect();
 				return;
 			}
@@ -409,7 +411,7 @@ export default class FreeWillEditor extends FreeWiilHandler {
 		this.#undoManager = null;
         this.#isLoaded = false;
 		//this.contentEditable = false;
-		this.#toolButtonObserver.disconnect();
+		//this.#toolButtonObserver.disconnect();
     }
 
 	startFirstLine(){

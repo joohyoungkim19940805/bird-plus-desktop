@@ -64,7 +64,9 @@ class WindowUtil{
 			throw new Error(response.message);
 		}
 	}
-
+    resetLoginRemeber(){
+        this.#loginRemeber = undefined;
+    }
 }
 const windowUtil = new WindowUtil();
 module.exports = windowUtil;

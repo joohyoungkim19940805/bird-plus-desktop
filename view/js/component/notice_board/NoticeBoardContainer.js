@@ -35,7 +35,6 @@ export const noticeBoardContainer = new class NoticeBoardContainer{
 		let prevRoomId; 
 		console.log(prevRoomId, roomHandler.roomId);
 		this.#wrap._openEndCallback = (flexLayout) => {
-			console.log(isFirstOpen, prevRoomId, roomHandler.roomId, prevRoomId == roomHandler.roomId);
 			if(isFirstOpen && (prevRoomId && roomHandler.roomId && prevRoomId == roomHandler.roomId)){
 				return;
 			}

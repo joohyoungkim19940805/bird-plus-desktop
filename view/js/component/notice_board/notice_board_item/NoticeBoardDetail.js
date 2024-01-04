@@ -505,6 +505,8 @@ export const noticeBoardDetail = new class NoticeBoardDetail{
                     fileTargetList.forEach(e=>{
                         delete e.data.is_loading
                         e.data.is_upload_end = '';
+                        e.data.room_id = param.roomId;
+                        e.data.workspace_id = param.workspaceId;
                     });
                     param.content = JSON.stringify(jsonList);
                     if(param.content.length == 0) param.content = undefined

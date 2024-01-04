@@ -44,6 +44,9 @@ class RoomIpc {
 		ipcMain.handle('isRoomFavorites', async (event, param = {}) => {
 			return roomController.isRoomFavorites(param);
 		});
+		ipcMain.handle('isRoomOwner', async (event, param = {}) => {
+			return roomController.isRoomOwner(param);
+		});
     }
 }
 const roomIpc = new RoomIpc();

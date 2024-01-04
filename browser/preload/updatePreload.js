@@ -116,11 +116,11 @@ const wrapper = Object.assign(document.createElement('div'), {
 })
 
 ipcRenderer.on('updateHistory', (event, message = []) => {
-	console.log(event, message);
+	//console.log(event, message);
 	let updateHistoryContainer = wrapper.querySelector('.update_history_list');
 	let liList = message.map(e=>{
 		let {subject, authorName, authorDate, files} = e;
-		console.log(e);
+		//console.log(e);
 		let li = Object.assign(document.createElement('li'), {
 			className : 'update_history_item',
 			innerHTML : `
@@ -149,7 +149,7 @@ ipcRenderer.on('updateHistory', (event, message = []) => {
 	})
 	
 	updateHistoryContainer.prepend(...liList.reverse());
-	console.log(liList);
+	//console.log(liList);
 	/*
 	new Date(Number(node.dataset.reply_mils)).toLocaleString({
 		year: '2-digit', month: 'short', weekday: 'short', day: '2-digit',

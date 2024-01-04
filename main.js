@@ -30,6 +30,15 @@ global.top.__s3PublicRegion = 'ap-northeast-2'
 global.__project_path = app.getAppPath() + '/';
 global.__serverApi = (()=>{
 	if(top.__isLocal){
+		const { default: electronReload } = require('electron-reload');
+		require('electron-reload')(__project_path, {
+			electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
+			hardResetMethod: 'exit'
+		});
+		require('electron-reloader')(module, {
+			debug: false,
+			watchRenderer: true
+		});
 		if( ! app.isPackaged){
 			autoUpdater.updateConfigPath = path.join(__project_path, 'dev-app-update.yml');
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -55,17 +64,6 @@ const fs = require('fs');
 
 var mainWindow 
 
-if(top.__isLocal && ! app.isPackaged){
-	const { default: electronReload } = require('electron-reload');
-	require('electron-reload')(__project_path, {
-		electron: path.join(__project_path, 'node_modules', '.bin', 'electron'),
-		hardResetMethod: 'exit'
-	});
-	require('electron-reloader')(module, {
-		debug: false,
-		watchRenderer: true
-	});
-}
 
 //myapp:// param
 //Electron 앱을 시작한 후 예를 들어 사용자 지정 프로토콜이 포함된 URL을 브라우저에 입력하면 "electron-fiddle://open"애플리케이션이 응답하고 

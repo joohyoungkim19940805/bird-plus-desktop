@@ -93,9 +93,11 @@ export const noticeBoardList = new class NoticeBoardList{
 		}
 
 		this.#positionChanger.onDropDocumentOutCallback = ({target, event}) => {
-			if(target.hasAttribute('data-gorup_id') || JSON.parse(target.dataset.group_id) ){
+			console.log(target, target.hasAttribute('data-gorup_id'), JSON.parse(target.dataset.group_id));
+			/*if(target.hasAttribute('data-gorup_id') &&  target.dataset.group_id == 'null'){
+				console.log(1111);
 				return;
-			}
+			}*/
 			window.myAPI.createSubWindow({
 				workspaceId: workspaceHandler.workspaceId,
 				roomId: target.dataset.room_id,
@@ -105,7 +107,7 @@ export const noticeBoardList = new class NoticeBoardList{
 				x: event.x,
 				y: event.y,
 				pageName: 'multipleNoticeBoard',
-				pageId : target.dataset.room_id,
+				pageId : 'notice_board',
 				title : roomHandler.room.roomName + ' - ' + target.dataset.title
 			})
 		}

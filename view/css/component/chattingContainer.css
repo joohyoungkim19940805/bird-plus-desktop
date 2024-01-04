@@ -93,6 +93,8 @@
     border: solid 1px #ffe5e5;
     border-radius: 15px;
     margin-bottom: 0.4rem;
+    min-width: fit-content;
+    position: relative;
 }
 #chatting_head_wrapper .chatting_head_container .chatting_head_joined_members li > *{
     /*border-right: double 3px #cdb1b1;*/
@@ -344,3 +346,120 @@
     color: #c1c1c1;
     user-select: none;
 }
+
+/* chattingHeadDetail [S] */
+
+.chatting_head_detail_wrapper {
+    position: fixed;
+    width: 20dvw;
+    min-width: fit-content;
+    height: fit-content;
+    min-height: fit-content;
+    background-color: #ffffff;
+    z-index: 999;
+    padding: 1.5%;
+    box-shadow: inset 0px 0px 11px 0px #00000029;
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+}
+
+.chatting_head_detail_description {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    color: #8d8d8d;
+}
+
+.chatting_head_detail_description .chatting_head_detail_job_grade {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.chatting_head_detail_description .chatting_head_detail_department {
+    font-size: 0.7rem;
+}
+
+.chatting_head_detail_menu {
+    height: 100%;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    gap: 2vh;
+}
+
+.chatting_head_one_to_one_wrapper {
+    flex-direction: column;
+}
+
+.chatting_head_detail_menu li {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+.chatting_head_exile {
+    border-bottom: solid 1px #ffd9d9;
+}
+
+.chatting_head_go_out {
+    border-bottom: solid 1px #d0ffd3;
+}
+.chatting_head_detail_wrapper * {
+    font-size: 0.8rem;
+    font-family: monospace;
+}
+
+.chatting_head_detail_menu li button {
+    width: 100%;
+    height: 100%;
+}
+fast-send-chatting {height: 100%;width: 100%;}
+.chatting_head_one_to_one_container {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 0.5em 0.5em 0;
+}
+  
+.chatting_head_one_to_one_container summary {
+    font-weight: bold;
+    margin: -0.5em -0.5em 0;
+    padding: 0.5em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.chatting_head_one_to_one_container[open] {
+    padding: 0.5em;
+}
+  
+.chatting_head_one_to_one_container[open] summary {
+    border-bottom: 1px solid #aaa;
+    margin-bottom: 0.5em;
+}
+.chatting_head_one_to_one_container[open] > summary::after{
+    content: ' ▼';
+}
+.chatting_head_one_to_one_container > summary::after{
+    content: ' ▶';
+    display: inline-flex;
+    font-size: 0.8rem;
+}
+
+.chatting_head_one_to_one_move_room{
+    border: outset 2px #f7f7f7;
+    border-top: none;
+    text-decoration: underline;
+    text-decoration-color: white;
+    text-decoration-style: dotted;
+}
+.chatting_head_one_to_one_move_room:active{
+    border: inset 2px #f7f7f7;
+}
+
+.chatting_head_one_to_one_container[open] + .chatting_head_one_to_one_move_room{
+    display: initial;
+}
+.chatting_head_one_to_one_container + .chatting_head_one_to_one_move_room{
+    display: none;
+}
+/* chattingHeadDetail [E]*/

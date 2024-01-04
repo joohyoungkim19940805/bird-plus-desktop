@@ -128,6 +128,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 	isLogin: async () => ipcRenderer.invoke('isLogin'),
 
 	getServerUrl : async () => ipcRenderer.invoke('getServerUrl'),
+	
+	logout : async () => ipcRenderer.invoke('logout'),
 
 	pageChange : {
 		changeLoginPage : async () => ipcRenderer.send('changeLoginPage'),
@@ -181,7 +183,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		searchRoomFavoritesList : async (param) => ipcRenderer.invoke('searchRoomFavoritesList', param),
 		searchRoomJoinedAccountList : async (param) => ipcRenderer.invoke('searchRoomJoinedAccountList', param),
 		getRoomDetail : async (param) => ipcRenderer.invoke('getRoomDetail', param),
-		isRoomFavorites : async (param) => ipcRenderer.invoke('isRoomFavorites', param)
+		isRoomFavorites : async (param) => ipcRenderer.invoke('isRoomFavorites', param),
+		isRoomOwner : async(param) => ipcRenderer.invoke('isRoomOwner', param),
 	},
 
 	noticeBoard : {

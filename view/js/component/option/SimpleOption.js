@@ -516,6 +516,23 @@ export const simpleOption = new class SimpleOption{
         return {li, title};
     }
 
+    #createLogout(){
+        let li = Object.assign(document.createElement('li'), {
+            className: 'pointer'
+        })
+        let title = Object.assign(document.createElement('span'), {
+            textContent : 'Logout'
+        });
+        li.append(title);
+        li.onclick = () => {
+            window.myAPI.logout().then( () => {
+                window.myAPI.pageChange.changeWokrspacePage();
+            });
+        }
+
+        return li
+    }
+
     /**
      * 
      * @param {HTMLElement} target 
@@ -527,6 +544,7 @@ export const simpleOption = new class SimpleOption{
             target.style.display = '';
             clearInterval(appendAwait);
             let originRect = target.getBoundingClientRect() 
+
             if(originRect.left < 0){
                 target.style.left = '100%';
             }
@@ -534,8 +552,11 @@ export const simpleOption = new class SimpleOption{
             if(target.getBoundingClientRect().right > window.outerWidth){
                 target.style.left = '0%';
                 target.style.right = '0%';
-                target.style.top = '100%';
+                if(window.getComputedStyle(target).position != 'fixed'){
+                    target.style.top = '100%';
+                }
                 //target.style.top = this.#container.getBoundingClientRect().bottom + 'px';
+                
             }
         },50);
     }
@@ -557,6 +578,7 @@ export const simpleOption = new class SimpleOption{
             contentList.push(this.#attendRequestObject.li);
             contentList.push(this.#giveAdminObject.li);
         }
+        contentList.push(this.#createLogout());
         this.#container.replaceChildren(...contentList)
     }
 

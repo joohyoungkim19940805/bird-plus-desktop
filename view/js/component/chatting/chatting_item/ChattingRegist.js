@@ -1,4 +1,5 @@
 import FreeWillEditor from "@handler/editor/FreeWillEditor";
+import FreedomInterface from "@handler/editor/module/FreedomInterface";
 import Strong from "@handler/editor/tools/Strong"
 import Color from "@handler/editor/tools/Color"
 import Background from "@handler/editor/tools/Background"
@@ -97,11 +98,17 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 		}
 
 		this.onblur = (event) => {
-			if(event.relatedTarget?.hasAttribute('data-tool_status')){
+			if( FreedomInterface.isMouseInnerElement(this.#elementMap.toolbarWrapper) && event.relatedTarget?.hasAttribute('data-tool_status') ){
 				return;
 			}
 			this.#elementMap.toolbarWrapper.replaceChildren(...toolCloneList);
 		}
+		document.addEventListener('selectionchange', event => {
+			if(document.activeElement == this || FreedomInterface.isMouseInnerElement(this.#elementMap.toolbarWrapper)){
+				return
+            }
+			this.#elementMap.toolbarWrapper.replaceChildren(...toolCloneList);
+		})
 
 		let isEnter = false;
 		this.onkeydown = (event) => {
@@ -125,6 +132,9 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 				}
 				isEnter = true;
 				let promiseList = [];
+				//전송 중 채널, 워크스페이스 변경시 변경된 id 값이 들어가므로 변수로 재할당
+				let workspaceId = workspaceHandler.workspaceId;
+				let roomId = roomHandler.roomId; 
 				ChattingRegist.getLowDoseJSON(this, {
 					afterCallback : (json) => {
 						if(json.tagName != Image.toolHandler.defaultClass && 
@@ -150,7 +160,7 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 						promiseList.push(new Promise(async resolve => {
 
 							let {name, size, lastModified, contentType, newFileName} = await common.underbarNameToCamelName(json.data);
-							let putSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
+							let putSignData = `${roomId}:${workspaceId}:${name}:${accountHandler.accountInfo.accountName}`;
 							let isUpload = await s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityPutObjectPresignedUrl, putSignData, {newFileName, fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
 								if(! result){
@@ -170,17 +180,6 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 											.then(buf=>String.fromCharCode(...new Uint8Array(buf)))
 									})
 								]).then( async ([k,m]) => {
-									/*let base64 = json.data.base64;
-									if(! base64){
-										let blob = await fetch(json.data.url).then(res=>res.blob())
-										base64 = await new Promise(resolve => {
-											const reader = new FileReader();
-											reader.readAsDataURL(blob);
-											reader.onloadend = () => {
-												resolve(reader.result);
-											}
-										});
-									}*/
 									let res = await s3EncryptionUtil.fetchPutObject(data.presignedUrl, k, m, file.files[0]);
 									if( ! (res.status == 200 || res.status == 201) ){
 										return;
@@ -192,7 +191,7 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 								resolve();
 								return;
 							}
-							let getSignData = `${roomHandler.roomId}:${workspaceHandler.workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
+							let getSignData = `${roomId}:${workspaceId}:${json.data.new_file_name}:${accountHandler.accountInfo.accountName}`;
 							
 							s3EncryptionUtil.callS3PresignedUrl(window.myAPI.s3.generateSecurityGetObjectPresignedUrl, getSignData, {fileType, uploadType: 'CHATTING'})
 							.then( (result) => {
@@ -211,8 +210,8 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 				}).then(jsonList => {
 
 					window.myAPI.chatting.sendChatting({
-						workspaceId: workspaceHandler.workspaceId,
-						roomId: roomHandler.roomId,
+						workspaceId,
+						roomId,
 						chatting: JSON.stringify(jsonList)
 					}).then(res=>{
 						let {data} = res
@@ -227,11 +226,13 @@ export const chattingRegist = new class ChattingRegist extends FreeWillEditor{
 							fileTargetList.forEach(e=>{
 								delete e.data.is_loading
 								e.data.is_upload_end = '';
+								e.data.room_id = roomId
+								e.data.workspace_id = workspaceId;
 							});
 							window.myAPI.chatting.sendChatting({
 								id: data.id,
-								workspaceId: workspaceHandler.workspaceId,
-								roomId: roomHandler.roomId,
+								workspaceId,
+								roomId,
 								chatting: JSON.stringify(jsonList)
 							}).then(res=>{
 								window.getSelection().setPosition(this, 1)

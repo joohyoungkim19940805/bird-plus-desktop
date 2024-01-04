@@ -116,6 +116,11 @@ export const roomFavoritesList = new class RoomFavoritesList{
 			runTheFirst: true
 		};
 		this.#positionChanger.onDropDocumentOutCallback = ({target, event}) => {
+			if(target.dataset.room_id == roomHandler.roomId){
+				target.classList.add('shake');
+				setTimeout(()=>{target.classList.remove('shake')},300)
+				return;
+			}
 			window.myAPI.createSubWindow({
 				workspaceId: workspaceHandler.workspaceId,
 				roomId: target.dataset.room_id,
@@ -124,7 +129,7 @@ export const roomFavoritesList = new class RoomFavoritesList{
 				x: event.x,
 				y: event.y,
 				pageName: 'multipleChattingView',
-				pageId : target.dataset.room_id,
+				pageId : 'room',
 				title : roomHandler.room.roomName
 			})
 		}
