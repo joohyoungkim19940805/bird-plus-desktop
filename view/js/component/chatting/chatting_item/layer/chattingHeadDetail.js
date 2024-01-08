@@ -281,12 +281,13 @@ export const chattingHeadDetail = new class ChattingHeadDetail{
 		this.#oneToOneContainer = container.querySelector('.chatting_head_one_to_one_container');
 		this.#oneToOneFastMessage = new FastSendChatting(this.#oneToOneWrapper, undefined, undefined);
 		this.#oneToOneMoveButton = container.querySelector('.chatting_head_one_to_one_move_room');
+		this.#oneToOneContainer.append(this.#oneToOneFastMessage);
+		
 		this.#exile = container.querySelector('.chatting_head_exile');
 		this.#exileButton = container.querySelector('.chatting_head_exile_button');
 		this.#goOut = container.querySelector('chatting_head_go_out');
 		this.#goOutButton = container.querySelector('.chatting_head_go_out_button');
-		
-		this.#oneToOneContainer.append(this.#oneToOneFastMessage);
+
 		return container;
 	})()
 	
@@ -301,7 +302,12 @@ export const chattingHeadDetail = new class ChattingHeadDetail{
 		
 	}
 
-	open(workspaceId, roomId){
+	open(workspaceId, roomId, accountName){
+		if(accountName == accountHandler.accountInfo.accountName){
+			this.#oneToOneWrapper.remove();
+		}else{
+			this.#menuContauner.prepend(this.#oneToOneWrapper);
+		}
 		this.#oneToOneFastMessage.workspaceId = workspaceId;
 		this.#wrap.replaceChildren(
 			this.#descriptionContainer,
