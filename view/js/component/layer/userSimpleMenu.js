@@ -22,6 +22,8 @@ import { s3EncryptionUtil } from "@handler/S3EncryptionUtil";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
+import { roomHandler } from "@handler/room/RoomHandler"
+
 export const FastSendChatting = class FastSendChatting extends FreeWillEditor{
 	static{
         window.customElements.define('fast-send-chatting', FastSendChatting);
@@ -229,7 +231,7 @@ export const FastSendChatting = class FastSendChatting extends FreeWillEditor{
 	}
 }
 
-export const chattingHeadDetail = new class ChattingHeadDetail{
+export const userSimpleMenu = new class UserSimpleMenu{
 	#wrap = Object.assign(document.createElement('div'), {
 		className: 'chatting_head_detail_wrapper'
 	}); get wrap(){return this.#wrap}
@@ -285,12 +287,14 @@ export const chattingHeadDetail = new class ChattingHeadDetail{
 		
 		this.#exile = container.querySelector('.chatting_head_exile');
 		this.#exileButton = container.querySelector('.chatting_head_exile_button');
-		this.#goOut = container.querySelector('chatting_head_go_out');
+		this.#goOut = container.querySelector('.chatting_head_go_out');
 		this.#goOutButton = container.querySelector('.chatting_head_go_out_button');
 
 		return container;
 	})()
 	
+	#roomOwnerMemory = {};
+
 	constructor(){
 		this.#oneToOneMoveButton.onclick = () => {
 			let targetRoomId = FastSendChatting.beforeSendChattingFindRoomIdCallback();
@@ -299,20 +303,56 @@ export const chattingHeadDetail = new class ChattingHeadDetail{
 				return;
 			}
 		}
-		
 	}
 
 	open(workspaceId, roomId, accountName){
+		
+		this.#menuContauner.append(this.#oneToOneWrapper, this.#exile, this.#goOut);
+
+		// 나 자신인 경우 1:1 대화 메뉴 및 추방하기 메뉴 제거 
 		if(accountName == accountHandler.accountInfo.accountName){
 			this.#oneToOneWrapper.remove();
+			this.#exile.remove();
 		}else{
-			this.#menuContauner.prepend(this.#oneToOneWrapper);
+			// 나 자신이 아닌 경우 '나가기' 메뉴 제거
+			this.#goOut.remove();
 		}
+
+		// 내가 해당 방의 관리자가 아닌 경우 '추방' 메뉴 제거 
+		if( ! roomHandler.isOwner){
+			this.#exile.remove();
+		}
+		
+		// 나 자신의 방인 경우(self room)
+		if(roomHandler.room.roomType == 'SELF'){
+			this.#exile.remove();
+			this.#goOut.remove();
+		}
+
 		this.#oneToOneFastMessage.workspaceId = workspaceId;
 		this.#wrap.replaceChildren(
 			this.#descriptionContainer,
 			this.#menuContauner
 		)
+		this.#exileButton.onclick = () => {
+			
+			if( ! window.confirm(`이 기능은 프리뷰입니다. 
+			\n이 기능에는 '빠른 1:1 대화하기' 및 '방 생성' 기능에 치명적인 오작동을 일으키는 오류가 발견되어 수정 될 예정입니다. 
+			\n이 기능을 이용시, 추후 오작동을 해결하기 위해 개발자가 데이터를 수정 및 삭제 해야 할 수도 있습니다.
+			\n정말 이용하시겠습니까?`)) return;
+
+			if( ! window.confirm('정말 추방하시겠습니까?')) return;
+			window.myAPI.room.roomInAccountOut({roomId, accountName})
+		}
+		this.#goOutButton.onclick = () => {
+			if( ! window.confirm(`이 기능은 프리뷰입니다. 
+			\n이 기능에는 '빠른 1:1 대화하기' 및 '방 생성' 기능에 치명적인 오작동을 일으키는 오류가 발견되어 수정 될 예정입니다. 
+			\n이 기능을 이용시, 추후 오작동을 해결하기 위해 개발자가 데이터를 수정 및 삭제 해야 할 수도 있습니다.
+			\n정말 이용하시겠습니까?`)) return;
+
+			if( ! window.confirm('정말 나가시겠습니까? \n방에 혼자 남아있는 경우 이 방은 자동으로 삭제됩니다.')) return;
+			window.myAPI.room.roomInAccountOut({roomId, accountName})
+		}
 		document.body.append(this.#wrap);
 	}
 

@@ -1,7 +1,7 @@
 import {roomHandler} from "@handler/room/RoomHandler"
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler"
 import {roomFavoritesList} from "@component/room/room_item/RoomFavoritesList";
-import AccountInviteRoomView from "./layer/AccountInviteRoomView";
+import AccountInviteRoomView from "../../layer/AccountInviteRoomView";
 
 import {roomContainer} from "@component/room/RoomContainer";
 import {noticeBoardContainer} from "@component/notice_board/NoticeBoardContainer";
@@ -11,7 +11,7 @@ import { accountHandler } from "@handler/account/AccountHandler"
 
 import FreedomInterface from "../../../handler/editor/module/FreedomInterface";
 
-import { chattingHeadDetail, FastSendChatting } from "./layer/chattingHeadDetail";
+import { userSimpleMenu, FastSendChatting } from "../../layer/userSimpleMenu";
 
 export const chattingHead = new class ChattingHead{
     #chattingHeadMemory = {};
@@ -267,6 +267,15 @@ export const chattingHead = new class ChattingHead{
         this.#elementMap.roomContainerIconButton.onclick = () => {
             //flexLayout이 아직 로드되지 않은 시점에서 undefined로 onclick 시점에 가져오도록 수정
             let flexLayout = roomContainer.wrap.closest('flex-layout');
+            if(flexLayout.isVisible(noticeBoardContainer.wrap)){
+                flexLayout.closeFlex(noticeBoardContainer.wrap).then(()=>{
+                    flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true}).then(()=>{
+                    
+                    });
+                })
+                return;
+            }
+
             if( ! flexLayout.isVisible(roomContainer.wrap) || Number(window.getComputedStyle(roomContainer.wrap).flex.split(' ')[0]) < 0.03 ){
                 flexLayout.openFlex(roomContainer.wrap, {isPrevSizeOpen: true})
             }else{
@@ -275,22 +284,22 @@ export const chattingHead = new class ChattingHead{
 
         }
 
-        FreedomInterface.outClickElementListener(chattingHeadDetail.wrap, ({oldEvent, newEvent, isMouseOut}) => {
+        FreedomInterface.outClickElementListener(userSimpleMenu.wrap, ({oldEvent, newEvent, isMouseOut}) => {
             if( ! this.#lastChattingHeadTarget){
                 return
             }else if(
                 isMouseOut && 
-                chattingHeadDetail.wrap.isConnected && 
+                userSimpleMenu.wrap.isConnected && 
                 ! FreedomInterface.isMouseInnerElement(this.#lastChattingHeadTarget) &&
                 window.getSelection().type != 'Range'
             ){
-				chattingHeadDetail.close();
+				userSimpleMenu.close();
                 FastSendChatting.toolbar.replaceChildren();
 			}
         })
         this.#elementMap.chattingHeadJoinedMembers.addEventListener("scroll", () => {
-            if(this.#lastChattingHeadTarget && chattingHeadDetail.wrap.isConnected){
-				FreedomInterface.processingElementPosition(chattingHeadDetail.wrap, this.#lastChattingHeadTarget);
+            if(this.#lastChattingHeadTarget && userSimpleMenu.wrap.isConnected){
+				FreedomInterface.processingElementPosition(userSimpleMenu.wrap, this.#lastChattingHeadTarget);
 			}
 
             if(FastSendChatting.toolbar.childElementCount != 0){
@@ -298,13 +307,43 @@ export const chattingHead = new class ChattingHead{
             }
 		});
         window.addEventListener('resize', (event) => {
-            if(this.#lastChattingHeadTarget && chattingHeadDetail.wrap.isConnected){
-                FreedomInterface.processingElementPosition(chattingHeadDetail.wrap, this.#lastChattingHeadTarget);
+            if(this.#lastChattingHeadTarget && userSimpleMenu.wrap.isConnected){
+                FreedomInterface.processingElementPosition(userSimpleMenu.wrap, this.#lastChattingHeadTarget);
             }
 
             if(FastSendChatting.toolbar.childElementCount != 0){
                 FreedomInterface.processingElementPosition(FastSendChatting.toolbar, window.getSelection().getRangeAt(0).getBoundingClientRect());
             }
+		})
+        window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountDeleteAccept', event => {
+            let {content = event} = event;
+            delete this.#chattingHeadMemory[event.workspaceId][event.roomId][content.accountName]
+
+            if(event.roomId == roomHandler.roomId){
+                let memberList = Object.values(this.#chattingHeadMemory[event.workspaceId]?.[event.roomId] || {})
+                .sort((a,b)=> a.dataset.full_name.localeCompare(b.dataset.full_name));
+
+                new Promise(res => {
+                    let optionList = memberList.map(li => {
+                        let option = Object.assign(document.createElement('option'), {
+                            value : li.dataset.full_name,
+                            textContent: li.dataset.department
+                        })
+                        option.__target_member = li;
+                        return option;
+                    })
+                    this.#elementMap.searchMemberList.replaceChildren(...optionList);
+                    res();
+                })
+                if(roomHandler.room.roomType == 'MESSENGER'){
+                    this.#elementMap.chattingHeadTitle.textContent = memberList.map(e=>e.dataset.full_name).join(', ')
+                }
+                this.#elementMap.chattingHeadJoinedMembers.replaceChildren(...memberList);
+                
+                this.#elementMap.chattingHeadJounedCount.textContent = 
+                    `(${memberList.length} members)`
+            }
+
 		})
     }
 
@@ -342,9 +381,9 @@ export const chattingHead = new class ChattingHead{
     addLiEvent(li){
         return new Promise(resolve=>{
             li.onclick = () => {
-                chattingHeadDetail.reset();
-                if(this.#lastChattingHeadTarget && this.#lastChattingHeadTarget == li && chattingHeadDetail.wrap.isConnected){
-                    chattingHeadDetail.close();
+                userSimpleMenu.reset();
+                if(this.#lastChattingHeadTarget && this.#lastChattingHeadTarget == li && userSimpleMenu.wrap.isConnected){
+                    userSimpleMenu.close();
                     return;    
                 }
                 FastSendChatting.beforeSendChattingFindRoomIdCallback = async () => {
@@ -359,7 +398,7 @@ export const chattingHead = new class ChattingHead{
                         console.log(createRoomEvent);
                         if(createRoomEvent.code == 0){
                             roomHandler.roomId = createRoomEvent.data.id;
-                            chattingHeadDetail.close();
+                            userSimpleMenu.close();
                             window.myAPI.room.createRoomInAccount(
                                 [{
                                     roomId: createRoomEvent.data.id,
@@ -378,10 +417,10 @@ export const chattingHead = new class ChattingHead{
                     //window.myAPI.
                 }
                 this.#lastChattingHeadTarget = li;
-                chattingHeadDetail.jobGrade = li.dataset.job_grade;
-                chattingHeadDetail.department = li.dataset.department;
-                chattingHeadDetail.open(li.dataset.workspace_id, li.dataset.room_id);
-                common.processingElementPosition(chattingHeadDetail.wrap, li);
+                userSimpleMenu.jobGrade = li.dataset.job_grade;
+                userSimpleMenu.department = li.dataset.department;
+                userSimpleMenu.open(li.dataset.workspace_id, li.dataset.room_id, li.dataset.account_name);
+                common.processingElementPosition(userSimpleMenu.wrap, li);
                 
             }
 

@@ -1,7 +1,8 @@
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 import {roomHandler} from "@handler/room/RoomHandler";
+import { accountHandler } from "@handler/account/AccountHandler"
 import PositionChanger from "@handler/PositionChangeer";
-import CreateRoomView from "./CreateRoomView";
+import CreateRoomView from "@component/layer/CreateRoomView";
 export const roomList = new class RoomList{
 	#memory = {}
 
@@ -191,6 +192,7 @@ export const roomList = new class RoomList{
 			runTheFirst: false
 		}
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
+			
 			let {content} = event;
 			if( ! ['ROOM_PUBLIC','ROOM_PRIVATE'].some(e=> e == content.roomType)){
 				return;
@@ -207,6 +209,43 @@ export const roomList = new class RoomList{
 				this.refresh()
 			})
 		});
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountDeleteAccept', event => {
+			let {content} = event;
+
+			if( content.roomType != 'MESSENGER' ){
+				return;
+			}
+			let isMy = content.accountName == accountHandler.accountInfo.accountName;
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				if(isMy){
+					delete this.#memory[event.workspaceId][page][event.roomId];
+				}else{
+					this.#memory[event.workspaceId][page][event.roomId].querySelector('.room_name').textContent = content.roomName;
+				}
+				
+			})
+			this.refresh();
+			//현재 보고 있는 방이 추방 or 나간 방인 경우 나 자신의 방으로 이동
+			if(isMy && roomHandler.roomId == event.roomId){
+				roomHandler.roomId = roomHandler.selfRoomId;
+			}
+		})
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomDeleteAccept', event => {
+			let {content} = event;
+			if( content.roomType != 'MESSENGER' ){
+				return;
+			}
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				delete this.#memory[event.workspaceId][page][event.roomId]
+			})
+			this.refresh()
+		})
 	}
 
 	callData(page, size, workspaceId, roomName){

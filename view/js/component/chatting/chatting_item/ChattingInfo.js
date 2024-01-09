@@ -106,14 +106,15 @@ export const chattingInfo = new class ChattingInfo{
     #firstPageNumber;
     #lastReplyTarget;
 
+    //#infinityLoopBlock = 0;
+
 	#lastItemVisibleObserver = new IntersectionObserver((entries, observer) => {
 		entries.forEach(entry =>{
 			if ( ! entry.isIntersecting){
                 return;
             }
-            
             let lastTotalPages = this.#totalPagesMapper[entry.target.dataset.room_id]; 
-            if( lastTotalPages && this.#page >= lastTotalPages){
+            if( (lastTotalPages && this.#page >= lastTotalPages)){// || (this.#lastPageNumberMapper[roomHandler.roomId] == this.#page)){
                 this.#lastItemVisibleObserver.disconnect();
             }
             if(entry.target == this.#lastVisibleTarget){
@@ -122,6 +123,11 @@ export const chattingInfo = new class ChattingInfo{
             }else if(entry.target == this.#firstVisibleTarget){
                 this.#page = this.#firstPageNumber;
                 this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
+            }
+
+            if(this.#lastPageNumberMapper[roomHandler.roomId] == this.#page && this.#page == -1){
+                this.#lastItemVisibleObserver.disconnect();
+                return;
             }
             this.#lastPageNumberMapper[roomHandler.roomId] = this.#page;
 

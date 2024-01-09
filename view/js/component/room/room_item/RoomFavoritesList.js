@@ -170,6 +170,59 @@ export const roomFavoritesList = new class RoomFavoritesList{
 			},
 			runTheFirst: false
 		}
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
+			let {content} = event;
+			console.log(content);
+			if( ! content.favoritesOrderSort) return;
+			content.orderSort = content.favoritesOrderSort;
+			//console.log('event <<< ', event);
+			//this.refresh();
+			this.createItemElement(content)
+			.then(li => {
+				//this.#liList.push(li);
+				Object.entries(this.#memory[content.workspaceId] || {}).forEach(([page, obj]) => {
+					if( ! obj.hasOwnProperty(event.roomId)){
+						return;
+					}
+					this.#memory[content.workspaceId][page][content.roomId] = li;
+				})
+				this.refresh()
+			})
+		});
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountDeleteAccept', event => {
+			let {content} = event;
+
+			if( content.roomType != 'MESSENGER' ){
+				return;
+			}
+			let isMy = content.accountName == accountHandler.accountInfo.accountName;
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				if(isMy){
+					delete this.#memory[event.workspaceId][page][event.roomId];
+				}else{
+					this.#memory[event.workspaceId][page][event.roomId].querySelector('.room_name').textContent = content.roomName;
+				}
+				
+			})
+			this.refresh();
+			//현재 보고 있는 방이 추방 or 나간 방인 경우 나 자신의 방으로 이동
+			if(isMy && roomHandler.roomId == event.roomId){
+				roomHandler.roomId = roomHandler.selfRoomId;
+			}
+		})
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomDeleteAccept', event => {
+			let {content} = event;
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				delete this.#memory[content.workspaceId][page][event.roomId]
+			})
+			this.refresh()
+		})
 	}
 
 	callData(page, size, workspaceId, roomName){
@@ -248,7 +301,7 @@ export const roomFavoritesList = new class RoomFavoritesList{
 				innerHTML: `
 					<div class="room_container_item_container">
 						<span>${roomTypeMark}</span>
-						<span>${roomName}</span>
+						<span class="room_name">${roomName}</span>
 					</div>
 				`
 			});

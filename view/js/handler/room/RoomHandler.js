@@ -8,6 +8,8 @@ export const roomHandler = new class RoomHandler{
         this.#roomChangeDone = resolve;
     });
 
+    #isOwner;
+
     constructor(){
 
         window.myAPI.event.electronEventTrigger.addElectronEventListener('roomChange', event => {
@@ -32,29 +34,32 @@ export const roomHandler = new class RoomHandler{
             throw new Error('roomId is undefined')
         }
         this.#roomId = roomId;
-        window.myAPI.room.getRoomDetail({roomId}).then(result => {
-            this.#room = result.data;
-            window.myAPI.setOption({
-                name: 'lastRoomInfo', value : JSON.stringify(this.#room)
-            })
-            let startCallbackPromise = Promise.all(
-                Object.values(this.#addRoomIdChangeListener).map(async callback => {
-                    return new Promise(res => {
-                        callback(this);
-                        res();
+        window.myAPI.room.isRoomOwner({roomId}).then(result => {
+            this.#isOwner = result.data;
+            window.myAPI.room.getRoomDetail({roomId}).then(result => {
+                this.#room = result.data;
+                window.myAPI.setOption({
+                    name: 'lastRoomInfo', value : JSON.stringify(this.#room)
+                })
+                let startCallbackPromise = Promise.all(
+                    Object.values(this.#addRoomIdChangeListener).map(async callback => {
+                        return new Promise(res => {
+                            callback(this);
+                            res();
+                        })
+                    })
+                )
+                startCallbackPromise.then(()=>{
+                    this.#roomChangeDone();
+                })
+                this.#roomChangeAwait.then(()=>{
+                    this.#roomChangeAwait = new Promise(resolve=>{
+                        this.#roomChangeDone = resolve;
                     })
                 })
-            )
-            startCallbackPromise.then(()=>{
-                this.#roomChangeDone();
-            })
-            this.#roomChangeAwait.then(()=>{
-                this.#roomChangeAwait = new Promise(resolve=>{
-                    this.#roomChangeDone = resolve;
-                })
-            })
-            //window.myAPI.setTitle({title:this.#room.roomName})
-            
+                //window.myAPI.setTitle({title:this.#room.roomName})
+                
+            });
         });
     }
 
@@ -70,5 +75,9 @@ export const roomHandler = new class RoomHandler{
     }
     get roomChangeAwait(){
         return this.#roomChangeAwait;
+    }
+    
+    get isOwner(){
+        return this.#isOwner;
     }
 }

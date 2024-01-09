@@ -4,7 +4,7 @@ import IndexedDBHandler from "@handler/IndexedDBHandler";
 import { accountHandler } from "@handler/account/AccountHandler";
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 
-import GiveAdminView from "@component/option/GiveAdminView"
+import GiveAdminView from "@component/layer/GiveAdminView"
 
 /**
  * @author kimjoohyoung

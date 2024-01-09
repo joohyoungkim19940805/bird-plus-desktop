@@ -47,6 +47,12 @@ class RoomIpc {
 		ipcMain.handle('isRoomOwner', async (event, param = {}) => {
 			return roomController.isRoomOwner(param);
 		});
+		ipcMain.handle('isMyAttendRoom', async (event, param = {}) => {
+			return roomController.isMyAttendRoom(param);
+		});
+		ipcMain.handle('roomInAccountOut', async (event, param = {}) => {
+			return roomController.roomInAccountOut(param);
+		})
     }
 }
 const roomIpc = new RoomIpc();

@@ -185,6 +185,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 		getRoomDetail : async (param) => ipcRenderer.invoke('getRoomDetail', param),
 		isRoomFavorites : async (param) => ipcRenderer.invoke('isRoomFavorites', param),
 		isRoomOwner : async(param) => ipcRenderer.invoke('isRoomOwner', param),
+		isMyAttendRoom : async(param) => ipcRenderer.invoke('isMyAttendRoom', param),
+		roomInAccountOut : async(param) => ipcRenderer.invoke('roomInAccountOut', param),
 	},
 
 	noticeBoard : {

@@ -157,8 +157,8 @@ app.whenReady().then(()=>{
 				const emoticonIpc = require(path.join(__project_path, 'browser/ipc/EmoticonIpc.js'));
 				log.info('emoticonIpcController');
 			}catch(err){
-				log.error(JSON.stringify(err));
-				log.error(err.message);
+				log.error('ipc load error !!! ', JSON.stringify(err));
+				log.error('ipc load error !!!  ::: ', err.message);
 			}
 			log.info('create IPC END')
 

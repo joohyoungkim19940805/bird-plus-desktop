@@ -427,6 +427,70 @@ class RoomController {
 			return undefined;
 		})
 	}
+	isMyAttendRoom(param = {}){
+		if( ! param.roomId || isNaN(parseInt(param.roomId))){
+			log.error(`isMyAttendRoom roomId is ::: ${param.roomId}`);
+			return undefined;
+		}
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				return axios.get(`${__serverApi}/api/room/search/is-my-attend/${param.roomId}`, {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC isMyAttendRoom error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
+	roomInAccountOut(param = {}){
+		if( ! param.roomId || isNaN(parseInt(param.roomId)) || ! param.accountName){
+			log.error(`roomInAccountOut roomId is ::: ${param.roomId}`);
+			return undefined;
+		}
+		return windowUtil.isLogin( result => {
+			if(result.isLogin){
+				return axios.delete(`${__serverApi}/api/room/delete/out/${param.roomId}/${param.accountName}`, {
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(windowUtil.responseCheck)
+				.then(response => response.data)
+				.catch(err=>{
+					log.error('IPC roomInAccountOut error : ', JSON.stringify(err));
+					//axios.defaults.headers.common['Authorization'] = '';
+					if(err.response){
+						return err.response.data;
+					}else{
+						return err.message
+					}
+				})
+			}else{
+				return {'isLogin': false};
+			}
+		}).catch(error=>{
+			log.error('error ::: ', error.message)
+			log.error('error stack :::', error.stack)
+			return undefined;
+		})
+	}
 }
 const roomController = new RoomController();
 module.exports = roomController

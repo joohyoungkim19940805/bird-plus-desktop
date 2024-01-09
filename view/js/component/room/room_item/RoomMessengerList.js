@@ -1,7 +1,7 @@
 import {workspaceHandler} from "@handler/workspace/WorkspaceHandler";
 import {roomHandler} from "@handler/room/RoomHandler";
 import PositionChanger from "@handler/PositionChangeer";
-import CreateMessengerView from "./CreateMessengerView";
+import CreateMessengerView from "@component/layer/CreateMessengerView";
 
 import { accountHandler } from "@handler/account/AccountHandler"
 
@@ -197,15 +197,15 @@ export const roomMessengerList = new class RoomMessengerList{
 		/*window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountAccept', event => {
 			console.log(event);
 		})*/
+
 		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomAccept', event => {
-			console.log('roomAccept ::: ',event);
 			let {content} = event;
 			if( ! ['SELF','MESSENGER'].some(e=> e == content.roomType)){
 				return;
 			}
 			//this.refresh();
 			this.createItemElement(content)
-			.then(li => {
+			.then(li => { 
 				//this.#liList.push(li);
 				Object.entries(this.#memory[content.workspaceId] || {}).forEach(([page, obj]) => {
 					if( ! obj.hasOwnProperty(event.roomId)){
@@ -216,6 +216,44 @@ export const roomMessengerList = new class RoomMessengerList{
 				this.refresh()
 			})
 		});
+
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomInAccountDeleteAccept', event => {
+			let {content} = event;
+
+			if( content.roomType != 'MESSENGER' ){
+				return;
+			}
+			let isMy = content.accountName == accountHandler.accountInfo.accountName;
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				if(isMy){
+					delete this.#memory[event.workspaceId][page][event.roomId];
+				}else{
+					this.#memory[event.workspaceId][page][event.roomId].querySelector('.room_name').textContent = content.roomName;
+				}
+				
+			})
+			this.refresh();
+			//현재 보고 있는 방이 추방 or 나간 방인 경우 나 자신의 방으로 이동
+			if(isMy && roomHandler.roomId == event.roomId){
+				roomHandler.roomId = roomHandler.selfRoomId;
+			}
+		})
+		window.myAPI.event.electronEventTrigger.addElectronEventListener('roomDeleteAccept', event => {
+			let {content} = event;
+			if( content.roomType != 'MESSENGER' ){
+				return;
+			}
+			Object.entries(this.#memory[event.workspaceId] || {}).forEach(([page, obj]) => {
+				if( ! obj.hasOwnProperty(event.roomId)){
+					return;
+				}
+				//delete this.#memory[event.workspaceId]?.[page]?.[event.roomId]
+			})
+			this.refresh()
+		})
 	}
 
 	callData(page, size, workspaceId, roomName){
@@ -289,7 +327,7 @@ export const roomMessengerList = new class RoomMessengerList{
 				innerHTML: `
 					<div class="room_container_item_container">
 						<span>${roomTypeMark}</span>
-						<span>${roomName}</span>
+						<span class="room_name">${roomName}</span>
 					</div>
 				`
 			});

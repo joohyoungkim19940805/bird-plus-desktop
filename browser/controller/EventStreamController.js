@@ -5,17 +5,20 @@ const log = require('electron-log');
 class EventStreamController {
     source;
 	prevWorkspaceId;
+    #initIntervar;
     constructor(){
     }
 
 	initWorkspaceStream(param, EventSource, eventSendObj){
         let {workspaceId} = param;
         if( ! EventSource) EventSource = top?.EventSource;
-		if(this.prevWorkspaceId == workspaceId && (this.source?.readyState == 1 || this.source?.readyState == 0)){
+		/*if(this.prevWorkspaceId == workspaceId && (this.source?.readyState == 1 || this.source?.readyState == 0)){
             return;
         }else if(this.prevWorkspaceId != workspaceId && (this.source?.readyState == 1 || this.source?.readyState == 0)){
             this.source.close();
-        }
+        }*/
+
+        if(this.source) this.source.close();
         
         this.prevWorkspaceId = workspaceId;
 
@@ -25,7 +28,6 @@ class EventStreamController {
             },
             withCredentials : ! top.__isLocal
         });
-
         this.source.onmessage = (event) => {
             let {data, lastEventId, origin, type} = event;
             data = JSON.parse(data);
@@ -64,13 +66,10 @@ class EventStreamController {
             })*/
             //연결 실패되면 계속 시도하기에 임시 조치로 close
             //모바일 웹에서는 연결 실패 후 재시도 안하기에 수동 재시도로 변경
-            /*this.source.close();
-            this.source = new EventSource(`${__serverApi}/api/event-stream/workspace/${workspaceId}`, {
-                headers: {
-                    'Authorization' : axios.defaults.headers.common['Authorization'],
-                },
-                withCredentials : ! top.__isLocal
-            });*/
+            this.source.close();
+            setTimeout(()=>{
+                this.initWorkspaceStream(param, EventSource, eventSendObj)
+            },500)
             //stop();
         };
         this.source.onopen = (success) => {
@@ -107,8 +106,14 @@ class EventStreamController {
         });
         */
         //}
+        
 	}
-
+    #initEvent(EventSource, eventSendObj){
+        
+    }
+    #closeRequest(){
+        this.source.close();
+    }
 }
 
 const eventStreamController = new EventStreamController();
