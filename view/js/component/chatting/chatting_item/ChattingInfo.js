@@ -124,7 +124,7 @@ export const chattingInfo = new class ChattingInfo{
                 this.#page = this.#firstPageNumber;
                 this.#lastItemVisibleObserver.unobserve(this.#firstVisibleTarget); 
             }
-
+            
             if(this.#lastPageNumberMapper[roomHandler.roomId] == this.#page && this.#page == -1){
                 this.#lastItemVisibleObserver.disconnect();
                 return;
@@ -200,6 +200,10 @@ export const chattingInfo = new class ChattingInfo{
                         return;
                     }
                     clearInterval(isConnectedAwait);
+                    Promise.all(this.#liList.map(async (e,i)=>{
+                        if(i == 0 || i == this.#liList.length - 1)return;
+                        return this.#processingTimeGrouping(e, this.#liList[i - 1])    
+                    }))
                     this.#lastVisibleTarget = this.#liList.at(-1);
                     this.#firstVisibleTarget = this.#liList[0];
                     if(this.#lastVisibleTarget){
