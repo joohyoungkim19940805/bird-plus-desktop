@@ -145,12 +145,14 @@ class MainWindow extends BrowserWindow{
 			});
 
 			ipcMain.handle('getOption', async (event, optionName) => {
-				return birdPlusOptions.optionLoadEnd.then(()=> 
-					birdPlusOptions.getOption(optionName)
-				);
+				return birdPlusOptions.optionLoadEnd.then(()=>{
+					//birdPlusOptions.optionLoadEnd = Promise.resolve();  
+					return birdPlusOptions.getOption(optionName)
+				});
 			})
 			ipcMain.on('setOption', async (event, param) => {
 				birdPlusOptions.optionLoadEnd.then(()=> {
+					//birdPlusOptions.optionLoadEnd = Promise.resolve();
 					let {name, value} = param;
 					birdPlusOptions[name] = value;
 					birdPlusOptions.setOption = new OptionTemplate({

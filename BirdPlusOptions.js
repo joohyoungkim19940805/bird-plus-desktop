@@ -95,7 +95,7 @@ const birdPlusOptions = new class BirdPlusOptions{
 					}
 				})
 			})
-		})
+		});
 		/*db.serialize(() => {
 			// 각 쿼리는 비동기로 동작하니 순서 주의 \
 			let loadSizePromise = new Promise(resolve => {

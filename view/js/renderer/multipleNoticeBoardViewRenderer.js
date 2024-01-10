@@ -4,6 +4,8 @@ import {noticeBoardDetail} from "@component/notice_board/notice_board_item/Notic
 
 import CommonInit from "@root/js/CommonInit";
 
+import HeaderDefault from "@component/header/HeaderDefault"
+
 new CommonInit('multipleNoticeBoard');
 
 window.addEventListener("DOMContentLoaded", (event) => {
